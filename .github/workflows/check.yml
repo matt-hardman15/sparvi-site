@@ -1,0 +1,60 @@
+name: check
+
+# Runs on every pull request. main is protected: these three jobs must pass before a merge.
+# Nothing here needs real Statcast data: the pipeline runs on a synthetic fixture and the
+# site renders from the aggregated JSON already committed in site/data.
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  QUARTO_VERSION: "1.11.9"
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+        with:
+          enable-cache: true
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+
+  pipeline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+        with:
+          enable-cache: true
+      - run: uv sync --frozen
+      - name: Config and dbt pipeline on synthetic data
+        run: uv run pytest -q tests/test_config.py tests/test_pipeline.py
+
+  site:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+        with:
+          enable-cache: true
+      - run: uv sync --frozen
+      - uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: ${{ env.QUARTO_VERSION }}
+      - run: cd site && quarto render
+      - run: uv run playwright install --with-deps chromium
+      - name: Load every page, use every control, fail on console errors
+        run: uv run pytest -q tests/test_site.py
