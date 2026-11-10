@@ -1,0 +1,57 @@
+name: deploy
+
+# Renders the site from the data committed in site/data and deploys it to GitHub Pages.
+# Runs on every push to main, by hand, and at the end of each sport's refresh workflow
+# (pushes made with GITHUB_TOKEN don't trigger other workflows, so refreshes call this directly).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  QUARTO_VERSION: "1.11.9"
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      # Always the tip of main: when a refresh calls this, it includes the data commit just pushed.
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+
+      - uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: ${{ env.QUARTO_VERSION }}
+
+      - name: Render
+        run: |
+          cd site && quarto render
+          # A missing prose number renders as "?meta:..." instead of failing; fail here instead.
+          if grep -rl "?meta:" ../docs --include=*.html; then echo "::error::unresolved prose numbers"; exit 1; fi
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: docs
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

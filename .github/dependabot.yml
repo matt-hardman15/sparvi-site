@@ -1,0 +1,22 @@
+# Upgrades arrive as grouped weekly PRs; the `check` workflow tests each one before merge.
+version: 2
+updates:
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      # Minor and patch updates share one PR. Majors (pandas 4, numpy 3, ...) are left out of
+      # the group, so each gets its own PR and can be reviewed on its own.
+      python:
+        patterns: ["*"]
+        update-types: [minor, patch]
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]

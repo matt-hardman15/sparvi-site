@@ -1,0 +1,113 @@
+name: refresh-baseball
+
+# In season: re-pull the current season, rebuild every model and the dbt pipeline, commit the
+# refreshed site data, and deploy. Off season: keep the raw-data cache from expiring.
+# Each sport gets its own refresh workflow on its own calendar; they share deploy.yml.
+
+on:
+  schedule:
+    - cron: "15 10 * 4-10 *"      # daily Apr-Oct, ~5 a.m. Central, after the night's games
+    - cron: "0 9 * 1-3,11-12 1"   # Mondays Nov-Mar: touch the cache (GitHub evicts after 7 idle days)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: refresh-baseball
+  cancel-in-progress: false
+
+env:
+  QUARTO_VERSION: "1.11.9"
+# The keepalive cron string is repeated in the two `if:` conditions below (GitHub can't
+# reference env in a job-level `if`); change all three together.
+
+jobs:
+  refresh:
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule != '0 9 * 1-3,11-12 1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10
+        with:
+          enable-cache: true
+
+      - run: uv sync --frozen
+
+      - uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: ${{ env.QUARTO_VERSION }}
+
+      - name: Seasons from sparvi.toml
+        id: cfg
+        run: |
+          season=$(uv run python -m sparvi.config baseball.season)
+          past=$(uv run python -m sparvi.config baseball.past_seasons)
+          echo "season=$season" >> "$GITHUB_OUTPUT"
+          echo "key=baseball-raw-past-${past// /-}-v1" >> "$GITHUB_OUTPUT"
+          {
+            echo "paths<<EOF"
+            for y in $past; do echo "data/raw/*_${y}.parquet"; done
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      # Past seasons never change, so they're cached under a fixed key. The current season is
+      # re-pulled on every run. Raw Statcast is never committed or published (rule 1).
+      - name: Restore past-season raw data
+        uses: actions/cache@v6
+        with:
+          path: ${{ steps.cfg.outputs.paths }}
+          key: ${{ steps.cfg.outputs.key }}
+
+      - name: Pull data
+        run: |
+          uv run python scripts/pull_data.py                      # fills any missing past season
+          uv run python scripts/pull_data.py --current --refresh
+
+      - name: Rebuild models, pipeline, and site
+        run: uv run ./build.sh
+
+      - name: Commit refreshed data
+        run: |
+          git config user.name "sparvi-bot"
+          git config user.email "sparvi-bot@users.noreply.github.com"
+          git add site/data/baseball site/_generated/baseball.yml baseball/*/output
+          if git diff --cached --quiet; then echo "No data changes."; exit 0; fi
+          git commit -m "Baseball data refresh $(date -u +%Y-%m-%d)"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+  deploy:
+    needs: refresh
+    uses: ./.github/workflows/deploy.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+  keep-cache-warm:
+    if: github.event.schedule == '0 9 * 1-3,11-12 1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Cache key from sparvi.toml
+        id: cfg
+        run: |
+          # sparvi.config is stdlib-only, so the runner's Python is enough; no dependency install.
+          past=$(python3 -m sparvi.config baseball.past_seasons)
+          echo "key=baseball-raw-past-${past// /-}-v1" >> "$GITHUB_OUTPUT"
+          {
+            echo "paths<<EOF"
+            for y in $past; do echo "data/raw/*_${y}.parquet"; done
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+      # Restoring counts as use, which resets the 7-day eviction clock.
+      - uses: actions/cache/restore@v6
+        with:
+          path: ${{ steps.cfg.outputs.paths }}
+          key: ${{ steps.cfg.outputs.key }}
