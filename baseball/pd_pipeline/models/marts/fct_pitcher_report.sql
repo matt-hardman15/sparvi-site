@@ -9,19 +9,21 @@ pool as (
     select * from season where pa >= {{ var('min_bf_qualified') }}
 ),
 fb_velo as (
-    -- primary fastball velocity, season vs recent
+    -- Primary fastball = the most-thrown FF/SI over the season (ties go to FF, so the pick is
+    -- deterministic). The recent window uses that same pitch type, so the delta compares like
+    -- with like instead of, say, a recent sinker against a season four-seamer.
     select
-        pitcher_id,
-        max(velo) filter (where window_name = 'season') as fb_velo,
-        max(velo) filter (where window_name = 'recent') as recent_fb_velo
+        s.pitcher_id,
+        s.velo as fb_velo,
+        r.velo as recent_fb_velo
     from (
-        select *, row_number() over (
-            partition by pitcher_id, window_name order by pitches desc) as rn
+        select *, row_number() over (partition by pitcher_id order by pitches desc, pitch_type) as rn
         from {{ ref('int_pitcher_arsenal') }}
-        where pitch_type in ('FF', 'SI')
-    )
-    where rn = 1
-    group by 1
+        where window_name = 'season' and pitch_type in ('FF', 'SI')
+    ) s
+    left join {{ ref('int_pitcher_arsenal') }} r
+        on r.pitcher_id = s.pitcher_id and r.pitch_type = s.pitch_type and r.window_name = 'recent'
+    where s.rn = 1
 )
 
 select
