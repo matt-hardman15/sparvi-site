@@ -6,6 +6,11 @@ project:
     - data/**
     - CNAME
 
+# Numbers quoted in article prose, written by each sport's export_site_data.py.
+# Use them as {{< meta baseball.<key> >}}; never hand-type a number into an article.
+metadata-files:
+  - _generated/baseball.yml
+
 website:
   title: "Sparvi"
   site-url: "https://sparvi.io"

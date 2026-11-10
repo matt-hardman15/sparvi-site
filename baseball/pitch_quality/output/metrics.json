@@ -1,13 +1,61 @@
 {
+  "season": 2026,
+  "min_pitches": 500,
+  "aaa_min_pitches": 300,
   "train_pitch_r2": 0.002753940174505032,
-  "holdout_2026_pitch_r2": 0.0005343110079060187,
-  "split_half_r_stuff_2026": 0.9938846097497759,
-  "split_half_r_actual_rv_2026": 0.19850911276405853,
+  "holdout_pitch_r2": 0.0005343110079060187,
+  "split_half_r_stuff": 0.9938846097497759,
+  "split_half_r_actual_rv": 0.19850911276405853,
   "yoy_n": 324,
-  "yoy_r_stuff25_to_rv26": 0.3097700513474816,
-  "yoy_r_rv25_to_rv26": 0.19259585980517263,
-  "yoy_r_stuff25_to_stuff26": 0.8652324929974684,
+  "yoy_r_stuff_prev_to_rv_cur": 0.3097700513474816,
+  "yoy_r_rv_prev_to_rv_cur": 0.19259585980517263,
+  "yoy_r_stuff_prev_to_stuff_cur": 0.8652324929974684,
   "aaa_to_mlb_n": 148,
   "aaa_to_mlb_r_stuff": 0.13822362563702928,
-  "aaa_to_mlb_r_actual": -0.019557588153976315
+  "aaa_to_mlb_r_actual": -0.019557588153976315,
+  "aaa_mean_stuff_plus_qualified": 91.68541999803045,
+  "n_pitches_mlb": 2126609,
+  "n_pitches_aaa": 1331512,
+  "provenance": {
+    "data": {
+      "statcast_aaa_2025.parquet": {
+        "rows": 671257,
+        "first_game": "2025-03-28",
+        "last_game": "2025-09-21"
+      },
+      "statcast_aaa_2026.parquet": {
+        "rows": 671556,
+        "first_game": "2026-03-27",
+        "last_game": "2026-09-20"
+      },
+      "statcast_mlb_2024.parquet": {
+        "rows": 711899,
+        "first_game": "2024-03-20",
+        "last_game": "2024-09-30"
+      },
+      "statcast_mlb_2025.parquet": {
+        "rows": 712528,
+        "first_game": "2025-03-18",
+        "last_game": "2025-09-28"
+      },
+      "statcast_mlb_2026.parquet": {
+        "rows": 716792,
+        "first_game": "2026-03-25",
+        "last_game": "2026-09-27"
+      }
+    },
+    "libraries": {
+      "python": "3.12",
+      "pandas": "3.1.1",
+      "numpy": "2.5.4",
+      "duckdb": "1.5.6",
+      "lightgbm": "4.7.0",
+      "scikit-learn": "1.9.1",
+      "dbt-duckdb": "1.11.1"
+    },
+    "seeds": {
+      "lightgbm": 7,
+      "validation_split": 7
+    }
+  }
 }

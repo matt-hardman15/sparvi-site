@@ -8,7 +8,7 @@ image: thumb.png
 
 ::: {.finding}
 [The finding]{.label}
-Across two seasons of Triple-A data, a hitter's **chase rate and whiff rate over two weeks carry real information about the next two weeks** (r ≈ 0.5). **Two weeks of xwOBA barely does** (r = 0.14), and two weeks of wOBA even less (0.09). For pitchers, **fastball velocity is almost perfectly stable** from one fortnight to the next (0.96), while strikeout and walk rates are weak (0.21) and whiff rate only a little better (0.28), and contact allowed is close to noise.
+Across two seasons of Triple-A data, a hitter's **chase rate and whiff rate over two weeks carry real information about the next two weeks** (r = {{< meta baseball.tw_hit_chase >}} and {{< meta baseball.tw_hit_whiff >}}). **Two weeks of xwOBA barely does** (r = {{< meta baseball.tw_hit_xwoba >}}), and two weeks of wOBA even less ({{< meta baseball.tw_hit_woba >}}). For pitchers, **fastball velocity is almost perfectly stable** from one fortnight to the next ({{< meta baseball.tw_pit_velo >}}), while strikeout and walk rates are weak ({{< meta baseball.tw_pit_k >}} and {{< meta baseball.tw_pit_bb >}}) and whiff rate only a little better ({{< meta baseball.tw_pit_whiff >}}), and contact allowed is close to noise.
 :::
 
 ::: {.so-what}
@@ -24,7 +24,7 @@ Across two seasons of Triple-A data, a hitter's **chase rate and whiff rate over
   <h3>How much does a two-week number carry into the next two weeks?</h3>
   <div class="controls" id="c0"></div>
   <div class="plot-host" id="p0"></div>
-  <p class="caption">Correlation between consecutive 14-day windows, players with 25+ PA (hitters) or 25+ batters faced (pitchers) in both. Triple-A, 2025 and 2026. Higher means two weeks of the number reflects the player more than the noise.</p>
+  <p class="caption">Correlation between consecutive {{< meta baseball.tw_block_days >}}-day windows, players with {{< meta baseball.tw_min >}}+ PA (hitters) or {{< meta baseball.tw_min >}}+ batters faced (pitchers) in both. Triple-A, {{< meta baseball.tw_seasons >}}. Higher means two weeks of the number reflects the player more than the noise.</p>
 </div>
 <script>
 (async () => {
@@ -91,8 +91,8 @@ Each dot is one player in one fortnight, plotted against the same player in the 
 
 A player development report has three jobs: show what changed recently, show where the player stands against the league, and, for pitchers, show what each pitch looks like. The results above shape the first job most. The Triple-A explorer applies them:
 
-- **Hitter flags use swing decisions and contact quality**: chase rate moving 5+ points, or hard-hit rate moving 10+, over the final 14 days with at least 30 PA. Hard-hit rate is the most stable contact measure here (0.37), well ahead of xwOBA.
-- **Pitcher flags lead with velocity**: a 1+ mph change in the primary fastball over 10+ batters faced. They also flag walk-rate jumps of 5+ points and whiff-rate jumps of 7+, but with carry-over of 0.21 (walks) and 0.28 (whiffs), read those as "go look," not "something changed."
+- **Hitter flags use swing decisions and contact quality**: chase rate moving 5+ points, or hard-hit rate moving 10+, over the final 14 days with at least 30 PA. Hard-hit rate is the most stable contact measure here ({{< meta baseball.tw_hit_hardhit >}}), well ahead of xwOBA.
+- **Pitcher flags lead with velocity**: a 1+ mph change in the primary fastball over 10+ batters faced. They also flag walk-rate jumps of 5+ points and whiff-rate jumps of 7+, but with carry-over of {{< meta baseball.tw_pit_bb >}} (walks) and {{< meta baseball.tw_pit_whiff >}} (whiffs), read those as "go look," not "something changed."
 - **League percentiles use the full season**, where sample size is no longer the main problem, and every rate is oriented so a higher percentile is always better.
 
 Browse it for any club: **[Triple-A explorer](/baseball/tools/triple-a.html)**. Or open any player page, like [this one](/baseball/player.html?id=687547), for the one-page version.
@@ -100,7 +100,7 @@ Browse it for any club: **[Triple-A explorer](/baseball/tools/triple-a.html)**. 
 <details class="method" id="method">
 <summary>Method and caveats</summary>
 
-**Windows.** Each season is split into consecutive 14-day blocks from opening day. A player-fortnight counts if the player had 25+ plate appearances (hitters) or 25+ batters faced (pitchers). Pairs are the same player in block *k* and block *k+1* of the same season: 5,086 hitter pairs and about 2,810 pitcher pairs across 2025 and 2026.
+**Windows.** Each season is split into consecutive {{< meta baseball.tw_block_days >}}-day blocks from opening day. A player-fortnight counts if the player had {{< meta baseball.tw_min >}}+ plate appearances (hitters) or {{< meta baseball.tw_min >}}+ batters faced (pitchers). Pairs are the same player in block *k* and block *k+1* of the same season: {{< meta baseball.tw_hit_pairs >}} hitter pairs and {{< meta baseball.tw_pit_pairs >}} pitcher pairs (depending on the metric) across {{< meta baseball.tw_seasons >}}.
 
 **Definitions.** Swings exclude bunt attempts. Whiffs include foul tips (matching Baseball Savant). The zone is Statcast zones 1–9. Hard-hit means 95+ mph exit velocity. xwOBA uses expected wOBA on balls in play and actual values on strikeouts, walks, and hit-by-pitches. Fastball velocity is the average of four-seamers and sinkers.
 
