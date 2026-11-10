@@ -1,0 +1,96 @@
+---
+title: "Stuff+ leaderboard"
+description: "Every MLB and Triple-A pitcher and pitch in 2026, graded on velocity, movement, and release alone."
+page-layout: full
+---
+
+Stuff+ grades a pitch only on physical traits the pitcher controls: velocity, movement, spin, release point, extension, arm angle, and how the pitch differs from his primary fastball. **100 is an average MLB pitcher and every 10 points is one standard deviation.** RV+ is actual run value on the same scale, so you can see who got results their stuff doesn't explain, and vice versa. How the model works and how well it predicts: [Stuff predicts next season better than results do](/baseball/stuff-plus/).
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c"></div>
+  <div id="scatter" class="plot-host"></div>
+  <p class="caption" id="scap"></p>
+  <div id="t"><div class="loading">Loading…</div></div>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt;
+  const [pitchers, pitches] = await Promise.all([S.load("/data/baseball/stuff_pitchers.json"), S.load("/data/baseball/stuff_pitches.json")]);
+  const st = { view: "pitchers", level: "MLB", team: "", group: "", min: 500, q: "" };
+  // Default pitch minimum: 100 per pitch type; 500 per MLB pitcher, 300 per Triple-A pitcher.
+  const defMin = () => (st.view === "pitches" ? 100 : st.level === "AAA" ? 300 : 500);
+  const teams = (lvl) => [...new Set(pitchers.filter(d => d.level === lvl).map(d => d.team))].sort();
+  const c = document.getElementById("c");
+  let teamSel;
+  function controls() {
+    teamSel = S.select("Team", [["", "All teams"], ...teams(st.level).map(t => [t, t])], st.team, v => { st.team = v; draw(); });
+    c.replaceChildren(...[
+      S.el("label", {}, "View", S.seg([["pitchers", "Pitchers"], ["pitches", "Individual pitches"]], st.view, v => { st.view = v; st.min = defMin(); controls(); draw(); })),
+      S.el("label", {}, "Level", S.seg([["MLB", "MLB"], ["AAA", "Triple-A"]], st.level, v => { st.level = v; st.team = ""; st.min = defMin(); controls(); draw(); })),
+      teamSel,
+      st.view === "pitches" ? S.select("Pitch group", [["", "All"], ["fastball", "Fastballs"], ["breaking", "Breaking balls"], ["offspeed", "Offspeed"]], st.group, v => { st.group = v; draw(); }) : null,
+      S.number("Min. pitches", st.min, 50, v => { st.min = v; draw(); }),
+      S.search("Find a pitcher", "e.g. Misiorowski", v => { st.q = v; draw(); })].filter(Boolean));
+  }
+  const pitcherCols = [
+    { key: "name", label: "Pitcher", align: "l", html: r => S.playerLink(r.id, r.name) },
+    { key: "team", label: "Team", align: "l" },
+    { key: "throws", label: "T", align: "l" },
+    { key: "pitches", label: "Pitches", fmt: f.int },
+    { key: "stuff_plus", label: "Stuff+", heat: "plus", fmt: v => f.num(v, 0) },
+    { key: "rv_plus", label: "RV+", heat: "plus", fmt: v => f.num(v, 0), title: "Actual run value on the Stuff+ scale" },
+    { key: "gap", label: "RV+ − Stuff+", fmt: v => f.signed(v, 0), title: "Positive: results better than the stuff" },
+  ];
+  const pitchCols = [
+    { key: "name", label: "Pitcher", align: "l", html: r => S.playerLink(r.id, r.name) },
+    { key: "team", label: "Team", align: "l" },
+    { key: "pt", label: "Pitch", align: "l" },
+    { key: "n", label: "Pitches", fmt: f.int },
+    { key: "velo", label: "Velo", fmt: v => f.num(v) },
+    { key: "ivb", label: "IVB", fmt: v => f.num(v), title: "Induced vertical break, inches" },
+    { key: "hb", label: "HB", fmt: v => f.num(v), title: "Horizontal break, inches, arm side positive" },
+    { key: "stuff_plus", label: "Stuff+", heat: "plus", fmt: v => f.num(v, 0) },
+  ];
+  const table = { pitchers: S.table(document.getElementById("t"), pitcherCols, { sortKey: "stuff_plus" }), pitches: null };
+  const host = document.getElementById("scatter");
+  function draw() {
+    let rows;
+    if (st.view === "pitchers") {
+      rows = pitchers.filter(d => d.level === st.level && d.pitches >= st.min && (!st.team || d.team === st.team))
+        .map(d => ({ ...d, gap: d.rv_plus - d.stuff_plus }));
+    } else {
+      rows = pitches.filter(d => d.level === st.level && d.n >= st.min && (!st.team || d.team === st.team) && (!st.group || d.group === st.group));
+    }
+    const shown = st.q ? rows.filter(d => d.name.toLowerCase().includes(st.q)) : rows;
+    const tbl = st.view === "pitchers" ? (table.pitchers ||= S.table(document.getElementById("t"), pitcherCols, { sortKey: "stuff_plus" }))
+                                       : (table.pitches ||= S.table(document.getElementById("t"), pitchCols, { sortKey: "stuff_plus" }));
+    if (st.view === "pitchers") table.pitches = null; else table.pitchers = null;
+    tbl.update(shown);
+    S.plot(host, w => st.view === "pitchers"
+      ? Plot.plot({ ...S.plotDefaults(w), height: 340, grid: true,
+          x: { label: "Stuff+ →", nice: true }, y: { label: "↑ RV+ (results)", nice: true },
+          marks: [Plot.ruleX([100], { stroke: "#8a8b8f", strokeDasharray: "3,3" }), Plot.ruleY([100], { stroke: "#8a8b8f", strokeDasharray: "3,3" }),
+            Plot.dot(rows, { x: "stuff_plus", y: "rv_plus", r: 3.5, fill: "#2a78d6", fillOpacity: st.q ? 0.15 : 0.55 }),
+            st.q ? Plot.dot(shown, { x: "stuff_plus", y: "rv_plus", r: 6, fill: "#eb6834", stroke: "#fff", strokeWidth: 1.5 }) : null,
+            st.q ? Plot.text(shown.slice(0, 8), { x: "stuff_plus", y: "rv_plus", text: "name", dy: -12, fontWeight: 600 }) : null,
+            Plot.tip(rows, Plot.pointer({ x: "stuff_plus", y: "rv_plus", title: d => `${d.name} (${d.team})\nStuff+ ${f.num(d.stuff_plus,0)} · RV+ ${f.num(d.rv_plus,0)}\n${f.int(d.pitches)} pitches` }))] })
+      : Plot.plot({ ...S.plotDefaults(w), height: 340, grid: true, clip: true,
+          x: { label: "Horizontal break, arm side + (in) →", domain: [-24, 24] }, y: { label: "↑ Induced vertical break (in)", domain: [-24, 24] },
+          color: { type: "diverging", domain: [70, 130], pivot: 100, range: ["#2a78d6", "#d9d8d3", "#eb6834"], legend: true, label: "Stuff+" },
+          marks: [Plot.ruleX([0], { stroke: "#ccc" }), Plot.ruleY([0], { stroke: "#ccc" }),
+            Plot.dot(rows, { x: "hb", y: "ivb", r: 3, fill: "stuff_plus", fillOpacity: st.q ? 0.2 : 0.75 }),
+            st.q ? Plot.dot(shown, { x: "hb", y: "ivb", r: 6, fill: "stuff_plus", stroke: "#16181d", strokeWidth: 1.5 }) : null,
+            Plot.tip(rows, Plot.pointer({ x: "hb", y: "ivb", title: d => `${d.name} ${d.pt}\n${f.num(d.velo)} mph · ${f.num(d.ivb)} IVB · ${f.num(d.hb)} HB\nStuff+ ${f.num(d.stuff_plus,0)}` }))] }));
+    document.getElementById("scap").textContent = st.view === "pitchers"
+      ? `${rows.length} pitchers. Upper left: results better than the stuff. Lower right: stuff better than the results. Hover for details; search to highlight.`
+      : `${rows.length} pitches by movement shape, colored by Stuff+. Hover for details; search to highlight one pitcher's arsenal.`;
+  }
+  controls(); draw();
+})();
+</script>
+```
+
+::: {.note}
+2026 regular season. Triple-A pitchers are graded on the same MLB-trained model, so their numbers are directly comparable with big leaguers'. Triple-A RV+ is measured against weaker hitters, so expect it to run high. [How Stuff+ is built](/baseball/stuff-plus/#method).
+:::

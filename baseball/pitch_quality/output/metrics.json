@@ -1,0 +1,13 @@
+{
+  "train_pitch_r2": 0.002753940174505032,
+  "holdout_2026_pitch_r2": 0.0005343110079060187,
+  "split_half_r_stuff_2026": 0.9938846097497759,
+  "split_half_r_actual_rv_2026": 0.19850911276405853,
+  "yoy_n": 324,
+  "yoy_r_stuff25_to_rv26": 0.3097700513474816,
+  "yoy_r_rv25_to_rv26": 0.19259585980517263,
+  "yoy_r_stuff25_to_stuff26": 0.8652324929974684,
+  "aaa_to_mlb_n": 148,
+  "aaa_to_mlb_r_stuff": 0.13822362563702928,
+  "aaa_to_mlb_r_actual": -0.019557588153976315
+}

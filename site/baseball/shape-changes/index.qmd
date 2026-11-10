@@ -1,0 +1,122 @@
+---
+title: "Midseason pitch changes mostly stick. Lost fastball velocity mostly doesn't."
+description: "When a pitch's velocity or movement changes during the season, how much is still there the next spring? Movement changes hold; fastball velocity losses mostly come back."
+date: 2026-11-10
+categories: [pitching, player development]
+image: thumb.png
+---
+
+::: {.finding}
+[The finding]{.label}
+Across 1,174 MLB pitch types, **74–89% of a midseason change in movement was still there the following spring**, in both directions. Velocity *gains* held too (82%). Velocity *losses* didn't: only 55% held overall, and **just 40% for fastballs**.
+:::
+
+::: {.so-what}
+[So what]{.label}
+
+- **A shape change that shows up in July is probably real and probably durable.** Gaining two inches of ride midseason isn't a mirage the offseason erases.
+- **Don't over-read a second-half fastball velocity drop.** Most pitchers get most of it back by spring. It's worth a conversation with the training staff, not necessarily a change in plans.
+- **Velocity drops on breaking balls and offspeed pitches hold more than fastball drops** (62% vs. 40%). Some of those are likely deliberate, like a slider thrown slower for more depth, so check intent before calling it a problem.
+:::
+
+```{=html}
+<div class="explorer">
+  <h3>How much of the change carried into next season</h3>
+  <div class="plot-host" id="p0"></div>
+  <p class="caption">Persistence: share of the first-half to second-half change still present in the next season's first half, with a 90% bootstrap interval. Orange: gains. Blue: losses. Changes of at least 1.0 mph or 1.5 inches.</p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi;
+  const meta = await S.load("/data/baseball/meta.json");
+  const R = meta.shape_results.metrics, V = meta.shape_results.velo_by_pitch_class;
+  const name = { velo: ["Velocity gained", "Velocity lost"], ivb: ["Ride (IVB) gained", "Ride (IVB) lost"], hb: ["Arm-side run gained", "Arm-side run lost"] };
+  const rows = [];
+  for (const m of ["velo", "ivb", "hb"]) for (const [i, dir] of ["gain", "loss"].entries()) {
+    const r = R[m][dir]; if (!r) continue;
+    rows.push({ label: `${name[m][i]} (n=${r.n})`, v: r.persistence * 100, lo: r.persistence_ci90[0] * 100, hi: r.persistence_ci90[1] * 100, dir });
+  }
+  S.plot(document.getElementById("p0"), w => Plot.plot({ ...S.plotDefaults(w), height: 280, marginLeft: 190,
+    x: { domain: [0, 120], label: "% of the change kept →", grid: true }, y: { label: null, domain: rows.map(d => d.label) },
+    marks: [Plot.ruleX([100], { stroke: "#8a8b8f", strokeDasharray: "4,3" }),
+      Plot.ruleY(rows, { y: "label", x1: "lo", x2: "hi", stroke: "#b9b7b0", strokeWidth: 2.5 }),
+      Plot.dot(rows, { y: "label", x: "v", r: 7, fill: d => d.dir === "gain" ? "#eb6834" : "#2a78d6", stroke: "#fff", strokeWidth: 1.5 }),
+      Plot.text(rows, { y: "label", x: "v", text: d => d.v.toFixed(0) + "%", dy: -14, fontWeight: 600 })] }));
+})();
+</script>
+```
+
+## Check it yourself
+
+Every dot is one pitcher's pitch type. The x-axis is how much it changed from the first half to the second half of a season. The y-axis is where it sat the next spring, relative to where it started. If every change held, the dots would sit on the dashed diagonal. If every change faded, they'd sit flat on zero. The orange line is what actually happened. Pick a metric, narrow to a pitch class, or search for a pitcher.
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c1"></div>
+  <div class="plot-host" id="p1"></div>
+  <p class="caption" id="cap1"></p>
+  <h3>Biggest changes, and what happened next</h3>
+  <div id="t1"></div>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt;
+  const data = await S.load("/data/baseball/shape_changes.json");
+  const st = { m: "velo", cls: "", q: "", big: false };
+  const unit = { velo: "mph", ivb: "in", hb: "in" }, thr = { velo: 1.0, ivb: 1.5, hb: 1.5 };
+  const FB = new Set(["FF", "SI", "FC"]);
+  document.getElementById("c1").replaceChildren(
+    S.el("label", {}, "Metric", S.seg([["velo", "Velocity"], ["ivb", "Ride (IVB)"], ["hb", "Arm-side run"]], st.m, v => { st.m = v; draw(); })),
+    S.select("Pitches", [["", "All"], ["fb", "Fastballs (FF/SI/FC)"], ["other", "Everything else"]], st.cls, v => { st.cls = v; draw(); }),
+    S.select("Show", [["0", "All pitch types"], ["1", "Only real changes"]], "0", v => { st.big = v === "1"; draw(); }),
+    S.search("Find a pitcher", "Name", v => { st.q = v; draw(); }));
+  const cols = () => [
+    { key: "name", label: "Pitcher", align: "l", html: r => S.playerLink(r.id, r.name) },
+    { key: "pt", label: "Pitch", align: "l" }, { key: "pair", label: "Seasons", align: "l" },
+    { key: "a", label: "1st half", fmt: v => f.num(v) }, { key: "b", label: "2nd half", fmt: v => f.num(v) },
+    { key: "c", label: "Next spring", fmt: v => f.num(v) },
+    { key: "chg", label: "Change (adj.)", fmt: v => f.signed(v), title: "Second half minus first half, adjusted for the league-wide change" }, { key: "kept", label: "% kept", fmt: v => v == null ? "—" : Math.round(v) + "%", sortVal: r => r.kept },
+  ];
+  let tbl;
+  function draw() {
+    const m = st.m;
+    let rows = data.filter(d => !st.cls || (st.cls === "fb" ? FB.has(d.pt) : !FB.has(d.pt)));
+    if (st.big) rows = rows.filter(d => Math.abs(d[m + "_chg"]) >= thr[m]);
+    const hi = st.q ? rows.filter(d => d.name.toLowerCase().includes(st.q)) : [];
+    const lim = d3.quantile(rows.map(d => Math.abs(d[m + "_chg"])), 0.995) || 3;
+    const slope = d3.sum(rows, d => d[m + "_chg"] * d[m + "_kept"]) / d3.sum(rows, d => d[m + "_chg"] ** 2);
+    S.plot(document.getElementById("p1"), w => Plot.plot({ ...S.plotDefaults(w), height: 380, grid: true, clip: true,
+      x: { domain: [-lim, lim], label: `In-season change, ${unit[m]} (league-adjusted) →` },
+      y: { domain: [-1.6 * lim, 1.6 * lim], label: `↑ Next spring vs. this spring, ${unit[m]}` },
+      marks: [Plot.ruleX([0], { stroke: "#ccc" }), Plot.ruleY([0], { stroke: "#ccc" }),
+        Plot.line([[-lim, -lim], [lim, lim]], { stroke: "#8a8b8f", strokeDasharray: "4,3" }),
+        Plot.dot(rows, { x: m + "_chg", y: m + "_kept", r: 2.8, fill: "#2a78d6", fillOpacity: hi.length ? .12 : .35 }),
+        Plot.line([[-lim, -lim * slope], [lim, lim * slope]], { stroke: "#eb6834", strokeWidth: 2.5 }),
+        Plot.dot(hi, { x: m + "_chg", y: m + "_kept", r: 6, fill: "#eb6834", stroke: "#16181d" }),
+        Plot.text(hi.slice(0, 8), { x: m + "_chg", y: m + "_kept", text: d => `${d.name} ${d.pt} ${d.pair.slice(2, 4)}`, dy: -11, fontSize: 10.5 }),
+        Plot.tip(rows, Plot.pointer({ x: m + "_chg", y: m + "_kept", title: d => `${d.name} ${d.pt} (${d.pair})\n${f.num(d[m + "1"])} → ${f.num(d[m + "2"])} → ${f.num(d[m + "_next"])} ${unit[m]}` }))] }));
+    document.getElementById("cap1").textContent = `${rows.length} pitch types. Slope of the orange line: ${(slope * 100).toFixed(0)}% of the change kept. Raw values in the tooltip are season averages; the axes are adjusted for the league-wide change.`;
+    const big = rows.filter(d => Math.abs(d[m + "_chg"]) >= thr[m]).map(d => ({ ...d, a: d[m + "1"], b: d[m + "2"], c: d[m + "_next"], chg: d[m + "_chg"], kept: 100 * d[m + "_kept"] / d[m + "_chg"] }));
+    tbl ||= S.table(document.getElementById("t1"), cols(), { sortKey: "chg", pageSize: 12 });
+    tbl.update(st.q ? big.filter(d => d.name.toLowerCase().includes(st.q)) : big);
+  }
+  draw();
+})();
+</script>
+```
+
+Two examples of how the slowed-breaking-ball case plays out. Cole Ragans's slider went from 86.7 mph in the first half of 2024 to 84.9 in the second, and opened 2025 at 84.7: the change held. Ryne Nelson's slider dropped from 85.6 to 82.9 over the same stretch, and was back at 86.2 the next spring. From the data alone you can't tell a deliberate change from fatigue. The split between fastballs and everything else suggests both happen.
+
+<details class="method" id="method">
+<summary>Method and caveats</summary>
+
+**Unit.** An MLB pitcher's pitch type (e.g., one pitcher's slider) with 100+ pitches in each half of a season, split on July 15, and 100+ pitches in the first half of the following season. Two season pairs: 2024→2025 and 2025→2026, for 1,174 pitch types.
+
+**Change and kept.** Change = second-half average minus first-half average. Kept = next season's first-half average minus this season's first-half average. Both are adjusted by subtracting the league-wide average for that season pair: velocity rises about 0.1 mph into summer for almost everyone, and tracking can shift slightly between seasons.
+
+**Persistence.** The slope of kept on change, fit through the origin, with a 2,000-sample bootstrap for the 90% interval. A slope avoids per-pitch ratios, which blow up when the original change is small. "Real" changes are 1.0+ mph or 1.5+ inches. For reference, pitch types that barely changed in-season still drift about 0.9 mph and 1.2–1.3 inches (one SD) between seasons, so individual cases are noisy even when the pooled pattern is clear.
+
+**Caveats.** *Survivorship:* pitchers who didn't come back with 100+ pitches of that pitch type are excluded, and those may be the ones whose velocity didn't return, so fastball persistence is probably understated if anything. *Pitch labels:* a relabeled pitch (slider to sweeper) can look like a shape change. *Sample:* subgroups are small (25 fastballs lost 1+ mph), so the direction is clearer than the exact percentages.
+
+Code: [`baseball/shape_stability/`](https://github.com/matt-hardman15/sparvi-site/tree/main/baseball/shape_stability)
+</details>

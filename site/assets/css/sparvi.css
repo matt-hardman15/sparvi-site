@@ -1,0 +1,109 @@
+/* Sparvi design system: shared by every page, every sport. */
+@font-face { font-family: "Inter"; src: url("../fonts/inter.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Source Serif 4"; src: url("../fonts/serif-600.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Source Serif 4"; src: url("../fonts/serif-700.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+
+:root {
+  --paper: #fbfaf7;
+  --paper-2: #f3f1ec;
+  --ink: #16181d;
+  --ink-2: #4d4f55;
+  --muted: #8a8b8f;
+  --rule: #e4e1da;
+  --accent: #0f5257;        /* brand: deep teal */
+  --accent-soft: #e3efee;
+  --good: #eb6834;          /* diverging: better than average */
+  --poor: #2a78d6;          /* diverging: worse than average */
+  --mid: #d9d8d3;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a;   /* categorical, fixed order */
+  --serif: "Source Serif 4", Georgia, serif;
+  --sans: "Inter", -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+body { background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 17px; line-height: 1.6; }
+h1, h2, h3, .title { font-family: var(--serif); letter-spacing: -0.01em; color: var(--ink); }
+h1.title { font-size: 2.4rem; line-height: 1.15; font-weight: 700; }
+h2 { font-size: 1.5rem; margin-top: 2.4rem; border: none; font-weight: 700; }
+h3 { font-size: 1.15rem; font-weight: 600; }
+a { color: var(--accent); text-underline-offset: 2px; }
+.navbar { background: var(--paper) !important; border-bottom: 1px solid var(--rule); }
+.navbar .navbar-brand, .navbar .nav-link { color: var(--ink) !important; }
+.navbar-brand { font-family: var(--serif); font-weight: 700; font-size: 1.45rem; letter-spacing: -0.02em; }
+.navbar .nav-link:hover { color: var(--accent) !important; }
+.nav-footer { background: var(--paper); border-top: 1px solid var(--rule); color: var(--muted); font-size: .85rem; }
+.quarto-title-meta-heading { color: var(--muted); }
+.subtitle, .description { color: var(--ink-2); font-size: 1.15rem; }
+
+/* ---- Article furniture ---- */
+.finding { border-left: 4px solid var(--accent); background: var(--accent-soft); padding: 1rem 1.25rem; margin: 1.5rem 0; border-radius: 0 6px 6px 0; }
+.finding .label, .so-what .label { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; font-weight: 700; color: var(--accent); display: block; margin-bottom: .25rem; }
+.finding p:last-child, .so-what p:last-child { margin-bottom: 0; }
+.so-what { border: 1px solid var(--rule); background: #fff; padding: 1rem 1.25rem; border-radius: 6px; margin: 1.5rem 0; }
+.so-what ul { margin-bottom: 0; padding-left: 1.2rem; }
+.kicker { font-size: .75rem; text-transform: uppercase; letter-spacing: .1em; font-weight: 700; color: var(--accent); }
+.note, .caption { color: var(--muted); font-size: .85rem; line-height: 1.45; }
+details.method { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: .75rem 0; margin: 2rem 0; }
+details.method summary { cursor: pointer; font-weight: 600; color: var(--ink-2); }
+details.method[open] summary { margin-bottom: .75rem; }
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .75rem; margin: 1.25rem 0; }
+.stat { background: #fff; border: 1px solid var(--rule); border-radius: 6px; padding: .7rem .9rem; }
+.stat .v { font-family: var(--serif); font-size: 1.7rem; font-weight: 700; line-height: 1.1; }
+.stat .k { font-size: .8rem; color: var(--ink-2); }
+
+/* ---- Interactive explorer ---- */
+.explorer { background: #fff; border: 1px solid var(--rule); border-radius: 8px; padding: 1rem 1.1rem 1.1rem; margin: 1.5rem 0; }
+.explorer h3 { margin-top: 0; }
+.controls { display: flex; flex-wrap: wrap; gap: .6rem 1rem; align-items: end; margin-bottom: .9rem; }
+.controls label { display: flex; flex-direction: column; font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); font-weight: 600; gap: .2rem; }
+.controls select, .controls input[type=search], .controls input[type=number] {
+  font: inherit; font-size: .9rem; text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--ink);
+  border: 1px solid var(--rule); border-radius: 5px; padding: .3rem .5rem; background: var(--paper); min-width: 7rem; }
+.controls input[type=search] { min-width: 13rem; }
+.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 5px; overflow: hidden; }
+.seg button { font: inherit; font-size: .85rem; border: 0; background: var(--paper); padding: .3rem .7rem; color: var(--ink-2); cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--rule); }
+.seg button.on { background: var(--accent); color: #fff; }
+
+.s-table-wrap { overflow-x: auto; }
+table.s-table { width: 100%; border-collapse: collapse; font-size: .86rem; font-variant-numeric: tabular-nums; }
+table.s-table th { text-align: right; font-weight: 600; color: var(--ink-2); border-bottom: 2px solid var(--ink); padding: .35rem .5rem; white-space: nowrap; cursor: pointer; user-select: none; position: sticky; top: 0; background: #fff; }
+table.s-table th.l, table.s-table td.l { text-align: left; }
+table.s-table th.sorted::after { content: " ▾"; }
+table.s-table th.sorted.asc::after { content: " ▴"; }
+table.s-table td { text-align: right; padding: .3rem .5rem; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+table.s-table tr:hover td { background: var(--paper-2); }
+table.s-table td.heat { font-weight: 600; }
+.pager { display: flex; justify-content: space-between; align-items: center; margin-top: .6rem; font-size: .82rem; color: var(--ink-2); }
+.pager button { font: inherit; border: 1px solid var(--rule); background: var(--paper); border-radius: 4px; padding: .15rem .6rem; cursor: pointer; }
+.pager button:disabled { opacity: .4; cursor: default; }
+
+/* ---- Percentile bars (player pages) ---- */
+.pbars { display: grid; grid-template-columns: 9.5rem 1fr 4.5rem; gap: .45rem .7rem; align-items: center; font-size: .88rem; }
+.pbars .lab { color: var(--ink); text-align: right; }
+.pbars .track { position: relative; height: 10px; background: var(--paper-2); border-radius: 5px; }
+.pbars .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; }
+.pbars .dot { position: absolute; top: 50%; width: 26px; height: 26px; margin-left: -13px; margin-top: -13px; border-radius: 50%; color: #fff; font-size: .72rem; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; }
+.pbars .val { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.flag-list { border-left: 4px solid var(--good); background: #fff4ee; padding: .7rem 1rem; border-radius: 0 6px 6px 0; margin: 1rem 0; }
+.flag-list.none { border-left-color: var(--mid); background: var(--paper-2); color: var(--ink-2); }
+.flag-list ul { margin: 0; padding-left: 1.1rem; }
+
+/* ---- Cards on hub pages ---- */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin: 1rem 0 2rem; }
+.card-link { display: block; background: #fff; border: 1px solid var(--rule); border-radius: 8px; padding: 1rem 1.1rem; text-decoration: none; color: var(--ink); transition: border-color .15s, transform .15s; }
+.card-link:hover { border-color: var(--accent); transform: translateY(-1px); }
+.card-link .kicker { display: block; margin-bottom: .3rem; }
+.card-link h3 { margin: 0 0 .35rem; font-size: 1.15rem; }
+.card-link p { margin: 0; color: var(--ink-2); font-size: .92rem; line-height: 1.45; }
+.hero { padding: 2.2rem 0 1rem; }
+.hero h1 { font-size: 2.8rem; line-height: 1.1; max-width: 18ch; margin-bottom: .8rem; }
+.hero p { font-size: 1.2rem; color: var(--ink-2); max-width: 46rem; }
+.sport-strip { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: 1rem; }
+.sport-strip span { font-size: .8rem; border: 1px solid var(--rule); border-radius: 999px; padding: .15rem .7rem; color: var(--ink-2); background: #fff; }
+.sport-strip span.live { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.loading { color: var(--muted); font-size: .9rem; padding: 1rem 0; }
+figure.plot svg, .plot-host svg { overflow: visible; }
+@media (max-width: 640px) { body { font-size: 16px; } .hero h1 { font-size: 2.1rem; } .pbars { grid-template-columns: 7rem 1fr 3.8rem; } }
+
+figure h2, .plot-host h2 { font-family: var(--sans); font-size: .95rem; font-weight: 600; margin: 0 0 .3rem; color: var(--ink); }
+.plot-host h3 { font-size: .85rem; }

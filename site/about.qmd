@@ -1,0 +1,21 @@
+---
+title: "About Sparvi"
+---
+
+Sparvi is a free, independent sports analytics site. It doesn't run ads or sell anything.
+
+The goal is analysis that's useful to someone making a decision (a coach, a front office, a fan arguing with a friend), presented so you can check the work. Every article leads with the finding and what to do with it. Below that is the data, in an explorer you can filter, sort, and search. Below that is the method, including what the analysis can't tell you.
+
+Baseball comes first because the public data is the richest. Basketball, football, and soccer will follow when there's a question worth answering with the data that's available.
+
+## Data
+
+Baseball data comes from [Baseball Savant](https://baseballsavant.mlb.com) (pitch-level Statcast) and the MLB Stats API. Sparvi publishes aggregated statistics only, never raw pitch-level data. Sparvi isn't affiliated with Major League Baseball, Minor League Baseball, or any club.
+
+All code (data pulls, models, pipelines, and this site) is public on [GitHub](https://github.com/matt-hardman15/sparvi-site), and every number on the site can be rebuilt from scratch.
+
+## Who runs it
+
+Sparvi is run by [Matt Hardman](https://www.linkedin.com/in/matthew-hardman/), an analytics engineer in Kansas City who spends his working hours on data pipelines and reporting.
+
+Corrections, questions, and ideas are welcome: open an issue on [GitHub](https://github.com/matt-hardman15/sparvi-site/issues).

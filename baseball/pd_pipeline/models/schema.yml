@@ -1,0 +1,40 @@
+version: 2
+
+models:
+  - name: stg_pitches
+    description: One row per Triple-A regular-season pitch with swing/contact flags.
+    columns:
+      - name: pitch_id
+        tests: [unique, not_null]
+      - name: pitcher_id
+        tests: [not_null]
+      - name: batter_id
+        tests: [not_null]
+
+  - name: fct_hitter_report
+    description: Season and trailing-window hitter profile with Triple-A percentiles.
+    columns:
+      - name: player_id
+        tests: [unique, not_null]
+      - name: chase_pct_pctl
+        tests:
+          - value_in_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+
+  - name: fct_pitcher_report
+    description: Season and trailing-window pitcher profile with Triple-A percentiles.
+    columns:
+      - name: player_id
+        tests: [unique, not_null]
+
+  - name: fct_pitcher_arsenal
+    description: Pitch-type arsenal with Stuff+ and recent shape change.
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [player_id, pitch_type]
+
+  - name: rpt_flags
+    description: Today's change flags for the affiliate roster.

@@ -1,0 +1,89 @@
+---
+title: "Triple-A explorer"
+description: "Swing decisions, contact quality, and pitching profiles for every Triple-A player, with league percentiles and what changed over the final two weeks."
+page-layout: full
+---
+
+Every 2026 Triple-A hitter and pitcher, ranked against the qualified league pool (150+ PA or batters faced). Percentiles are oriented so **higher is always better**: a low chase rate or a low walk rate shows as a high percentile. Click a column to sort and a name for the full player page. Why the flags lean on swing decisions and velocity: [Two weeks of swing decisions tells you something. Two weeks of results doesn't.](/baseball/two-week-signal/)
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c"></div>
+  <div id="flags"></div>
+  <div id="scatter" class="plot-host"></div>
+  <p class="caption" id="scap"></p>
+  <div id="t"><div class="loading">Loading…</div></div>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt;
+  const [hitters, pitchers, flags, meta] = await Promise.all(["aaa_hitters", "aaa_pitchers", "aaa_flags", "meta"].map(n => S.load(`/data/baseball/${n}.json`)));
+  const p = S.params();
+  const st = { side: p.side || "hitters", team: p.team || "", min: 100, q: "" };
+  const teams = [...new Set(hitters.map(d => d.team))].sort();
+  const c = document.getElementById("c");
+  function controls() {
+    c.replaceChildren(
+      S.el("label", {}, "Players", S.seg([["hitters", "Hitters"], ["pitchers", "Pitchers"]], st.side, v => { st.side = v; draw(); })),
+      S.select("Team", [["", "All 30 clubs"], ...teams.map(t => [t, t])], st.team, v => { st.team = v; draw(); }),
+      S.number("Min. PA / BF", st.min, 25, v => { st.min = v; draw(); }),
+      S.search("Find a player", "Name", v => { st.q = v; draw(); }));
+  }
+  const pc = (key, label, fmt, title) => ({ key, label, fmt: (v, r) => fmt(v), heat: "pct", heatVal: r => r[key + "_pctl"], sortVal: r => r[key + "_pctl"], title });
+  const hCols = [
+    { key: "name", label: "Hitter", align: "l", html: r => S.playerLink(r.player_id, r.name) },
+    { key: "team", label: "Team", align: "l" }, { key: "age", label: "Age" }, { key: "pa", label: "PA" },
+    pc("xwoba", "xwOBA", f.woba), pc("ev90", "EV90", v => f.num(v), "90th-percentile exit velocity"),
+    pc("hard_hit_pct", "Hard-hit", f.pct), pc("chase_pct", "Chase", f.pct), pc("zone_contact_pct", "Z-Contact", f.pct),
+    pc("k_pct", "K%", f.pct), pc("bb_pct", "BB%", f.pct),
+    { key: "chase_delta", label: "Chase Δ14", fmt: f.pts, title: "Final 14 days vs season, percentage points" },
+  ];
+  const pCols = [
+    { key: "name", label: "Pitcher", align: "l", html: r => S.playerLink(r.player_id, r.name) },
+    { key: "team", label: "Team", align: "l" }, { key: "age", label: "Age" }, { key: "bf", label: "BF" },
+    pc("k_pct", "K%", f.pct), pc("bb_pct", "BB%", f.pct), pc("csw_pct", "CSW%", f.pct), pc("whiff_pct", "Whiff%", f.pct),
+    pc("hard_hit_pct", "Hard-hit", f.pct), pc("xwoba", "xwOBA", f.woba),
+    { key: "fb_velo", label: "FB velo", fmt: v => f.num(v) },
+    { key: "fb_velo_delta", label: "Velo Δ14", fmt: v => f.signed(v), title: "Final 14 days vs season, mph" },
+  ];
+  let tbl, side;
+  const host = document.getElementById("scatter");
+  function draw() {
+    const src = st.side === "hitters" ? hitters : pitchers;
+    const n = st.side === "hitters" ? "pa" : "bf";
+    const rows = src.filter(d => d[n] >= st.min && (!st.team || d.team === st.team));
+    const shown = st.q ? rows.filter(d => (d.name || "").toLowerCase().includes(st.q)) : rows;
+    if (side !== st.side) { tbl = S.table(document.getElementById("t"), st.side === "hitters" ? hCols : pCols, { sortKey: st.side === "hitters" ? "xwoba" : "k_pct" }); side = st.side; }
+    tbl.update(shown);
+    const fl = flags.filter(d => (st.side === "hitters" ? d.role === "hitter" : d.role === "pitcher") && (!st.team || d.team === st.team));
+    const fh = document.getElementById("flags");
+    if (st.team) {
+      fh.replaceChildren(fl.length
+        ? S.el("div", { class: "flag-list" }, S.el("strong", {}, `${st.team}: what changed in the final 14 days (through ${meta.as_of})`),
+            S.el("ul", { html: fl.map(d => `<li>${S.playerLink(d.player_id, d.name)}: ${[d.flag_discipline, d.flag_contact].filter(Boolean).join("; ")}</li>`).join("") }))
+        : S.el("div", { class: "flag-list none" }, `No ${st.side} on ${st.team} crossed a change threshold in the final 14 days.`));
+    } else fh.replaceChildren();
+    const hi = st.team ? rows.filter(d => d.team === st.team) : (st.q ? shown : []);
+    const base = st.side === "hitters" ? hitters.filter(d => d.pa >= 150) : pitchers.filter(d => d.bf >= 150);
+    const X = st.side === "hitters" ? "chase_pct" : "bb_pct", Y = st.side === "hitters" ? "xwoba" : "k_pct";
+    S.plot(host, w => Plot.plot({ ...S.plotDefaults(w), height: 320, grid: true,
+      x: { label: st.side === "hitters" ? "Chase rate →" : "Walk rate →", tickFormat: "%" },
+      y: { label: st.side === "hitters" ? "↑ xwOBA" : "↑ Strikeout rate", tickFormat: st.side === "hitters" ? ".3f" : "%" },
+      marks: [
+        Plot.dot(base, { x: X, y: Y, r: 3, fill: "#c9c7c0", fillOpacity: 0.7 }),
+        Plot.dot(hi, { x: X, y: Y, r: 5.5, fill: "#eb6834", stroke: "#fff", strokeWidth: 1.2 }),
+        hi.length <= 30 ? Plot.text(hi, { x: X, y: Y, text: d => d.name.split(" ").filter(w => !/^(Jr\.?|Sr\.?|II|III|IV)$/.test(w)).slice(-1)[0], dy: -10, fontSize: 10.5 }) : null,
+        Plot.tip(base.concat(hi), Plot.pointer({ x: X, y: Y, title: d => `${d.name} (${d.team})\n${st.side === "hitters" ? `Chase ${f.pct(d.chase_pct)} · xwOBA ${f.woba(d.xwoba)}` : `K ${f.pct(d.k_pct)} · BB ${f.pct(d.bb_pct)}`}` }))] }));
+    document.getElementById("scap").textContent = (st.side === "hitters"
+      ? "Gray: every qualified Triple-A hitter. Lower chase rates go with somewhat better xwOBA (r ≈ −0.2), but the spread at any chase rate is wide."
+      : "Gray: every qualified Triple-A pitcher. Upper left is where you want to be: lots of strikeouts, few walks.")
+      + (hi.length ? ` Orange: ${st.team || "search matches"}.` : " Pick a team or search a name to highlight players.");
+  }
+  controls(); draw();
+})();
+</script>
+```
+
+::: {.note}
+2026 regular season through the final game. "Δ14" compares the final 14 days with the full season. Flags fire on chase rate ±5 pts or hard-hit rate ±10 pts (hitters, 30+ recent PA), fastball velocity ±1 mph (pitchers, 10+ recent BF), and walk rate +5 or whiff rate +7 pts (25+ recent BF). Definitions are in the [glossary](/glossary.html).
+:::

@@ -1,0 +1,40 @@
+---
+title: "Glossary"
+description: "What the numbers on Sparvi mean and how they're calculated."
+---
+
+## Pitching
+
+**Stuff+**: Pitch quality graded only on physical traits (velocity, movement, spin, release point, extension, arm angle, and gaps from the pitcher's primary fastball). 100 is an average qualified MLB pitcher; 10 points is one standard deviation. Pitch-level grades are scaled within fastballs, breaking balls, and offspeed pitches. [How it's built](/baseball/stuff-plus/#method).
+
+**RV+**: Actual run value per 100 pitches, on the same scale as Stuff+.
+
+**IVB (induced vertical break)**: How far a pitch finishes above or below where a spinless pitch would, in inches. High-IVB fastballs "ride"; curveballs have negative IVB.
+
+**HB (horizontal break)**: Sideways movement in inches, **positive toward the pitcher's arm side** for both righties and lefties, so shapes compare directly.
+
+**CSW rate**: Called strikes plus whiffs, divided by pitches.
+
+**Chase induced**: Share of pitches outside the zone that the hitter swung at.
+
+## Hitting
+
+**Chase rate**: Swings at pitches outside the strike zone ÷ pitches outside the zone. Bunt attempts are excluded.
+
+**Zone swing / zone contact**: Swing rate on pitches in the zone, and contact rate on those swings.
+
+**Whiff rate**: Swinging strikes ÷ swings. Foul tips count as whiffs, matching Baseball Savant.
+
+**Hard-hit rate**: Share of balls in play hit 95+ mph.
+
+**EV90**: The 90th-percentile exit velocity on balls in play. A steadier read on raw power than average or max exit velocity.
+
+**xwOBA**: Expected weighted on-base average. Uses the expected value of each ball in play from exit velocity and launch angle, plus actual strikeouts, walks, and hit-by-pitches.
+
+## Conventions
+
+**Percentiles** rank a player against the qualified league pool (150+ PA or batters faced) and are **oriented so higher is always better**, so a low chase rate or a low walk rate allowed shows as a high percentile. Unqualified players are placed against the same qualified pool.
+
+**Δ14** compares the final (or most recent) 14 days with the season to date. Rates are in percentage points. [Why two weeks is enough for some numbers and not others](/baseball/two-week-signal/).
+
+**Strike zone** means Statcast zones 1–9.

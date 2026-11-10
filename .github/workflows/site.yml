@@ -1,0 +1,92 @@
+name: site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      refresh_data:
+        description: "Re-pull the current season and rebuild all models"
+        type: boolean
+        default: true
+  schedule:
+    # 10:15 UTC daily, April through October (about 5 a.m. Central, after the night's games)
+    - cron: "15 10 * 4-10 *"
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: site
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Decide whether this run refreshes data
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ] || { [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.refresh_data }}" = "true" ]; }; then
+            echo "refresh=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "refresh=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - uses: quarto-dev/quarto-actions/setup@v2
+
+      # Raw Statcast never goes in the repo. Past seasons are cached between runs;
+      # the current season is re-pulled on every refresh.
+      - name: Restore raw data cache
+        if: steps.mode.outputs.refresh == 'true'
+        uses: actions/cache@v4
+        with:
+          path: data/raw
+          key: statcast-raw-${{ github.run_id }}
+          restore-keys: statcast-raw-
+
+      - name: Refresh data and rebuild models
+        if: steps.mode.outputs.refresh == 'true'
+        run: |
+          python scripts/pull_data.py                       # fills any missing past seasons
+          python scripts/pull_data.py --seasons 2026 --refresh
+          ./build.sh
+
+      - name: Commit refreshed site data
+        if: steps.mode.outputs.refresh == 'true'
+        run: |
+          git config user.name "sparvi-bot"
+          git config user.email "sparvi-bot@users.noreply.github.com"
+          git add site/data baseball/*/output
+          git diff --cached --quiet || git commit -m "Data refresh $(date -u +%Y-%m-%d)"
+          git push
+
+      - name: Render site from committed data
+        if: steps.mode.outputs.refresh != 'true'
+        run: cd site && quarto render
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

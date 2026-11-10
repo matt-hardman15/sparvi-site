@@ -1,0 +1,30 @@
+---
+title: "Baseball"
+description: "Pitch quality, player development, and the minor leagues, built on public Statcast data."
+page-layout: full
+listing:
+  id: articles
+  contents: "*/index.qmd"
+  sort: "date desc"
+  type: default
+  fields: [image, date, title, description, categories]
+  image-height: 120px
+---
+
+## Tools
+
+```{=html}
+<div class="cards">
+<a class="card-link" href="/baseball/tools/stuff-leaderboard.html"><span class="kicker">Tool</span><h3>Stuff+ leaderboard</h3><p>2026 MLB and Triple-A pitch grades, filterable by team, level, and pitch type, with stuff vs. results.</p></a>
+<a class="card-link" href="/baseball/tools/triple-a.html"><span class="kicker">Tool</span><h3>Triple-A explorer</h3><p>All 30 clubs: percentiles, swing decisions, pitching profiles, and what changed late in the season.</p></a>
+</div>
+```
+
+## Analysis
+
+::: {#articles}
+:::
+
+::: {.note}
+Data: pitch-level Statcast from [Baseball Savant](https://baseballsavant.mlb.com) (MLB 2024–2026, Triple-A 2025–2026) and player information from the MLB Stats API. Sparvi publishes aggregates only.
+:::

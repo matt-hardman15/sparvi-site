@@ -1,0 +1,124 @@
+---
+title: "Stuff predicts next season better than results do"
+description: "A pitch-quality model built only on velocity, movement, and release predicts a pitcher's next season better than his run value does, and it works on Triple-A pitchers too."
+date: 2026-11-10
+categories: [pitching, models]
+image: thumb.png
+---
+
+::: {.finding}
+[The finding]{.label}
+A pitcher's **Stuff+**, graded only on velocity, movement, spin, and release, predicted his 2026 run value better than his 2025 run value did (r = 0.30 vs. 0.19, 324 pitchers). Stuff+ also stabilizes almost immediately, while a season of actual results is still mostly noise.
+:::
+
+::: {.so-what}
+[So what]{.label}
+
+- **When results and stuff disagree, lean toward the stuff.** A pitcher with good stuff and bad results is a better bet to improve than his ERA suggests, and the reverse holds too.
+- **It works on minor leaguers.** For pitchers who moved from Triple-A in 2025 to MLB in 2026, Triple-A Stuff+ had some signal for big-league results (r = 0.14). Triple-A results had none (r = −0.02).
+- **It tells you what to fix, not just how good a pitcher is.** Because the inputs are physical, a low grade points at a specific shape, velocity, or release issue a coach can work on.
+:::
+
+## Last year's stuff vs. last year's results
+
+Each dot is a pitcher with 500+ pitches in both 2025 and 2026. Switch the predictor to compare. With Stuff, the trend line is steeper relative to the spread, and the gap between the top and bottom groups is wider.
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c1"></div>
+  <div class="plot-host" id="p1"></div>
+  <p class="caption" id="cap1"></p>
+  <div class="plot-host" id="p2"></div>
+  <p class="caption">Pitchers split into five equal groups by the chosen 2025 measure. The wider the spread between the top and bottom groups, the more useful the measure is for predicting 2026.</p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt;
+  const [yy, meta] = await Promise.all([S.load("/data/baseball/stuff_yoy.json"), S.load("/data/baseball/meta.json")]);
+  const st = { x: "xrv100_25", q: "" };
+  const lab = { xrv100_25: "2025 Stuff (expected run value per 100 pitches) →", rv100_25: "2025 actual run value per 100 pitches →" };
+  const r = (k) => S.corr(yy, k, "rv100_26");
+  document.getElementById("c1").replaceChildren(
+    S.el("label", {}, "Predict 2026 with", S.seg([["xrv100_25", "2025 Stuff"], ["rv100_25", "2025 results"]], st.x, v => { st.x = v; draw(); })),
+    S.search("Find a pitcher", "Name", v => { st.q = v; draw(); }));
+  function draw() {
+    const hi = st.q ? yy.filter(d => d.name.toLowerCase().includes(st.q)) : [];
+    S.plot(document.getElementById("p1"), w => Plot.plot({ ...S.plotDefaults(w), height: 360, grid: true,
+      x: { label: lab[st.x] }, y: { label: "↑ 2026 actual run value per 100 pitches" },
+      marks: [Plot.dot(yy, { x: st.x, y: "rv100_26", r: 3.5, fill: "#2a78d6", fillOpacity: hi.length ? .2 : .55 }),
+        Plot.linearRegressionY(yy, { x: st.x, y: "rv100_26", stroke: "#16181d", ci: 0.9 }),
+        Plot.dot(hi, { x: st.x, y: "rv100_26", r: 6, fill: "#eb6834", stroke: "#fff", strokeWidth: 1.5 }),
+        Plot.text(hi.slice(0, 6), { x: st.x, y: "rv100_26", text: "name", dy: -12, fontWeight: 600 }),
+        Plot.tip(yy, Plot.pointer({ x: st.x, y: "rv100_26", title: d => `${d.name}\n2025 Stuff ${f.num(d.xrv100_25, 2)} · 2025 RV ${f.num(d.rv100_25, 2)}\n2026 RV ${f.num(d.rv100_26, 2)}` }))] }));
+    document.getElementById("cap1").textContent = `r = ${r(st.x).toFixed(2)} across ${yy.length} pitchers. Positive run value is good for the pitcher. Shaded band: 90% interval on the trend line.`;
+    const qs = d3.scaleQuantile().domain(yy.map(d => d[st.x])).range([1, 2, 3, 4, 5]);
+    const bins = d3.rollups(yy, v => d3.mean(v, d => d.rv100_26), d => qs(d[st.x])).map(([q, v]) => ({ q, v })).sort((a, b) => a.q - b.q);
+    S.plot(document.getElementById("p2"), w => Plot.plot({ ...S.plotDefaults(w), height: 220, marginLeft: 60,
+      x: { label: `${st.x === "xrv100_25" ? "2025 Stuff" : "2025 results"} quintile →`, tickFormat: d => ["", "Bottom", "2nd", "Middle", "4th", "Top"][d] },
+      y: { label: "↑ Avg. 2026 RV/100", grid: true },
+      marks: [Plot.ruleY([0]), Plot.barY(bins, { x: "q", y: "v", fill: d => d.v >= 0 ? "#eb6834" : "#2a78d6", insetLeft: 12, insetRight: 12, rx: 3 }),
+        Plot.text(bins.filter(d => d.v >= 0), { x: "q", y: "v", text: d => f.signed(d.v, 2), dy: -8, fontWeight: 600 }),
+        Plot.text(bins.filter(d => d.v < 0), { x: "q", y: 0, text: d => f.signed(d.v, 2), dy: -8, fontWeight: 600 })] }));
+  }
+  draw();
+})();
+</script>
+```
+
+The difference isn't huge, and it shouldn't be: plenty of what happens next season (injuries, role changes, new pitches) isn't in either number. A bootstrap of the gap between the two correlations gives a 90% interval of +0.00 to +0.22. The interval sits just above zero, so Stuff+ is better, but the true margin could be close to nothing.
+
+## What the model pays attention to
+
+Importance is spread across many traits rather than dominated by velocity. Averaged across the three models, induced vertical break, the velocity gap from the pitcher's fastball, arm angle, and velocity carry the most, and extension the least. The mix shifts by pitch type: for breaking balls and offspeed pitches, the gaps from the fastball matter more.
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c3"></div>
+  <div class="plot-host" id="p3"></div>
+  <p class="caption">Share of total gain in each pitch group's model. Gain splits credit between correlated features (velocity and the velocity gap, for example), so read this as "what the model uses," not as causal effects.</p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi;
+  const imp = await S.load("/data/baseball/stuff_importance.json");
+  const nice = { velo: "Velocity", ivb: "Induced vert. break", hb: "Horizontal break", spin: "Spin rate", spin_axis: "Spin axis",
+    extension: "Extension", rel_z: "Release height", rel_x: "Release side", arm_angle: "Arm angle",
+    velo_diff: "Velo gap vs. fastball", ivb_diff: "IVB gap vs. fastball", hb_diff: "HB gap vs. fastball" };
+  let g = "fastball";
+  document.getElementById("c3").replaceChildren(S.el("label", {}, "Model", S.seg([["fastball", "Fastballs"], ["breaking", "Breaking balls"], ["offspeed", "Offspeed"]], g, v => { g = v; draw(); })));
+  function draw() {
+    const d = imp.filter(x => x.group === g).map(x => ({ f: nice[x.feature], v: x.gain * 100 })).sort((a, b) => b.v - a.v);
+    S.plot(document.getElementById("p3"), w => Plot.plot({ ...S.plotDefaults(w), height: 330, marginLeft: 150,
+      x: { label: "Share of gain (%) →", grid: true }, y: { label: null, domain: d.map(x => x.f) },
+      marks: [Plot.barX(d, { x: "v", y: "f", fill: "#0f5257", rx: 2 }), Plot.text(d, { x: "v", y: "f", text: x => x.v.toFixed(1), dx: 16 })] }));
+  }
+  draw();
+})();
+</script>
+```
+
+## Triple-A
+
+Statcast tracking covers every Triple-A park, so the same model, trained only on MLB pitches, can grade minor leaguers on the same scale. The average qualified Triple-A pitcher grades out around 92, a little under one standard deviation below an average big leaguer. For 148 pitchers who threw 300+ Triple-A pitches in 2025 and 300+ MLB pitches in 2026, Triple-A Stuff+ correlated with MLB run value at r = 0.14, and Triple-A results at r = −0.02. Both samples are small, but only one of those numbers carried any information.
+
+Every 2026 grade, at both levels and by individual pitch, is in the **[Stuff+ leaderboard](/baseball/tools/stuff-leaderboard.html)**.
+
+<details class="method" id="method">
+<summary>Method and caveats</summary>
+
+**Data.** Pitch-level Statcast from Baseball Savant: MLB 2024–2026 (about 2.1M pitches) and Triple-A 2025–2026 (about 1.3M).
+
+**Features.** Velocity, induced vertical break, horizontal break, spin rate, spin axis, release height and side, extension, arm angle, and the velocity and movement gaps between each pitch and the pitcher's most-used fastball that season. Lefties are mirrored so arm-side movement is positive for everyone. Location, count, batter, and outcome are deliberately excluded.
+
+**Target.** Run value from the pitcher's side (negative `delta_run_exp`). On balls in play, the actual outcome is swapped for the expected outcome from exit velocity and launch angle, converted to runs with a wOBA scale of 1.24. That strips out defense and batted-ball luck.
+
+**Model.** One LightGBM regressor each for fastballs, breaking balls, and offspeed pitches, with wide leaves (`min_data_in_leaf = 500`) because a single pitch's run value is mostly noise. The published grades come from a model trained on MLB 2024–2025 and early-stopped on a 15% holdout of pitchers. The year-over-year test above uses a separate model trained on 2024 only, so both the 2025 grades and the 2026 results are out of sample.
+
+**Scale.** Stuff+ is a pitcher's average predicted run value per 100 pitches, scaled so 100 is the average qualified (500+ pitch) MLB pitcher in 2026 and 10 points is one standard deviation. Pitch-level grades are scaled within pitch group. RV+ applies the same scaling to actual run value.
+
+**Checks.** Pitch-level R² on the 2026 holdout is 0.0005, which is expected because single pitches are coin flips. Split-half reliability within a season is 0.99 for Stuff+ and 0.20 for actual run value.
+
+**Not included.** Location and command, count and sequencing, park or tracking-system differences between levels (not corrected), and errors in Savant's pitch-type labels (inherited by the fastball-gap features).
+
+Code: [`baseball/pitch_quality/`](https://github.com/matt-hardman15/sparvi-site/tree/main/baseball/pitch_quality)
+</details>

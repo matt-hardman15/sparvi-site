@@ -1,0 +1,45 @@
+project:
+  type: website
+  output-dir: ../docs
+  resources:
+    - assets/**
+    - data/**
+    - CNAME
+
+website:
+  title: "Sparvi"
+  site-url: "https://sparvi.io"
+  description: "Free sports analytics: findings you can act on, with the data out in the open so you can check them."
+  favicon: assets/favicon.svg
+  navbar:
+    left:
+      - text: Baseball
+        href: baseball/index.qmd
+      - text: Tools
+        menu:
+          - text: Stuff+ leaderboard
+            href: baseball/tools/stuff-leaderboard.qmd
+          - text: Triple-A explorer
+            href: baseball/tools/triple-a.qmd
+      - text: Glossary
+        href: glossary.qmd
+      - text: About
+        href: about.qmd
+  page-footer:
+    left: "Sparvi · Free and independent. Data from Baseball Savant and the MLB Stats API; Sparvi is not affiliated with MLB or any club."
+    right: "[About](/about.html)"
+
+format:
+  html:
+    theme: default
+    css: assets/css/sparvi.css
+    minimal: false
+    toc: false
+    html-math-method: plain
+    anchor-sections: false
+    smooth-scroll: false
+    include-in-header:
+      - text: |
+          <script src="/assets/js/d3.min.js"></script>
+          <script src="/assets/js/plot.umd.min.js"></script>
+          <script src="/assets/js/sparvi.js"></script>

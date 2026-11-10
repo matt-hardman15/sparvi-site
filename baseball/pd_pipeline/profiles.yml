@@ -1,0 +1,7 @@
+pd_pipeline:
+  target: local
+  outputs:
+    local:
+      type: duckdb
+      path: "{{ env_var('PD_DB_PATH', 'pd.duckdb') }}"
+      threads: 4

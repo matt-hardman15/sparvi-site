@@ -1,0 +1,18 @@
+version: 2
+
+sources:
+  - name: savant
+    description: Pitch-level Statcast pulled by scripts/pull_data.py
+    meta:
+      external_location: "../../data/raw/{name}.parquet"
+    tables:
+      - name: statcast_aaa_2025
+      - name: statcast_aaa_2026
+      - name: milb_players_2026
+
+  - name: pitch_quality
+    description: Pitch-type Stuff+ grades written by pitch-quality/train.py
+    meta:
+      external_location: "../pitch_quality/output/{name}.csv"
+    tables:
+      - name: pitch_type_aaa_2026

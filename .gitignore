@@ -1,0 +1,15 @@
+/data/
+docs/
+vendor/
+tests/__pycache__/
+__pycache__/
+.venv/
+*.pyc
+.DS_Store
+site/.quarto/
+baseball/pd_pipeline/pd.duckdb*
+baseball/pd_pipeline/target/
+baseball/pd_pipeline/logs/
+baseball/pd_pipeline/.user.yml
+baseball/*/figures/
+.idea/

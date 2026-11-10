@@ -1,0 +1,118 @@
+---
+title: "Player"
+page-layout: article
+---
+
+```{=html}
+<div id="root"><div class="loading">Loading…</div></div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt, root = document.getElementById("root");
+  const id = +S.params().id;
+  const [hit, pit, ars, sp, spp, velo, flags, meta] = await Promise.all(
+    ["aaa_hitters", "aaa_pitchers", "aaa_arsenal", "stuff_pitchers", "stuff_pitches", "aaa_fb_velo_by_game", "aaa_flags", "meta"]
+      .map(n => S.load(`/data/baseball/${n}.json`)));
+  const h = hit.find(d => d.player_id === id), p = pit.find(d => d.player_id === id);
+  const stuff = sp.filter(d => d.id === id), pitches = spp.filter(d => d.id === id);
+  const name = (h || p || stuff[0] || pitches[0] || {}).name;
+  if (!name) { root.innerHTML = `<p>No 2026 data for that player. Try the <a href="/baseball/tools/triple-a.html">Triple-A explorer</a> or the <a href="/baseball/tools/stuff-leaderboard.html">Stuff+ leaderboard</a>.</p>`; return; }
+  document.title = `${name} · Sparvi`;
+  document.querySelector("h1.title") && (document.querySelector("h1.title").textContent = name);
+  const out = [];
+  const bio = h || p;
+  const lv = (l) => (l === "AAA" ? "Triple-A" : "MLB");
+  const teams = [...new Set([bio ? `${bio.team} (Triple-A)` : null, ...stuff.map(d => `${d.team} (${lv(d.level)})`)].filter(Boolean))];
+  out.push(S.el("p", { class: "kicker" }, `2026 · ${teams.join(" · ")}${bio?.age ? ` · Age ${bio.age}` : ""}`));
+
+  const fl = flags.filter(d => d.player_id === id);
+  if (h || p) out.push(fl.length
+    ? S.el("div", { class: "flag-list" }, S.el("strong", {}, `Final 14 days (through ${meta.as_of})`), S.el("ul", {}, fl.map(d => S.el("li", {}, [d.flag_discipline, d.flag_contact].filter(Boolean).join("; ")))))
+    : S.el("div", { class: "flag-list none" }, "Nothing crossed a change threshold over the final 14 days."));
+
+  if (h && h.pa >= 25) {
+    out.push(S.el("h2", {}, "Hitting · Triple-A"));
+    out.push(S.el("div", { class: "stat-row" },
+      [["PA", h.pa], ["xwOBA", f.woba(h.xwoba)], ["Chase", f.pct(h.chase_pct)], ["Hard-hit", f.pct(h.hard_hit_pct)], ["EV90", f.num(h.ev90) + " mph"]]
+        .map(([k, v]) => S.el("div", { class: "stat" }, S.el("div", { class: "v" }, String(v)), S.el("div", { class: "k" }, k)))));
+    const pb = S.el("div"); out.push(pb);
+    S.pbars(pb, [
+      ["xwOBA", "xwoba", f.woba], ["EV90", "ev90", v => f.num(v)], ["Hard-hit rate", "hard_hit_pct", f.pct],
+      ["Chase rate", "chase_pct", f.pct], ["Zone swing", "zone_swing_pct", f.pct], ["Zone contact", "zone_contact_pct", f.pct],
+      ["Whiff rate", "whiff_pct", f.pct], ["Strikeout rate", "k_pct", f.pct], ["Walk rate", "bb_pct", f.pct],
+    ].map(([label, k, fm]) => ({ label, pctl: h[k + "_pctl"], value: fm(h[k]) })));
+    out.push(S.el("p", { class: "note" }, `Percentile vs Triple-A hitters with ${meta.min_pa_qualified}+ PA; higher is always better (chase, whiff, and strikeout rate are inverted).`));
+    const t = S.el("div"); out.push(S.el("h3", {}, "Season vs. final 14 days"), t);
+    S.table(t, [{ key: "m", label: "", align: "l" }, { key: "s", label: "Season" }, { key: "r", label: "Final 14" }, { key: "d", label: "Change" }], { sortKey: null, pageSize: 10 })
+      .update([
+        { m: "PA", s: h.pa, r: h.recent_pa ?? 0, d: "" },
+        { m: "Chase rate", s: f.pct(h.chase_pct), r: f.pct(h.recent_chase_pct), d: f.pts(h.chase_delta) },
+        { m: "Whiff rate", s: f.pct(h.whiff_pct), r: f.pct(h.recent_whiff_pct), d: f.pts(h.whiff_delta) },
+        { m: "Hard-hit rate", s: f.pct(h.hard_hit_pct), r: f.pct(h.recent_hard_hit_pct), d: f.pts(h.hard_hit_delta) },
+        { m: "xwOBA", s: f.woba(h.xwoba), r: f.woba(h.recent_xwoba), d: h.recent_xwoba == null ? "—" : f.signed(h.recent_xwoba - h.xwoba, 3) },
+      ]);
+    out.push(S.el("p", { class: "note" }, "Changes in percentage points. Two weeks is about 50 PA for an everyday player: enough to notice a change in swing decisions, not enough to trust a change in results."));
+  }
+
+  if (p && p.bf >= 25) {
+    out.push(S.el("h2", {}, "Pitching · Triple-A"));
+    const aaaStuff = stuff.find(d => d.level === "AAA");
+    out.push(S.el("div", { class: "stat-row" },
+      [["BF", p.bf], ["K%", f.pct(p.k_pct)], ["BB%", f.pct(p.bb_pct)], ["Stuff+", aaaStuff ? f.num(aaaStuff.stuff_plus, 0) : "—"], ["FB velo", f.num(p.fb_velo) + " mph"]]
+        .map(([k, v]) => S.el("div", { class: "stat" }, S.el("div", { class: "v" }, String(v)), S.el("div", { class: "k" }, k)))));
+    const pb = S.el("div"); out.push(pb);
+    S.pbars(pb, [
+      ["Strikeout rate", "k_pct", f.pct], ["Walk rate", "bb_pct", f.pct], ["CSW rate", "csw_pct", f.pct], ["Whiff rate", "whiff_pct", f.pct],
+      ["Chase induced", "chase_pct", f.pct], ["Hard-hit allowed", "hard_hit_pct", f.pct], ["xwOBA allowed", "xwoba", f.woba],
+    ].map(([label, k, fm]) => ({ label, pctl: p[k + "_pctl"], value: fm(p[k]) })));
+    out.push(S.el("p", { class: "note" }, `Percentile vs Triple-A pitchers with ${meta.min_bf_qualified}+ batters faced; higher is always better.`));
+    const a = ars.filter(d => d.player_id === id).sort((x, y) => y.pitches - x.pitches);
+    const at = S.el("div"); out.push(S.el("h3", {}, "Arsenal"), at);
+    S.table(at, [
+      { key: "pitch_type", label: "Pitch", align: "l" }, { key: "usage_pct", label: "Usage", fmt: v => f.pct(v, 0) },
+      { key: "velo", label: "Velo", fmt: v => f.num(v) }, { key: "ivb", label: "IVB", fmt: v => f.num(v) }, { key: "hb", label: "HB", fmt: v => f.num(v) },
+      { key: "whiff_pct", label: "Whiff%", fmt: v => f.pct(v, 0) }, { key: "stuff_plus", label: "Stuff+", heat: "plus", fmt: v => f.num(v, 0) },
+      { key: "velo_delta", label: "Velo Δ14", fmt: (v, r) => (r.recent_pitches >= 15 ? f.signed(v) : "—") },
+      { key: "ivb_delta", label: "IVB Δ14", fmt: (v, r) => (r.recent_pitches >= 15 ? f.signed(v) : "—") },
+    ], { sortKey: "usage_pct", pageSize: 12 }).update(a);
+    out.push(S.el("p", { class: "note" }, "Movement in inches; horizontal break positive toward the pitcher's arm side. Δ14 columns compare the final 14 days with the season and are blank under 15 pitches."));
+    const charts = S.el("div", { style: "display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem" });
+    const mv = S.el("div", { class: "plot-host" }), vl = S.el("div", { class: "plot-host" });
+    charts.append(mv, vl); out.push(charts);
+    requestAnimationFrame(() => {
+      S.plot(mv, w => Plot.plot({ ...S.plotDefaults(w), height: w * 0.9, grid: true, clip: true, title: "Pitch shapes", marginBottom: 42,
+        x: { domain: [-24, 24], label: "Horizontal break, arm side + →", labelAnchor: "center", labelOffset: 38 }, y: { domain: [-24, 24], label: "↑ Induced vertical break" },
+        r: { range: [4, 16] },
+        marks: [Plot.ruleX([0], { stroke: "#ccc" }), Plot.ruleY([0], { stroke: "#ccc" }),
+          Plot.dot(a, { x: "hb", y: "ivb", r: "usage_pct", fill: d => S.plusColor(d.stuff_plus ?? 100), stroke: "#16181d", strokeWidth: 0.6 }),
+          Plot.text(a, { x: "hb", y: "ivb", text: "pitch_type", dx: 16, textAnchor: "start", fontWeight: 600 }),
+          Plot.tip(a, Plot.pointer({ x: "hb", y: "ivb", title: d => `${d.pitch_type}: ${f.num(d.velo)} mph\nIVB ${f.num(d.ivb)} · HB ${f.num(d.hb)}\nUsage ${f.pct(d.usage_pct, 0)} · Stuff+ ${f.num(d.stuff_plus, 0)}` }))] }));
+      const g = velo.filter(d => d.id === id).map(d => ({ ...d, date: new Date(d.d + "T12:00:00") }));
+      const avg = d3.mean(g, d => d.velo);
+      S.plot(vl, w => Plot.plot({ ...S.plotDefaults(w), height: w * 0.9, grid: true, title: "Primary fastball velocity by game",
+        x: { label: null, type: "time" }, y: { label: "mph", nice: true },
+        marks: [Plot.ruleY([avg], { stroke: "#8a8b8f", strokeDasharray: "4,3" }),
+          Plot.lineY(g, { x: "date", y: "velo", stroke: "#2a78d6", strokeWidth: 2 }),
+          Plot.dot(g, { x: "date", y: "velo", fill: "#2a78d6", r: 3 }),
+          Plot.tip(g, Plot.pointer({ x: "date", y: "velo", title: d => `${d.d}: ${f.num(d.velo)} mph (${d.pt}, ${d.n} thrown)` }))] }));
+    });
+  }
+
+  const mlb = pitches.filter(d => d.level === "MLB").sort((x, y) => y.n - x.n);
+  const mlbS = stuff.find(d => d.level === "MLB");
+  if (mlbS) {
+    out.push(S.el("h2", {}, "Pitching · MLB"));
+    out.push(S.el("div", { class: "stat-row" },
+      [["Pitches", f.int(mlbS.pitches)], ["Stuff+", f.num(mlbS.stuff_plus, 0)], ["RV+ (results)", f.num(mlbS.rv_plus, 0)]]
+        .map(([k, v]) => S.el("div", { class: "stat" }, S.el("div", { class: "v" }, String(v)), S.el("div", { class: "k" }, k)))));
+    const mt = S.el("div"); out.push(mt);
+    S.table(mt, [
+      { key: "pt", label: "Pitch", align: "l" }, { key: "n", label: "Pitches", fmt: f.int }, { key: "velo", label: "Velo", fmt: v => f.num(v) },
+      { key: "ivb", label: "IVB", fmt: v => f.num(v) }, { key: "hb", label: "HB", fmt: v => f.num(v) },
+      { key: "stuff_plus", label: "Stuff+", heat: "plus", fmt: v => f.num(v, 0) },
+    ], { sortKey: "n", pageSize: 12 }).update(mlb);
+    out.push(S.el("p", { class: "note" }, "Stuff+: 100 is an average MLB pitcher (or pitch, within its group); 10 points is one standard deviation. See the ", S.el("a", { href: "/baseball/stuff-plus/" }, "Stuff+ article"), "."));
+  }
+  root.replaceChildren(...out);
+})();
+</script>
+```
