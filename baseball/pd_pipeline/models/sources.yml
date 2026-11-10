@@ -1,18 +1,25 @@
 version: 2
 
+# Table names are season-relative; `identifier` resolves them to files using the
+# `season` var, which build.sh passes from sparvi.toml. The env vars let CI point
+# the pipeline at a synthetic fixture instead of real (uncommitted) Statcast data.
 sources:
   - name: savant
     description: Pitch-level Statcast pulled by scripts/pull_data.py
     meta:
-      external_location: "../../data/raw/{name}.parquet"
+      external_location: "{{ env_var('SPARVI_RAW_DIR', '../../data/raw') }}/{identifier}.parquet"
     tables:
-      - name: statcast_aaa_2025
-      - name: statcast_aaa_2026
-      - name: milb_players_2026
+      - name: statcast_aaa_prev
+        identifier: "statcast_aaa_{{ var('season') - 1 }}"
+      - name: statcast_aaa_cur
+        identifier: "statcast_aaa_{{ var('season') }}"
+      - name: milb_players_cur
+        identifier: "milb_players_{{ var('season') }}"
 
   - name: pitch_quality
-    description: Pitch-type Stuff+ grades written by pitch-quality/train.py
+    description: Pitch-type Stuff+ grades written by pitch_quality/train.py
     meta:
-      external_location: "../pitch_quality/output/{name}.csv"
+      external_location: "{{ env_var('SPARVI_PQ_DIR', '../pitch_quality/output') }}/{identifier}.csv"
     tables:
-      - name: pitch_type_aaa_2026
+      - name: pitch_type_aaa_cur
+        identifier: "pitch_type_aaa_{{ var('season') }}"

@@ -9,10 +9,10 @@ macro-paths: ["macros"]
 target-path: "target"
 clean-targets: ["target", "dbt_packages"]
 
+# `season` and `as_of_date` have no defaults on purpose: build.sh passes them, with the
+# season from sparvi.toml and as_of_date = the last game in the data. A run without them fails.
 vars:
-  season: 2026
   affiliate: "ALL"          # a Savant team code (e.g. "OMA") or ALL
-  as_of_date: "2026-09-20"   # the "today" a daily run is built for
   trend_days: 14             # recent window compared against season-to-date
   min_pa_qualified: 150      # league percentile pool, hitters
   min_bf_qualified: 150      # league percentile pool, pitchers

@@ -1,0 +1,18 @@
+# Sparvi project config. This is the one file to edit at season rollover.
+# Python reads it through sparvi.config; build.sh and the workflows read it with
+# `python -m sparvi.config <sport>.<key>`. Nothing else should hardcode a season.
+
+[baseball]
+# The current season. Every pull, model, dbt run, and page derives its years from it:
+#   MLB seasons     = the last `mlb_seasons` seasons ending here (model trains on all but the last)
+#   Triple-A seasons = the last `aaa_seasons` seasons ending here
+season = 2026
+mlb_seasons = 3
+aaa_seasons = 2
+
+# Regular-season date windows for the Savant pull (generous; empty days return nothing).
+# At rollover, add the new season here and bump `season` above. That's the whole rollover.
+[baseball.season_windows]
+2024 = ["2024-03-20", "2024-09-30"]
+2025 = ["2025-03-18", "2025-09-28"]
+2026 = ["2026-03-25", "2026-09-27"]

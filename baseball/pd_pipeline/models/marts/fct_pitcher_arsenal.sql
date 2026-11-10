@@ -20,6 +20,6 @@ select
 from season s
 join totals t using (pitcher_id)
 left join recent r using (pitcher_id, pitch_type)
-left join {{ source('pitch_quality', 'pitch_type_aaa_2026') }} sq
+left join {{ source('pitch_quality', 'pitch_type_aaa_cur') }} sq
     on sq.pitcher = s.pitcher_id and sq.pitch_type = s.pitch_type
 where s.pitches >= 20

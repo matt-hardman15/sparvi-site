@@ -1,6 +1,7 @@
 """Train the pitch-quality model and score MLB and Triple-A pitchers.
 
-Train: MLB 2024-2025. Holdout: MLB 2026 (out of time).
+Train: every configured MLB season except the current one. Holdout: the current
+season (out of time). Seasons come from sparvi.toml.
 One LightGBM regressor per pitch group (fastball / breaking / offspeed),
 target = pitcher run value of the pitch (-delta_run_exp).
 
@@ -16,11 +17,14 @@ from pathlib import Path
 import lightgbm as lgb
 import numpy as np
 import pandas as pd
-
 from features import FEATURES, build_features
 
-ROOT = Path(__file__).resolve().parents[2]
-RAW = ROOT / "data" / "raw"
+from sparvi.config import RAW, baseball
+from sparvi.provenance import provenance
+
+CFG = baseball()
+SEED = 7
+AAA_MIN_PITCHES = 300  # Triple-A side of the Triple-A -> MLB check
 OUT = Path(__file__).resolve().parent / "output"
 OUT.mkdir(exist_ok=True)
 
@@ -34,7 +38,7 @@ PARAMS = dict(
     bagging_freq=1,
     lambda_l2=10.0,
     verbose=-1,
-    seed=7,
+    seed=SEED,
 )
 TARGET = "rv_x"     # see features.py; "rv" = raw run value
 MIN_PITCHES = 500   # pitcher-season qualifier for scaling and evaluation
@@ -89,12 +93,13 @@ def split_half_r(df: pd.DataFrame, col: str) -> float:
 
 
 def main() -> None:
-    print("loading MLB...")
-    tr = pd.concat([load("mlb", 2024), load("mlb", 2025)], ignore_index=True)
-    ho = load("mlb", 2026)
+    Y, P = CFG.season, CFG.prev
+    print(f"loading MLB {CFG.train_seasons} (train) and {Y} (holdout)...")
+    tr = pd.concat([load("mlb", y) for y in CFG.train_seasons], ignore_index=True)
+    ho = load("mlb", Y)
 
     # Early stopping uses a pitcher-grouped 15% slice of training data, never the holdout.
-    rng = np.random.default_rng(7)
+    rng = np.random.default_rng(SEED)
     pitchers = tr["pitcher"].unique()
     val_p = set(rng.choice(pitchers, size=int(0.15 * len(pitchers)), replace=False))
     is_val = tr["pitcher"].isin(val_p)
@@ -113,59 +118,60 @@ def main() -> None:
         m.save_model(str(OUT / f"model_{g}.txt"), num_iteration=m.best_iteration)
     pd.concat(importance).to_csv(OUT / "importance.csv", index=False)
 
-    metrics = {}
-    for name, df in [("train", tr), ("holdout_2026", ho)]:
+    metrics = {"season": Y, "min_pitches": MIN_PITCHES, "aaa_min_pitches": AAA_MIN_PITCHES}
+    for name, df in [("train", tr), ("holdout", ho)]:
         df["xrv"] = predict(models, df)
         # Pitch-level R^2 is tiny by nature (single-pitch outcomes are mostly noise),
         # so report it but judge the model at the pitcher level.
         resid = df["rv"] - df["xrv"]
         metrics[f"{name}_pitch_r2"] = float(1 - resid.var() / df["rv"].var())
 
-    # Reference distribution for scaling: qualified MLB 2026 pitcher-seasons.
-    ps = {}
-    for yr, df in [(2024, tr[tr.game_year == 2024]), (2025, tr[tr.game_year == 2025]), (2026, ho)]:
-        ps[("mlb", yr)] = pitcher_season(df)
-    ref = ps[("mlb", 2026)].query("pitches >= @MIN_PITCHES")["xrv100"]
-    ref_rv = ps[("mlb", 2026)].query("pitches >= @MIN_PITCHES")["rv100"]
+    # Reference distribution for scaling: qualified MLB pitcher-seasons in the current season.
+    ps = {(("mlb", y)): pitcher_season(tr[tr.game_year == y]) for y in CFG.train_seasons}
+    ps[("mlb", Y)] = pitcher_season(ho)
+    ref = ps[("mlb", Y)].query("pitches >= @MIN_PITCHES")["xrv100"]
+    ref_rv = ps[("mlb", Y)].query("pitches >= @MIN_PITCHES")["rv100"]
 
-    # --- Stability: how fast does each metric stabilize? (split-half, 2026 holdout)
-    metrics["split_half_r_stuff_2026"] = split_half_r(ho, "xrv")
-    metrics["split_half_r_actual_rv_2026"] = split_half_r(ho, "rv")
+    # --- Stability: how fast does each metric stabilize? (split-half, holdout season)
+    metrics["split_half_r_stuff"] = split_half_r(ho, "xrv")
+    metrics["split_half_r_actual_rv"] = split_half_r(ho, "rv")
 
-    # --- Predictiveness: does 2025 Stuff+ predict 2026 RV/100 better than 2025 RV/100?
-    a = ps[("mlb", 2025)].query("pitches >= @MIN_PITCHES")
-    b = ps[("mlb", 2026)].query("pitches >= @MIN_PITCHES")
-    yy = a.merge(b, on="pitcher", suffixes=("_25", "_26"))
+    # --- Predictiveness: does last season's Stuff+ predict this season's RV/100 better than
+    # last season's RV/100? (Last season is in-sample here; robustness.py has the clean version.)
+    a = ps[("mlb", P)].query("pitches >= @MIN_PITCHES")
+    b = ps[("mlb", Y)].query("pitches >= @MIN_PITCHES")
+    yy = a.merge(b, on="pitcher", suffixes=("_prev", "_cur"))
     metrics["yoy_n"] = int(len(yy))
-    metrics["yoy_r_stuff25_to_rv26"] = float(yy["xrv100_25"].corr(yy["rv100_26"]))
-    metrics["yoy_r_rv25_to_rv26"] = float(yy["rv100_25"].corr(yy["rv100_26"]))
-    metrics["yoy_r_stuff25_to_stuff26"] = float(yy["xrv100_25"].corr(yy["xrv100_26"]))
-    # Note: 2025 is in-sample for the model; the 2026 side is fully out of sample.
+    metrics["yoy_r_stuff_prev_to_rv_cur"] = float(yy["xrv100_prev"].corr(yy["rv100_cur"]))
+    metrics["yoy_r_rv_prev_to_rv_cur"] = float(yy["rv100_prev"].corr(yy["rv100_cur"]))
+    metrics["yoy_r_stuff_prev_to_stuff_cur"] = float(yy["xrv100_prev"].corr(yy["xrv100_cur"]))
 
     # --- Triple-A: score, then check translation to MLB the following season.
+    # Triple-A side: AAA_MIN_PITCHES+ last season. MLB side: MIN_PITCHES+ this season.
     aaa = {}
-    for yr in [2025, 2026]:
+    for yr in CFG.aaa_seasons:
         d = load("aaa", yr)
         d["xrv"] = predict(models, d)
         aaa[yr] = d
         ps[("aaa", yr)] = pitcher_season(d)
-    up = (
-        ps[("aaa", 2025)].query("pitches >= 300")
-        .merge(b.query("pitches >= 300"), on="pitcher", suffixes=("_aaa25", "_mlb26"))
-    )
+    up = ps[("aaa", P)].query("pitches >= @AAA_MIN_PITCHES").merge(b, on="pitcher", suffixes=("_aaa", "_mlb"))
     metrics["aaa_to_mlb_n"] = int(len(up))
-    metrics["aaa_to_mlb_r_stuff"] = float(up["xrv100_aaa25"].corr(up["rv100_mlb26"]))
-    metrics["aaa_to_mlb_r_actual"] = float(up["rv100_aaa25"].corr(up["rv100_mlb26"]))
+    metrics["aaa_to_mlb_r_stuff"] = float(up["xrv100_aaa"].corr(up["rv100_mlb"]))
+    metrics["aaa_to_mlb_r_actual"] = float(up["rv100_aaa"].corr(up["rv100_mlb"]))
+    q_aaa = ps[("aaa", Y)].query("pitches >= @MIN_PITCHES")
+    metrics["aaa_mean_stuff_plus_qualified"] = float(scale(q_aaa["xrv100"], ref).mean())
+    metrics["n_pitches_mlb"] = int(len(tr) + len(ho))
+    metrics["n_pitches_aaa"] = int(sum(len(d) for d in aaa.values()))
 
     for (lvl, yr), p in ps.items():
         p["stuff_plus"] = scale(p["xrv100"], ref).round(1)
         p["rv_plus"] = scale(p["rv100"], ref_rv).round(1)
         p.to_csv(OUT / f"pitcher_season_{lvl}_{yr}.csv", index=False)
 
-    # Pitch-type grades (2026, both levels), scaled within pitch group vs MLB.
+    # Pitch-type grades (current season, both levels), scaled within pitch group vs MLB.
     ho_pt = ho.groupby(["pitcher", "pitch_type", "group"]).agg(
         n=("xrv", "size"), xrv100=("xrv", lambda s: 100 * s.mean())).reset_index()
-    for lvl, d in [("mlb", ho), ("aaa", aaa[2026])]:
+    for lvl, d in [("mlb", ho), ("aaa", aaa[Y])]:
         pt = d.groupby(["pitcher", "player_name", "pitch_type", "group"]).agg(
             n=("xrv", "size"),
             velo=("velo", "mean"), ivb=("ivb", "mean"), hb=("hb", "mean"),
@@ -177,9 +183,11 @@ def main() -> None:
             r = ho_pt.query("group == @g and n >= 100")["xrv100"]
             idx = pt["group"].eq(g)
             pt.loc[idx, "stuff_plus"] = scale(pt.loc[idx, "xrv100"], r).round(1)
-        pt.to_csv(OUT / f"pitch_type_{lvl}_2026.csv", index=False)
+        pt.to_csv(OUT / f"pitch_type_{lvl}_{Y}.csv", index=False)
 
-    (OUT / "metrics.json").write_text(json.dumps(metrics, indent=2))
+    files = [RAW / f"statcast_mlb_{y}.parquet" for y in CFG.mlb_seasons] +             [RAW / f"statcast_aaa_{y}.parquet" for y in CFG.aaa_seasons]
+    metrics["provenance"] = provenance(files, seeds={"lightgbm": SEED, "validation_split": SEED})
+    (OUT / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
     print(json.dumps(metrics, indent=2))
 
 
