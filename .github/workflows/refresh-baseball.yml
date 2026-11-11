@@ -63,7 +63,8 @@ jobs:
       # Past seasons never change, so they're cached under a fixed key. The current season is
       # re-pulled on every run. Raw Statcast is never committed or published (rule 1).
       - name: Restore past-season raw data
-        uses: actions/cache@v6
+        id: raw_cache
+        uses: actions/cache/restore@v6
         with:
           path: ${{ steps.cfg.outputs.paths }}
           key: ${{ steps.cfg.outputs.key }}
@@ -72,6 +73,15 @@ jobs:
         run: |
           uv run python scripts/pull_data.py                      # fills any missing past season
           uv run python scripts/pull_data.py --current --refresh
+
+      # Saved right after the pull, not at the end of the job: a later failure (a model change, a
+      # StaleProse check) shouldn't throw away an hour of downloading.
+      - name: Save past-season raw data
+        if: steps.raw_cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ${{ steps.cfg.outputs.paths }}
+          key: ${{ steps.cfg.outputs.key }}
 
       - name: Rebuild models, pipeline, and site
         run: uv run ./build.sh
