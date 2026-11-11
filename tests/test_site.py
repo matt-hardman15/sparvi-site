@@ -180,6 +180,37 @@ def act_triple_a(p):
     assert p.locator("#scatter svg").count() == 1
 
 
+def act_rule5(p):
+    assert rows(p, "#t") > 0
+    banner = p.text_content("#r5banner")
+    meta = json.loads((DATA / "baseball" / "meta.json").read_text(encoding="utf-8"))["rule5"]
+    assert ("Preliminary" in banner) == (meta["snapshot_date"] <= meta["protection_deadline"])
+    # Every status cell carries its reasoning as a tooltip.
+    assert p.locator("#t .r5-status[title]").count() == min(25, rows(p, "#t"))
+    seg(p, "#c", "Relievers")
+    assert set(col_values(p, "#t", "Role")) <= {"RP"} and query(p).get("role") == "RP"
+    select(p, "#c", "Organization", nth_option(p, "#c", "Organization", 3))
+    assert role_on(p, "Relievers") and query(p).get("org")
+    orgs = set(col_values(p, "#t", "Org"))
+    assert len(orgs) <= 1
+    p.locator("#c label", has_text="Max. age").locator("input").fill("25")
+    p.locator("#c label", has_text="Max. age").locator("input").press("Enter"); wait(p)
+    assert all(int(a) <= 25 for a in col_values(p, "#t", "Age")) and query(p).get("agemax") == "25"
+    p.reload(wait_until="networkidle"); wait(p, 800)
+    assert role_on(p, "Relievers") and query(p).get("agemax") == "25"
+    seg(p, "#c", "Hitters")
+    assert "role" not in query(p) and rows(p, "#t") >= 0
+    select(p, "#c", "Organization", "")
+    assert rows(p, "#t") > 0 and p.locator("#scatter svg").count() == 1
+
+
+def act_rule5_article(p):
+    assert p.locator("#t0 table.s-table tbody tr").count() == 10
+    assert "pitch minimum" in p.text_content("#cap0")
+    seg(p, "#c0", "Hitters")
+    assert "PA" in p.text_content("#cap0") and p.locator("#t0 table.s-table tbody tr").count() > 0
+
+
 def first_id(file, key, pred):
     return next(r[key] for r in json.loads((DATA / "baseball" / file).read_text(encoding="utf-8")) if pred(r))
 
@@ -212,6 +243,8 @@ PAGES = [
     ("two-week", "/baseball/two-week-signal/", act_two_week),
     ("stuff-leaderboard", "/baseball/tools/stuff-leaderboard.html", act_leaderboard),
     ("triple-a", "/baseball/tools/triple-a.html", act_triple_a),
+    ("rule-5-board", "/baseball/tools/rule-5.html", act_rule5),
+    ("rule-5-article", "/baseball/rule-5/", act_rule5_article),
     ("player-hitter", lambda: f"/baseball/player.html?id={player_hitter()}", act_player("Hitting · Triple-A")),
     ("player-pitcher", lambda: f"/baseball/player.html?id={player_pitcher()}", act_player("Pitching · Triple-A", role_tag=True)),
     ("player-missing", "/baseball/player.html?id=1", lambda p: "No " in p.text_content("#root")),

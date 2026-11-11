@@ -109,3 +109,9 @@ figure.plot svg, .plot-host svg { overflow: visible; }
 
 figure h2, .plot-host h2 { font-family: var(--sans); font-size: .95rem; font-weight: 600; margin: 0 0 .3rem; color: var(--ink); }
 .plot-host h3 { font-size: .85rem; }
+/* Rule 5 eligibility status pills; the reason is in the title tooltip. */
+.r5-status { display: inline-block; padding: .05rem .5rem; border-radius: 999px; font-size: .78rem; font-weight: 600; cursor: help; white-space: nowrap; }
+.r5-eligible { background: #e3efef; color: var(--accent); }
+.r5-likely { background: #f1efe9; color: #6b6a65; border: 1px dashed #b9b7b0; }
+.r5-unknown { background: transparent; color: #8a8b8f; border: 1px dashed #c9c7c0; }
+.muted { color: #8a8b8f; }

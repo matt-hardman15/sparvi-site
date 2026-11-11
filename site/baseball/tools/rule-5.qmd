@@ -1,0 +1,109 @@
+---
+title: "Rule 5 board"
+description: "Triple-A players likely eligible for the Rule 5 Draft and not on a 40-man roster, ranked on the numbers that carry to the majors."
+page-layout: full
+---
+
+Every {{< meta baseball.season >}} Triple-A player who is likely eligible for the Rule 5 Draft and isn't on a 40-man roster, as of the {{< meta baseball.r5_snapshot >}} roster snapshot. Pitchers are graded on [Stuff+](/baseball/stuff-plus/) and strikeout-minus-walk rate; hitters on swing decisions and contact quality, the numbers that [carry over best](/baseball/two-week-signal/). Eligibility is an **estimate** from signing dates and ages; hover a status for the reasoning. What the board shows and what it can't: [the Rule 5 board, explained](/baseball/rule-5/).
+
+```{=html}
+<div class="explorer">
+  <div id="r5banner"></div>
+  <div class="controls" id="c"></div>
+  <div id="scatter" class="plot-host"></div>
+  <p class="caption" id="scap"></p>
+  <div id="t"><div class="loading">Loading…</div></div>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt, U = S.urlState;
+  const [pitchers, hitters, meta] = await Promise.all(["rule5_pitchers", "rule5_hitters", "meta"].map(n => S.load(`/data/baseball/${n}.json`)));
+  const R5 = meta.rule5, MIN_DEFAULT = 50;
+  const DEF = { side: "pitchers", org: "", role: "all" };
+  const st = { side: U.get("side", DEF.side), org: U.get("org", DEF.org), role: U.get("role", DEF.role), q: "",
+               min: U.get("min") == null ? null : +U.get("min"), agemax: U.get("agemax") == null ? null : +U.get("agemax") };
+  const ap = f.apDate;
+  if (R5.snapshot_date <= R5.protection_deadline) {
+    document.getElementById("r5banner").replaceChildren(S.el("div", { class: "flag-list" },
+      S.el("strong", {}, "Preliminary. "),
+      `Rosters as of ${ap(R5.snapshot_date)}; clubs can protect players until the ${ap(R5.protection_deadline)} deadline, so some names here will be added to 40-man rosters. The board is final once it's rebuilt after the deadline.`));
+  }
+  const orgs = [...new Set(pitchers.concat(hitters).map(d => d.org))].filter(Boolean).sort();
+  const c = document.getElementById("c");
+  const roleHost = S.el("span", { class: "role-host" });
+  function controls() {
+    const pitch = st.side === "pitchers";
+    c.replaceChildren(...[
+      S.el("label", {}, "Players", S.seg([["pitchers", "Pitchers"], ["hitters", "Hitters"]], st.side, v => { st.side = v; st.role = "all"; st.min = null; controls(); draw(); })),
+      S.select("Organization", [["", "All 30"], ...orgs.map(o => [o, o])], st.org, v => { st.org = v; draw(); }),
+      pitch ? roleHost : null,
+      S.number("Max. age", st.agemax, 1, v => { st.agemax = v; draw(); }, "any"),
+      S.number(pitch ? "Min. BF" : "Min. PA", st.min, 25, v => { st.min = v; draw(); }, String(MIN_DEFAULT)),
+      S.search("Find a player", "Name", v => { st.q = v; draw(); })].filter(Boolean));
+  }
+  const statusCell = r => `<span class="r5-status r5-${r.status.split(" ")[0].toLowerCase()}" title="${r.reason.replace(/"/g, "&quot;")}">${r.status}</span>`;
+  const pc = (key, label, title) => ({ key, label, fmt: v => v == null ? "—" : Math.round(v), heat: "pct", heatVal: r => r[key], title });
+  const pCols = [
+    { key: "name", label: "Pitcher", align: "l", html: r => S.playerLink(r.player_id, r.name) },
+    { key: "org", label: "Org", align: "l" }, { key: "age", label: "Age" },
+    { key: "role", label: "Role", align: "l", title: "SP starter · RP reliever · Swing (see glossary)" },
+    { key: "bf", label: "BF" },
+    { key: "stuff_plus", label: "Stuff+", heat: "plus", fmt: v => f.num(v, 0) },
+    { key: "k_pct", label: "K%", fmt: v => f.pct(v) }, { key: "bb_pct", label: "BB%", fmt: v => f.pct(v) },
+    { key: "k_bb_pct", label: "K−BB%", fmt: v => f.pct(v), title: "Strikeout rate minus walk rate" },
+    { key: "csw_pct", label: "CSW%", fmt: v => f.pct(v) }, { key: "fb_velo", label: "FB velo", fmt: v => f.num(v) },
+    { key: "best_pt_stuff", label: "Best pitch", html: r => r.best_pt ? `${r.best_pt} <span class="muted">${f.num(r.best_pt_stuff, 0)}</span>` : "—", title: "His highest-graded pitch (50+ thrown) and its Stuff+" },
+    { key: "mlb_g", label: "MLB G", fmt: v => v || "—", title: "MLB games in 2026. Players outrighted off a 40-man stay on the board." },
+    { key: "status", label: "Eligibility", align: "l", html: statusCell, title: "Estimated from signing date and age; hover for the reasoning" },
+  ];
+  const hCols = [
+    { key: "name", label: "Hitter", align: "l", html: r => S.playerLink(r.player_id, r.name) },
+    { key: "org", label: "Org", align: "l" }, { key: "age", label: "Age" }, { key: "position", label: "Pos", align: "l" },
+    { key: "pa", label: "PA" },
+    pc("chase_pct_pctl", "Chase pctl", "Percentile vs qualified Triple-A hitters; higher = chases less"),
+    pc("zone_contact_pct_pctl", "Z-Contact pctl"), pc("ev90_pctl", "EV90 pctl", "90th-percentile exit velocity"),
+    pc("hard_hit_pct_pctl", "Hard-hit pctl"),
+    { key: "xwoba", label: "xwOBA", fmt: f.woba },
+    { key: "status", label: "Eligibility", align: "l", html: statusCell, title: "Estimated from signing date and age; hover for the reasoning" },
+  ];
+  let tbl, side;
+  const host = document.getElementById("scatter");
+  function draw() {
+    const pitch = st.side === "pitchers", src = pitch ? pitchers : hitters, n = pitch ? "bf" : "pa";
+    const pre = src.filter(d => d[n] >= (st.min ?? MIN_DEFAULT) && (st.agemax == null || d.age <= st.agemax));
+    if (pitch) roleHost.replaceChildren(S.roleFilter(st.role, v => { st.role = v; draw(); }, { swing: pre.filter(d => d.role === "Swing").length }));
+    const base = pre.filter(d => !pitch || st.role === "all" || d.role === st.role);
+    const rows = base.filter(d => !st.org || d.org === st.org);
+    const shown = st.q ? rows.filter(d => d.name.toLowerCase().includes(st.q)) : rows;
+    if (side !== st.side) { tbl = S.table(document.getElementById("t"), pitch ? pCols : hCols, { sortKey: pitch ? "stuff_plus" : "ev90_pctl" }); side = st.side; }
+    tbl.update(shown);
+    U.set({ side: st.side, org: st.org, role: pitch ? st.role : "all", min: st.min, agemax: st.agemax }, DEF);
+    const hi = st.org || st.q ? shown : [];
+    const X = pitch ? "stuff_plus" : "chase_pct_pctl", Y = pitch ? "k_bb_pct" : "ev90_pctl";
+    const pts = base.filter(d => d[X] != null && d[Y] != null);
+    S.plot(host, w => Plot.plot({ ...S.plotDefaults(w), height: 340, grid: true,
+      x: pitch ? { label: "Stuff+ →", nice: true } : { label: "Chase percentile (higher = more disciplined) →", domain: [0, 100] },
+      y: pitch ? { label: "↑ K−BB%", tickFormat: "%", nice: true } : { label: "↑ EV90 percentile", domain: [0, 100] },
+      marks: [
+        pitch ? Plot.ruleX([100], { stroke: "#8a8b8f", strokeDasharray: "3,3" }) : Plot.ruleX([50], { stroke: "#8a8b8f", strokeDasharray: "3,3" }),
+        pitch ? null : Plot.ruleY([50], { stroke: "#8a8b8f", strokeDasharray: "3,3" }),
+        Plot.dot(pts, { x: X, y: Y, r: 3.5, fill: "#c9c7c0", fillOpacity: 0.8 }),
+        Plot.dot(hi.filter(d => d[X] != null && d[Y] != null), { x: X, y: Y, r: 6, fill: "#eb6834", stroke: "#fff", strokeWidth: 1.2 }),
+        hi.length && hi.length <= 15 ? Plot.text(hi.filter(d => d[X] != null && d[Y] != null), { x: X, y: Y, text: d => d.name.split(" ").filter(w => !/^(Jr\.?|Sr\.?|II|III|IV)$/.test(w)).slice(-1)[0], dy: -11, fontSize: 10.5 }) : null,
+        Plot.tip(pts, Plot.pointer({ x: X, y: Y, title: d => `${d.name} (${d.org}${pitch ? `, ${d.role}` : `, ${d.position}`}, age ${d.age})\n` + (pitch
+          ? `Stuff+ ${f.num(d.stuff_plus, 0)} · K−BB ${f.pct(d.k_bb_pct)} · ${d.bf} BF`
+          : `Chase pctl ${d.chase_pct_pctl} · EV90 pctl ${d.ev90_pctl} · ${d.pa} PA`) + `\n${d.status}` }))] }));
+    const who = pitch ? (st.role === "all" ? "pitchers" : S.ROLES[st.role].toLowerCase()) : "hitters";
+    document.getElementById("scap").textContent = (pitch
+      ? `${rows.length} ${who} with ${st.min ?? MIN_DEFAULT}+ BF. Upper right is the profile that tends to translate: MLB-caliber stuff (right of the dashed line at 100) and a strong strikeout-to-walk margin.`
+      : `${rows.length} hitters with ${st.min ?? MIN_DEFAULT}+ PA. Upper right: disciplined swing decisions and top-end contact quality. Percentiles are against qualified Triple-A hitters (${meta.min_pa_qualified}+ PA).`)
+      + (hi.length ? ` Orange: ${st.org || "search matches"}.` : " Pick an organization or search a name to highlight players.");
+  }
+  controls(); draw();
+})();
+</script>
+```
+
+::: {.note}
+{{< meta baseball.season >}} regular-season Triple-A data. 40-man rosters as of {{< meta baseball.r5_snapshot >}}; the protection deadline is {{< meta baseball.r5_deadline >}} and the Rule 5 Draft is scheduled for {{< meta baseball.r5_draft >}}. Players who elected free agency after the season or were released aren't under contract and can't be drafted, so they're excluded. Eligibility statuses: **Eligible** (signing date and age known), **Likely eligible** (signing date estimated from the draft year), **Unknown** (no signing record found). How the estimate works and how it checked out: [method](/baseball/rule-5/#method).
+:::

@@ -26,6 +26,8 @@ website:
             href: baseball/tools/stuff-leaderboard.qmd
           - text: Triple-A explorer
             href: baseball/tools/triple-a.qmd
+          - text: Rule 5 board
+            href: baseball/tools/rule-5.qmd
       - text: Glossary
         href: glossary.qmd
       - text: About

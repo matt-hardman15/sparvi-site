@@ -20,6 +20,12 @@
     woba: (v) => (v == null ? dash : (+v).toFixed(3).replace(/^0/, "")),
     signed: (v, d = 1) => (v == null ? dash : (v > 0 ? "+" : "") + (+v).toFixed(d)),
     pts: (v) => (v == null ? dash : (v > 0 ? "+" : "") + (100 * v).toFixed(1)),
+    // AP-style date from YYYY-MM-DD, matching the prose: "Nov. 17", "June 5", "Sept. 30".
+    apDate: (iso) => {
+      if (!iso) return dash;
+      const [, m, d] = iso.split("-").map(Number);
+      return ["Jan.", "Feb.", "March", "April", "May", "June", "July", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."][m - 1] + " " + d;
+    },
   };
 
   // Diverging scale: blue (worse) -> gray (average) -> orange (better). Domain 0-100 percentile.

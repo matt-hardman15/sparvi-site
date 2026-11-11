@@ -195,5 +195,16 @@
   "min_pitches_per_half": 100,
   "split_date": "07-15",
   "bootstrap_samples": 2000
+ },
+ "rule5": {
+  "snapshot_date": "2026-11-11",
+  "statuses": [
+   "Eligible",
+   "Likely eligible",
+   "Unknown"
+  ],
+  "protection_deadline": "2026-11-17",
+  "draft_date": "2026-12-09",
+  "cba_expires": "2026-12-01"
  }
 }

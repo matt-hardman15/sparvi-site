@@ -37,6 +37,10 @@ description: "What the numbers on Sparvi mean and how they're calculated."
 
 **xwOBA**: Expected weighted on-base average. Uses the expected value of each ball in play from exit velocity and launch angle, plus actual strikeouts, walks, and hit-by-pitches.
 
+## Roster rules
+
+**Rule 5 eligible** {#rule-5}: A player not on a 40-man roster whose protection window has run out can be taken by another club in the Rule 5 Draft. The window is five seasons for a player who was 18 or younger on the June 5 before his first pro contract, four for 19 or older. The [Rule 5 board](/baseball/tools/rule-5.html) estimates eligibility from signing dates and ages; its statuses are **Eligible** (signing date known), **Likely eligible** (signing date estimated from the draft year), and **Unknown** (no signing record). How well the estimate matched published lists is in the [method box](/baseball/rule-5/#method).
+
 ## Conventions
 
 **Percentiles** rank a player against the qualified league pool (150+ PA or batters faced) and are **oriented so higher is always better**, so a low chase rate or a low walk rate allowed shows as a high percentile. Unqualified players are placed against the same qualified pool.
