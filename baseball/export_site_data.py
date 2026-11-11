@@ -114,7 +114,8 @@ write_records(OUT / "aaa_pitchers.json", pr, min_rows=300, not_null=["player_id"
                         "fb_velo_delta"] + PCT_P + [f"{c}_pctl" for c in PCT_P])
 
 ars = con.sql("select * from fct_pitcher_arsenal order by player_id, pitch_type").df()
-write_records(OUT / "aaa_arsenal.json", ars, min_rows=500, not_null=["player_id", "pitch_type"], digits={c: 3 for c in floats(ars)},
+# Arsenal and per-game velocity only feed the per-player files (no page reads them as league tables).
+ars_records = write_records(None, ars, min_rows=500, not_null=["player_id", "pitch_type"], digits={c: 3 for c in floats(ars)},
               required=["player_id", "pitch_type", "pitches", "usage_pct", "velo", "ivb", "hb", "whiff_pct", "stuff_plus",
                         "recent_pitches", "velo_delta", "ivb_delta"])
 
@@ -125,7 +126,7 @@ g = con.sql("""
     qualify row_number() over (partition by pitcher_id, game_pk order by pitches desc, pitch_type) = 1
     order by id, d
 """).df()
-write_records(OUT / "aaa_fb_velo_by_game.json", g, required=["id", "d", "pt", "n", "velo"], not_null=["id", "d"], min_rows=1000)
+fb_records = write_records(None, g, required=["id", "d", "pt", "n", "velo"], not_null=["id", "d"], min_rows=1000)
 
 fl = con.sql("select * exclude (as_of_date) from rpt_flags order by player_id, role").df()
 write_records(OUT / "aaa_flags.json", fl, min_rows=0, not_null=["player_id"],
@@ -175,6 +176,146 @@ write_records(OUT / "rule5_hitters.json", r5h[cols].sort_values("player_id"), re
               not_null=["player_id", "name", "status", "reason"], min_rows=50,
               digits={"xwoba": 3, "k_pct": 4, "bb_pct": 4, "chase_pct": 4, "zone_contact_pct": 4, "ev90": 1, "hard_hit_pct": 4})
 
+# ---- Snapshots: weekly values for the date slider ------------------------------------
+# League files are columnar to stay small:
+#   {dates, fields, players: [{id, name, series: {std|last30: {field: [one value per date]}}}]}
+# Per-player files (players/{id}.json) carry everything a player page needs, so a page loads one
+# small file instead of every league table.
+P_FIELDS = {"team": None, "role": None, "games": 0, "starts": 0, "pitches": 0, "bf": 0, "qualified": "bool",
+            "stuff_plus": 1, "rv_plus": 1, "k_pct": 3, "bb_pct": 3, "csw_pct": 3, "whiff_pct": 3, "chase_pct": 3,
+            "hard_hit_pct": 3, "xwoba": 3, "fb_velo": 1}
+P_PCTL = {f"{m}_pctl": 0 for m in ["k_pct", "bb_pct", "csw_pct", "whiff_pct", "chase_pct", "hard_hit_pct", "xwoba"]}
+H_FIELDS = {"team": None, "pa": 0, "qualified": "bool", "chase_pct": 3, "zone_swing_pct": 3, "zone_contact_pct": 3,
+            "whiff_pct": 3, "k_pct": 3, "bb_pct": 3, "hard_hit_pct": 3, "ev90": 1, "xwoba": 3}
+H_PCTL = {f"{m}_pctl": 0 for m in ["chase_pct", "zone_swing_pct", "zone_contact_pct", "whiff_pct", "k_pct", "bb_pct",
+                                    "hard_hit_pct", "ev90", "xwoba"]}
+PT_FIELDS = {"pitches": 0, "usage_pct": 3, "velo": 1, "ivb": 1, "hb": 1, "spin": 0, "whiff_pct": 3, "stuff_plus": 1}
+
+
+def _clean(v):
+    if v is None or pd.isna(v):  # None, NaN, pd.NA, NaT
+        return None
+    return v.item() if hasattr(v, "item") else v
+
+
+def columnar(df: pd.DataFrame, keys: list[str], fields: dict, by_window: bool = True):
+    """(dates, {key tuple: {window: {field: [..]}}}) with values rounded per `fields`."""
+    df = df.assign(d=df["snapshot_date"].astype(str))
+    dates = sorted(df["d"].unique())
+    idx = keys + (["window_name"] if by_window else [])
+    out: dict = {}
+    for f, dg in fields.items():
+        col = df[f]
+        if dg == "bool":
+            col = col.astype("Int64")
+        elif isinstance(dg, int):
+            col = col.round(dg) if dg else col.round(0).astype("Int64")
+        piv = df.assign(v=col).pivot(index=idx, columns="d", values="v").reindex(columns=dates)
+        for k, row in zip(piv.index, piv.itertuples(index=False), strict=True):
+            k = k if isinstance(k, tuple) else (k,)
+            node = out.setdefault(k[:len(keys)], {})
+            if by_window:
+                node = node.setdefault(k[-1], {})
+            node[f] = [_clean(v) for v in row]
+    return dates, out
+
+
+snap_p = con.sql("select * from fct_pitcher_snapshots order by level, pitcher_id, window_name, snapshot_date").df()
+snap_h = con.sql("select * from fct_hitter_snapshots where level = 'AAA' order by batter_id, window_name, snapshot_date").df()
+snap_pt = con.sql("select * from fct_pitch_type_snapshots order by level, pitcher_id, pitch_type, snapshot_date").df()
+
+names: dict[int, str] = {}
+for df_, idc in [(p, "id"), (t, "id"), (h, "player_id"), (pr, "player_id")]:
+    names.update(dict(zip(df_[idc], df_["name"], strict=True)))
+group_of = {k: _clean(g) for k, g in zip(zip(snap_pt["pitcher_id"], snap_pt["pitch_type"], strict=True),
+                                         snap_pt["pitch_group"], strict=True)}  # None for ungraded types (EP, FA)
+
+# Each league file is split by window: snapshots_X.json (season to date, what pages load first) and
+# snapshots_X_last30.json (fetched only when someone switches to the trailing window). Fields that
+# don't change by date (handedness, age, final-14-day changes) ride along as `static`, so the tools
+# don't need to download the season-level tables as well.
+def write_league(stem: str, level: str, dates: list, fields: dict, ser: dict, statics: dict, keep: list) -> list[dict]:
+    """Write the league file(s) with only the `keep` fields the tools show; return full series for player files."""
+    players = [{"id": int(k[0]), "name": names.get(k[0], str(k[0])), "static": statics.get(int(k[0]), {}), "series": v}
+               for k, v in sorted(ser.items())]
+    for win, suffix in [("std", ""), ("last30", "_last30")]:
+        write_json(OUT / f"{stem}{suffix}.json", {"level": level, "window": win, "dates": dates, "fields": keep,
+                   "players": [{**pl, "series": {win: {f: pl["series"][win][f] for f in keep}}}
+                               for pl in players if win in pl["series"]]})
+    print(f"{stem}.json(+_last30) {len(players):>7,} players x {len(dates)} dates")
+    return players
+
+
+static_p = {lvl: {int(r["id"]): {"throws": r["throws"]} for r in json.loads((OUT / "stuff_pitchers.json").read_text(encoding="utf-8"))
+                  if r["level"] == lvl} for lvl in ["MLB", "AAA"]}
+for r in json.loads((OUT / "aaa_pitchers.json").read_text(encoding="utf-8")):
+    static_p["AAA"].setdefault(int(r["player_id"]), {}).update({"age": r["age"], "throws": r.get("throws"), "fb_velo_delta": r["fb_velo_delta"]})
+static_h = {int(r["player_id"]): {"age": r["age"], "position": r.get("position"), "chase_delta": r["chase_delta"]}
+            for r in json.loads((OUT / "aaa_hitters.json").read_text(encoding="utf-8"))}
+
+timelines: dict[int, dict] = {}  # id -> level -> {...}, reused for the player files
+for lvl in ["MLB", "AAA"]:
+    fields = P_FIELDS | (P_PCTL if lvl == "AAA" else {})
+    dates, ser = columnar(snap_p[snap_p["level"] == lvl], ["pitcher_id"], fields)
+    keep = ["team", "role", "games", "starts", "pitches", "bf", "qualified", "stuff_plus", "rv_plus"] + (
+        ["k_pct", "bb_pct", "csw_pct", "whiff_pct", "hard_hit_pct", "xwoba", "fb_velo",
+         "k_pct_pctl", "bb_pct_pctl", "csw_pct_pctl", "whiff_pct_pctl", "hard_hit_pct_pctl", "xwoba_pctl"] if lvl == "AAA" else [])
+    players = write_league(f"snapshots_pitchers_{lvl.lower()}", lvl, dates, fields, ser, static_p[lvl], keep)
+    for pl in players:
+        timelines.setdefault(pl["id"], {}).setdefault(lvl, {"dates": dates})["pitcher"] = pl["series"]
+
+    pdates, pser = columnar(snap_pt[snap_pt["level"] == lvl], ["pitcher_id", "pitch_type"], PT_FIELDS, by_window=False)
+    rows = [{"id": int(k[0]), "pt": k[1], "group": group_of.get(k), "name": names.get(k[0], str(k[0])), "series": v}
+            for k, v in sorted(pser.items())]
+    write_json(OUT / f"snapshots_pitches_{lvl.lower()}.json", {"level": lvl, "dates": pdates, "fields": list(PT_FIELDS), "pitches": rows})
+    print(f"snapshots_pitches_{lvl.lower()}.json  {len(rows):>7,} pitch types")
+    for r in rows:
+        timelines.setdefault(r["id"], {}).setdefault(lvl, {"dates": pdates}).setdefault("pitch_types", []).append(
+            {"pt": r["pt"], "group": r["group"], "series": r["series"]})
+
+hfields = H_FIELDS | H_PCTL
+dates, ser = columnar(snap_h, ["batter_id"], hfields)
+players = write_league("snapshots_hitters_aaa", "AAA", dates, hfields, ser, static_h,
+                       ["team", "pa", "qualified"] + [c for m in ["xwoba", "ev90", "hard_hit_pct", "chase_pct", "zone_contact_pct",
+                                                                  "k_pct", "bb_pct"] for c in (m, m + "_pctl")])
+for pl in players:
+    timelines.setdefault(pl["id"], {}).setdefault("AAA", {"dates": dates})["hitter"] = pl["series"]
+
+# Per-player files. Season-level rows are read back from the league JSON just written, so a player
+# page and the league tools show identical values.
+def by_id(file: str, key: str) -> dict:
+    out: dict = {}
+    for r in json.loads((OUT / file).read_text(encoding="utf-8")):
+        out.setdefault(r[key], []).append(r)
+    return out
+
+
+season_rows = {f: by_id(f"{f}.json", k) for f, k in [("aaa_hitters", "player_id"), ("aaa_pitchers", "player_id"),
+                                                       ("aaa_flags", "player_id"), ("stuff_pitchers", "id"),
+                                                       ("stuff_pitches", "id")]}
+for f, key, recs in [("aaa_arsenal", "player_id", ars_records), ("aaa_fb_velo_by_game", "id", fb_records)]:
+    season_rows[f] = {}
+    for r in recs:
+        season_rows[f].setdefault(r[key], []).append(r)
+PLAYERS = OUT / "players"
+if PLAYERS.exists():
+    for old in PLAYERS.glob("*.json"):
+        old.unlink()
+ids = sorted(set(season_rows["aaa_hitters"]) | set(season_rows["aaa_pitchers"]) | set(season_rows["stuff_pitchers"]))
+for pid in ids:
+    one = lambda f, pid=pid: (season_rows[f].get(pid) or [None])[0]  # noqa: E731
+    write_json(PLAYERS / f"{pid}.json", {
+        "id": pid, "name": names.get(pid, str(pid)), "season": SEASON,
+        "hitter_aaa": one("aaa_hitters"), "pitcher_aaa": one("aaa_pitchers"),
+        "stuff": season_rows["stuff_pitchers"].get(pid, []), "pitches": season_rows["stuff_pitches"].get(pid, []),
+        "arsenal_aaa": season_rows["aaa_arsenal"].get(pid, []), "fb_games": season_rows["aaa_fb_velo_by_game"].get(pid, []),
+        "flags": season_rows["aaa_flags"].get(pid, []), "timeline": timelines.get(pid, {}),
+    })
+write_json(OUT / "players_index.json", ids)
+sizes = sorted(f.stat().st_size for f in PLAYERS.glob("*.json"))
+print(f"players/*.json {len(sizes):>14,} files, median {sizes[len(sizes) // 2] / 1024:.0f} KB, "
+      f"max {sizes[-1] / 1024:.0f} KB, total {sum(sizes) / 1e6:.1f} MB")
+
 metrics, robust = read_json(PQ / "metrics.json"), read_json(PQ / "robustness.json")
 shape_res, tw = read_json(SS / "results.json"), read_json(TW / "results.json")
 strip = lambda d: {k: v for k, v in d.items() if k != "provenance"}  # noqa: E731  (provenance stays in the repo, not on the site)
@@ -191,6 +332,12 @@ meta = {
     "stuff_robustness": strip(robust),
     "shape_results": strip(shape_res),
     "rule5": {"snapshot_date": r5res["snapshot_date"], "statuses": R5_STATUSES, **section("baseball", "rule5")},
+    # Snapshot calendars, for the date slider and for prorating pitch minimums at earlier dates.
+    "snapshots": {lvl: {"dates": [pd.Timestamp(d).strftime("%Y-%m-%d") for d in g["snapshot_date"]], "team_games": g["team_games"].tolist(),
+                        "team_games_last": g["team_games_last"].tolist(), "full_season_games": DBT_VARS["full_season_games"][lvl]}
+                  for lvl, g in con.sql("select * from int_snapshot_dates order by level, snapshot_date").df().groupby("level")},
+    "last_days": DBT_VARS["last_days"],
+    "scale_reference": read_json(PQ / "scale_reference.json"),
 }
 write_json(OUT / "meta.json", meta, indent=1)
 
@@ -381,5 +528,19 @@ N |= {
         "protection deadline. Some of these players will be added to 40-man rosters by then."),
     "min_pa_qualified": meta["min_pa_qualified"],
 }
+
+# Frozen Stuff+ scale (prior-season qualified MLB pitchers), quoted in the Stuff+ method and leaderboard.
+SCALE = read_json(PQ / "scale_reference.json")
+N |= {
+    "scale_ref_season": SCALE["reference_season"], "scale_ref_n": f"{SCALE['stuff']['n']:,}",
+    "scale_ref_min": SCALE["min_pitches"],
+    "scale_ref_mean": f"{SCALE['stuff']['mean']:+.3f}".replace("-", MINUS),  # runs per 100 pitches
+    "scale_ref_sd": f"{SCALE['stuff']['sd']:.3f}",
+    "stuff_mlb_mean_cur": f"{metrics['mlb_mean_stuff_plus_qualified']:.1f}",
+}
+# Qualified-pool proration at the final Triple-A date (glossary).
+aaa_cal = meta["snapshots"]["AAA"]
+N |= {"aaa_final_team_games": f"{aaa_cal['team_games'][-1]:.0f}", "aaa_full_season_games": aaa_cal["full_season_games"],
+      "aaa_final_qual": f"{max(DBT_VARS['min_qualified_floor'], round(meta['min_bf_qualified'] * min(1, aaa_cal['team_games'][-1] / aaa_cal['full_season_games']))):.0f}"}
 
 write_numbers("baseball", N, source="baseball/export_site_data.py")
