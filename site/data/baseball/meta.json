@@ -4,6 +4,23 @@
  "trend_days": 14,
  "min_pa_qualified": 150,
  "min_bf_qualified": 150,
+ "role_rules": {
+  "role_sp_min_share": 0.5,
+  "role_sp_min_starts": 3,
+  "role_rp_max_share": 0.2
+ },
+ "qualifiers": {
+  "MLB": {
+   "SP": 500,
+   "RP": 250,
+   "Swing": 250
+  },
+  "AAA": {
+   "SP": 300,
+   "RP": 150,
+   "Swing": 150
+  }
+ },
  "stuff_metrics": {
   "season": 2026,
   "min_pitches": 500,

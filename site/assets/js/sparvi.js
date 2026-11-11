@@ -56,8 +56,12 @@
   };
   S.search = (label, placeholder, onchange) =>
     S.el("label", {}, label, S.el("input", { type: "search", placeholder, oninput: (e) => onchange(e.target.value.trim().toLowerCase()) }));
-  S.number = (label, value, step, onchange) =>
-    S.el("label", {}, label, S.el("input", { type: "number", value, step, min: 0, style: "width:6.5rem", onchange: (e) => onchange(+e.target.value) }));
+  // value null = empty box showing `placeholder`; clearing the box calls onchange(null) ("use the default").
+  S.number = (label, value, step, onchange, placeholder) =>
+    S.el("label", {}, label, S.el("input", {
+      type: "number", value: value ?? null, step, min: 0, placeholder, style: "width:6.5rem",
+      onchange: (e) => onchange(e.target.value === "" ? null : +e.target.value),
+    }));
   S.seg = (options, value, onchange) => {
     const wrap = S.el("div", { class: "seg" });
     options.forEach(([v, t]) => {
@@ -67,6 +71,40 @@
       wrap.append(b);
     });
     return wrap;
+  };
+
+  // ---- pitcher roles -------------------------------------------------------
+  // Segmented All · Starters · Relievers. Swing pitchers always show under All, and get their own
+  // button only when the current filters leave some (opts.swing > 0) or Swing is already selected.
+  S.ROLES = { all: "All", SP: "Starters", RP: "Relievers", Swing: "Swing" };
+  S.roleFilter = (value, onchange, opts = {}) => {
+    const keys = ["all", "SP", "RP"].concat((opts.swing > 0 || value === "Swing") ? ["Swing"] : []);
+    return S.el("label", {}, "Role", S.seg(keys.map((k) => [k, S.ROLES[k]]), value, onchange));
+  };
+  // Role-aware pitch minimum: an explicit override applies to everyone; otherwise each pitcher is held
+  // to his own role's minimum from meta.qualifiers[level][role].
+  S.qualifies = (quals, level, override, pitches, role) =>
+    pitches >= (override ?? quals[level][role] ?? quals[level].SP);
+  S.qualifierText = (quals, level, override, role) => {
+    if (override != null) return `${override}+ pitches`;
+    const q = quals[level];
+    if (role !== "all") return `${q[role]}+ pitches (${S.ROLES[role].toLowerCase()} minimum)`;
+    return `${q.SP}+ pitches for starters, ${q.RP}+ for relievers and swingmen`;
+  };
+  S.roleTag = (role, g, gs) => (role ? `${role} · ${g} G, ${gs} GS` : "");
+
+  // ---- URL state --------------------------------------------------------------
+  // Shareable views: read ?key=value, and write back with replaceState (no history spam).
+  // Values equal to the view's default are dropped so URLs stay short.
+  S.urlState = {
+    get: (key, fallback) => new URLSearchParams(location.search).get(key) ?? fallback,
+    set: (obj, defaults = {}) => {
+      const u = new URL(location.href);
+      for (const [k, v] of Object.entries(obj)) {
+        if (v == null || v === "" || v === defaults[k]) u.searchParams.delete(k); else u.searchParams.set(k, v);
+      }
+      history.replaceState(null, "", u.pathname + (u.searchParams.toString() ? "?" + u.searchParams : "") + u.hash);
+    },
   };
 
   // ---- sortable, paged table ---------------------------------------------

@@ -16,6 +16,7 @@ from pathlib import Path
 
 import duckdb
 import pandas as pd
+import yaml
 
 from sparvi.config import ROOT, baseball
 from sparvi.io import write_json, write_numbers, write_records
@@ -48,19 +49,34 @@ def floats(df: pd.DataFrame) -> list[str]:
 
 con = duckdb.connect(str(DB), read_only=True)
 
+# ---- Pitcher roles ----------------------------------------------------------
+# Role thresholds live in dbt_project.yml (dim_pitcher_role uses them); read them from there so the
+# glossary can't drift from the model.
+DBT_VARS = yaml.safe_load((HERE / "pd_pipeline" / "dbt_project.yml").read_text(encoding="utf-8"))["vars"]
+ROLE_RULES = {k: DBT_VARS[k] for k in ("role_sp_min_share", "role_sp_min_starts", "role_rp_max_share")}
+# Default pitch minimums for "qualified" pitchers on the leaderboard and explorer, by level and role.
+# Swing pitchers get the reliever minimum so spot starters aren't dropped. Pages read these from meta.json.
+QUALIFIERS = {"MLB": {"SP": 500, "RP": 250, "Swing": 250}, "AAA": {"SP": 300, "RP": 150, "Swing": 150}}
+roles = con.sql(f"""
+    select pitcher_id as id, level, role, games as g, starts as gs
+    from dim_pitcher_role where season = {SEASON}
+""").df()
+
 # ---- Stuff+ ---------------------------------------------------------------
 p = pd.concat([pd.read_csv(PQ / f"pitcher_season_{lvl}_{SEASON}.csv").assign(level=lvl.upper()) for lvl in ["mlb", "aaa"]])
 p["name"] = p["name"].map(first_last)
-cols = ["id", "name", "team", "level", "throws", "pitches", "stuff_plus", "rv_plus"]
-write_records(OUT / "stuff_pitchers.json", p.rename(columns={"pitcher": "id"})[cols],
-              required=cols, not_null=["id", "name", "level"], min_rows=500, digits={"stuff_plus": 1, "rv_plus": 1})
+p = p.rename(columns={"pitcher": "id"}).merge(roles, on=["id", "level"], how="left")
+cols = ["id", "name", "team", "level", "throws", "role", "g", "gs", "pitches", "stuff_plus", "rv_plus"]
+write_records(OUT / "stuff_pitchers.json", p[cols].sort_values(["level", "id"]),
+              required=cols, not_null=["id", "name", "level", "role"], min_rows=500, digits={"stuff_plus": 1, "rv_plus": 1})
 
 t = pd.concat([pd.read_csv(PQ / f"pitch_type_{lvl}_{SEASON}.csv").query("n >= 30").assign(level=lvl.upper())
                for lvl in ["mlb", "aaa"]])
 t["name"] = t["player_name"].map(first_last)
-cols = ["id", "name", "team", "level", "pt", "group", "n", "velo", "ivb", "hb", "stuff_plus"]
-write_records(OUT / "stuff_pitches.json", t.rename(columns={"pitcher": "id", "pitch_type": "pt"})[cols],
-              required=cols, not_null=["id", "name", "pt"], min_rows=1000,
+t = t.rename(columns={"pitcher": "id", "pitch_type": "pt"}).merge(roles[["id", "level", "role"]], on=["id", "level"], how="left")
+cols = ["id", "name", "team", "level", "role", "pt", "group", "n", "velo", "ivb", "hb", "stuff_plus"]
+write_records(OUT / "stuff_pitches.json", t[cols].sort_values(["level", "id", "pt"]),
+              required=cols, not_null=["id", "name", "pt", "role"], min_rows=1000,
               digits={"velo": 1, "ivb": 1, "hb": 1, "stuff_plus": 1})
 
 yy = pd.read_csv(PQ / "yoy_pairs.csv")
@@ -92,8 +108,9 @@ write_records(OUT / "aaa_hitters.json", h, min_rows=300, not_null=["player_id", 
 
 PCT_P = ["k_pct", "bb_pct", "csw_pct", "whiff_pct", "chase_pct", "hard_hit_pct", "xwoba"]
 pr = con.sql("select * from fct_pitcher_report order by player_id").df().drop(columns=["last_game"])
-write_records(OUT / "aaa_pitchers.json", pr, min_rows=300, not_null=["player_id", "team"], digits={c: 4 for c in floats(pr)},
-              required=["player_id", "name", "team", "age", "bf", "fb_velo", "fb_velo_delta"] + PCT_P + [f"{c}_pctl" for c in PCT_P])
+write_records(OUT / "aaa_pitchers.json", pr, min_rows=300, not_null=["player_id", "team", "role"], digits={c: 4 for c in floats(pr)},
+              required=["player_id", "name", "team", "age", "role", "games", "games_started", "pitches", "bf", "fb_velo",
+                        "fb_velo_delta"] + PCT_P + [f"{c}_pctl" for c in PCT_P])
 
 ars = con.sql("select * from fct_pitcher_arsenal order by player_id, pitch_type").df()
 write_records(OUT / "aaa_arsenal.json", ars, min_rows=500, not_null=["player_id", "pitch_type"], digits={c: 3 for c in floats(ars)},
@@ -123,6 +140,8 @@ meta = {
     "trend_days": 14,
     "min_pa_qualified": 150,
     "min_bf_qualified": 150,
+    "role_rules": ROLE_RULES,
+    "qualifiers": QUALIFIERS,
     "stuff_metrics": strip(metrics),
     "stuff_robustness": strip(robust),
     "shape_results": strip(shape_res),
@@ -266,5 +285,15 @@ if not min(H["chase_pct"]["r"], H["whiff_pct"]["r"]) > H["xwoba"]["r"] > H["woba
     raise StaleProse("Two-week article ranks chase/whiff above xwOBA above wOBA for hitters.")
 if not H["hard_hit_pct"]["r"] > H["xwoba"]["r"]:
     raise StaleProse("Two-week article says hard-hit rate is more stable than xwOBA.")
+
+# Pitcher roles and role-aware qualifiers (glossary)
+if any(q["Swing"] != q["RP"] for q in QUALIFIERS.values()):
+    raise StaleProse("Glossary says relievers and swingmen share a pitch minimum.")
+N |= {
+    "role_sp_min_share": f"{ROLE_RULES['role_sp_min_share']:.0%}",
+    "role_sp_min_starts": ROLE_RULES["role_sp_min_starts"],
+    "role_rp_max_share": f"{ROLE_RULES['role_rp_max_share']:.0%}",
+    **{f"q_{lvl.lower()}_{r.lower()}": q for lvl, by_role in QUALIFIERS.items() for r, q in by_role.items()},
+}
 
 write_numbers("baseball", N, source="baseball/export_site_data.py")

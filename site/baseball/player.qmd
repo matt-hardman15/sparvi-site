@@ -54,7 +54,7 @@ page-layout: article
   }
 
   if (p && p.bf >= 25) {
-    out.push(S.el("h2", {}, "Pitching · Triple-A"));
+    out.push(S.el("h2", {}, "Pitching · Triple-A"), S.el("p", { class: "role-tag", title: "Role from starts share; see the glossary" }, S.roleTag(p.role, p.games, p.games_started)));
     const aaaStuff = stuff.find(d => d.level === "AAA");
     out.push(S.el("div", { class: "stat-row" },
       [["BF", p.bf], ["K%", f.pct(p.k_pct)], ["BB%", f.pct(p.bb_pct)], ["Stuff+", aaaStuff ? f.num(aaaStuff.stuff_plus, 0) : "—"], ["FB velo", f.num(p.fb_velo) + " mph"]]
@@ -100,7 +100,7 @@ page-layout: article
   const mlb = pitches.filter(d => d.level === "MLB").sort((x, y) => y.n - x.n);
   const mlbS = stuff.find(d => d.level === "MLB");
   if (mlbS) {
-    out.push(S.el("h2", {}, "Pitching · MLB"));
+    out.push(S.el("h2", {}, "Pitching · MLB"), S.el("p", { class: "role-tag", title: "Role from starts share; see the glossary" }, S.roleTag(mlbS.role, mlbS.g, mlbS.gs)));
     out.push(S.el("div", { class: "stat-row" },
       [["Pitches", f.int(mlbS.pitches)], ["Stuff+", f.num(mlbS.stuff_plus, 0)], ["RV+ (results)", f.num(mlbS.rv_plus, 0)]]
         .map(([k, v]) => S.el("div", { class: "stat" }, S.el("div", { class: "v" }, String(v)), S.el("div", { class: "k" }, k)))));
