@@ -158,7 +158,7 @@ for side, keys in [("hitter", ["chase_pct", "whiff_pct", "hard_hit_pct", "xwoba"
 
 # ---- Prose numbers ----------------------------------------------------------
 # Every number an article states comes from here, formatted the way the prose prints it.
-# Rule 3 in CLAUDE.md: never hand-type a number into an article; add it here instead.
+# Never hand-type a number into an article; add it here instead.
 MINUS = "−"
 
 

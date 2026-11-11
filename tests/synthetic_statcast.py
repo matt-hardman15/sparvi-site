@@ -1,6 +1,6 @@
 """Synthetic Triple-A Statcast for testing the dbt pipeline in CI.
 
-Real pitch-level data can't be committed or published (CLAUDE.md rule 1), so CI builds the
+Real pitch-level data can't be committed or published (aggregates only), so CI builds the
 pipeline against this instead. It has the same columns and plausible values, enough players to
 fill the qualified percentile pools and the trailing window, and nothing real in it.
 

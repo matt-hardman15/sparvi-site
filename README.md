@@ -50,7 +50,8 @@ and an `export_site_data.py` that writes `site/data/<sport>/` and `site/_generat
 through the shared `sparvi` package, plus a `[<sport>]` section in `sparvi.toml` and its own
 `refresh-<sport>.yml` on its own calendar. Pages go in `site/<sport>/` and reuse
 `site/assets/js/sparvi.js` (tables, charts, percentile bars, controls) and `site/assets/css/sparvi.css`,
-so every sport looks like one site. CLAUDE.md has the full checklist.
+so every sport looks like one site. Also add `_generated/<sport>.yml` to `metadata-files` in
+`site/_quarto.yml`, the sport to the navbar and home-page sport strip, and its pages to `tests/test_site.py`.
 
 ## Season rollover (each spring)
 
