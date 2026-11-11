@@ -7,6 +7,7 @@ Usage:
     uv sync
     python scripts/pull_data.py                    # every season in the config window
     python scripts/pull_data.py --current --refresh  # re-pull the current season
+    python scripts/pull_data.py --current --incremental  # just the new games (+ a 3-day overlap)
     python scripts/pull_data.py --seasons 2025     # just one season
 
 Output: data/raw/statcast_{level}_{season}.parquet
@@ -73,13 +74,17 @@ def fetch_window(url: str, start: str, end: str, level: str | None) -> pd.DataFr
     raise RuntimeError(f"failed after retries: {start}..{end}")
 
 
-def pull_season(season: int, level: str) -> None:
-    out = RAW / f"statcast_{level.lower()}_{season}.parquet"
-    if out.exists():
-        print(f"skip {out.name} (exists)")
-        return
+KEY = ["game_pk", "at_bat_number", "pitch_number"]
+ORDER = ["game_date", "game_pk", "at_bat_number", "pitch_number"]
+# Incremental pulls re-fetch the last few days already on file: Savant revises recent games (pitch
+# types, expected stats) for a day or two after they're played. A weekly full re-pull (in the
+# workflow) catches anything older.
+OVERLAP_DAYS = 3
+
+
+def fetch_range(level: str, start: date, end: date) -> pd.DataFrame:
+    """Every regular-season pitch at `level` from start to end (inclusive), in Savant-sized chunks."""
     url, lvl = (MLB_URL, None) if level == "MLB" else (MILB_URL, level)
-    start, end = (date.fromisoformat(d) for d in SEASON_WINDOWS[season])
     frames = []
     day = start
     while day <= end:
@@ -92,14 +97,55 @@ def pull_season(season: int, level: str) -> None:
         print(f"  {level} {day}..{chunk_end}: {len(df):,} pitches")
         day = chunk_end + timedelta(days=1)
         time.sleep(1.0)
-    if not frames:
+    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+
+
+def tidy(df: pd.DataFrame) -> pd.DataFrame:
+    """One row per pitch (the latest version wins) in a fixed order, so full and incremental pulls
+    of the same games produce the same file."""
+    return df.drop_duplicates(subset=KEY, keep="last").sort_values(ORDER, kind="stable").reset_index(drop=True)
+
+
+def pull_season(season: int, level: str) -> None:
+    out = RAW / f"statcast_{level.lower()}_{season}.parquet"
+    if out.exists():
+        print(f"skip {out.name} (exists)")
+        return
+    start, end = (date.fromisoformat(d) for d in SEASON_WINDOWS[season])
+    full = fetch_range(level, start, end)
+    if full.empty:
         print(f"WARNING: no rows for {level} {season}")
         return
-    full = pd.concat(frames, ignore_index=True).drop_duplicates(
-        subset=["game_pk", "at_bat_number", "pitch_number"]
-    )
+    full = tidy(full)
     full.to_parquet(out, index=False)
     print(f"wrote {out.name}: {len(full):,} pitches, {full['pitcher'].nunique():,} pitchers")
+
+
+def update_season(season: int, level: str, today: date | None = None) -> None:
+    """Incremental: re-pull from OVERLAP_DAYS before the last game on file to today (or the season's
+    end), replace those days, and append anything newer. Falls back to a full pull with no file."""
+    out = RAW / f"statcast_{level.lower()}_{season}.parquet"
+    if not out.exists():
+        print(f"no {out.name} yet: full pull")
+        return pull_season(season, level)
+    old = pd.read_parquet(out)
+    win_start, win_end = (date.fromisoformat(d) for d in SEASON_WINDOWS[season])
+    last = date.fromisoformat(str(old["game_date"].max())[:10])
+    start = max(win_start, last - timedelta(days=OVERLAP_DAYS))
+    end = min(win_end, today or date.today())
+    if start > end:
+        print(f"{out.name}: up to date (last game {last})")
+        return
+    new = fetch_range(level, start, end)
+    if new.empty:
+        # Nothing at all, even for days already on file: keep what we have rather than delete it.
+        print(f"{out.name}: Savant returned no rows for {start}..{end}; kept the file as is")
+        return
+    kept = old[old["game_date"].astype(str).str[:10] < start.isoformat()]
+    merged = tidy(pd.concat([kept, new], ignore_index=True))
+    merged.to_parquet(out, index=False)
+    print(f"updated {out.name}: re-pulled {start}..{end} ({len(new):,} pitches); "
+          f"{len(old):,} -> {len(merged):,} pitches, last game {merged['game_date'].max()}")
 
 
 def pull_milb_rosters(season: int) -> None:
@@ -140,6 +186,8 @@ if __name__ == "__main__":
     ap.add_argument("--levels", nargs="+", default=["MLB", "AAA"])
     ap.add_argument("--refresh", action="store_true",
                     help="re-pull the given seasons even if files exist (use for the current season)")
+    ap.add_argument("--incremental", action="store_true",
+                    help=f"only fetch new games (plus the last {OVERLAP_DAYS} days on file) for the given seasons")
     args = ap.parse_args()
     if args.current:
         args.seasons = [CFG.season]
@@ -148,8 +196,10 @@ if __name__ == "__main__":
             for f in RAW.glob(f"*_{s}.parquet"):
                 f.unlink()
     for s in args.seasons:
+        if args.incremental:  # rosters are small and change daily in season: always re-pull them
+            (RAW / f"milb_players_{s}.parquet").unlink(missing_ok=True)
         pull_milb_rosters(s)
         for lvl in args.levels:
             if lvl == "AAA" and s not in CFG.aaa_seasons:
                 continue
-            pull_season(s, lvl)
+            (update_season if args.incremental else pull_season)(s, lvl)

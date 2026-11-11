@@ -40,7 +40,7 @@ jobs:
           enable-cache: true
       - run: uv sync --frozen
       - name: Config and dbt pipeline on synthetic data
-        run: uv run pytest -q tests/test_config.py tests/test_pipeline.py
+        run: uv run pytest -q tests/test_config.py tests/test_pipeline.py tests/test_pull_incremental.py
 
   site:
     runs-on: ubuntu-24.04

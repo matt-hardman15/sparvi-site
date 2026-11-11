@@ -226,6 +226,12 @@ N["stuff_gap_sentence"] = (
     if lo > 0 else
     "The interval includes zero, so this sample can't rule out that the two predict equally well: Stuff+ comes "
     "out ahead, but not by a margin the data can confirm.")
+# The finding box says how sure, in one line, from the same interval.
+N["stuff_finding_certainty"] = (
+    "The edge held up across resamples, though it's modest."
+    if lo > 0 else
+    "That edge isn't statistically certain: across resamples of these pitchers the gap ranged from "
+    f"{signed2(robust['gap_ci90'][0])} to {signed2(robust['gap_ci90'][1])}, so the two could be equally predictive.")
 if not 0 < metrics["aaa_mean_stuff_plus_qualified"] < 100:
     raise StaleProse("Stuff+ article says the average qualified Triple-A pitcher grades below an MLB average of 100.")
 FEATURE_WORDS = {"velo": "velocity", "ivb": "induced vertical break", "hb": "horizontal break", "spin": "spin rate",
