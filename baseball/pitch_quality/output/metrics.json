@@ -2,20 +2,20 @@
   "season": 2026,
   "min_pitches": 500,
   "aaa_min_pitches": 300,
-  "train_pitch_r2": 0.002753940174505032,
-  "holdout_pitch_r2": 0.0005343110079060187,
-  "split_half_r_stuff": 0.9938846097497759,
+  "train_pitch_r2": 0.0026748120970706557,
+  "holdout_pitch_r2": 0.0005841390390343149,
+  "split_half_r_stuff": 0.9928199974625326,
   "split_half_r_actual_rv": 0.19850911276405853,
   "yoy_n": 324,
-  "yoy_r_stuff_prev_to_rv_cur": 0.3097700513474816,
+  "yoy_r_stuff_prev_to_rv_cur": 0.3325556365864701,
   "yoy_r_rv_prev_to_rv_cur": 0.19259585980517263,
-  "yoy_r_stuff_prev_to_stuff_cur": 0.8652324929974684,
+  "yoy_r_stuff_prev_to_stuff_cur": 0.8605016773320294,
   "aaa_to_mlb_n": 148,
-  "aaa_to_mlb_r_stuff": 0.13822362563702928,
+  "aaa_to_mlb_r_stuff": 0.14265412315047804,
   "aaa_to_mlb_r_actual": -0.019557588153976315,
-  "aaa_mean_stuff_plus_qualified": 91.68541999803045,
+  "aaa_mean_stuff_plus_qualified": 91.30080804650244,
   "n_pitches_mlb": 2126609,
-  "n_pitches_aaa": 1331512,
+  "n_pitches_aaa": 1331511,
   "provenance": {
     "data": {
       "statcast_aaa_2025.parquet": {
@@ -24,7 +24,7 @@
         "last_game": "2025-09-21"
       },
       "statcast_aaa_2026.parquet": {
-        "rows": 671556,
+        "rows": 671555,
         "first_game": "2026-03-27",
         "last_game": "2026-09-20"
       },
