@@ -40,6 +40,7 @@ baseball:
   stuff_aaa_n: "148"
   stuff_aaa_r_results: "−0.02"
   stuff_aaa_r_stuff: "0.14"
+  stuff_finding_certainty: "That edge isn't statistically certain: across resamples of these pitchers the gap ranged from −0.01 to +0.21, so the two could be equally predictive."
   stuff_gap_hi: "+0.21"
   stuff_gap_lo: "−0.01"
   stuff_gap_mix: "The gaps from the fastball (velocity, ride, and run) carry 24% of the fastball model's gain; for offspeed pitches, more (31%); for breaking balls, about the same (22%)."

@@ -8,7 +8,7 @@ image: thumb.png
 
 ::: {.finding}
 [The finding]{.label}
-A pitcher's **Stuff+**, graded only on velocity, movement, spin, and release, predicted his {{< meta baseball.season >}} run value better than his {{< meta baseball.season_prev >}} run value did (r = {{< meta baseball.stuff_yoy_r_stuff >}} vs. {{< meta baseball.stuff_yoy_r_results >}}, {{< meta baseball.stuff_yoy_n >}} pitchers). Stuff+ also stabilizes almost immediately, while a season of actual results is still mostly noise.
+A pitcher's **Stuff+**, graded only on velocity, movement, spin, and release, predicted his {{< meta baseball.season >}} run value better than his {{< meta baseball.season_prev >}} run value did (r = {{< meta baseball.stuff_yoy_r_stuff >}} vs. {{< meta baseball.stuff_yoy_r_results >}}, {{< meta baseball.stuff_yoy_n >}} pitchers). {{< meta baseball.stuff_finding_certainty >}} Stuff+ also stabilizes almost immediately, while a season of actual results is still mostly noise.
 :::
 
 ::: {.so-what}
