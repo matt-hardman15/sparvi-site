@@ -12,13 +12,13 @@ behind them in explorers readers can filter and check. Live at **https://sparvi.
 | `scripts/pull_data.py` | Pulls pitch-level Statcast (MLB, Triple-A) and MLB Stats API rosters into `data/raw/` (not committed) |
 | `baseball/pitch_quality/` | Stuff+ model (LightGBM): `train.py`, `robustness.py` |
 | `baseball/shape_stability/` | Do midseason pitch shape changes persist into next season? |
-| `baseball/pd_pipeline/` | dbt + DuckDB pipeline over MLB and Triple-A pitches: pitcher appearances and roles (SP/RP/Swing), Triple-A windows, percentiles, change flags |
+| `baseball/pd_pipeline/` | dbt + DuckDB pipeline over MLB and Triple-A pitches: pitcher appearances and roles (SP/RP/Swing), Triple-A windows, percentiles, change flags, and weekly snapshots (season to date and last 30 days) behind the date slider |
 | `baseball/rule5/` | Rule 5 eligibility estimate, its validation against published lists, and the board's thumbnail |
 | `scripts/pull_rosters.py` | 40-man rosters, Triple-A affiliates, and player signing history from the MLB Stats API (run by hand after the protection deadline) |
 | `scripts/check_roles.py` | Spot-checks pitcher games and starts against MLB's official stats |
 | `baseball/two_week_signal/` | Which two-week Triple-A numbers carry into the next two weeks |
 | `baseball/export_site_data.py` | Writes aggregated JSON for the site and the numbers quoted in article prose (no pitch-level data is published) |
-| `site/` | Quarto site. Interactive charts use Observable Plot and d3, self-hosted in `site/assets/js/`. Article numbers come from `site/_generated/<sport>.yml` |
+| `site/` | Quarto site. Player pages load one `data/baseball/players/{id}.json` each; the tools load columnar weekly snapshot files. Interactive charts use Observable Plot and d3, self-hosted in `site/assets/js/`. Article numbers come from `site/_generated/<sport>.yml` |
 | `tests/` | Config, the dbt pipeline on synthetic data, and a browser test of every page |
 
 ## Build locally
@@ -28,6 +28,7 @@ uv sync                                    # Python 3.12 + exact locked versions
 uv run python scripts/pull_data.py         # first run ~30-60 min
 uv run ./build.sh                          # models -> dbt -> JSON -> docs/
 uv run pytest && uv run ruff check .       # browser tests need `uv run playwright install chromium` once
+SPARVI_PERF=1 uv run pytest tests/test_perf.py -s   # opt-in: pages interactive in < 2 s on throttled "Fast 4G"
 cd docs && python -m http.server 8000      # http://localhost:8000
 ```
 
@@ -58,7 +59,9 @@ so every sport looks like one site. Also add `_generated/<sport>.yml` to `metada
 ## Season rollover (each spring)
 
 1. In `sparvi.toml`, add the new season's date window and bump `season`. Everything else derives from it.
-2. Merge that as a pull request, then run `refresh-baseball` manually once.
+2. Merge that as a pull request, then run `refresh-baseball` manually once. Stuff+ is scaled to the
+   prior season automatically; if a league changes its schedule length, update `full_season_games`
+   in `baseball/pd_pipeline/dbt_project.yml` (it prorates the qualified pools).
 
 Each fall, update `[baseball.rule5]` in `sparvi.toml` (protection deadline, draft date, CBA expiry), run
 `uv run python scripts/pull_rosters.py` the day after the deadline, rebuild, and refresh
