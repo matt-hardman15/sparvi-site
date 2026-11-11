@@ -13,6 +13,8 @@ behind them in explorers readers can filter and check. Live at **https://sparvi.
 | `baseball/pitch_quality/` | Stuff+ model (LightGBM): `train.py`, `robustness.py` |
 | `baseball/shape_stability/` | Do midseason pitch shape changes persist into next season? |
 | `baseball/pd_pipeline/` | dbt + DuckDB pipeline over MLB and Triple-A pitches: pitcher appearances and roles (SP/RP/Swing), Triple-A windows, percentiles, change flags |
+| `baseball/rule5/` | Rule 5 eligibility estimate, its validation against published lists, and the board's thumbnail |
+| `scripts/pull_rosters.py` | 40-man rosters, Triple-A affiliates, and player signing history from the MLB Stats API (run by hand after the protection deadline) |
 | `scripts/check_roles.py` | Spot-checks pitcher games and starts against MLB's official stats |
 | `baseball/two_week_signal/` | Which two-week Triple-A numbers carry into the next two weeks |
 | `baseball/export_site_data.py` | Writes aggregated JSON for the site and the numbers quoted in article prose (no pitch-level data is published) |
@@ -57,3 +59,7 @@ so every sport looks like one site. Also add `_generated/<sport>.yml` to `metada
 
 1. In `sparvi.toml`, add the new season's date window and bump `season`. Everything else derives from it.
 2. Merge that as a pull request, then run `refresh-baseball` manually once.
+
+Each fall, update `[baseball.rule5]` in `sparvi.toml` (protection deadline, draft date, CBA expiry), run
+`uv run python scripts/pull_rosters.py` the day after the deadline, rebuild, and refresh
+`baseball/rule5/validation_list.csv` with that year's published eligibility lists.
