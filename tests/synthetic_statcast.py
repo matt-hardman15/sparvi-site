@@ -7,7 +7,9 @@ fill the qualified percentile pools and the trailing window, and nothing real in
     write_fixture(out_dir, season)  ->  statcast_aaa_{season-1,season}.parquet,
                                         statcast_mlb_{season-2..season}.parquet,
                                         milb_players_{season}.parquet,
-                                        pitch_type_aaa_{season}.csv
+                                        pitch_type_aaa_{season}.csv,
+                                        pitch_predictions_{mlb,aaa}_{season}.parquet,
+                                        scale_reference.csv
 """
 from __future__ import annotations
 
@@ -107,10 +109,21 @@ def _season(season: int, rng: np.random.Generator, pk_offset: int = 0) -> pd.Dat
 def write_fixture(out: Path, season: int, seed: int = 0) -> None:
     out.mkdir(parents=True, exist_ok=True)
     rng = np.random.default_rng(seed)
-    for s in (season - 1, season):
-        _season(s, rng).to_parquet(out / f"statcast_aaa_{s}.parquet", index=False)
-    for s in (season - 2, season - 1, season):
-        _season(s, rng, pk_offset=5000).to_parquet(out / f"statcast_mlb_{s}.parquet", index=False)
+    groups = {"FF": "fastball", "SI": "fastball", "SL": "breaking", "CU": "breaking", "CH": "offspeed"}
+    for lvl, seasons, off in [("aaa", (season - 1, season), 0), ("mlb", (season - 2, season - 1, season), 5000)]:
+        for s in seasons:
+            df = _season(s, rng, pk_offset=off)
+            df.to_parquet(out / f"statcast_{lvl}_{s}.parquet", index=False)
+            if s == season:  # Stuff+ predictions for the current season, as train.py writes them
+                pred = df[["game_pk", "game_date", "at_bat_number", "pitch_number", "pitcher", "pitch_type"]].copy()
+                pred["group"] = pred["pitch_type"].map(groups)
+                pred["xrv_stuff"] = rng.normal(0.0, 0.02, len(pred))
+                pred["rv"] = rng.normal(0.0, 0.25, len(pred))
+                pred.to_parquet(out / f"pitch_predictions_{lvl}_{s}.parquet", index=False)
+    pd.DataFrame([{"kind": "stuff", "grp": "all", "mean": 0.0, "sd": 0.2, "n": 400},
+                  {"kind": "rv", "grp": "all", "mean": 0.0, "sd": 2.5, "n": 400}]
+                 + [{"kind": "pitch_type", "grp": g, "mean": 0.0, "sd": 0.3, "n": 400} for g in ("fastball", "breaking", "offspeed")]
+                 ).to_csv(out / "scale_reference.csv", index=False)
 
     pl = _players()
     pl["birth_date"] = [f"{season - 22 - i % 10}-05-01" for i in range(len(pl))]

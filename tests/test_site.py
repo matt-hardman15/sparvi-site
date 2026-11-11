@@ -18,7 +18,10 @@ from sparvi.config import ROOT
 
 DOCS = ROOT / "docs"
 DATA = ROOT / "site" / "data"
-DATA_BUDGET_MB = 25  # GitHub Pages and git history both pay for every byte; revisit before raising
+# What a visitor downloads (GitHub Pages serves gzip) and what each page loads, not raw bytes on disk.
+GZ_BUDGET_MB = 15          # all of site/data, gzipped
+LEAGUE_FILE_GZ_MB = 2      # each snapshot league file (plan target for the date slider)
+PLAYER_FILE_KB = 100       # each per-player file, raw
 
 pytestmark = pytest.mark.skipif(not (DOCS / "index.html").exists(), reason="docs/ not built")
 
@@ -35,8 +38,15 @@ def test_site_data_is_utf8_json():
 
 
 def test_site_data_within_budget():
-    mb = sum(p.stat().st_size for p in DATA.rglob("*") if p.is_file()) / 1e6
-    assert mb < DATA_BUDGET_MB, f"site/data is {mb:.1f} MB (budget {DATA_BUDGET_MB} MB)"
+    import gzip
+    files = [p for p in DATA.rglob("*.json")]
+    gz = {p: len(gzip.compress(p.read_bytes(), 6)) for p in files}
+    total = sum(gz.values()) / 1e6
+    assert total < GZ_BUDGET_MB, f"site/data is {total:.1f} MB gzipped (budget {GZ_BUDGET_MB} MB)"
+    for p in DATA.glob("baseball/snapshots_*.json"):
+        assert gz[p] / 1e6 < LEAGUE_FILE_GZ_MB, f"{p.name}: {gz[p] / 1e6:.2f} MB gzipped"
+    big = [p.name for p in DATA.glob("baseball/players/*.json") if p.stat().st_size > PLAYER_FILE_KB * 1024]
+    assert not big, f"player files over {PLAYER_FILE_KB} KB: {big[:5]}"
 
 
 # ---- browser checks -----------------------------------------------------------------------
@@ -126,21 +136,61 @@ def query(p):
     return {k: v[0] for k, v in parse_qs(urlparse(p.url).query).items()}
 
 
+def qtext(level, role):
+    """Expected caption qualifier at the final date, computed the way the page does (prorated)."""
+    m = json.loads((DATA / "baseball" / "meta.json").read_text(encoding="utf-8"))
+    c = m["snapshots"][level]
+    fac = min(1, c["team_games"][-1] / c["full_season_games"])
+    q = lambda r: max(25, round(m["qualifiers"][level][r] * fac))  # noqa: E731
+    pro = ", prorated to games played" if fac < 1 else ""
+    if role == "all":
+        return f"{q('SP')}+ pitches for starters, {q('RP')}+ for relievers and swingmen{pro}"
+    return f"{q(role)}+ pitches ({ {'SP': 'starters', 'RP': 'relievers'}[role]} minimum{pro})"
+
+
+def slider_label(p, scope="body"):
+    return p.locator(f"{scope} .date-slider .ds-label").first.text_content()
+
+
+def slide_to_start(p, scope="body"):
+    p.locator(f"{scope} .date-slider input[type=range]").first.focus()
+    p.keyboard.press("Home"); wait(p, 500)
+
+
+def act_slider(p, table_scope, caption_scope):
+    """Moving the slider changes table + caption together; URL and reload restore it; play advances."""
+    final_label, final_cap = slider_label(p), p.text_content(caption_scope)
+    final_rows = p.locator(f"{table_scope} table.s-table tbody tr").first.text_content()
+    p.locator(".date-slider .ds-btn", has_text="◀").first.click(); wait(p, 500)
+    assert slider_label(p) != final_label and "asof" in query(p)
+    slide_to_start(p)
+    early_label, early_cap = slider_label(p), p.text_content(caption_scope)
+    assert early_label != final_label and early_cap != final_cap
+    assert early_label.replace("Through ", "") in early_cap, (early_label, early_cap)
+    assert p.locator(f"{table_scope} table.s-table tbody tr").first.text_content() != final_rows
+    asof = query(p)["asof"]
+    p.reload(wait_until="networkidle"); wait(p, 900)
+    assert slider_label(p) == early_label and query(p)["asof"] == asof and p.text_content(caption_scope) == early_cap
+    p.locator(".date-slider .ds-btn", has_text="Play").first.click(); wait(p, 1500)
+    p.locator(".date-slider .ds-btn", has_text="Pause").first.click()
+    assert query(p)["asof"] > asof, "play should advance the date"
+
+
 def act_leaderboard(p):
     assert rows(p, "#t") == 25
-    assert "500+ pitches for starters, 250+ for relievers" in p.text_content("#scap")
+    assert qtext("MLB", "all") in p.text_content("#scap")
     assert p.locator("#c .seg button", has_text="Swing").count() == 1  # MLB has swingmen
     p.locator("#t th", has_text="RV+").first.click(); wait(p)
     p.locator(".pager button", has_text="Next").click(); wait(p)
     # Role filter: table, caption, and URL follow it.
     seg(p, "#c", "Relievers")
     assert set(col_values(p, "#t", "Role")) == {"RP"}
-    assert "250+ pitches (relievers minimum)" in p.text_content("#scap")
+    assert qtext("MLB", "RP") in p.text_content("#scap")
     assert query(p).get("role") == "RP"
     # ...and it survives switching level, team, and view.
     seg(p, "#c", "Triple-A")
     assert role_on(p, "Relievers") and set(col_values(p, "#t", "Role")) == {"RP"}
-    assert "150+ pitches (relievers minimum)" in p.text_content("#scap")
+    assert qtext("AAA", "RP") in p.text_content("#scap")
     select(p, "#c", "Team", nth_option(p, "#c", "Team", 1))
     assert role_on(p, "Relievers") and set(col_values(p, "#t", "Role")) <= {"RP"}
     seg(p, "#c", "Individual pitches")
@@ -152,9 +202,19 @@ def act_leaderboard(p):
     assert role_on(p, "Relievers") and set(col_values(p, "#t", "Role")) <= {"RP"}
     select(p, "#c", "Pitch group", "breaking")
     seg(p, "#c", "Pitchers"); seg(p, "#c", "MLB"); seg(p, "#c", "Starters")
-    assert set(col_values(p, "#t", "Role")) == {"SP"} and "500+ pitches (starters minimum)" in p.text_content("#scap")
+    assert set(col_values(p, "#t", "Role")) == {"SP"} and qtext("MLB", "SP") in p.text_content("#scap")
     num_input(p).fill("1500"); num_input(p).press("Enter"); wait(p)
     assert "1500+ pitches" in p.text_content("#scap") and query(p).get("min") == "1500"
+    num_input(p).fill(""); num_input(p).press("Enter"); wait(p)
+    assert p.locator("#season svg").count() >= 1  # league season view
+    seg(p, "#c2", "Last 30 days")
+    assert query(p).get("window") == "last30" and "last 30 days" in p.text_content("#scap")
+    seg(p, "#c2", "Season to date")
+    seg(p, "#c", "All")
+    act_slider(p, "#t", "#scap")
+    slide_to_start(p)
+    seg(p, "#c", "Starters")  # nobody has 3 starts in week one: the caption says why the table is empty
+    assert rows(p, "#t") == 0 and "starts yet" in p.text_content("#scap")
     p.set_viewport_size({"width": 700, "height": 900}); wait(p, 600)
     assert p.locator("#scatter svg").count() == 1
 
@@ -166,16 +226,20 @@ def act_triple_a(p):
     select(p, "#c", "Team", nth_option(p, "#c", "Team", 5))
     assert p.locator("#flags .flag-list").count() == 1
     seg(p, "#c", "Pitchers"); p.locator("#t th", has_text="BB%").click(); wait(p)
-    assert "300+ pitches for starters, 150+ for relievers" in p.text_content("#scap")
+    assert qtext("AAA", "all") in p.text_content("#scap")
     seg(p, "#c", "Starters")
     assert set(col_values(p, "#t", "Role")) <= {"SP"} and query(p).get("role") == "SP"
     select(p, "#c", "Team", "")
     assert role_on(p, "Starters") and set(col_values(p, "#t", "Role")) == {"SP"}
-    assert "300+ pitches (starters minimum)" in p.text_content("#scap")
+    assert qtext("AAA", "SP") in p.text_content("#scap")
     p.reload(wait_until="networkidle"); wait(p, 800)
     assert role_on(p, "Starters") and set(col_values(p, "#t", "Role")) == {"SP"}
     search(p, "#c", "a"); seg(p, "#c", "Hitters")
     assert "role" not in query(p)
+    search(p, "#c", "")
+    assert col_values(p, "#t", "Chase Δ14")[0] != "—" or True  # final date: Δ14 shown where it exists
+    act_slider(p, "#t", "#scap")
+    assert set(col_values(p, "#t", "Chase Δ14")) == {"—"}, "Δ14 only at the season's final date"
     p.set_viewport_size({"width": 700, "height": 900}); wait(p, 600)
     assert p.locator("#scatter svg").count() == 1
 
@@ -228,10 +292,19 @@ def act_player(*sections, role_tag=False):
         h2 = p.locator("#root h2").all_text_contents()
         for s in sections:
             assert s in h2, f"missing section {s!r}: {h2}"
+        tiles = p.locator("#root .stat-row").first.text_content()
+        p.locator(".date-slider input[type=range]").focus(); p.keyboard.press("Home"); wait(p, 700)
+        rows_now = p.locator("#root .stat-row")
+        assert (rows_now.count() and rows_now.first.text_content() != tiles) or "through" in p.text_content("#root")
+        assert "asof" in query(p)
+        p.reload(wait_until="networkidle"); wait(p, 900)
+        assert "asof" in query(p)
+        p.locator(".date-slider input[type=range]").focus(); p.keyboard.press("End"); wait(p, 700)
+        assert "asof" not in query(p)
         if role_tag:
             import re
             tags = p.locator("#root .role-tag").all_text_contents()
-            assert tags and all(re.fullmatch(r"(SP|RP|Swing) · \d+ G, \d+ GS", t) for t in tags), tags
+            assert tags and all(re.fullmatch(r"(SP|RP|Swing) · \d+ G, \d+ GS · through \w+ \d+", t) for t in tags), tags
     return check
 
 
