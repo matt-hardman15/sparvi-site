@@ -13,6 +13,13 @@ sources:
         identifier: "statcast_aaa_{{ var('season') - 1 }}"
       - name: statcast_aaa_cur
         identifier: "statcast_aaa_{{ var('season') }}"
+      # MLB: the same three seasons the Stuff+ model uses (mlb_seasons = 3 in sparvi.toml).
+      - name: statcast_mlb_prev2
+        identifier: "statcast_mlb_{{ var('season') - 2 }}"
+      - name: statcast_mlb_prev
+        identifier: "statcast_mlb_{{ var('season') - 1 }}"
+      - name: statcast_mlb_cur
+        identifier: "statcast_mlb_{{ var('season') }}"
       - name: milb_players_cur
         identifier: "milb_players_{{ var('season') }}"
 

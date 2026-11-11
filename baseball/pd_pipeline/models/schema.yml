@@ -11,6 +11,39 @@ models:
       - name: batter_id
         tests: [not_null]
 
+  - name: int_pitcher_appearances
+    description: One row per pitcher per game, both levels.
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [level, game_pk, pitcher_id]
+    columns:
+      - name: level
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['AAA', 'MLB']
+
+  - name: dim_pitcher_role
+    description: Starter/reliever role per pitcher, level, and season.
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [level, season, pitcher_id]
+    columns:
+      - name: role
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['SP', 'RP', 'Swing']
+      - name: start_share
+        tests:
+          - value_in_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+
   - name: fct_hitter_report
     description: Season and trailing-window hitter profile with Triple-A percentiles.
     columns:
