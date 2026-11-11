@@ -69,6 +69,14 @@ def baseball() -> Baseball:
     return b
 
 
+def section(*keys: str) -> dict:
+    """A raw table from sparvi.toml, e.g. section("baseball", "rule5")."""
+    d = _load()
+    for k in keys:
+        d = d[k]
+    return dict(d)
+
+
 def _cli(key: str) -> str:
     sport, _, attr = key.partition(".")
     obj = {"baseball": baseball}[sport]()
