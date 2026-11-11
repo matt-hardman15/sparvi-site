@@ -115,3 +115,12 @@ figure h2, .plot-host h2 { font-family: var(--sans); font-size: .95rem; font-wei
 .r5-likely { background: #f1efe9; color: #6b6a65; border: 1px dashed #b9b7b0; }
 .r5-unknown { background: transparent; color: #8a8b8f; border: 1px dashed #c9c7c0; }
 .muted { color: #8a8b8f; }
+/* Date slider (Sparvi.dateSlider) */
+.date-slider { display: flex; flex-direction: column; gap: .25rem; min-width: min(100%, 22rem); flex: 1 1 22rem; }
+.date-slider .ds-label { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; color: var(--accent); }
+.date-slider .ds-row { display: flex; align-items: center; gap: .4rem; }
+.date-slider input[type=range] { flex: 1; accent-color: var(--accent); min-width: 6rem; }
+.date-slider .ds-btn { border: 1px solid #d9d8d3; background: #fff; border-radius: 6px; padding: .2rem .55rem; font-size: .85rem; cursor: pointer; white-space: nowrap; }
+.date-slider .ds-btn:disabled { opacity: .4; cursor: default; }
+.date-slider .ds-btn:focus-visible, .date-slider input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.small-multiples { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: .5rem 1rem; }

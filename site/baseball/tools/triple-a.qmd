@@ -4,11 +4,12 @@ description: "Swing decisions, contact quality, and pitching profiles for every 
 page-layout: full
 ---
 
-Every {{< meta baseball.season >}} Triple-A hitter and pitcher, ranked against the qualified league pool (150+ PA or batters faced). Percentiles are oriented so **higher is always better**: a low chase rate or a low walk rate shows as a high percentile. Click a column to sort and a name for the full player page. Why the flags lean on swing decisions and velocity: [Two weeks of swing decisions tells you something. Two weeks of results doesn't.](/baseball/two-week-signal/)
+Every {{< meta baseball.season >}} Triple-A hitter and pitcher, ranked against the qualified league pool ({{< meta baseball.min_pa_qualified >}}+ PA or batters faced over a full season, prorated to games played earlier in the year). Percentiles are oriented so **higher is always better**: a low chase rate or a low walk rate shows as a high percentile. Move the date slider to see the league as it stood any week, or switch to the last 30 days. Click a column to sort and a name for the full player page. Why the flags lean on swing decisions and velocity: [Two weeks of swing decisions tells you something. Two weeks of results doesn't.](/baseball/two-week-signal/)
 
 ```{=html}
 <div class="explorer">
   <div class="controls" id="c"></div>
+  <div class="controls" id="c2"></div>
   <div id="flags"></div>
   <div id="scatter" class="plot-host"></div>
   <p class="caption" id="scap"></p>
@@ -17,14 +18,20 @@ Every {{< meta baseball.season >}} Triple-A hitter and pitcher, ranked against t
 <script>
 (async () => {
   const S = Sparvi, f = S.fmt, U = S.urlState;
-  const [hitters, pitchers, flags, meta] = await Promise.all(["aaa_hitters", "aaa_pitchers", "aaa_flags", "meta"].map(n => S.load(`/data/baseball/${n}.json`)));
-  const Q = meta.qualifiers, HIT_MIN = 100;
-  const DEF = { side: "hitters", team: "", role: "all" };
-  const st = { side: U.get("side", DEF.side), team: U.get("team", DEF.team), role: U.get("role", DEF.role), q: "",
+  // Snapshot files carry what doesn't vary by date (age, final-14-day changes) as static fields.
+  const files = { hitters: (win = "std") => S.loadSnap("snapshots_hitters_aaa", win),
+                  pitchers: (win = "std") => S.loadSnap("snapshots_pitchers_aaa", win) };
+  files[U.get("side", "hitters")]();  // start the data request now, in parallel with meta
+  const meta = await S.load("/data/baseball/meta.json");
+  const flagsP = () => S.load("/data/baseball/aaa_flags.json");  // only needed for a team at the final date
+  const Q = meta.qualifiers, HIT_MIN = 100, dates = meta.snapshots.AAA.dates, LAST = dates.length - 1;
+  const DEF = { side: "hitters", team: "", role: "all", window: "std" };
+  const st = { side: U.get("side", DEF.side), team: U.get("team", DEF.team), role: U.get("role", DEF.role),
+               window: U.get("window", DEF.window), asof: U.get("asof"), q: "",
                min: U.get("min") == null ? null : +U.get("min") };  // null = default (100 PA; pitch minimum by role)
-  const roleOf = new Map(pitchers.map(d => [d.player_id, d.role]));
-  const teams = [...new Set(hitters.map(d => d.team))].sort();
-  const c = document.getElementById("c");
+  const idx = () => { const k = st.asof ? S.snapIndex(dates, st.asof) : LAST; return k < 0 ? 0 : k; };
+  const teams = [...new Set((await files[st.side]()).players.map(p => p.series.std.team.filter(Boolean).slice(-1)[0]).filter(Boolean))].sort();
+  const c = document.getElementById("c"), c2 = document.getElementById("c2");
   const roleHost = S.el("span", { class: "role-host" });
   function controls() {
     const pitch = st.side === "pitchers";
@@ -34,69 +41,84 @@ Every {{< meta baseball.season >}} Triple-A hitter and pitcher, ranked against t
       pitch ? roleHost : null,
       pitch ? S.number("Min. pitches", st.min, 25, v => { st.min = v; draw(); }, st.role === "all" ? "by role" : String(Q.AAA[st.role]))
             : S.number("Min. PA", st.min, 25, v => { st.min = v; draw(); }, String(HIT_MIN)),
-      S.search("Find a player", "Name", v => { st.q = v; draw(); })].filter(Boolean));
+      S.search("Find a player", "Name", v => { st.q = v; draw(); }, st.q)].filter(Boolean));
+    c2.replaceChildren(S.dateSlider(dates, idx(), k => { st.asof = dates[k]; draw(); }).el,
+      S.el("label", {}, "Window", S.seg(Object.entries(S.WINDOWS), st.window, v => { st.window = v; draw(); })));
   }
+  const final = () => idx() === LAST && st.window === "std";
+  // Table minimum for hitters: 100 PA over a season, prorated, at least 1. (The percentile pool has its
+  // own floor of 25, so early-season percentiles stay blank instead of resting on a few at-bats.)
+  const hitMin = (fac) => Math.max(1, Math.round(HIT_MIN * fac));
   const pc = (key, label, fmt, title) => ({ key, label, fmt: (v, r) => fmt(v), heat: "pct", heatVal: r => r[key + "_pctl"], sortVal: r => r[key + "_pctl"], title });
   const hCols = [
-    { key: "name", label: "Hitter", align: "l", html: r => S.playerLink(r.player_id, r.name) },
+    { key: "name", label: "Hitter", align: "l", html: r => S.playerLink(r.id, r.name) },
     { key: "team", label: "Team", align: "l" }, { key: "age", label: "Age" }, { key: "pa", label: "PA" },
     pc("xwoba", "xwOBA", f.woba), pc("ev90", "EV90", v => f.num(v), "90th-percentile exit velocity"),
     pc("hard_hit_pct", "Hard-hit", f.pct), pc("chase_pct", "Chase", f.pct), pc("zone_contact_pct", "Z-Contact", f.pct),
     pc("k_pct", "K%", f.pct), pc("bb_pct", "BB%", f.pct),
-    { key: "chase_delta", label: "Chase Δ14", fmt: f.pts, title: "Final 14 days vs season, percentage points" },
+    { key: "chase_delta", label: "Chase Δ14", fmt: f.pts, title: "Final 14 days vs season, percentage points (shown at the season's final date only)" },
   ];
   const pCols = [
-    { key: "name", label: "Pitcher", align: "l", html: r => S.playerLink(r.player_id, r.name) },
+    { key: "name", label: "Pitcher", align: "l", html: r => S.playerLink(r.id, r.name) },
     { key: "team", label: "Team", align: "l" },
-    { key: "role", label: "Role", align: "l", title: "SP starter · RP reliever · Swing (see glossary)" },
+    { key: "role", label: "Role", align: "l", title: "SP starter · RP reliever · Swing, as of the selected date (see glossary)" },
     { key: "age", label: "Age" }, { key: "pitches", label: "Pitches", fmt: f.int }, { key: "bf", label: "BF" },
     pc("k_pct", "K%", f.pct), pc("bb_pct", "BB%", f.pct), pc("csw_pct", "CSW%", f.pct), pc("whiff_pct", "Whiff%", f.pct),
     pc("hard_hit_pct", "Hard-hit", f.pct), pc("xwoba", "xwOBA", f.woba),
     { key: "fb_velo", label: "FB velo", fmt: v => f.num(v) },
-    { key: "fb_velo_delta", label: "Velo Δ14", fmt: v => f.signed(v), title: "Final 14 days vs season, mph" },
+    { key: "fb_velo_delta", label: "Velo Δ14", fmt: v => f.signed(v), title: "Final 14 days vs season, mph (shown at the season's final date only)" },
   ];
   let tbl, side;
   const host = document.getElementById("scatter");
-  function draw() {
-    const pitch = st.side === "pitchers";
+  async function draw() {
+    const pitch = st.side === "pitchers", i = idx();
+    const snap = await files[st.side](st.window), std = await files[st.side]();
+    const fac = S.prorate(meta, "AAA", i, st.window);
+    const atI = pitch ? new Map(S.snapRows(std, "std", i, "pitches").map(r => [r.id, r])) : null;
+    const isFinal = final();
+    const all = S.snapRows(snap, st.window, i, pitch ? "pitches" : "pa").map(r => ({ ...r,
+      role: pitch ? atI.get(r.id)?.role ?? r.role : undefined,
+      chase_delta: isFinal ? r.chase_delta : null, fb_velo_delta: isFinal ? r.fb_velo_delta : null }));
     const roleOk = d => !pitch || st.role === "all" || d.role === st.role;
-    // Everything but the role filter first, so the Swing button knows whether any swingmen remain.
-    const pre = pitch
-      ? pitchers.filter(d => (!st.team || d.team === st.team) && S.qualifies(Q, "AAA", st.min, d.pitches, d.role))
-      : hitters.filter(d => (!st.team || d.team === st.team) && d.pa >= (st.min ?? HIT_MIN));
+    const pre = all.filter(d => (!st.team || d.team === st.team)
+      && (pitch ? S.qualifies(Q, "AAA", st.min, d.pitches, d.role, fac) : d.pa >= (st.min ?? hitMin(fac))));
     if (pitch) roleHost.replaceChildren(S.roleFilter(st.role, v => { st.role = v; st.min = null; controls(); draw(); },
       { swing: pre.filter(d => d.role === "Swing").length }));
     const rows = pre.filter(roleOk);
     const shown = st.q ? rows.filter(d => (d.name || "").toLowerCase().includes(st.q)) : rows;
-    if (side !== st.side) { tbl = S.table(document.getElementById("t"), st.side === "hitters" ? hCols : pCols, { sortKey: st.side === "hitters" ? "xwoba" : "k_pct" }); side = st.side; }
+    if (side !== st.side) { tbl = S.table(document.getElementById("t"), pitch ? pCols : hCols, { sortKey: pitch ? "k_pct" : "xwoba" }); side = st.side; }
     tbl.update(shown);
-    U.set({ side: st.side, team: st.team, role: pitch ? st.role : "all", min: st.min }, DEF);
-    const fl = flags.filter(d => (pitch ? d.role === "pitcher" && roleOk({ role: roleOf.get(d.player_id) }) : d.role === "hitter")
-      && (!st.team || d.team === st.team));
+    U.set({ side: st.side, team: st.team, role: pitch ? st.role : "all", min: st.min, window: st.window, asof: i === LAST ? null : dates[i] }, DEF);
     const fh = document.getElementById("flags");
-    if (st.team) {
+    if (st.team && isFinal) {
+      const flags = await flagsP();
+      const roleOf = new Map(all.map(d => [d.id, d.role]));
+      const fl = flags.filter(d => (pitch ? d.role === "pitcher" && roleOk({ role: roleOf.get(d.player_id) }) : d.role === "hitter") && d.team === st.team);
       fh.replaceChildren(fl.length
         ? S.el("div", { class: "flag-list" }, S.el("strong", {}, `${st.team}: what changed in the final 14 days (through ${meta.as_of})`),
             S.el("ul", { html: fl.map(d => `<li>${S.playerLink(d.player_id, d.name)}: ${[d.flag_discipline, d.flag_contact].filter(Boolean).join("; ")}</li>`).join("") }))
         : S.el("div", { class: "flag-list none" }, `No ${st.side} on ${st.team} crossed a change threshold in the final 14 days.`));
     } else fh.replaceChildren();
     const hi = st.team ? rows.filter(d => d.team === st.team) : (st.q ? shown : []);
-    const base = st.side === "hitters" ? hitters.filter(d => d.pa >= meta.min_pa_qualified)
-                                       : pitchers.filter(d => d.bf >= meta.min_bf_qualified && roleOk(d));
-    const X = st.side === "hitters" ? "chase_pct" : "bb_pct", Y = st.side === "hitters" ? "xwoba" : "k_pct";
+    const base = all.filter(d => d.qualified && roleOk(d));
+    const X = pitch ? "bb_pct" : "chase_pct", Y = pitch ? "k_pct" : "xwoba";
     S.plot(host, w => Plot.plot({ ...S.plotDefaults(w), height: 320, grid: true,
-      x: { label: st.side === "hitters" ? "Chase rate →" : "Walk rate →", tickFormat: "%" },
-      y: { label: st.side === "hitters" ? "↑ xwOBA" : "↑ Strikeout rate", tickFormat: st.side === "hitters" ? ".3f" : "%" },
+      x: { label: pitch ? "Walk rate →" : "Chase rate →", tickFormat: "%" },
+      y: { label: pitch ? "↑ Strikeout rate" : "↑ xwOBA", tickFormat: pitch ? "%" : ".3f" },
       marks: [
         Plot.dot(base, { x: X, y: Y, r: 3, fill: "#c9c7c0", fillOpacity: 0.7 }),
         Plot.dot(hi, { x: X, y: Y, r: 5.5, fill: "#eb6834", stroke: "#fff", strokeWidth: 1.2 }),
         hi.length <= 30 ? Plot.text(hi, { x: X, y: Y, text: d => d.name.split(" ").filter(w => !/^(Jr\.?|Sr\.?|II|III|IV)$/.test(w)).slice(-1)[0], dy: -10, fontSize: 10.5 }) : null,
-        Plot.tip(base.concat(hi), Plot.pointer({ x: X, y: Y, title: d => `${d.name} (${d.team}${pitch ? `, ${d.role}` : ""})\n${st.side === "hitters" ? `Chase ${f.pct(d.chase_pct)} · xwOBA ${f.woba(d.xwoba)}` : `K ${f.pct(d.k_pct)} · BB ${f.pct(d.bb_pct)}`}` }))] }));
+        Plot.tip(base.concat(hi), Plot.pointer({ x: X, y: Y, title: d => `${d.name} (${d.team}${pitch ? `, ${d.role}` : ""})\n${pitch ? `K ${f.pct(d.k_pct)} · BB ${f.pct(d.bb_pct)}` : `Chase ${f.pct(d.chase_pct)} · xwOBA ${f.woba(d.xwoba)}`}` }))] }));
+    const when = `Through ${S.dateLabel(dates[i])}${st.window === "last30" ? ", last 30 days" : ""}`;
     const who = pitch && st.role !== "all" ? S.ROLES[st.role].toLowerCase() : "pitchers";
-    document.getElementById("scap").textContent = (st.side === "hitters"
-      ? `Gray: every qualified Triple-A hitter. Lower chase rates go with somewhat better xwOBA (r = ${S.corr(base, X, Y).toFixed(2).replace("-", "−")}), but the spread at any chase rate is wide. Table: ${st.min ?? HIT_MIN}+ PA.`
-      : `Gray: every qualified Triple-A ${who === "pitchers" ? "pitcher" : who.replace(/s$/, "")} (${meta.min_bf_qualified}+ BF). Upper left is where you want to be: lots of strikeouts, few walks. Table: ${rows.length} ${who}, ${S.qualifierText(Q, "AAA", st.min, st.role)}.`)
-      + (hi.length ? ` Orange: ${st.team || "search matches"}.` : " Pick a team or search a name to highlight players.");
+    const r = base.length > 2 ? S.corr(base, X, Y) : NaN;
+    document.getElementById("scap").textContent = `${when}. ` + (pitch
+      ? `Gray: every qualified Triple-A ${who === "pitchers" ? "pitcher" : who.replace(/s$/, "")}. Upper left is where you want to be: lots of strikeouts, few walks. Table: ${rows.length} ${who}, ${S.qualifierText(Q, "AAA", st.min, st.role, fac)}.`
+      : `Gray: every qualified Triple-A hitter. Lower chase rates go with ${isNaN(r) ? "—" : r < 0 ? "better" : "no better"} xwOBA here (r = ${isNaN(r) ? "—" : r.toFixed(2).replace("-", "−")}), but the spread at any chase rate is wide. Table: ${st.min ?? hitMin(fac)}+ PA.`)
+      + (hi.length ? ` Orange: ${st.team || "search matches"}.` : " Pick a team or search a name to highlight players.")
+      + (rows.length === 0 && (pitch && st.role) === "SP" ? ` No pitcher has ${meta.role_rules.role_sp_min_starts}+ starts yet, the minimum for the starter role; early-season starters show as Swing.` : "")
+      + (isFinal ? "" : " Δ14 columns and change flags describe the season's final two weeks, so they show only at the final date with the season-to-date window.");
   }
   controls(); draw();
 })();
@@ -104,5 +126,5 @@ Every {{< meta baseball.season >}} Triple-A hitter and pitcher, ranked against t
 ```
 
 ::: {.note}
-{{< meta baseball.season >}} regular season through {{< meta baseball.as_of >}}. "Δ14" compares the final 14 days with the full season. Flags fire on chase rate ±5 pts or hard-hit rate ±10 pts (hitters, 30+ recent PA), fastball velocity ±1 mph (pitchers, 10+ recent BF), and walk rate +5 or whiff rate +7 pts (25+ recent BF). Definitions are in the [glossary](/glossary.html).
+{{< meta baseball.season >}} regular season through {{< meta baseball.as_of >}}, in weekly snapshots. "Δ14" compares the final 14 days with the full season. Flags fire on chase rate ±5 pts or hard-hit rate ±10 pts (hitters, 30+ recent PA), fastball velocity ±1 mph (pitchers, 10+ recent BF), and walk rate +5 or whiff rate +7 pts (25+ recent BF). Definitions are in the [glossary](/glossary.html).
 :::

@@ -1,0 +1,40 @@
+<!-- Quarto's default metadata partial (quarto-cli share/formats/html/pandoc/metadata.html), plus the
+     early preload below. It renders before Quarto's CSS/JS, so the data download isn't held up by
+     the stylesheets or by d3/Plot. Re-copy the default part if a Quarto upgrade changes it. -->
+<meta charset="utf-8" />
+$if(quarto-version)$
+<meta name="generator" content="quarto-$quarto-version$" />
+$else$
+<meta name="generator" content="quarto" />
+$endif$
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+
+$for(author-meta)$
+<meta name="author" content="$author-meta$" />
+$endfor$
+$if(date-meta)$
+<meta name="dcterms.date" content="$date-meta$" />
+$endif$
+$if(keywords)$
+<meta name="keywords" content="$for(keywords)$$keywords$$sep$, $endfor$" />
+$endif$
+$if(description-meta)$
+<meta name="description" content="$description-meta$" />
+$endif$
+
+<title>$pagetitle$$if(title-prefix)$ – $title-prefix$$endif$</title>
+
+<!-- In this partial, a literal $$ is written $$$$ (Pandoc template syntax). -->
+<script>
+  // Start each data page's first downloads now, in parallel with d3 and Plot, instead of after
+  // them. Only files the requested view will use: an unused preload logs a console warning.
+  (function () {
+    var q = new URLSearchParams(location.search), p = location.pathname, w = q.get("window") === "last30" ? "_last30" : "";
+    var add = function (f) { var l = document.createElement("link"); l.rel = "preload"; l.as = "fetch";
+      l.crossOrigin = "anonymous"; l.href = "/data/baseball/" + f; document.head.appendChild(l); };
+    if (/\/tools\/triple-a(\.html)?$$/.test(p)) { add("meta.json"); add("snapshots_" + (q.get("side") || "hitters") + "_aaa" + w + ".json"); }
+    else if (/\/tools\/stuff-leaderboard(\.html)?$$/.test(p)) { add("meta.json"); add("snapshots_pitchers_" + (q.get("level") || "MLB").toLowerCase() + w + ".json"); }
+    else if (/\/baseball\/player(\.html)?$$/.test(p)) { add("meta.json"); add("players_index.json"); }
+  })();
+</script>

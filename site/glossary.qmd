@@ -5,7 +5,7 @@ description: "What the numbers on Sparvi mean and how they're calculated."
 
 ## Pitching
 
-**Stuff+**: Pitch quality graded only on physical traits (velocity, movement, spin, release point, extension, arm angle, and gaps from the pitcher's primary fastball). 100 is an average qualified MLB pitcher; 10 points is one standard deviation. Pitch-level grades are scaled within fastballs, breaking balls, and offspeed pitches. [How it's built](/baseball/stuff-plus/#method).
+**Stuff+**: Pitch quality graded only on physical traits (velocity, movement, spin, release point, extension, arm angle, and gaps from the pitcher's primary fastball). 100 is an average qualified MLB pitcher from the season before ({{< meta baseball.scale_ref_season >}}), and the scale stays fixed all season; 10 points is one standard deviation. Pitch-level grades are scaled within fastballs, breaking balls, and offspeed pitches. [How it's built](/baseball/stuff-plus/#method).
 
 **RV+**: Actual run value per 100 pitches, on the same scale as Stuff+.
 
@@ -43,7 +43,11 @@ description: "What the numbers on Sparvi mean and how they're calculated."
 
 ## Conventions
 
-**Percentiles** rank a player against the qualified league pool (150+ PA or batters faced) and are **oriented so higher is always better**, so a low chase rate or a low walk rate allowed shows as a high percentile. Unqualified players are placed against the same qualified pool.
+**Percentiles** rank a player against the qualified league pool and are **oriented so higher is always better**, so a low chase rate or a low walk rate allowed shows as a high percentile. Unqualified players are placed against the same qualified pool.
+
+**Qualified pool** {#qualified}: {{< meta baseball.min_pa_qualified >}}+ PA (hitters) or batters faced (pitchers) over a full season. Earlier in the season, and in the last-30-days window, the minimum is prorated to the share of the schedule played (team games so far ÷ a full season), with a floor of 25. At each level's final date this season, Triple-A teams had played a median of {{< meta baseball.aaa_final_team_games >}} of {{< meta baseball.aaa_full_season_games >}} games, so the Triple-A minimum is {{< meta baseball.aaa_final_qual >}}.
+
+**Snapshots and the date slider** {#snapshots}: The leaderboard, Triple-A explorer, and player pages keep a weekly snapshot of every number: the last game on or before each Sunday, plus the final day. "Season to date" counts everything through that date; "last 30 days" only the 30 days before it. Roles and percentiles are as of each snapshot, and Stuff+ uses the same fixed scale throughout. The final season-to-date snapshot matches the season totals exactly.
 
 **Δ14** compares the final (or most recent) 14 days with the season to date. Rates are in percentage points. [Why two weeks is enough for some numbers and not others](/baseball/two-week-signal/).
 

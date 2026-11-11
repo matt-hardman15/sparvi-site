@@ -39,7 +39,7 @@ Every {{< meta baseball.season >}} Triple-A player who is likely eligible for th
       pitch ? roleHost : null,
       S.number("Max. age", st.agemax, 1, v => { st.agemax = v; draw(); }, "any"),
       S.number(pitch ? "Min. BF" : "Min. PA", st.min, 25, v => { st.min = v; draw(); }, String(MIN_DEFAULT)),
-      S.search("Find a player", "Name", v => { st.q = v; draw(); })].filter(Boolean));
+      S.search("Find a player", "Name", v => { st.q = v; draw(); }, st.q)].filter(Boolean));
   }
   const statusCell = r => `<span class="r5-status r5-${r.status.split(" ")[0].toLowerCase()}" title="${r.reason.replace(/"/g, "&quot;")}">${r.status}</span>`;
   const pc = (key, label, title) => ({ key, label, fmt: v => v == null ? "—" : Math.round(v), heat: "pct", heatVal: r => r[key], title });

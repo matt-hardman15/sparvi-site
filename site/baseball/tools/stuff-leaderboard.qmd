@@ -4,49 +4,76 @@ description: "Every MLB and Triple-A pitcher and pitch this season, graded on ve
 page-layout: full
 ---
 
-Stuff+ grades a pitch only on physical traits the pitcher controls: velocity, movement, spin, release point, extension, arm angle, and how the pitch differs from his primary fastball. **100 is an average MLB pitcher and every 10 points is one standard deviation.** RV+ is actual run value on the same scale, so you can see who got results their stuff doesn't explain, and vice versa. Filter by role to compare starters with starters and relievers with relievers; the default pitch minimum follows the role. How the model works and how well it predicts: [Stuff predicts next season better than results do](/baseball/stuff-plus/).
+Stuff+ grades a pitch only on physical traits the pitcher controls: velocity, movement, spin, release point, extension, arm angle, and how the pitch differs from his primary fastball. **100 is an average qualified MLB pitcher from the season before ({{< meta baseball.scale_ref_season >}}), and every 10 points is one standard deviation.** The scale is frozen for the whole season, so a grade means the same thing in April as in September. RV+ is actual run value on the same kind of scale, so you can see who got results their stuff doesn't explain, and vice versa. Move the date slider to see the board as it stood on any week, or sort by the change column to find who's improving. How the model works and how well it predicts: [Stuff predicts next season better than results do](/baseball/stuff-plus/).
 
 ```{=html}
 <div class="explorer">
   <div class="controls" id="c"></div>
+  <div class="controls" id="c2"></div>
   <div id="scatter" class="plot-host"></div>
   <p class="caption" id="scap"></p>
   <div id="t"><div class="loading">Loading…</div></div>
 </div>
+<div class="explorer">
+  <h3>The league over the season</h3>
+  <div id="season" class="plot-host"></div>
+  <p class="caption" id="seasoncap"></p>
+</div>
 <script>
 (async () => {
   const S = Sparvi, f = S.fmt, U = S.urlState;
-  const [pitchers, pitches, meta] = await Promise.all(["stuff_pitchers", "stuff_pitches", "meta"].map(n => S.load(`/data/baseball/${n}.json`)));
-  const Q = meta.qualifiers;
-  const DEF = { view: "pitchers", level: "MLB", team: "", role: "all", group: "" };
+  const pfile = (lvl, win = "std") => S.loadSnap(`snapshots_pitchers_${lvl.toLowerCase()}`, win);
+  const ptfile = (lvl) => S.load(`/data/baseball/snapshots_pitches_${lvl.toLowerCase()}.json`);
+  pfile(U.get("level", "MLB"), "std");  // start the data request now, in parallel with meta
+  const meta = await S.load("/data/baseball/meta.json");
+  const Q = meta.qualifiers, PITCH_MIN = 100;
+  const DEF = { view: "pitchers", level: "MLB", team: "", role: "all", group: "", window: "std", since: "prev" };
   const st = {
     view: U.get("view", DEF.view), level: U.get("level", DEF.level), team: U.get("team", DEF.team),
-    role: U.get("role", DEF.role), group: U.get("group", DEF.group), q: "",
-    min: U.get("min") == null ? null : +U.get("min"),  // null = default (role-aware for pitchers, 100 per pitch type)
+    role: U.get("role", DEF.role), group: U.get("group", DEF.group), window: U.get("window", DEF.window),
+    since: U.get("since", DEF.since), asof: U.get("asof"), q: "",
+    min: U.get("min") == null ? null : +U.get("min"),
   };
-  const PITCH_MIN = 100;
-  const teams = (lvl) => [...new Set(pitchers.filter(d => d.level === lvl).map(d => d.team))].sort();
-  const c = document.getElementById("c");
+  const dates = () => meta.snapshots[st.level].dates;
+  const idx = () => { const d = dates(), k = st.asof ? S.snapIndex(d, st.asof) : d.length - 1; return k < 0 ? 0 : k; };
+  const c = document.getElementById("c"), c2 = document.getElementById("c2");
   const roleHost = S.el("span", { class: "role-host" });
   const reset = () => { st.min = null; };
+  let slider;
+  const teamsOf = {};
+  async function loadTeams(lvl) {
+    const pf = await pfile(lvl);
+    teamsOf[lvl] = [...new Set(pf.players.map(p => p.series.std.team.filter(Boolean).slice(-1)[0]).filter(Boolean))].sort();
+  }
+  await loadTeams(st.level);
   function controls() {
     const minPh = st.view === "pitches" ? String(PITCH_MIN) : st.role === "all" ? "by role" : String(Q[st.level][st.role]);
+    const teams = teamsOf[st.level] || [];
     c.replaceChildren(...[
       S.el("label", {}, "View", S.seg([["pitchers", "Pitchers"], ["pitches", "Individual pitches"]], st.view, v => { st.view = v; reset(); controls(); draw(); })),
-      S.el("label", {}, "Level", S.seg([["MLB", "MLB"], ["AAA", "Triple-A"]], st.level, v => { st.level = v; st.team = ""; reset(); controls(); draw(); })),
-      S.select("Team", [["", "All teams"], ...teams(st.level).map(t => [t, t])], st.team, v => { st.team = v; draw(); }),
+      S.el("label", {}, "Level", S.seg([["MLB", "MLB"], ["AAA", "Triple-A"]], st.level, async v => { st.level = v; st.team = ""; reset(); await loadTeams(v); controls(); draw(); })),
+      S.select("Team", [["", "All teams"], ...teams.map(t => [t, t])], st.team, v => { st.team = v; draw(); }),
       roleHost,
       st.view === "pitches" ? S.select("Pitch group", [["", "All"], ["fastball", "Fastballs"], ["breaking", "Breaking balls"], ["offspeed", "Offspeed"]], st.group, v => { st.group = v; draw(); }) : null,
       S.number(st.view === "pitches" ? "Min. of the pitch" : "Min. pitches", st.min, 50, v => { st.min = v; draw(); }, minPh),
-      S.search("Find a pitcher", "e.g. Misiorowski", v => { st.q = v; draw(); })].filter(Boolean));
+      S.search("Find a pitcher", "e.g. Misiorowski", v => { st.q = v; draw(); }, st.q)].filter(Boolean));
+    slider = S.dateSlider(dates(), idx(), k => { st.asof = dates()[k]; draw(); });
+    const sinceOpts = [["prev", "the week before"], ...dates().slice(0, -1).map(d => [d, S.dateLabel(d)])];
+    c2.replaceChildren(...[
+      slider.el,
+      st.view === "pitchers"
+        ? S.el("label", {}, "Window", S.seg(Object.entries(S.WINDOWS), st.window, v => { st.window = v; draw(); }))
+        : S.el("label", {}, "Window", S.el("span", { class: "muted", style: "padding:.35rem 0" }, "Pitch grades are season to date")),
+      S.select("Change since", sinceOpts, st.since, v => { st.since = v; draw(); })].filter(Boolean));
   }
   const pitcherCols = [
     { key: "name", label: "Pitcher", align: "l", html: r => S.playerLink(r.id, r.name) },
     { key: "team", label: "Team", align: "l" },
-    { key: "role", label: "Role", align: "l", title: "SP starter · RP reliever · Swing (see glossary)" },
+    { key: "role", label: "Role", align: "l", title: "SP starter · RP reliever · Swing, as of the selected date (see glossary)" },
     { key: "throws", label: "T", align: "l" },
     { key: "pitches", label: "Pitches", fmt: f.int },
     { key: "stuff_plus", label: "Stuff+", heat: "plus", fmt: v => f.num(v, 0) },
+    { key: "delta", label: "Δ Stuff+", fmt: v => f.signed(v, 1), title: "Change in Stuff+ since the date in 'Change since'. Sort to find the movers." },
     { key: "rv_plus", label: "RV+", heat: "plus", fmt: v => f.num(v, 0), title: "Actual run value on the Stuff+ scale" },
     { key: "gap", label: "RV+ − Stuff+", fmt: v => f.signed(v, 0), title: "Positive: results better than the stuff" },
   ];
@@ -55,23 +82,55 @@ Stuff+ grades a pitch only on physical traits the pitcher controls: velocity, mo
     { key: "team", label: "Team", align: "l" },
     { key: "role", label: "Role", align: "l" },
     { key: "pt", label: "Pitch", align: "l" },
-    { key: "n", label: "Pitches", fmt: f.int },
+    { key: "pitches", label: "Pitches", fmt: f.int },
     { key: "velo", label: "Velo", fmt: v => f.num(v) },
     { key: "ivb", label: "IVB", fmt: v => f.num(v), title: "Induced vertical break, inches" },
     { key: "hb", label: "HB", fmt: v => f.num(v), title: "Horizontal break, inches, arm side positive" },
     { key: "stuff_plus", label: "Stuff+", heat: "plus", fmt: v => f.num(v, 0) },
+    { key: "delta", label: "Δ Stuff+", fmt: v => f.signed(v, 1), title: "Change since the date in 'Change since'" },
   ];
   const table = { pitchers: null, pitches: null };
   const host = document.getElementById("scatter");
-  function draw() {
-    // Everything except the role filter, so the Swing button knows whether any swingmen remain.
+  const baseIndex = (i) => st.since === "prev" ? Math.max(0, i - 1) : Math.min(i, Math.max(0, S.snapIndex(dates(), st.since)));
+
+  // League view: median and middle 50% of Stuff+ by role at each snapshot, qualified pitchers only.
+  const seasonCache = {};
+  function seasonSeries(file) {
+    const key = st.level + st.window;
+    if (seasonCache[key]) return seasonCache[key];
+    const out = [];
+    file.dates.forEach((d, i) => {
+      const fac = S.prorate(meta, st.level, i, st.window);
+      for (const role of ["SP", "RP"]) {
+        const v = S.snapRows(file, st.window, i, "pitches").filter(r => r.role === role && r.stuff_plus != null
+          && S.qualifies(Q, st.level, null, r.pitches, role, fac)).map(r => r.stuff_plus).sort(d3.ascending);
+        if (v.length >= 10) out.push({ date: new Date(d + "T12:00:00"), role, n: v.length,
+          q1: d3.quantileSorted(v, 0.25), med: d3.quantileSorted(v, 0.5), q3: d3.quantileSorted(v, 0.75) });
+      }
+    });
+    return (seasonCache[key] = out);
+  }
+
+  async function draw() {
+    const i = idx(), j = baseIndex(i), win = st.view === "pitches" ? null : st.window;
+    const fac = S.prorate(meta, st.level, i, st.window);
+    const pf = await pfile(st.level), wf = st.view === "pitchers" ? await pfile(st.level, st.window) : pf;
+    const atI = new Map(S.snapRows(pf, "std", i, "pitches").map(r => [r.id, r]));  // role and team as of the date
     let base;
     if (st.view === "pitchers") {
-      base = pitchers.filter(d => d.level === st.level && (!st.team || d.team === st.team)
-        && S.qualifies(Q, st.level, st.min, d.pitches, d.role)).map(d => ({ ...d, gap: d.rv_plus - d.stuff_plus }));
+      const then = new Map(S.snapRows(wf, st.window, j, "pitches").map(r => [r.id, r.stuff_plus]));
+      base = S.snapRows(wf, win, i, "pitches")
+        .map(r => ({ ...r, role: atI.get(r.id)?.role ?? r.role, team: atI.get(r.id)?.team ?? r.team,
+                     gap: r.rv_plus != null && r.stuff_plus != null ? r.rv_plus - r.stuff_plus : null,
+                     delta: j < i && then.get(r.id) != null && r.stuff_plus != null ? r.stuff_plus - then.get(r.id) : null }))
+        .filter(d => (!st.team || d.team === st.team) && d.stuff_plus != null && S.qualifies(Q, st.level, st.min, d.pitches, d.role, fac));
     } else {
-      base = pitches.filter(d => d.level === st.level && d.n >= (st.min ?? PITCH_MIN) && (!st.team || d.team === st.team)
-        && (!st.group || d.group === st.group));
+      const ptf = await ptfile(st.level);
+      const then = new Map(S.snapRows(ptf, null, j, "pitches").map(r => [r.id + r.pt, r.stuff_plus]));
+      base = S.snapRows(ptf, null, i, "pitches")
+        .map(r => ({ ...r, role: atI.get(r.id)?.role, team: atI.get(r.id)?.team,
+                     delta: j < i && then.get(r.id + r.pt) != null && r.stuff_plus != null ? r.stuff_plus - then.get(r.id + r.pt) : null }))
+        .filter(d => d.pitches >= (st.min ?? PITCH_MIN) && d.stuff_plus != null && (!st.team || d.team === st.team) && (!st.group || d.group === st.group));
     }
     roleHost.replaceChildren(S.roleFilter(st.role, v => { st.role = v; reset(); controls(); draw(); },
       { swing: base.filter(d => d.role === "Swing").length }));
@@ -81,15 +140,17 @@ Stuff+ grades a pitch only on physical traits the pitcher controls: velocity, mo
                                        : (table.pitches ||= S.table(document.getElementById("t"), pitchCols, { sortKey: "stuff_plus" }));
     if (st.view === "pitchers") table.pitches = null; else table.pitchers = null;
     tbl.update(shown);
-    U.set({ view: st.view, level: st.level, team: st.team, role: st.role, group: st.view === "pitches" ? st.group : "", min: st.min }, DEF);
+    const final = i === dates().length - 1;
+    U.set({ view: st.view, level: st.level, team: st.team, role: st.role, group: st.view === "pitches" ? st.group : "",
+            min: st.min, window: st.window, since: st.since, asof: final ? null : dates()[i] }, DEF);
     S.plot(host, w => st.view === "pitchers"
       ? Plot.plot({ ...S.plotDefaults(w), height: 340, grid: true,
           x: { label: "Stuff+ →", nice: true }, y: { label: "↑ RV+ (results)", nice: true },
           marks: [Plot.ruleX([100], { stroke: "#8a8b8f", strokeDasharray: "3,3" }), Plot.ruleY([100], { stroke: "#8a8b8f", strokeDasharray: "3,3" }),
-            Plot.dot(rows, { x: "stuff_plus", y: "rv_plus", r: 3.5, fill: "#2a78d6", fillOpacity: st.q ? 0.15 : 0.55 }),
-            st.q ? Plot.dot(shown, { x: "stuff_plus", y: "rv_plus", r: 6, fill: "#eb6834", stroke: "#fff", strokeWidth: 1.5 }) : null,
+            Plot.dot(rows.filter(d => d.rv_plus != null), { x: "stuff_plus", y: "rv_plus", r: 3.5, fill: "#2a78d6", fillOpacity: st.q ? 0.15 : 0.55 }),
+            st.q ? Plot.dot(shown.filter(d => d.rv_plus != null), { x: "stuff_plus", y: "rv_plus", r: 6, fill: "#eb6834", stroke: "#fff", strokeWidth: 1.5 }) : null,
             st.q ? Plot.text(shown.slice(0, 8), { x: "stuff_plus", y: "rv_plus", text: "name", dy: -12, fontWeight: 600 }) : null,
-            Plot.tip(rows, Plot.pointer({ x: "stuff_plus", y: "rv_plus", title: d => `${d.name} (${d.team}, ${d.role})\nStuff+ ${f.num(d.stuff_plus,0)} · RV+ ${f.num(d.rv_plus,0)}\n${f.int(d.pitches)} pitches · ${d.g} G, ${d.gs} GS` }))] })
+            Plot.tip(rows.filter(d => d.rv_plus != null), Plot.pointer({ x: "stuff_plus", y: "rv_plus", title: d => `${d.name} (${d.team}, ${d.role})\nStuff+ ${f.num(d.stuff_plus,0)} · RV+ ${f.num(d.rv_plus,0)}\n${f.int(d.pitches)} pitches · ${d.games} G, ${d.starts} GS` }))] })
       : Plot.plot({ ...S.plotDefaults(w), height: 340, grid: true, clip: true,
           x: { label: "Horizontal break, arm side + (in) →", domain: [-24, 24] }, y: { label: "↑ Induced vertical break (in)", domain: [-24, 24] },
           color: { type: "diverging", domain: [70, 130], pivot: 100, range: ["#2a78d6", "#d9d8d3", "#eb6834"], legend: true, label: "Stuff+" },
@@ -98,9 +159,22 @@ Stuff+ grades a pitch only on physical traits the pitcher controls: velocity, mo
             st.q ? Plot.dot(shown, { x: "hb", y: "ivb", r: 6, fill: "stuff_plus", stroke: "#16181d", strokeWidth: 1.5 }) : null,
             Plot.tip(rows, Plot.pointer({ x: "hb", y: "ivb", title: d => `${d.name} ${d.pt} (${d.role})\n${f.num(d.velo)} mph · ${f.num(d.ivb)} IVB · ${f.num(d.hb)} HB\nStuff+ ${f.num(d.stuff_plus,0)}` }))] }));
     const who = st.role === "all" ? "" : ` ${S.ROLES[st.role].toLowerCase()}`;
-    document.getElementById("scap").textContent = st.view === "pitchers"
-      ? `${rows.length}${who || " pitchers"}. Qualifier: ${S.qualifierText(Q, st.level, st.min, st.role)}. Upper left: results better than the stuff. Lower right: stuff better than the results. Hover for details; search to highlight.`
-      : `${rows.length} pitches by movement shape${who ? ` from${who}` : ""}, colored by Stuff+. Qualifier: ${st.min ?? PITCH_MIN}+ of that pitch. Hover for details; search to highlight one pitcher's arsenal.`;
+    const when = `Through ${S.dateLabel(dates()[i])}${st.view === "pitchers" && st.window === "last30" ? ", last 30 days" : ""}`;
+    const since = j < i ? ` Δ Stuff+ is the change since ${S.dateLabel(dates()[j])}.` : "";
+    document.getElementById("scap").textContent = (st.view === "pitchers"
+      ? `${when}: ${rows.length}${who || " pitchers"}. Qualifier: ${S.qualifierText(Q, st.level, st.min, st.role, fac)}. Upper left: results better than the stuff. Lower right: stuff better than the results.`
+      : `${when}: ${rows.length} pitches by movement shape${who ? ` from${who}` : ""}, colored by Stuff+. Qualifier: ${st.min ?? PITCH_MIN}+ of that pitch.`) + since + (rows.length === 0 && st.role === "SP" ? ` No pitcher has ${meta.role_rules.role_sp_min_starts}+ starts yet, the minimum for the starter role; early-season starters show as Swing.` : "") + " Hover for details; search to highlight.";
+
+    const ss = seasonSeries(wf);
+    S.plot(document.getElementById("season"), w => Plot.plot({ ...S.plotDefaults(w), height: 260, grid: true,
+      x: { type: "time", label: null }, y: { label: "↑ Stuff+ (median, middle 50%)", nice: true },
+      color: { domain: ["SP", "RP"], range: ["#0f5257", "#8a8b8f"], legend: true, tickFormat: r => r === "SP" ? "Starters" : "Relievers" },
+      marks: [Plot.ruleY([100], { stroke: "#c9c7c0" }),
+        Plot.areaY(ss, { x: "date", y1: "q1", y2: "q3", z: "role", fill: "role", fillOpacity: 0.18 }),
+        Plot.lineY(ss, { x: "date", y: "med", z: "role", stroke: "role", strokeWidth: 2 }),
+        S.asOfMark(dates()[i]),
+        Plot.tip(ss, Plot.pointer({ x: "date", y: "med", title: d => `${d.role === "SP" ? "Starters" : "Relievers"}, through ${S.dateLabel(d.date.toISOString().slice(0, 10))}\nMedian ${f.num(d.med)} · middle 50% ${f.num(d.q1)}–${f.num(d.q3)}\n${d.n} qualified` }))] }));
+    document.getElementById("seasoncap").textContent = `Stuff+ of qualified ${st.level === "AAA" ? "Triple-A" : "MLB"} starters and relievers at each weekly snapshot (${S.WINDOWS[st.window].toLowerCase()}): the line is the median, the band the middle 50%. The dashed line marks the slider's date. Compare where starters and relievers sit, and look for drift as velocity builds through spring.`;
   }
   controls(); draw();
 })();
@@ -108,5 +182,5 @@ Stuff+ grades a pitch only on physical traits the pitcher controls: velocity, mo
 ```
 
 ::: {.note}
-{{< meta baseball.season >}} regular season. Triple-A pitchers are graded on the same MLB-trained model, so their numbers are directly comparable with big leaguers'. Triple-A RV+ is measured against weaker hitters, so expect it to run high. Roles (SP, RP, Swing) and the role-based pitch minimums are defined in the [glossary](/glossary.html#roles). [How Stuff+ is built](/baseball/stuff-plus/#method).
+{{< meta baseball.season >}} regular season, weekly snapshots (the last game on or before each Sunday, plus the final day). Triple-A pitchers are graded on the same MLB-trained model, so their numbers are directly comparable with big leaguers'. Triple-A RV+ is measured against weaker hitters, so expect it to run high. Roles (SP, RP, Swing) are as of the selected date and use the role-based pitch minimums in the [glossary](/glossary.html#roles); earlier in the season the minimums are prorated to games played. [How Stuff+ is built](/baseball/stuff-plus/#method).
 :::
