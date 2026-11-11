@@ -4,7 +4,7 @@ description: "Swing decisions, contact quality, and pitching profiles for every 
 page-layout: full
 ---
 
-Every 2026 Triple-A hitter and pitcher, ranked against the qualified league pool (150+ PA or batters faced). Percentiles are oriented so **higher is always better**: a low chase rate or a low walk rate shows as a high percentile. Click a column to sort and a name for the full player page. Why the flags lean on swing decisions and velocity: [Two weeks of swing decisions tells you something. Two weeks of results doesn't.](/baseball/two-week-signal/)
+Every {{< meta baseball.season >}} Triple-A hitter and pitcher, ranked against the qualified league pool (150+ PA or batters faced). Percentiles are oriented so **higher is always better**: a low chase rate or a low walk rate shows as a high percentile. Click a column to sort and a name for the full player page. Why the flags lean on swing decisions and velocity: [Two weeks of swing decisions tells you something. Two weeks of results doesn't.](/baseball/two-week-signal/)
 
 ```{=html}
 <div class="explorer">
@@ -75,7 +75,7 @@ Every 2026 Triple-A hitter and pitcher, ranked against the qualified league pool
         hi.length <= 30 ? Plot.text(hi, { x: X, y: Y, text: d => d.name.split(" ").filter(w => !/^(Jr\.?|Sr\.?|II|III|IV)$/.test(w)).slice(-1)[0], dy: -10, fontSize: 10.5 }) : null,
         Plot.tip(base.concat(hi), Plot.pointer({ x: X, y: Y, title: d => `${d.name} (${d.team})\n${st.side === "hitters" ? `Chase ${f.pct(d.chase_pct)} · xwOBA ${f.woba(d.xwoba)}` : `K ${f.pct(d.k_pct)} · BB ${f.pct(d.bb_pct)}`}` }))] }));
     document.getElementById("scap").textContent = (st.side === "hitters"
-      ? "Gray: every qualified Triple-A hitter. Lower chase rates go with somewhat better xwOBA (r ≈ −0.2), but the spread at any chase rate is wide."
+      ? `Gray: every qualified Triple-A hitter. Lower chase rates go with somewhat better xwOBA (r = ${S.corr(base, X, Y).toFixed(2).replace("-", "−")}), but the spread at any chase rate is wide.`
       : "Gray: every qualified Triple-A pitcher. Upper left is where you want to be: lots of strikeouts, few walks.")
       + (hi.length ? ` Orange: ${st.team || "search matches"}.` : " Pick a team or search a name to highlight players.");
   }
@@ -85,5 +85,5 @@ Every 2026 Triple-A hitter and pitcher, ranked against the qualified league pool
 ```
 
 ::: {.note}
-2026 regular season through the final game. "Δ14" compares the final 14 days with the full season. Flags fire on chase rate ±5 pts or hard-hit rate ±10 pts (hitters, 30+ recent PA), fastball velocity ±1 mph (pitchers, 10+ recent BF), and walk rate +5 or whiff rate +7 pts (25+ recent BF). Definitions are in the [glossary](/glossary.html).
+{{< meta baseball.season >}} regular season through {{< meta baseball.as_of >}}. "Δ14" compares the final 14 days with the full season. Flags fire on chase rate ±5 pts or hard-hit rate ±10 pts (hitters, 30+ recent PA), fastball velocity ±1 mph (pitchers, 10+ recent BF), and walk rate +5 or whiff rate +7 pts (25+ recent BF). Definitions are in the [glossary](/glossary.html).
 :::

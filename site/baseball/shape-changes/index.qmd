@@ -8,7 +8,7 @@ image: thumb.png
 
 ::: {.finding}
 [The finding]{.label}
-Across 1,174 MLB pitch types, **74–89% of a midseason change in movement was still there the following spring**, in both directions. Velocity *gains* held too (82%). Velocity *losses* didn't: only 55% held overall, and **just 40% for fastballs**.
+Across {{< meta baseball.shape_n >}} MLB pitch types, **{{< meta baseball.shape_move_lo >}}–{{< meta baseball.shape_move_hi >}}% of a midseason change in movement was still there the following spring**, in both directions. Velocity *gains* held too ({{< meta baseball.shape_velo_gain >}}%). Velocity *losses* didn't: only {{< meta baseball.shape_velo_loss >}}% held overall, and **just {{< meta baseball.shape_fb_loss >}}% for fastballs**.
 :::
 
 ::: {.so-what}
@@ -16,7 +16,7 @@ Across 1,174 MLB pitch types, **74–89% of a midseason change in movement was s
 
 - **A shape change that shows up in July is probably real and probably durable.** Gaining two inches of ride midseason isn't a mirage the offseason erases.
 - **Don't over-read a second-half fastball velocity drop.** Most pitchers get most of it back by spring. It's worth a conversation with the training staff, not necessarily a change in plans.
-- **Velocity drops on breaking balls and offspeed pitches hold more than fastball drops** (62% vs. 40%). Some of those are likely deliberate, like a slider thrown slower for more depth, so check intent before calling it a problem.
+- **Velocity drops on breaking balls and offspeed pitches hold more than fastball drops** ({{< meta baseball.shape_nonfb_loss >}}% vs. {{< meta baseball.shape_fb_loss >}}%). Some of those are likely deliberate, like a slider thrown slower for more depth, so check intent before calling it a problem.
 :::
 
 ```{=html}
@@ -105,18 +105,18 @@ Every dot is one pitcher's pitch type. The x-axis is how much it changed from th
 </script>
 ```
 
-Two examples of how the slowed-breaking-ball case plays out. Cole Ragans's slider went from 86.7 mph in the first half of 2024 to 84.9 in the second, and opened 2025 at 84.7: the change held. Ryne Nelson's slider dropped from 85.6 to 82.9 over the same stretch, and was back at 86.2 the next spring. From the data alone you can't tell a deliberate change from fatigue. The split between fastballs and everything else suggests both happen.
+Two examples of how the slowed-breaking-ball case plays out. Cole Ragans's slider went from {{< meta baseball.shape_ex1_h1 >}} mph in the first half of 2024 to {{< meta baseball.shape_ex1_h2 >}} in the second, and opened 2025 at {{< meta baseball.shape_ex1_next >}}: the change held. Ryne Nelson's slider dropped from {{< meta baseball.shape_ex2_h1 >}} to {{< meta baseball.shape_ex2_h2 >}} over the same stretch, and was back at {{< meta baseball.shape_ex2_next >}} the next spring. From the data alone you can't tell a deliberate change from fatigue. The split between fastballs and everything else suggests both happen.
 
 <details class="method" id="method">
 <summary>Method and caveats</summary>
 
-**Unit.** An MLB pitcher's pitch type (e.g., one pitcher's slider) with 100+ pitches in each half of a season, split on July 15, and 100+ pitches in the first half of the following season. Two season pairs: 2024→2025 and 2025→2026, for 1,174 pitch types.
+**Unit.** An MLB pitcher's pitch type (e.g., one pitcher's slider) with {{< meta baseball.shape_min_pitches >}}+ pitches in each half of a season, split on July 15, and {{< meta baseball.shape_min_pitches >}}+ pitches in the first half of the following season. Season pairs: {{< meta baseball.shape_pairs >}}, for {{< meta baseball.shape_n >}} pitch types.
 
-**Change and kept.** Change = second-half average minus first-half average. Kept = next season's first-half average minus this season's first-half average. Both are adjusted by subtracting the league-wide average for that season pair: velocity rises about 0.1 mph into summer for almost everyone, and tracking can shift slightly between seasons.
+**Change and kept.** Change = second-half average minus first-half average. Kept = next season's first-half average minus this season's first-half average. Both are adjusted by subtracting the league-wide average for that season pair: velocity rises about {{< meta baseball.shape_league_velo >}} mph into summer for almost everyone, and tracking can shift slightly between seasons.
 
-**Persistence.** The slope of kept on change, fit through the origin, with a 2,000-sample bootstrap for the 90% interval. A slope avoids per-pitch ratios, which blow up when the original change is small. "Real" changes are 1.0+ mph or 1.5+ inches. For reference, pitch types that barely changed in-season still drift about 0.9 mph and 1.2–1.3 inches (one SD) between seasons, so individual cases are noisy even when the pooled pattern is clear.
+**Persistence.** The slope of kept on change, fit through the origin, with a {{< meta baseball.shape_bootstrap >}}-sample bootstrap for the 90% interval. A slope avoids per-pitch ratios, which blow up when the original change is small. "Real" changes are 1.0+ mph or 1.5+ inches. For reference, pitch types that barely changed in-season still drift about {{< meta baseball.shape_drift_velo >}} mph and {{< meta baseball.shape_drift_move >}} inches (one SD) between seasons, so individual cases are noisy even when the pooled pattern is clear.
 
-**Caveats.** *Survivorship:* pitchers who didn't come back with 100+ pitches of that pitch type are excluded, and those may be the ones whose velocity didn't return, so fastball persistence is probably understated if anything. *Pitch labels:* a relabeled pitch (slider to sweeper) can look like a shape change. *Sample:* subgroups are small (25 fastballs lost 1+ mph), so the direction is clearer than the exact percentages.
+**Caveats.** *Survivorship:* pitchers who didn't come back with 100+ pitches of that pitch type are excluded, and those may be the ones whose velocity didn't return, so fastball persistence is probably understated if anything. *Pitch labels:* a relabeled pitch (slider to sweeper) can look like a shape change. *Sample:* subgroups are small ({{< meta baseball.shape_fb_loss_n >}} fastballs lost 1+ mph), so the direction is clearer than the exact percentages.
 
 Code: [`baseball/shape_stability/`](https://github.com/matt-hardman15/sparvi-site/tree/main/baseball/shape_stability)
 </details>

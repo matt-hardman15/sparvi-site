@@ -1,0 +1,12 @@
+# Normalize text to LF in the repo. This machine has core.autocrlf=true, so without these
+# rules a checkout could turn shell scripts into CRLF, which breaks bash in CI.
+* text=auto
+*.sh text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+*.toml text eol=lf
+
+*.png binary
+*.parquet binary
+*.woff2 binary
+*.duckdb binary

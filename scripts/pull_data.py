@@ -1,11 +1,13 @@
 """
 Pull pitch-level Statcast data (MLB + Triple-A) from Baseball Savant and save as parquet.
 
+Seasons and date windows come from sparvi.toml (see sparvi.config).
+
 Usage:
-    pip install -r requirements.txt
-    python scripts/pull_data.py                 # MLB 2024-2026 + AAA 2025-2026
-    python scripts/pull_data.py --seasons 2026 --refresh   # re-pull the current season
-    python scripts/pull_data.py --seasons 2026  # just one season
+    uv sync
+    python scripts/pull_data.py                    # every season in the config window
+    python scripts/pull_data.py --current --refresh  # re-pull the current season
+    python scripts/pull_data.py --seasons 2025     # just one season
 
 Output: data/raw/statcast_{level}_{season}.parquet
 Re-running skips any season/level file that already exists.
@@ -14,25 +16,20 @@ import argparse
 import io
 import time
 from datetime import date, timedelta
-from pathlib import Path
 
 import pandas as pd
 import requests
 
-ROOT = Path(__file__).resolve().parents[1]
-RAW = ROOT / "data" / "raw"
+from sparvi.config import RAW, baseball
+
+CFG = baseball()
 RAW.mkdir(parents=True, exist_ok=True)
 
 MLB_URL = "https://baseballsavant.mlb.com/statcast_search/csv"
 MILB_URL = "https://baseballsavant.mlb.com/statcast-search-minors/csv"
 
-# Regular season windows (generous; empty days just return nothing)
-SEASON_WINDOWS = {
-    2024: ("2024-03-20", "2024-09-30"),
-    2025: ("2025-03-18", "2025-09-28"),
-    2026: ("2026-03-25", "2026-09-27"),
-    # Add the next season's window here at rollover (opening day to end of regular season).
-}
+# Regular-season windows live in sparvi.toml [baseball.season_windows].
+SEASON_WINDOWS = CFG.season_windows
 
 KEEP_COLS = [
     "game_pk", "game_date", "game_year", "game_type", "home_team", "away_team",
@@ -114,7 +111,7 @@ def pull_milb_rosters(season: int) -> None:
     rows = []
     for sport_id, lvl in [(1, "MLB"), (11, "AAA"), (12, "AA"), (13, "A+"), (14, "A")]:
         r = requests.get(
-            "https://statsapi.mlb.com/api/v1/sports/{}/players".format(sport_id),
+            f"https://statsapi.mlb.com/api/v1/sports/{sport_id}/players",
             params={"season": season, "hydrate": "currentTeam"},
             timeout=60,
         )
@@ -138,11 +135,14 @@ def pull_milb_rosters(season: int) -> None:
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--seasons", nargs="+", type=int, default=[2024, 2025, 2026])
+    ap.add_argument("--seasons", nargs="+", type=int, default=CFG.mlb_seasons)
+    ap.add_argument("--current", action="store_true", help=f"just the current season ({CFG.season})")
     ap.add_argument("--levels", nargs="+", default=["MLB", "AAA"])
     ap.add_argument("--refresh", action="store_true",
                     help="re-pull the given seasons even if files exist (use for the current season)")
     args = ap.parse_args()
+    if args.current:
+        args.seasons = [CFG.season]
     if args.refresh:
         for s in args.seasons:
             for f in RAW.glob(f"*_{s}.parquet"):
@@ -150,6 +150,6 @@ if __name__ == "__main__":
     for s in args.seasons:
         pull_milb_rosters(s)
         for lvl in args.levels:
-            if lvl == "AAA" and s < 2025:
+            if lvl == "AAA" and s not in CFG.aaa_seasons:
                 continue
             pull_season(s, lvl)

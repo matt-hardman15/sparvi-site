@@ -1,0 +1,46 @@
+[project]
+name = "sparvi"
+version = "0.1.0"
+description = "Free, independent sports analytics with the data behind every finding."
+readme = "README.md"
+# Keep in step with .python-version (CI and local both read that file).
+requires-python = ">=3.12,<3.13"
+# Ranges here; exact versions live in uv.lock. Upgrades arrive as Dependabot PRs that CI tests.
+dependencies = [
+    "pandas>=2.1",
+    "pyarrow>=14",
+    "requests>=2.31",
+    "numpy>=1.26",
+    "scikit-learn>=1.4",
+    "lightgbm>=4.3",
+    "matplotlib>=3.8",
+    "duckdb>=1.5,<1.6",
+    "dbt-duckdb>=1.9",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8",
+    "pytest>=8",
+    "playwright>=1.48",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["sparvi"]
+
+[tool.ruff]
+line-length = 130
+target-version = "py312"
+extend-exclude = ["site", "docs", "baseball/pd_pipeline/target"]
+
+[tool.ruff.lint]
+# Errors, pyflakes, import order, and a few bug-catchers. Style is left to the author.
+select = ["E4", "E7", "E9", "F", "I", "B", "UP"]
+ignore = ["E702", "E731"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

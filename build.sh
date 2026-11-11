@@ -1,19 +1,23 @@
 #!/usr/bin/env bash
 # Full rebuild: models -> pipeline -> exported JSON -> site in docs/.
-# Assumes data/raw/ is populated (python scripts/pull_data.py) and Quarto is installed.
+# Assumes data/raw/ is populated (python scripts/pull_data.py), the venv is active or this
+# runs under `uv run ./build.sh`, and Quarto is installed. Seasons come from sparvi.toml.
 set -euo pipefail
 cd "$(dirname "$0")"
 
+SEASON=$(python -m sparvi.config baseball.season)
 # The pipeline's "today" is the last game in the data, so off-season builds still show
 # a meaningful trailing window. During the season this is yesterday's games.
-AS_OF=$(python -c "import duckdb; print(duckdb.sql(\"select max(game_date) from 'data/raw/statcast_aaa_2026.parquet'\").fetchone()[0])")
-echo "as_of_date = $AS_OF"
+AS_OF=$(python -c "import duckdb; print(duckdb.sql(\"select max(game_date)::date from 'data/raw/statcast_aaa_${SEASON}.parquet'\").fetchone()[0])")
+echo "season = $SEASON, as_of_date = $AS_OF"
 
 python baseball/pitch_quality/train.py
 python baseball/pitch_quality/robustness.py
 python baseball/shape_stability/analysis.py
-(cd baseball/pd_pipeline && DBT_PROFILES_DIR=. dbt build --vars "{as_of_date: '$AS_OF'}")
+(cd baseball/pd_pipeline && DBT_PROFILES_DIR=. dbt build --vars "{season: $SEASON, as_of_date: '$AS_OF'}")
 python baseball/two_week_signal/analysis.py
 python baseball/export_site_data.py
 (cd site && quarto render)
+# Quarto renders a missing prose number as "?meta:..." instead of failing. Fail here instead.
+if grep -rl "?meta:" docs --include=*.html; then echo "ERROR: unresolved prose numbers (see files above)"; exit 1; fi
 echo "site built in docs/"

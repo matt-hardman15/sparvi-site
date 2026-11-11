@@ -76,5 +76,29 @@
       "r": 0.073,
       "n_pairs": 2811
     }
+  },
+  "provenance": {
+    "data": {
+      "statcast_aaa_2025.parquet": {
+        "rows": 671257,
+        "first_game": "2025-03-28",
+        "last_game": "2025-09-21"
+      },
+      "statcast_aaa_2026.parquet": {
+        "rows": 671556,
+        "first_game": "2026-03-27",
+        "last_game": "2026-09-20"
+      }
+    },
+    "libraries": {
+      "python": "3.12",
+      "pandas": "3.1.1",
+      "numpy": "2.5.4",
+      "duckdb": "1.5.6",
+      "lightgbm": "4.7.0",
+      "scikit-learn": "1.9.1",
+      "dbt-duckdb": "1.11.1"
+    },
+    "seeds": {}
   }
 }

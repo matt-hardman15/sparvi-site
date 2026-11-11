@@ -13,6 +13,8 @@ description: "What the numbers on Sparvi mean and how they're calculated."
 
 **HB (horizontal break)**: Sideways movement in inches, **positive toward the pitcher's arm side** for both righties and lefties, so shapes compare directly.
 
+**FB velo**: Average velocity of the pitcher's primary fastball: the four-seamer or sinker thrown most over the season. "Velo Δ14" compares that same pitch over the final 14 days with its season average.
+
 **CSW rate**: Called strikes plus whiffs, divided by pitches.
 
 **Chase induced**: Share of pitches outside the zone that the hitter swung at.

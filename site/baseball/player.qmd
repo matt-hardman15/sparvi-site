@@ -15,14 +15,14 @@ page-layout: article
   const h = hit.find(d => d.player_id === id), p = pit.find(d => d.player_id === id);
   const stuff = sp.filter(d => d.id === id), pitches = spp.filter(d => d.id === id);
   const name = (h || p || stuff[0] || pitches[0] || {}).name;
-  if (!name) { root.innerHTML = `<p>No 2026 data for that player. Try the <a href="/baseball/tools/triple-a.html">Triple-A explorer</a> or the <a href="/baseball/tools/stuff-leaderboard.html">Stuff+ leaderboard</a>.</p>`; return; }
+  if (!name) { root.innerHTML = `<p>No ${meta.season} data for that player. Try the <a href="/baseball/tools/triple-a.html">Triple-A explorer</a> or the <a href="/baseball/tools/stuff-leaderboard.html">Stuff+ leaderboard</a>.</p>`; return; }
   document.title = `${name} · Sparvi`;
   document.querySelector("h1.title") && (document.querySelector("h1.title").textContent = name);
   const out = [];
   const bio = h || p;
   const lv = (l) => (l === "AAA" ? "Triple-A" : "MLB");
   const teams = [...new Set([bio ? `${bio.team} (Triple-A)` : null, ...stuff.map(d => `${d.team} (${lv(d.level)})`)].filter(Boolean))];
-  out.push(S.el("p", { class: "kicker" }, `2026 · ${teams.join(" · ")}${bio?.age ? ` · Age ${bio.age}` : ""}`));
+  out.push(S.el("p", { class: "kicker" }, `${meta.season} · ${teams.join(" · ")}${bio?.age ? ` · Age ${bio.age}` : ""}`));
 
   const fl = flags.filter(d => d.player_id === id);
   if (h || p) out.push(fl.length

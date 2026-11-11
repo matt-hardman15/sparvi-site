@@ -5,26 +5,36 @@
  "min_pa_qualified": 150,
  "min_bf_qualified": 150,
  "stuff_metrics": {
+  "season": 2026,
+  "min_pitches": 500,
+  "aaa_min_pitches": 300,
   "train_pitch_r2": 0.002753940174505032,
-  "holdout_2026_pitch_r2": 0.0005343110079060187,
-  "split_half_r_stuff_2026": 0.9938846097497759,
-  "split_half_r_actual_rv_2026": 0.19850911276405853,
+  "holdout_pitch_r2": 0.0005343110079060187,
+  "split_half_r_stuff": 0.9938846097497759,
+  "split_half_r_actual_rv": 0.19850911276405853,
   "yoy_n": 324,
-  "yoy_r_stuff25_to_rv26": 0.3097700513474816,
-  "yoy_r_rv25_to_rv26": 0.19259585980517263,
-  "yoy_r_stuff25_to_stuff26": 0.8652324929974684,
+  "yoy_r_stuff_prev_to_rv_cur": 0.3097700513474816,
+  "yoy_r_rv_prev_to_rv_cur": 0.19259585980517263,
+  "yoy_r_stuff_prev_to_stuff_cur": 0.8652324929974684,
   "aaa_to_mlb_n": 148,
   "aaa_to_mlb_r_stuff": 0.13822362563702928,
-  "aaa_to_mlb_r_actual": -0.019557588153976315
+  "aaa_to_mlb_r_actual": -0.019557588153976315,
+  "aaa_mean_stuff_plus_qualified": 91.68541999803045,
+  "n_pitches_mlb": 2126609,
+  "n_pitches_aaa": 1331512
  },
  "stuff_robustness": {
+  "train_season": 2024,
+  "predictor_season": 2025,
+  "outcome_season": 2026,
   "n": 324,
-  "r_stuff25_to_rv26": 0.3013816525165655,
-  "r_rv25_to_rv26": 0.19259585980517263,
+  "r_stuff_prev_to_rv_cur": 0.3013816525165655,
+  "r_rv_prev_to_rv_cur": 0.19259585980517263,
   "gap_ci90": [
    0.00024239498975353553,
    0.2161502933015409
-  ]
+  ],
+  "bootstrap_samples": 2000
  },
  "shape_results": {
   "n_pitch_types": 1174,
@@ -62,7 +72,7 @@
    "velo": {
     "threshold": 1.0,
     "n_big": 152,
-    "slope_all": 0.6582614146678648,
+    "slope_all": 0.6582614146678645,
     "gain": {
      "n": 78,
      "mean_change": 1.3550020937797114,
@@ -164,6 +174,9 @@
    "ivb": 1.337765871339562,
    "hb": 1.1751781662400196
   },
-  "baseline_n": 123
+  "baseline_n": 123,
+  "min_pitches_per_half": 100,
+  "split_date": "07-15",
+  "bootstrap_samples": 2000
  }
 }

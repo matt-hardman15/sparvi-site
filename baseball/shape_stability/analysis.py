@@ -10,10 +10,9 @@ Persistence = (next-season H1 - this-season H1) / (this-season H2 - this-season 
 Pooled with a regression slope rather than averaging per-pitch ratios (which blow up
 when the original change is small).
 
-Season pairs: 2024->2025 and 2025->2026.
+Season pairs: every consecutive pair of configured MLB seasons (sparvi.toml).
 """
 import json
-import sys
 from pathlib import Path
 
 import duckdb
@@ -21,11 +20,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parent / "common"))
-import plotstyle as ps  # noqa: E402
+from sparvi import plotstyle as ps
+from sparvi.config import RAW, baseball
+from sparvi.provenance import provenance
 
-RAW = HERE.parents[1] / "data" / "raw"
+CFG = baseball()
+HERE = Path(__file__).resolve().parent
+FILES = [RAW / f"statcast_mlb_{y}.parquet" for y in CFG.mlb_seasons]
+BOOT, BOOT_SEED = 2000, 11
 OUT, FIG = HERE / "output", HERE / "figures"
 OUT.mkdir(exist_ok=True); FIG.mkdir(exist_ok=True)
 MIN_N = 100
@@ -43,7 +45,7 @@ halves = con.sql(f"""
         avg(release_speed)      as velo,
         avg(pfx_z * 12)         as ivb,
         avg(case when p_throws = 'R' then -pfx_x else pfx_x end * 12) as hb
-    from read_parquet('{RAW}/statcast_mlb_*.parquet')
+    from read_parquet({[f.as_posix() for f in FILES]})
     where game_type = 'R' and pitch_type not in ('PO', 'EP', 'KN') and pitch_type is not null
     group by all
 """).df()
@@ -53,7 +55,7 @@ w = halves.pivot_table(index=["pitcher", "player_name", "pitch_type", "season"],
 w.columns = [f"{a}{b}" if b != "" else a for a, b in w.columns]
 
 rows = []
-for yr in [2024, 2025]:
+for yr in CFG.mlb_seasons[:-1]:
     a = w[(w.season == yr) & (w.n1 >= MIN_N) & (w.n2 >= MIN_N)]
     b = w[(w.season == yr + 1) & (w.n1 >= MIN_N)][["pitcher", "pitch_type"] + [f"{m}1" for m in METRICS]]
     b = b.rename(columns={f"{m}1": f"{m}_next" for m in METRICS})
@@ -82,8 +84,8 @@ for m in METRICS:
             continue
         slope = (sub[f"{m}_kept"] * sub[f"{m}_chg"]).sum() / (sub[f"{m}_chg"] ** 2).sum()
         boots = []
-        rng = np.random.default_rng(11)
-        for _ in range(2000):
+        rng = np.random.default_rng(BOOT_SEED)
+        for _ in range(BOOT):
             s = sub.sample(len(sub), replace=True, random_state=rng.integers(1e9))
             boots.append((s[f"{m}_kept"] * s[f"{m}_chg"]).sum() / (s[f"{m}_chg"] ** 2).sum())
         res[direction] = {
@@ -111,7 +113,11 @@ for cls, sub in [("fastball", d[is_fb]), ("non_fastball", d[~is_fb])]:
 stable = d[(d.velo_chg.abs() < 0.3) & (d.ivb_chg.abs() < 0.5) & (d.hb_chg.abs() < 0.5)]
 results["baseline_offseason_drift_sd"] = {m: float(stable[f"{m}_kept"].std()) for m in METRICS}
 results["baseline_n"] = int(len(stable))
-(OUT / "results.json").write_text(json.dumps(results, indent=2))
+results["min_pitches_per_half"] = MIN_N
+results["split_date"] = SPLIT
+results["bootstrap_samples"] = BOOT
+results["provenance"] = provenance(FILES, seeds={"bootstrap": BOOT_SEED})
+(OUT / "results.json").write_text(json.dumps(results, indent=2), encoding="utf-8")
 d.to_csv(OUT / "pitch_type_changes.csv", index=False)
 
 # Figure: persistence by metric and direction
@@ -133,7 +139,7 @@ for m in METRICS:
 y = np.arange(len(labels))[::-1]
 ax.hlines(y, los, his, color=ps.MUTED, lw=2)
 ax.scatter(vals, y, color=colors, s=70, zorder=3, edgecolor=ps.SURFACE, lw=1.5)
-for yi, v in zip(y, vals):
+for yi, v in zip(y, vals, strict=True):
     ax.text(v, yi + 0.28, f"{v:.0f}%", ha="center", fontsize=9, color=ps.INK)
 ax.set_yticks(y, labels)
 ax.axvline(0, color=ps.MUTED, lw=1); ax.axvline(100, color=ps.MUTED, lw=1, ls="--")
@@ -145,7 +151,7 @@ ps.save(fig, FIG / "persistence.png")
 
 # Figure: velocity change vs what was kept, scatter
 fig, axes = plt.subplots(1, 3, figsize=(11, 3.6))
-for ax, m in zip(axes, METRICS):
+for ax, m in zip(axes, METRICS, strict=True):
     ax.scatter(d[f"{m}_chg"], d[f"{m}_kept"], s=6, alpha=0.25, color=ps.BLUE, edgecolor="none")
     lim = np.nanpercentile(d[f"{m}_chg"].abs(), 99.5)
     xs = np.linspace(-lim, lim, 10)
@@ -160,4 +166,4 @@ fig.suptitle("Every pitch type, 100+ pitches in each half (all changes, not just
              fontsize=11, fontweight="bold")
 fig.tight_layout()
 ps.save(fig, FIG / "change_vs_kept.png")
-print(json.dumps(results, indent=2))
+print(json.dumps({k: v for k, v in results.items() if k != "provenance"}, indent=2))

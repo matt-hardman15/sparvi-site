@@ -34,7 +34,7 @@
     "velo": {
       "threshold": 1.0,
       "n_big": 152,
-      "slope_all": 0.6582614146678648,
+      "slope_all": 0.6582614146678645,
       "gain": {
         "n": 78,
         "mean_change": 1.3550020937797114,
@@ -136,5 +136,39 @@
     "ivb": 1.337765871339562,
     "hb": 1.1751781662400196
   },
-  "baseline_n": 123
+  "baseline_n": 123,
+  "min_pitches_per_half": 100,
+  "split_date": "07-15",
+  "bootstrap_samples": 2000,
+  "provenance": {
+    "data": {
+      "statcast_mlb_2024.parquet": {
+        "rows": 711899,
+        "first_game": "2024-03-20",
+        "last_game": "2024-09-30"
+      },
+      "statcast_mlb_2025.parquet": {
+        "rows": 712528,
+        "first_game": "2025-03-18",
+        "last_game": "2025-09-28"
+      },
+      "statcast_mlb_2026.parquet": {
+        "rows": 716792,
+        "first_game": "2026-03-25",
+        "last_game": "2026-09-27"
+      }
+    },
+    "libraries": {
+      "python": "3.12",
+      "pandas": "3.1.1",
+      "numpy": "2.5.4",
+      "duckdb": "1.5.6",
+      "lightgbm": "4.7.0",
+      "scikit-learn": "1.9.1",
+      "dbt-duckdb": "1.11.1"
+    },
+    "seeds": {
+      "bootstrap": 11
+    }
+  }
 }

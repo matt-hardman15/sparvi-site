@@ -1,8 +1,9 @@
--- One row per Triple-A pitch with the flags every downstream rate is built from.
+-- One row per Triple-A pitch, last season and this one (Triple-A seasons = 2 in sparvi.toml).
+-- Carries the flags every downstream rate is built from.
 with raw as (
-    select * from {{ source('savant', 'statcast_aaa_2025') }}
+    select * from {{ source('savant', 'statcast_aaa_prev') }}
     union all by name
-    select * from {{ source('savant', 'statcast_aaa_2026') }}
+    select * from {{ source('savant', 'statcast_aaa_cur') }}
 )
 
 select

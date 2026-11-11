@@ -1,6 +1,6 @@
 ---
 title: "Stuff+ leaderboard"
-description: "Every MLB and Triple-A pitcher and pitch in 2026, graded on velocity, movement, and release alone."
+description: "Every MLB and Triple-A pitcher and pitch this season, graded on velocity, movement, and release alone."
 page-layout: full
 ---
 
@@ -92,5 +92,5 @@ Stuff+ grades a pitch only on physical traits the pitcher controls: velocity, mo
 ```
 
 ::: {.note}
-2026 regular season. Triple-A pitchers are graded on the same MLB-trained model, so their numbers are directly comparable with big leaguers'. Triple-A RV+ is measured against weaker hitters, so expect it to run high. [How Stuff+ is built](/baseball/stuff-plus/#method).
+{{< meta baseball.season >}} regular season. Triple-A pitchers are graded on the same MLB-trained model, so their numbers are directly comparable with big leaguers'. Triple-A RV+ is measured against weaker hitters, so expect it to run high. [How Stuff+ is built](/baseball/stuff-plus/#method).
 :::

@@ -1,0 +1,80 @@
+"""Project config from sparvi.toml, so seasons live in exactly one place.
+
+Python:  from sparvi.config import baseball; baseball().season
+Shell:   python -m sparvi.config baseball.season        -> 2026
+         python -m sparvi.config baseball.mlb_seasons   -> 2024 2025 2026
+"""
+from __future__ import annotations
+
+import os
+import sys
+import tomllib
+from dataclasses import dataclass
+from functools import cache
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+# Tests point this at a synthetic fixture; real runs use data/raw (never committed).
+RAW = Path(os.environ.get("SPARVI_RAW_DIR", ROOT / "data" / "raw"))
+
+
+@cache
+def _load() -> dict:
+    with open(ROOT / "sparvi.toml", "rb") as f:
+        return tomllib.load(f)
+
+
+@dataclass(frozen=True)
+class Baseball:
+    season: int
+    n_mlb: int
+    n_aaa: int
+    season_windows: dict[int, tuple[str, str]]
+
+    @property
+    def prev(self) -> int:
+        return self.season - 1
+
+    @property
+    def mlb_seasons(self) -> list[int]:
+        return list(range(self.season - self.n_mlb + 1, self.season + 1))
+
+    @property
+    def aaa_seasons(self) -> list[int]:
+        return list(range(self.season - self.n_aaa + 1, self.season + 1))
+
+    @property
+    def train_seasons(self) -> list[int]:
+        """Stuff+ trains on every MLB season except the current one (the holdout)."""
+        return self.mlb_seasons[:-1]
+
+    @property
+    def past_seasons(self) -> list[int]:
+        """Seasons whose raw data no longer changes (safe to cache between runs)."""
+        return [s for s in self.mlb_seasons if s != self.season]
+
+
+@cache
+def baseball() -> Baseball:
+    c = _load()["baseball"]
+    b = Baseball(
+        season=int(c["season"]),
+        n_mlb=int(c["mlb_seasons"]),
+        n_aaa=int(c["aaa_seasons"]),
+        season_windows={int(k): tuple(v) for k, v in c["season_windows"].items()},
+    )
+    missing = [s for s in b.mlb_seasons if s not in b.season_windows]
+    if missing:
+        raise ValueError(f"sparvi.toml: add a [baseball.season_windows] entry for {missing}")
+    return b
+
+
+def _cli(key: str) -> str:
+    sport, _, attr = key.partition(".")
+    obj = {"baseball": baseball}[sport]()
+    val = getattr(obj, attr)
+    return " ".join(map(str, val)) if isinstance(val, (list, tuple)) else str(val)
+
+
+if __name__ == "__main__":
+    print(_cli(sys.argv[1]))

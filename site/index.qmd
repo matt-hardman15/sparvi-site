@@ -31,7 +31,7 @@ Sparvi publishes analysis meant to change a decision, not just describe a game. 
 
 ```{=html}
 <div class="cards">
-<a class="card-link" href="/baseball/tools/stuff-leaderboard.html"><span class="kicker">Baseball · Tool</span><h3>Stuff+ leaderboard</h3><p>Every MLB and Triple-A pitcher and pitch in 2026, graded on velocity, movement, and release alone.</p></a>
+<a class="card-link" href="/baseball/tools/stuff-leaderboard.html"><span class="kicker">Baseball · Tool</span><h3>Stuff+ leaderboard</h3><p>Every MLB and Triple-A pitcher and pitch in {{< meta baseball.season >}}, graded on velocity, movement, and release alone.</p></a>
 <a class="card-link" href="/baseball/tools/triple-a.html"><span class="kicker">Baseball · Tool</span><h3>Triple-A explorer</h3><p>Swing decisions, contact quality, and pitching profiles for every Triple-A player, with league percentiles and recent changes.</p></a>
 <a class="card-link" href="/glossary.html"><span class="kicker">Reference</span><h3>Glossary</h3><p>What every number on the site means and how it's calculated.</p></a>
 </div>
