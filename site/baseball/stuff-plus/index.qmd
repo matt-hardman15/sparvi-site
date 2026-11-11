@@ -1,7 +1,7 @@
 ---
 title: "Stuff predicts next season better than results do"
 description: "A pitch-quality model built only on velocity, movement, and release predicts a pitcher's next season better than his run value does, and it works on Triple-A pitchers too."
-date: 2026-11-10
+date: 2026-10-21
 categories: [pitching, models]
 image: thumb.png
 ---
