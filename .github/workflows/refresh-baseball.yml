@@ -30,7 +30,12 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 150
     steps:
+      # Push with the repo's deploy key, not GITHUB_TOKEN: main requires PRs with passing checks,
+      # and on a personal repo the only actor that can be exempted for an unattended push is a
+      # deploy key. The private key lives only in the SPARVI_DEPLOY_KEY secret.
       - uses: actions/checkout@v7
+        with:
+          ssh-key: ${{ secrets.SPARVI_DEPLOY_KEY }}
 
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3 (no floating major tags after v7)
         with:

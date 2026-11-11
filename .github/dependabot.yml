@@ -11,6 +11,11 @@ updates:
       python:
         patterns: ["*"]
         update-types: [minor, patch]
+    # CLAUDE.md pins duckdb to 1.5.x (duckdb>=1.5,<1.6); dbt-duckdb and the .duckdb file format
+    # move with it. Patch releases still come through. Lift this deliberately, not via Dependabot.
+    ignore:
+      - dependency-name: duckdb
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
     open-pull-requests-limit: 5
 
   - package-ecosystem: github-actions
