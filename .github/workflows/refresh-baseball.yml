@@ -1,7 +1,8 @@
 name: refresh-baseball
 
-# In season: re-pull the current season, rebuild every model and the dbt pipeline, commit the
-# refreshed site data, and deploy. Off season: keep the raw-data cache from expiring.
+# In season: pull the night's games (incremental; a full re-pull on Mondays), rebuild every model
+# and the dbt pipeline, commit the refreshed site data, and deploy. Off season: keep the raw-data
+# cache from expiring.
 # Each sport gets its own refresh workflow on its own calendar; they share deploy.yml.
 
 on:
@@ -9,6 +10,11 @@ on:
     - cron: "15 10 * 4-10 *"      # daily Apr-Oct, ~5 a.m. Central, after the night's games
     - cron: "0 9 * 1-3,11-12 1"   # Mondays Nov-Mar: touch the cache (GitHub evicts after 7 idle days)
   workflow_dispatch:
+    inputs:
+      full_refresh:
+        description: "Re-pull the whole current season instead of only new games"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -60,8 +66,9 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      # Past seasons never change, so they're cached under a fixed key. The current season is
-      # re-pulled on every run. Raw Statcast is never committed or published (rule 1).
+      # Past seasons never change, so they're cached under a fixed key. The current season has its
+      # own cache, saved after every pull, so most runs only fetch new games. Raw Statcast is never
+      # committed or published (rule 1).
       - name: Restore past-season raw data
         id: raw_cache
         uses: actions/cache/restore@v6
@@ -69,10 +76,25 @@ jobs:
           path: ${{ steps.cfg.outputs.paths }}
           key: ${{ steps.cfg.outputs.key }}
 
+      - name: Restore current-season raw data
+        uses: actions/cache/restore@v6
+        with:
+          path: data/raw/*_${{ steps.cfg.outputs.season }}.parquet
+          key: baseball-raw-cur-${{ steps.cfg.outputs.season }}-${{ github.run_id }}
+          restore-keys: baseball-raw-cur-${{ steps.cfg.outputs.season }}-
+
+      # Incremental by default: only games since the last one on file, plus a 3-day overlap because
+      # Savant revises recent games. Mondays (and "full refresh" on a manual run) re-pull the whole
+      # season to pick up older corrections.
       - name: Pull data
         run: |
           uv run python scripts/pull_data.py                      # fills any missing past season
-          uv run python scripts/pull_data.py --current --refresh
+          if [ "${{ inputs.full_refresh }}" = "true" ] || [ "$(date -u +%u)" = "1" ]; then
+            echo "Full re-pull of the current season"
+            uv run python scripts/pull_data.py --current --refresh
+          else
+            uv run python scripts/pull_data.py --current --incremental
+          fi
 
       # Saved right after the pull, not at the end of the job: a later failure (a model change, a
       # StaleProse check) shouldn't throw away an hour of downloading.
@@ -82,6 +104,12 @@ jobs:
         with:
           path: ${{ steps.cfg.outputs.paths }}
           key: ${{ steps.cfg.outputs.key }}
+
+      - name: Save current-season raw data
+        uses: actions/cache/save@v6
+        with:
+          path: data/raw/*_${{ steps.cfg.outputs.season }}.parquet
+          key: baseball-raw-cur-${{ steps.cfg.outputs.season }}-${{ github.run_id }}
 
       - name: Rebuild models, pipeline, and site
         run: uv run ./build.sh
@@ -115,6 +143,7 @@ jobs:
         run: |
           # sparvi.config is stdlib-only, so the runner's Python is enough; no dependency install.
           past=$(python3 -m sparvi.config baseball.past_seasons)
+          echo "season=$(python3 -m sparvi.config baseball.season)" >> "$GITHUB_OUTPUT"
           echo "key=baseball-raw-past-${past// /-}-v1" >> "$GITHUB_OUTPUT"
           {
             echo "paths<<EOF"
@@ -126,3 +155,9 @@ jobs:
         with:
           path: ${{ steps.cfg.outputs.paths }}
           key: ${{ steps.cfg.outputs.key }}
+      - name: Touch the current-season cache too
+        uses: actions/cache/restore@v6
+        with:
+          path: data/raw/*_${{ steps.cfg.outputs.season }}.parquet
+          key: baseball-raw-cur-${{ steps.cfg.outputs.season }}-keepalive
+          restore-keys: baseball-raw-cur-${{ steps.cfg.outputs.season }}-
