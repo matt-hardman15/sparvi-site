@@ -19,12 +19,7 @@ select
     sum(batters_faced)                                          as batters_faced,
     sum(outs_recorded)                                          as outs_recorded,
     coalesce(sum(pitches) filter (where started), 0) / sum(pitches) as role_by_pitches,
-    case
-        when count(*) filter (where started) / count(*) >= {{ var('role_sp_min_share') }}
-             and count(*) filter (where started) >= {{ var('role_sp_min_starts') }} then 'SP'
-        when count(*) filter (where started) / count(*) <= {{ var('role_rp_max_share') }} then 'RP'
-        else 'Swing'
-    end                                                         as role,
+    {{ role_case('count(*) filter (where started)', 'count(*)') }} as role,
     max(game_date)                                              as last_game
 from a
 group by level, season, pitcher_id

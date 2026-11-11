@@ -26,6 +26,8 @@ website:
             href: baseball/tools/stuff-leaderboard.qmd
           - text: Triple-A explorer
             href: baseball/tools/triple-a.qmd
+          - text: Rule 5 board
+            href: baseball/tools/rule-5.qmd
       - text: Glossary
         href: glossary.qmd
       - text: About
@@ -43,6 +45,9 @@ format:
     html-math-method: plain
     anchor-sections: false
     smooth-scroll: false
+    # Quarto's own metadata partial plus an early data preload (see _partials/metadata.html).
+    template-partials:
+      - _partials/metadata.html
     include-in-header:
       - text: |
           <script src="/assets/js/d3.min.js"></script>

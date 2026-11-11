@@ -1,0 +1,107 @@
+---
+title: "The Rule 5 board: unprotected Triple-A players whose numbers travel"
+description: "Which Triple-A players clubs left exposed to the Rule 5 Draft, ranked on the numbers that carry to the majors: stuff for pitchers, swing decisions and contact quality for hitters."
+date: 2026-11-11
+categories: [pitching, hitting, Triple-A, roster rules]
+image: thumb.png
+---
+
+{{< meta baseball.r5_prelim_note >}}
+
+::: {.finding}
+[The finding]{.label}
+Of {{< meta baseball.r5_n_qual_pitchers >}} unprotected Triple-A pitchers with a full sample, **{{< meta baseball.r5_n_stuff_100 >}} already grade at or above an average MLB pitcher's stuff** (Stuff+ 100+). The best arms by Stuff+: {{< meta baseball.r5_top_pitchers >}}. The best bats on swing decisions and contact quality: {{< meta baseball.r5_top_hitters >}}.
+:::
+
+::: {.so-what}
+[So what]{.label}
+
+- **For pitchers, read the stuff before the stat line.** Triple-A Stuff+ carried into MLB results (r = {{< meta baseball.stuff_aaa_r_stuff >}} for pitchers who moved up) and Triple-A results didn't (r = {{< meta baseball.stuff_aaa_r_results >}}). An exposed reliever with MLB-average stuff is the classic Rule 5 pick, because a bullpen can carry him all season.
+- **For hitters, weight chase and contact quality over batting average or xwOBA.** [Swing decisions hold up from one sample to the next; short-run results don't.](/baseball/two-week-signal/) A Rule 5 hitter has to survive a full season on an MLB bench, so plate discipline is what keeps him there.
+- **Check the eligibility reason before acting on a name.** Eligibility here is estimated from signing dates and ages, so hover the status for the reasoning. The draft itself is in doubt: it's scheduled for {{< meta baseball.r5_draft >}}, but the MLB phase only happens if a labor deal is in place after the CBA expires {{< meta baseball.r5_cba >}}.
+:::
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c0"></div>
+  <div class="plot-host" id="p0"></div>
+  <p class="caption" id="cap0"></p>
+  <div id="t0"><div class="loading">Loading…</div></div>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt;
+  const [pitchers, hitters, meta] = await Promise.all(["rule5_pitchers", "rule5_hitters", "meta"].map(n => S.load(`/data/baseball/${n}.json`)));
+  const QA = meta.qualifiers.AAA;
+  // Same pools as the finding: role-based pitch minimums for pitchers, the qualified-hitter pool for hitters.
+  const qp = pitchers.filter(d => d.stuff_plus != null && d.pitches >= (QA[d.role] ?? QA.SP));
+  const qh = hitters.filter(d => d.pa >= meta.min_pa_qualified)
+    .map(d => ({ ...d, composite: (d.chase_pct_pctl + d.zone_contact_pct_pctl + d.ev90_pctl + d.hard_hit_pct_pctl) / 4 }));
+  let side = "pitchers", role = "all";
+  const c = document.getElementById("c0"), roleHost = S.el("span", { class: "role-host" });
+  c.replaceChildren(S.el("label", {}, "Players", S.seg([["pitchers", "Pitchers"], ["hitters", "Hitters"]], side, v => { side = v; draw(); })), roleHost);
+  const status = r => `<span class="r5-status r5-${r.status.split(" ")[0].toLowerCase()}" title="${r.reason.replace(/"/g, "&quot;")}">${r.status}</span>`;
+  const pCols = [
+    { key: "name", label: "Pitcher", align: "l", html: r => S.playerLink(r.player_id, r.name) },
+    { key: "org", label: "Org", align: "l" }, { key: "role", label: "Role", align: "l" }, { key: "age", label: "Age" },
+    { key: "stuff_plus", label: "Stuff+", heat: "plus", fmt: v => f.num(v, 0) },
+    { key: "k_bb_pct", label: "K−BB%", fmt: v => f.pct(v) },
+    { key: "status", label: "Eligibility", align: "l", html: status },
+  ];
+  const hCols = [
+    { key: "name", label: "Hitter", align: "l", html: r => S.playerLink(r.player_id, r.name) },
+    { key: "org", label: "Org", align: "l" }, { key: "position", label: "Pos", align: "l" }, { key: "age", label: "Age" },
+    { key: "composite", label: "Avg. pctl", fmt: v => Math.round(v), heat: "pct", title: "Mean of chase, zone contact, EV90, and hard-hit percentiles" },
+    { key: "xwoba", label: "xwOBA", fmt: f.woba },
+    { key: "status", label: "Eligibility", align: "l", html: status },
+  ];
+  let tbl, shownSide;
+  function draw() {
+    const pitch = side === "pitchers";
+    if (pitch) roleHost.replaceChildren(S.roleFilter(role, v => { role = v; draw(); }, { swing: qp.filter(d => d.role === "Swing").length }));
+    else roleHost.replaceChildren();
+    const rows = pitch ? qp.filter(d => role === "all" || d.role === role) : qh;
+    if (shownSide !== side) { tbl = S.table(document.getElementById("t0"), pitch ? pCols : hCols, { sortKey: pitch ? "stuff_plus" : "composite", pageSize: 10 }); shownSide = side; }
+    tbl.update(rows);
+    const X = pitch ? "stuff_plus" : "chase_pct_pctl", Y = pitch ? "k_bb_pct" : "ev90_pctl";
+    const top = rows.slice().sort((a, b) => (pitch ? b.stuff_plus - a.stuff_plus : b.composite - a.composite)).slice(0, 5);
+    S.plot(document.getElementById("p0"), w => Plot.plot({ ...S.plotDefaults(w), height: 320, grid: true,
+      x: pitch ? { label: "Stuff+ →", nice: true } : { label: "Chase percentile (higher = more disciplined) →", domain: [0, 100] },
+      y: pitch ? { label: "↑ K−BB%", tickFormat: "%", nice: true } : { label: "↑ EV90 percentile", domain: [0, 100] },
+      marks: [pitch ? Plot.ruleX([100], { stroke: "#8a8b8f", strokeDasharray: "3,3" }) : Plot.ruleX([50], { stroke: "#8a8b8f", strokeDasharray: "3,3" }),
+        Plot.dot(rows, { x: X, y: Y, r: 3.5, fill: "#c9c7c0", fillOpacity: 0.85 }),
+        Plot.dot(top, { x: X, y: Y, r: 6, fill: "#eb6834", stroke: "#fff", strokeWidth: 1.2 }),
+        w < 560 ? null : Plot.text(top, { x: X, y: Y, text: d => d.name.split(" ").filter(w => !/^(Jr\.?|Sr\.?|II|III|IV)$/.test(w)).slice(-1)[0], dy: -11, fontSize: 10.5 }),
+        Plot.tip(rows, Plot.pointer({ x: X, y: Y, title: d => `${d.name} (${d.org})\n` + (pitch ? `Stuff+ ${f.num(d.stuff_plus, 0)} · K−BB ${f.pct(d.k_bb_pct)} · ${d.role}` : `Chase pctl ${d.chase_pct_pctl} · EV90 pctl ${d.ev90_pctl} · ${d.pa} PA`) }))] }));
+    document.getElementById("cap0").textContent = pitch
+      ? `${rows.length} unprotected Triple-A pitchers who met their role's pitch minimum. Right of the dashed line: stuff at or above an average MLB pitcher's. Orange: the five best by Stuff+. Hover for details; the full board has every filter.`
+      : `${rows.length} unprotected Triple-A hitters with ${meta.min_pa_qualified}+ PA. Upper right: disciplined and hitting the ball hard. Orange: the five best on the average of chase, zone contact, EV90, and hard-hit percentiles.`;
+  }
+  draw();
+})();
+</script>
+```
+
+The full board, with organization, age, and sample filters and every Triple-A player who qualifies, is the **[Rule 5 board](/baseball/tools/rule-5.html)**.
+
+## Who's on the board
+
+Clubs protect a player by adding him to the 40-man roster. Anyone left off who has been in pro ball long enough can be taken by another club, which then has to keep him on its major league roster all season or offer him back. The board starts from every {{< meta baseball.season >}} Triple-A player, removes anyone on a 40-man roster as of {{< meta baseball.r5_snapshot >}}, removes players who aren't under contract ({{< meta baseball.r5_n_free_agents >}} of this season's Triple-A players elected free agency after the season and haven't re-signed, so they can't be drafted), and keeps those whose eligibility window has opened. That leaves {{< meta baseball.r5_n_pitchers >}} pitchers and {{< meta baseball.r5_n_hitters >}} hitters. {{< meta baseball.r5_n_mlb_time >}} of the pitchers pitched in the majors in {{< meta baseball.season >}} and were later removed from a 40-man roster; they're eligible and stay on the board, marked in the MLB G column.
+
+The rankings lean on the measures that hold up across levels and samples. For pitchers that's Stuff+, which grades velocity, movement, and release on the MLB scale and [predicts the next season better than results do](/baseball/stuff-plus/), plus strikeout-minus-walk rate. For hitters it's chase rate, zone contact, 90th-percentile exit velocity, and hard-hit rate, as percentiles against qualified Triple-A hitters.
+
+<details class="method" id="method">
+<summary>Method and caveats</summary>
+
+**Data.** {{< meta baseball.season >}} Triple-A Statcast (regular season) for performance; MLB Stats API for 40-man rosters (snapshot {{< meta baseball.r5_snapshot >}}), birth dates, draft history, and transactions. Only aggregates are published.
+
+**Eligibility estimate.** A player who was 18 or younger on the June 5 immediately preceding his first pro contract must be added to the 40-man roster within five seasons; 19 or older, within four. The signing year counts as a season if he signed before his first league's season ended (rookie and complex leagues, late August). The signing date is his earliest signing with an MLB organization in the transaction record (**Eligible**). Without one, the draft year is used and the signing date is assumed to be mid-July (**Likely eligible**, {{< meta baseball.r5_n_likely >}} players). With neither, the status is **Unknown** ({{< meta baseball.r5_n_unknown >}}). Players whose most recent transaction is electing free agency, a release, or retirement aren't under contract and are left off.
+
+**Validation.** The estimate was checked against {{< meta baseball.r5_val_n >}} players named in published 2026 eligibility lists ({{< meta baseball.r5_val_n_pos >}} listed as eligible this winter, {{< meta baseball.r5_val_n_neg >}} as not eligible until next year) from [SoxProspects](https://soxprospects.com/rule5.htm), [Bucs on Deck](https://bucsondeck.substack.com/p/pittsburgh-pirates-rule-5-eligibles), and [MLB.com](https://www.mlb.com/news/prospects-giants-could-protect-from-2026-rule-5-draft). It agreed on {{< meta baseball.r5_val_agree >}} of {{< meta baseball.r5_val_n >}} ({{< meta baseball.r5_val_pct >}}). The check list leans toward recent signees, where the rule is simplest; older players with gaps in the transaction record are where an estimate like this is most likely to be wrong.
+
+**Rankings.** Pitchers in the finding met their role's Triple-A pitch minimum (see the [glossary](/glossary.html#roles)); hitters had {{< meta baseball.min_pa_qualified >}}+ PA. The hitter ranking averages four percentiles with equal weight, a simple choice rather than a fitted model.
+
+**What this can't tell you.** Only Triple-A players are on the board, so eligible prospects at Double-A and below are missing. There's no injury, scouting, or makeup information, and nothing about a club's roster needs, which drive most picks. Edge cases in the rule (voided contracts, players signed out of foreign leagues, time on restricted lists) aren't modeled. The MLB phase of the draft only happens if a labor agreement is in place; the minor league phase is expected to go ahead either way.
+
+Code: [`baseball/rule5/`](https://github.com/matt-hardman15/sparvi-site/tree/main/baseball/rule5) · [`scripts/pull_rosters.py`](https://github.com/matt-hardman15/sparvi-site/blob/main/scripts/pull_rosters.py)
+</details>

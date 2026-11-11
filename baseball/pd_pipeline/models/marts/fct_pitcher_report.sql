@@ -5,8 +5,13 @@ with season as (
 recent as (
     select * from {{ ref('int_pitcher_windows') }} where window_name = 'recent'
 ),
+qual as (
+    select {{ qualifier(var('min_bf_qualified'), 'team_games') }} as qual_min
+    from {{ ref('int_snapshot_dates') }} where level = 'AAA' and is_final
+),
 pool as (
-    select * from season where pa >= {{ var('min_bf_qualified') }}
+    -- Prorated qualifier at the run date (same rule as the snapshots, so the final snapshot matches).
+    select * from season where pa >= (select qual_min from qual)
 ),
 fb_velo as (
     -- Primary fastball = the most-thrown FF/SI over the season (ties go to FF, so the pick is
@@ -37,7 +42,7 @@ select
     d.role,
     s.pitches,
     s.pa                                            as bf,
-    s.pa >= {{ var('min_bf_qualified') }}           as qualified,
+    s.pa >= (select qual_min from qual)             as qualified,
     s.last_game,
 
     s.k_pct, s.bb_pct, s.csw_pct, s.whiff_pct, s.chase_pct, s.zone_pct,

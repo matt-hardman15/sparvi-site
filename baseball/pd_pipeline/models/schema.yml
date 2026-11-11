@@ -71,3 +71,135 @@ models:
 
   - name: rpt_flags
     description: Today's change flags for the affiliate roster.
+
+  - name: int_snapshot_dates
+    description: Weekly snapshot dates (last game on or before each Sunday) plus the final day, per level.
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [level, snapshot_date]
+
+  - name: fct_pitcher_snapshots
+    description: Pitcher x snapshot x window (std, last30); final std snapshot = season-level marts.
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [level, snapshot_date, window_name, pitcher_id]
+    columns:
+      - name: k_pct_pctl
+        tests:
+          - value_in_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+      - name: bb_pct_pctl
+        tests:
+          - value_in_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+      - name: csw_pct_pctl
+        tests:
+          - value_in_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+      - name: whiff_pct_pctl
+        tests:
+          - value_in_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+      - name: chase_pct_pctl
+        tests:
+          - value_in_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+      - name: zone_pct_pctl
+        tests:
+          - value_in_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+      - name: hard_hit_pct_pctl
+        tests:
+          - value_in_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+      - name: xwoba_pctl
+        tests:
+          - value_in_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+
+  - name: fct_hitter_snapshots
+    description: Hitter x snapshot x window (std, last30), both levels.
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [level, snapshot_date, window_name, batter_id]
+    columns:
+      - name: chase_pct_pctl
+        tests:
+          - value_in_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+      - name: zone_swing_pct_pctl
+        tests:
+          - value_in_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+      - name: zone_contact_pct_pctl
+        tests:
+          - value_in_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+      - name: whiff_pct_pctl
+        tests:
+          - value_in_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+      - name: k_pct_pctl
+        tests:
+          - value_in_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+      - name: bb_pct_pctl
+        tests:
+          - value_in_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+      - name: hard_hit_pct_pctl
+        tests:
+          - value_in_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+      - name: ev90_pctl
+        tests:
+          - value_in_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+      - name: xwoba_pctl
+        tests:
+          - value_in_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+
+  - name: fct_pitch_type_snapshots
+    description: Pitcher x pitch type x snapshot, season to date.
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [level, snapshot_date, pitcher_id, pitch_type]

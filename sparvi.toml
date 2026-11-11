@@ -16,3 +16,11 @@ aaa_seasons = 2
 2024 = ["2024-03-20", "2024-09-30"]
 2025 = ["2025-03-18", "2025-09-28"]
 2026 = ["2026-03-25", "2026-09-27"]
+
+# Rule 5 calendar for the current offseason (update each fall; the board's article quotes these).
+# 2026: deadline per Baseball America / MLB.com team coverage; draft date per MLB.com's offseason guide.
+# The MLB phase of the draft happens only if a CBA is in place (the CBA expires Dec 1, 2026).
+[baseball.rule5]
+protection_deadline = "2026-11-17"
+draft_date = "2026-12-09"
+cba_expires = "2026-12-01"

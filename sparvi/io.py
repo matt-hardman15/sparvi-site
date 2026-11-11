@@ -32,11 +32,12 @@ def _write(path: Path, text: str) -> None:
 
 def write_json(path: Path, obj, indent: int | None = None) -> None:
     sep = None if indent else (",", ":")
-    _write(path, json.dumps(obj, indent=indent, separators=sep, ensure_ascii=False))
+    # allow_nan=False: Python writes NaN, which browsers' JSON.parse rejects. Fail the build instead.
+    _write(path, json.dumps(obj, indent=indent, separators=sep, ensure_ascii=False, allow_nan=False))
 
 
 def write_records(
-    path: Path,
+    path: Path | None,
     df: pd.DataFrame,
     *,
     required: list[str],
@@ -44,27 +45,32 @@ def write_records(
     min_rows: int = 1,
     digits: dict[str, int] | None = None,
 ) -> None:
-    """Validate, round, and write a table the site reads.
+    """Validate, round, and write a table the site reads; returns the records as written.
 
     `required` lists every column a page uses. A renamed upstream column fails here,
-    at build time, instead of rendering a blank chart in production.
+    at build time, instead of rendering a blank chart in production. With path=None nothing is
+    written (for tables that only feed per-player files) but the same checks and rounding apply.
     """
+    name = path.name if path else "records"
     missing = [c for c in required if c not in df.columns]
     if missing:
-        raise SchemaError(f"{path.name}: missing columns {missing}")
+        raise SchemaError(f"{name}: missing columns {missing}")
     if len(df) < min_rows:
-        raise SchemaError(f"{path.name}: {len(df)} rows, expected at least {min_rows}")
+        raise SchemaError(f"{name}: {len(df)} rows, expected at least {min_rows}")
     for c in not_null:
         n = int(df[c].isna().sum())
         if n:
-            raise SchemaError(f"{path.name}: {n} null values in '{c}'")
+            raise SchemaError(f"{name}: {n} null values in '{c}'")
     df = df.copy()
     for col, d in (digits or {}).items():
         if col in df:
             df[col] = df[col].round(d)
     records = df.replace({np.nan: None}).to_dict(orient="records")
-    write_json(path, records)
-    print(f"{path.name:<28} {len(df):>7,} rows  {path.stat().st_size / 1024:>6.0f} KB")
+    if path is not None:
+        write_json(path, records)
+        print(f"{path.name:<28} {len(df):>7,} rows  {path.stat().st_size / 1024:>6.0f} KB")
+    # Round-trip through JSON so callers get exactly what a page would read (plain types, None).
+    return json.loads(json.dumps(records, ensure_ascii=False))
 
 
 def _yaml_scalar(v) -> str:

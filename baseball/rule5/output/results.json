@@ -1,0 +1,44 @@
+{
+  "snapshot_date": "2026-11-11",
+  "season": 2026,
+  "players": 2123,
+  "status_counts": {
+    "On 40-man": 747,
+    "Free agent": 490,
+    "Eligible": 474,
+    "Released": 242,
+    "Not yet eligible": 140,
+    "Retired": 14,
+    "Likely eligible": 12,
+    "Unknown": 4
+  },
+  "basis_counts": {
+    "signing": 2093,
+    "draft": 21,
+    "unknown": 9
+  },
+  "on_40man_snapshot": 1118,
+  "validation": {
+    "n": 46,
+    "agree": 46,
+    "agreement": 1.0,
+    "n_listed_eligible": 34,
+    "agree_listed_eligible": 34,
+    "n_listed_not_yet": 12,
+    "agree_listed_not_yet": 12,
+    "sources": [
+      "https://bucsondeck.substack.com/p/pittsburgh-pirates-rule-5-eligibles",
+      "https://soxprospects.com/rule5.htm",
+      "https://www.mlb.com/news/prospects-giants-could-protect-from-2026-rule-5-draft"
+    ]
+  },
+  "libraries": {
+    "python": "3.12",
+    "pandas": "3.1.1",
+    "numpy": "2.5.4",
+    "duckdb": "1.5.6",
+    "lightgbm": "4.7.0",
+    "scikit-learn": "1.9.1",
+    "dbt-duckdb": "1.11.1"
+  }
+}

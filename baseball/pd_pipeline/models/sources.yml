@@ -30,3 +30,16 @@ sources:
     tables:
       - name: pitch_type_aaa_cur
         identifier: "pitch_type_aaa_{{ var('season') }}"
+      - name: scale_reference
+        description: Frozen prior-season Stuff+ scale (mean, SD) written by train.py
+        identifier: scale_reference
+
+  - name: pitch_predictions
+    description: Pitch-level Stuff+ predictions from train.py (internal; gitignored, never exported)
+    meta:
+      external_location: "{{ env_var('SPARVI_PQ_DIR', '../pitch_quality/output') }}/{identifier}.parquet"
+    tables:
+      - name: pred_mlb_cur
+        identifier: "pitch_predictions_mlb_{{ var('season') }}"
+      - name: pred_aaa_cur
+        identifier: "pitch_predictions_aaa_{{ var('season') }}"

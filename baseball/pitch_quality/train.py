@@ -77,9 +77,14 @@ def pitcher_season(df: pd.DataFrame) -> pd.DataFrame:
     return agg
 
 
-def scale(values: pd.Series, ref: pd.Series) -> pd.Series:
-    """Stuff+ : 100 = MLB-average qualified pitcher, 10 points = 1 SD."""
-    return 100 + 10 * (values - ref.mean()) / ref.std()
+def ref_stats(ref: pd.Series) -> dict:
+    """Mean and sample SD of a reference distribution (what dbt's avg/stddev_samp reproduce)."""
+    return {"mean": float(ref.mean()), "sd": float(ref.std()), "n": int(ref.size)}
+
+
+def scale(values: pd.Series, ref: dict) -> pd.Series:
+    """Stuff+ : 100 = the reference (prior-season qualified MLB) average, 10 points = 1 SD."""
+    return 100 + 10 * (values - ref["mean"]) / ref["sd"]
 
 
 def split_half_r(df: pd.DataFrame, col: str) -> float:
@@ -126,11 +131,13 @@ def main() -> None:
         resid = df["rv"] - df["xrv"]
         metrics[f"{name}_pitch_r2"] = float(1 - resid.var() / df["rv"].var())
 
-    # Reference distribution for scaling: qualified MLB pitcher-seasons in the current season.
+    # Scale reference: qualified MLB pitchers in the FULL PRIOR season, frozen for the current one.
+    # A current-season reference would move 100 every week, so early-season grades (and the date
+    # slider) would mean nothing. scale_reference.json records the values; dbt uses the CSV copy.
     ps = {(("mlb", y)): pitcher_season(tr[tr.game_year == y]) for y in CFG.train_seasons}
     ps[("mlb", Y)] = pitcher_season(ho)
-    ref = ps[("mlb", Y)].query("pitches >= @MIN_PITCHES")["xrv100"]
-    ref_rv = ps[("mlb", Y)].query("pitches >= @MIN_PITCHES")["rv100"]
+    q_ref = ps[("mlb", P)].query("pitches >= @MIN_PITCHES")
+    ref, ref_rv = ref_stats(q_ref["xrv100"]), ref_stats(q_ref["rv100"])
 
     # --- Stability: how fast does each metric stabilize? (split-half, holdout season)
     metrics["split_half_r_stuff"] = split_half_r(ho, "xrv")
@@ -160,17 +167,23 @@ def main() -> None:
     metrics["aaa_to_mlb_r_actual"] = float(up["rv100_aaa"].corr(up["rv100_mlb"]))
     q_aaa = ps[("aaa", Y)].query("pitches >= @MIN_PITCHES")
     metrics["aaa_mean_stuff_plus_qualified"] = float(scale(q_aaa["xrv100"], ref).mean())
+    q_cur = ps[("mlb", Y)].query("pitches >= @MIN_PITCHES")
+    metrics["mlb_mean_stuff_plus_qualified"] = float(scale(q_cur["xrv100"], ref).mean())
     metrics["n_pitches_mlb"] = int(len(tr) + len(ho))
     metrics["n_pitches_aaa"] = int(sum(len(d) for d in aaa.values()))
 
+    # Unrounded on purpose: the snapshot marts must reproduce these exactly. The export rounds.
     for (lvl, yr), p in ps.items():
-        p["stuff_plus"] = scale(p["xrv100"], ref).round(1)
-        p["rv_plus"] = scale(p["rv100"], ref_rv).round(1)
+        p["stuff_plus"] = scale(p["xrv100"], ref)
+        p["rv_plus"] = scale(p["rv100"], ref_rv)
         p.to_csv(OUT / f"pitcher_season_{lvl}_{yr}.csv", index=False)
 
-    # Pitch-type grades (current season, both levels), scaled within pitch group vs MLB.
-    ho_pt = ho.groupby(["pitcher", "pitch_type", "group"]).agg(
+    # Pitch-type grades (current season, both levels), scaled within pitch group against the
+    # prior season's MLB pitch types (100+ thrown).
+    prior = tr[tr.game_year == P]
+    prior_pt = prior.groupby(["pitcher", "pitch_type", "group"]).agg(
         n=("xrv", "size"), xrv100=("xrv", lambda s: 100 * s.mean())).reset_index()
+    ref_pt = {g: ref_stats(prior_pt.query("group == @g and n >= 100")["xrv100"]) for g in ["fastball", "breaking", "offspeed"]}
     for lvl, d in [("mlb", ho), ("aaa", aaa[Y])]:
         pt = d.groupby(["pitcher", "player_name", "pitch_type", "group"]).agg(
             n=("xrv", "size"),
@@ -180,10 +193,21 @@ def main() -> None:
         ).reset_index()
         pt["stuff_plus"] = np.nan
         for g in ["fastball", "breaking", "offspeed"]:
-            r = ho_pt.query("group == @g and n >= 100")["xrv100"]
             idx = pt["group"].eq(g)
-            pt.loc[idx, "stuff_plus"] = scale(pt.loc[idx, "xrv100"], r).round(1)
+            pt.loc[idx, "stuff_plus"] = scale(pt.loc[idx, "xrv100"], ref_pt[g])
         pt.to_csv(OUT / f"pitch_type_{lvl}_{Y}.csv", index=False)
+
+    scale_ref = {"reference_season": P, "applies_to_season": Y, "min_pitches": MIN_PITCHES, "min_pitch_type": 100,
+                 "stuff": ref, "rv": ref_rv, "pitch_type": ref_pt}
+    (OUT / "scale_reference.json").write_text(json.dumps(scale_ref, indent=2), encoding="utf-8")
+    pd.DataFrame([{"kind": "stuff", "grp": "all", **ref}, {"kind": "rv", "grp": "all", **ref_rv}]
+                 + [{"kind": "pitch_type", "grp": g, **r} for g, r in ref_pt.items()]).to_csv(
+        OUT / "scale_reference.csv", index=False, float_format="%.17g")
+
+    # Pitch-level predictions for the snapshot marts. Internal only: gitignored, never exported.
+    for lvl, yr, d in [("mlb", y, tr[tr.game_year == y]) for y in CFG.train_seasons] + [("mlb", Y, ho)]             + [("aaa", y, aaa[y]) for y in CFG.aaa_seasons]:
+        d[["game_pk", "game_date", "at_bat_number", "pitch_number", "pitcher", "pitch_type", "group", "xrv", "rv"]].rename(
+            columns={"xrv": "xrv_stuff"}).to_parquet(OUT / f"pitch_predictions_{lvl}_{yr}.parquet", index=False)
 
     files = [RAW / f"statcast_mlb_{y}.parquet" for y in CFG.mlb_seasons] +             [RAW / f"statcast_aaa_{y}.parquet" for y in CFG.aaa_seasons]
     metrics["provenance"] = provenance(files, seeds={"lightgbm": SEED, "validation_split": SEED})

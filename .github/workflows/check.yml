@@ -39,8 +39,8 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --frozen
-      - name: Config and dbt pipeline on synthetic data
-        run: uv run pytest -q tests/test_config.py tests/test_pipeline.py tests/test_pull_incremental.py
+      - name: Config, dbt pipeline on synthetic data, incremental pull, Rule 5 logic, published snapshots
+        run: uv run pytest -q tests/test_config.py tests/test_pipeline.py tests/test_pull_incremental.py tests/test_rule5.py tests/test_snapshots.py
 
   site:
     runs-on: ubuntu-24.04

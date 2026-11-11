@@ -18,6 +18,13 @@ vars:
   role_sp_min_share: 0.5    # SP: at least half of his games are starts...
   role_sp_min_starts: 3     # ...and at least this many starts
   role_rp_max_share: 0.2    # RP: at most this share of games are starts; otherwise Swing
+  # Snapshots (fct_*_snapshots): weekly (last game on or before each Sunday) plus the final day.
+  last_days: 30             # the trailing window shown by the "last 30 days" toggle
+  # Qualified pool as of date d = full-season minimum x (team games played by d / full schedule),
+  # never below the floor. The season-level marts use the same rule at their as-of date, so the
+  # final snapshot and the marts agree exactly.
+  full_season_games: {MLB: 162, AAA: 150}
+  min_qualified_floor: 25
   trend_days: 14             # recent window compared against season-to-date
   min_pa_qualified: 150      # league percentile pool, hitters
   min_bf_qualified: 150      # league percentile pool, pitchers

@@ -20,6 +20,12 @@
     woba: (v) => (v == null ? dash : (+v).toFixed(3).replace(/^0/, "")),
     signed: (v, d = 1) => (v == null ? dash : (v > 0 ? "+" : "") + (+v).toFixed(d)),
     pts: (v) => (v == null ? dash : (v > 0 ? "+" : "") + (100 * v).toFixed(1)),
+    // AP-style date from YYYY-MM-DD, matching the prose: "Nov. 17", "June 5", "Sept. 30".
+    apDate: (iso) => {
+      if (!iso) return dash;
+      const [, m, d] = iso.split("-").map(Number);
+      return ["Jan.", "Feb.", "March", "April", "May", "June", "July", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."][m - 1] + " " + d;
+    },
   };
 
   // Diverging scale: blue (worse) -> gray (average) -> orange (better). Domain 0-100 percentile.
@@ -54,8 +60,9 @@
       options.map(([v, t]) => S.el("option", { value: v, ...(String(v) === String(value) ? { selected: "" } : {}) }, t)));
     return S.el("label", {}, label, sel);
   };
-  S.search = (label, placeholder, onchange) =>
-    S.el("label", {}, label, S.el("input", { type: "search", placeholder, oninput: (e) => onchange(e.target.value.trim().toLowerCase()) }));
+  // Pass the current value when controls are rebuilt, or the box shows empty while the filter still applies.
+  S.search = (label, placeholder, onchange, value = "") =>
+    S.el("label", {}, label, S.el("input", { type: "search", placeholder, value: value || null, oninput: (e) => onchange(e.target.value.trim().toLowerCase()) }));
   // value null = empty box showing `placeholder`; clearing the box calls onchange(null) ("use the default").
   S.number = (label, value, step, onchange, placeholder) =>
     S.el("label", {}, label, S.el("input", {
@@ -82,14 +89,71 @@
     return S.el("label", {}, "Role", S.seg(keys.map((k) => [k, S.ROLES[k]]), value, onchange));
   };
   // Role-aware pitch minimum: an explicit override applies to everyone; otherwise each pitcher is held
-  // to his own role's minimum from meta.qualifiers[level][role].
-  S.qualifies = (quals, level, override, pitches, role) =>
-    pitches >= (override ?? quals[level][role] ?? quals[level].SP);
-  S.qualifierText = (quals, level, override, role) => {
+  // to his own role's minimum from meta.qualifiers[level][role], prorated by `factor` (the share of
+  // the schedule played by the selected date; see S.prorate) and never below 25.
+  const QFLOOR = 25;
+  const qmin = (q, factor) => Math.max(QFLOOR, Math.round(q * factor));
+  S.qualifies = (quals, level, override, pitches, role, factor = 1) =>
+    pitches != null && pitches >= (override ?? qmin(quals[level][role] ?? quals[level].SP, factor));
+  S.qualifierText = (quals, level, override, role, factor = 1) => {
     if (override != null) return `${override}+ pitches`;
-    const q = quals[level];
-    if (role !== "all") return `${q[role]}+ pitches (${S.ROLES[role].toLowerCase()} minimum)`;
-    return `${q.SP}+ pitches for starters, ${q.RP}+ for relievers and swingmen`;
+    const q = quals[level], pro = factor < 1 ? ", prorated to games played" : "";
+    if (role !== "all") return `${qmin(q[role], factor)}+ pitches (${S.ROLES[role].toLowerCase()} minimum${pro})`;
+    return `${qmin(q.SP, factor)}+ pitches for starters, ${qmin(q.RP, factor)}+ for relievers and swingmen${pro}`;
+  };
+  // Share of the full schedule played in a window as of snapshot i (1 at season's end).
+  S.prorate = (meta, level, i, win = "std") => {
+    const c = meta.snapshots[level], g = (win === "std" ? c.team_games : c.team_games_last)[i];
+    return Math.min(1, g / c.full_season_games);
+  };
+
+  // ---- snapshots + date slider --------------------------------------------------
+  // Snapshot files are columnar: {dates, fields, players: [{id, name, series: {std|last30: {field: [..]}}}]}.
+  S.WINDOWS = { std: "Season to date", last30: "Last 30 days" };
+  S.snapIndex = (dates, iso) => { let i = -1; dates.forEach((d, k) => { if (d <= iso) i = k; }); return i; };
+  // Rows at snapshot i: one object per player with every field's value on that date. A player is
+  // included only if `present` (a field name) has a value then, i.e. he had appeared by that date.
+  S.snapRows = (file, win, i, present, extra = {}) => {
+    const out = [];
+    for (const p of file.players || file.pitches) {
+      const s = win ? p.series[win] : p.series;
+      if (!s || s[present] == null || s[present][i] == null) continue;
+      const r = { id: p.id, name: p.name, ...(p.static || {}), ...(p.pt ? { pt: p.pt, group: p.group } : {}) };
+      for (const f of file.fields) r[f] = s[f] ? s[f][i] : null;
+      out.push(Object.assign(r, extra[p.id] || {}));
+    }
+    return out;
+  };
+  // League snapshot files are split by window; the trailing-window file loads only when asked for.
+  S.loadSnap = (stem, win = "std") => S.load(`/data/baseball/${stem}${win === "last30" ? "_last30" : ""}.json`);
+  S.dateLabel = (iso) => new Date(iso + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  S.asOfMark = (iso) => Plot.ruleX([new Date(iso + "T12:00:00")], { stroke: "#0f5257", strokeWidth: 1.5, strokeDasharray: "4,3" });
+  // Range input over snapshot dates with step buttons and play. Keyboard: the slider takes arrow
+  // keys/Home/End natively; buttons are real buttons. Returns {el, set(i)}; onchange(i) on every move.
+  S.dateSlider = (dates, value, onchange) => {
+    let i = Math.max(0, Math.min(dates.length - 1, value)), timer = null;
+    const label = S.el("span", { class: "ds-label", "aria-live": "polite" });
+    const range = S.el("input", { type: "range", min: 0, max: dates.length - 1, step: 1, value: i,
+      "aria-label": "Snapshot date", oninput: (e) => go(+e.target.value) });
+    const btn = (txt, aria, fn) => S.el("button", { type: "button", class: "ds-btn", "aria-label": aria, onclick: fn }, txt);
+    const prev = btn("◀", "Previous week", () => { stop(); go(i - 1); });
+    const next = btn("▶", "Next week", () => { stop(); go(i + 1); });
+    const play = btn("▶ Play", "Play through the season", () => (timer ? stop() : start()));
+    function render() {
+      range.value = i; label.textContent = `Through ${S.dateLabel(dates[i])}`;
+      range.setAttribute("aria-valuetext", label.textContent);
+      prev.disabled = i === 0; next.disabled = i === dates.length - 1;
+    }
+    function go(k) { k = Math.max(0, Math.min(dates.length - 1, k)); if (k === i) { render(); return; } i = k; render(); onchange(i); }
+    function stop() { if (timer) { clearInterval(timer); timer = null; } play.textContent = "▶ Play"; play.setAttribute("aria-pressed", "false"); }
+    function start() {
+      if (i === dates.length - 1) go(0);
+      play.textContent = "❚❚ Pause"; play.setAttribute("aria-pressed", "true");
+      timer = setInterval(() => { if (i >= dates.length - 1) stop(); else go(i + 1); }, 600);
+    }
+    render();
+    const el = S.el("div", { class: "date-slider", role: "group", "aria-label": "Date" }, label, S.el("div", { class: "ds-row" }, prev, range, next, play));
+    return { el, set: (k) => { stop(); go(k); }, get: () => i, stop };
   };
   S.roleTag = (role, g, gs) => (role ? `${role} · ${g} G, ${gs} GS` : "");
 

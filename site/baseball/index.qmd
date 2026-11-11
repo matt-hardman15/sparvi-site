@@ -17,6 +17,7 @@ listing:
 <div class="cards">
 <a class="card-link" href="/baseball/tools/stuff-leaderboard.html"><span class="kicker">Tool</span><h3>Stuff+ leaderboard</h3><p>{{< meta baseball.season >}} MLB and Triple-A pitch grades, filterable by team, level, and pitch type, with stuff vs. results.</p></a>
 <a class="card-link" href="/baseball/tools/triple-a.html"><span class="kicker">Tool</span><h3>Triple-A explorer</h3><p>All 30 clubs: percentiles, swing decisions, pitching profiles, and what changed late in the season.</p></a>
+<a class="card-link" href="/baseball/tools/rule-5.html"><span class="kicker">Tool</span><h3>Rule 5 board</h3><p>Triple-A players likely eligible for the Rule 5 Draft and left off 40-man rosters, ranked on stuff, swing decisions, and contact quality.</p></a>
 </div>
 ```
 

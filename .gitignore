@@ -19,3 +19,6 @@ CLAUDE.md
 CLAUDE.local.md
 .claude/
 PLAN*.md
+
+# Pitch-level model predictions: internal inputs to the snapshot marts, never published
+baseball/pitch_quality/output/pitch_predictions_*.parquet
