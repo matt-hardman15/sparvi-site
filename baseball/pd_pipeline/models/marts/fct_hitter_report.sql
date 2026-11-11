@@ -6,8 +6,13 @@ with season as (
 recent as (
     select * from {{ ref('int_hitter_windows') }} where window_name = 'recent'
 ),
+qual as (
+    select {{ qualifier(var('min_pa_qualified'), 'team_games') }} as qual_min
+    from {{ ref('int_snapshot_dates') }} where level = 'AAA' and is_final
+),
 pool as (
-    select * from season where pa >= {{ var('min_pa_qualified') }}
+    -- Prorated qualifier at the run date (same rule as the snapshots, so the final snapshot matches).
+    select * from season where pa >= (select qual_min from qual)
 )
 
 select
@@ -19,7 +24,7 @@ select
     s.team,
     s.games,
     s.pa,
-    s.pa >= {{ var('min_pa_qualified') }}           as qualified,
+    s.pa >= (select qual_min from qual)             as qualified,
     s.last_game,
 
     s.chase_pct, s.zone_swing_pct, s.zone_contact_pct, s.whiff_pct,

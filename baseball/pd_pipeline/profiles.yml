@@ -5,3 +5,7 @@ pd_pipeline:
       type: duckdb
       path: "{{ env_var('PD_DB_PATH', 'pd.duckdb') }}"
       threads: 4
+      # One DuckDB thread per query: parallel float sums vary in the last bit between runs, which
+      # flips rounding in published values and would make every refresh commit spurious changes.
+      settings:
+        threads: 1
