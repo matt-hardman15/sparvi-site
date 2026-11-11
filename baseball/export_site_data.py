@@ -213,8 +213,19 @@ N |= {
     "stuff_pitches_mlb": millions(metrics["n_pitches_mlb"]),
     "stuff_pitches_aaa": millions(metrics["n_pitches_aaa"]),
 }
-if robust["gap_ci90"][0] < 0:
-    raise StaleProse("Stuff+ article says the 90% interval on the r gap sits above zero; it now includes zero.")
+# The finding states the point estimate: Stuff+ predicted next season better than results did.
+if not robust["r_stuff_prev_to_rv_cur"] > robust["r_rv_prev_to_rv_cur"]:
+    raise StaleProse("Stuff+ article says last season's Stuff+ predicted this season's run value better than results.")
+# How sure: worded from the interval itself. Its low end sits near zero, and tiny platform differences in
+# the model (Windows vs the Linux runner) can move it across zero, so the sentence follows the number.
+lo = robust["gap_ci90"][0]
+N["stuff_gap_sentence"] = (
+    "The whole interval is above zero, so Stuff+ is reliably the better predictor, though the margin is modest."
+    if lo >= 0.05 else
+    "The interval sits just above zero, so Stuff+ is better, but the true margin could be close to nothing."
+    if lo > 0 else
+    "The interval includes zero, so this sample can't rule out that the two predict equally well: Stuff+ comes "
+    "out ahead, but not by a margin the data can confirm.")
 if not 0 < metrics["aaa_mean_stuff_plus_qualified"] < 100:
     raise StaleProse("Stuff+ article says the average qualified Triple-A pitcher grades below an MLB average of 100.")
 FEATURE_WORDS = {"velo": "velocity", "ivb": "induced vertical break", "hb": "horizontal break", "spin": "spin rate",
