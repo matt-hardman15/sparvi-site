@@ -40,8 +40,9 @@ On Windows, run `build.sh` from Git Bash.
 GitHub Actions deploys to GitHub Pages:
 
 - **`deploy`**: every push to `main` renders the site from the committed JSON in `site/data/` and deploys (a few minutes).
-- **`refresh-baseball`**: daily, April through October, re-pulls the current season, rebuilds every model
-  and the dbt pipeline, commits the refreshed data, and deploys. Weekly in the off-season it keeps the
+- **`refresh-baseball`**: daily, April through October, pulls the new games (only games since the last
+  one on file, plus a 3-day overlap for Savant's revisions; a full re-pull on Mondays or on request),
+  rebuilds every model and the dbt pipeline, commits the refreshed data, and deploys. Weekly in the off-season it keeps the
   past-season data cache alive. Run it by hand from the Actions tab ("Run workflow") at any time.
 - **`check`**: every pull request runs lint, the dbt pipeline on synthetic data, and a browser test of
   every page. `main` only accepts pull requests that pass. Dependabot opens weekly upgrade PRs.

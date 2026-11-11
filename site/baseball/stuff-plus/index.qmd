@@ -1,14 +1,14 @@
 ---
 title: "Stuff predicts next season better than results do"
 description: "A pitch-quality model built only on velocity, movement, and release predicts a pitcher's next season better than his run value does, and it works on Triple-A pitchers too."
-date: 2026-11-10
+date: 2026-10-21
 categories: [pitching, models]
 image: thumb.png
 ---
 
 ::: {.finding}
 [The finding]{.label}
-A pitcher's **Stuff+**, graded only on velocity, movement, spin, and release, predicted his {{< meta baseball.season >}} run value better than his {{< meta baseball.season_prev >}} run value did (r = {{< meta baseball.stuff_yoy_r_stuff >}} vs. {{< meta baseball.stuff_yoy_r_results >}}, {{< meta baseball.stuff_yoy_n >}} pitchers). Stuff+ also stabilizes almost immediately, while a season of actual results is still mostly noise.
+A pitcher's **Stuff+**, graded only on velocity, movement, spin, and release, predicted his {{< meta baseball.season >}} run value better than his {{< meta baseball.season_prev >}} run value did (r = {{< meta baseball.stuff_yoy_r_stuff >}} vs. {{< meta baseball.stuff_yoy_r_results >}}, {{< meta baseball.stuff_yoy_n >}} pitchers). {{< meta baseball.stuff_finding_certainty >}} Stuff+ also stabilizes almost immediately, while a season of actual results is still mostly noise.
 :::
 
 ::: {.so-what}
@@ -66,11 +66,11 @@ Each dot is a pitcher with {{< meta baseball.stuff_min_pitches >}}+ pitches in b
 </script>
 ```
 
-The difference isn't huge, and it shouldn't be: plenty of what happens next season (injuries, role changes, new pitches) isn't in either number. A bootstrap of the gap between the two correlations gives a 90% interval of {{< meta baseball.stuff_gap_lo >}} to {{< meta baseball.stuff_gap_hi >}}. The interval sits just above zero, so Stuff+ is better, but the true margin could be close to nothing.
+The difference isn't huge, and it shouldn't be: plenty of what happens next season (injuries, role changes, new pitches) isn't in either number. A bootstrap of the gap between the two correlations gives a 90% interval of {{< meta baseball.stuff_gap_lo >}} to {{< meta baseball.stuff_gap_hi >}}. {{< meta baseball.stuff_gap_sentence >}}
 
 ## What the model pays attention to
 
-Importance is spread across many traits rather than dominated by velocity. Averaged across the three models, {{< meta baseball.stuff_top_features >}} carry the most, and {{< meta baseball.stuff_least_feature >}} the least. The mix shifts by pitch type: for breaking balls and offspeed pitches, the gaps from the fastball matter more.
+Importance is spread across many traits rather than dominated by velocity. Averaged across the three models, {{< meta baseball.stuff_top_features >}} carry the most, and {{< meta baseball.stuff_least_feature >}} the least. The mix shifts by pitch type. {{< meta baseball.stuff_gap_mix >}}
 
 ```{=html}
 <div class="explorer">

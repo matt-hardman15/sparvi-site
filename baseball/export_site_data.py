@@ -406,8 +406,25 @@ N |= {
     "stuff_pitches_mlb": millions(metrics["n_pitches_mlb"]),
     "stuff_pitches_aaa": millions(metrics["n_pitches_aaa"]),
 }
-if robust["gap_ci90"][0] < 0:
-    raise StaleProse("Stuff+ article says the 90% interval on the r gap sits above zero; it now includes zero.")
+# The finding states the point estimate: Stuff+ predicted next season better than results did.
+if not robust["r_stuff_prev_to_rv_cur"] > robust["r_rv_prev_to_rv_cur"]:
+    raise StaleProse("Stuff+ article says last season's Stuff+ predicted this season's run value better than results.")
+# How sure: worded from the interval itself. Its low end sits near zero, and tiny platform differences in
+# the model (Windows vs the Linux runner) can move it across zero, so the sentence follows the number.
+lo = robust["gap_ci90"][0]
+N["stuff_gap_sentence"] = (
+    "The whole interval is above zero, so Stuff+ is reliably the better predictor, though the margin is modest."
+    if lo >= 0.05 else
+    "The interval sits just above zero, so Stuff+ is better, but the true margin could be close to nothing."
+    if lo > 0 else
+    "The interval includes zero, so this sample can't rule out that the two predict equally well: Stuff+ comes "
+    "out ahead, but not by a margin the data can confirm.")
+# The finding box says how sure, in one line, from the same interval.
+N["stuff_finding_certainty"] = (
+    "The edge held up across resamples, though it's modest."
+    if lo > 0 else
+    "That edge isn't statistically certain: across resamples of these pitchers the gap ranged from "
+    f"{signed2(robust['gap_ci90'][0])} to {signed2(robust['gap_ci90'][1])}, so the two could be equally predictive.")
 if not 0 < metrics["aaa_mean_stuff_plus_qualified"] < 100:
     raise StaleProse("Stuff+ article says the average qualified Triple-A pitcher grades below an MLB average of 100.")
 FEATURE_WORDS = {"velo": "velocity", "ivb": "induced vertical break", "hb": "horizontal break", "spin": "spin rate",
@@ -420,8 +437,15 @@ N["stuff_top_features"] = f"{top[0]}, {top[1]}, {top[2]}, and {top[3]}"
 N["stuff_least_feature"] = FEATURE_WORDS[rank.index[-1]]
 by_group = imp.pivot(index="feature", columns="group", values="gain")
 diffs = by_group.loc[["velo_diff", "ivb_diff", "hb_diff"]].sum()
-if not (diffs["breaking"] > diffs["fastball"] and diffs["offspeed"] > diffs["fastball"]):
-    raise StaleProse("Stuff+ article says fastball-gap features matter more for breaking and offspeed models.")
+# How much the fastball-gap features carry in each non-fastball model, worded from the shares. A gap of
+# under 2 points counts as "about the same": the breaking-ball share sits within a fraction of a point of
+# the fastball model's and flips between the Windows and Linux builds.
+GAP_MARGIN = 0.02
+pct = lambda x: f"{100 * x:.0f}%"  # noqa: E731
+parts = [f"for {name}, {'more' if diffs[g] - diffs['fastball'] >= GAP_MARGIN else 'less' if diffs['fastball'] - diffs[g] >= GAP_MARGIN else 'about the same'} ({pct(diffs[g])})"
+         for g, name in [("offspeed", "offspeed pitches"), ("breaking", "breaking balls")]]
+N["stuff_gap_mix"] = (f"The gaps from the fastball (velocity, ride, and run) carry {pct(diffs['fastball'])} of the "
+                      f"fastball model's gain; {parts[0]}; {parts[1]}.")
 
 # Shape-changes article
 M, V = shape_res["metrics"], shape_res["velo_by_pitch_class"]
