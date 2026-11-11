@@ -32,7 +32,13 @@ Matt Hardman runs it; his name appears only on the About page.
 - `scripts/pull_data.py`: Statcast + MLB Stats API into `data/raw/` (gitignored, never committed).
 - `baseball/<project>/`: one folder per analysis; outputs in `<project>/output/`.
 - `baseball/pd_pipeline/`: dbt project (staging → intermediate → marts). Metric definitions live in
-  `macros/rates.sql`; flag thresholds in `models/marts/rpt_flags.sql`. Run with `DBT_PROFILES_DIR=.`.
+  `macros/rates.sql`; flag thresholds in `models/marts/rpt_flags.sql`; role thresholds in
+  `dbt_project.yml` vars. Run with `DBT_PROFILES_DIR=.`. `stg_pitches` holds both levels with a
+  `level` column ('AAA'/'MLB'): filter or group on it in every model (`windowed()` defaults to
+  Triple-A). Each level has its own run date: `as_of_date` (Triple-A) and `as_of_date_mlb`, via
+  the `as_of(level)` macro. `int_pitcher_appearances` (pitcher × game; `started` = threw his team's
+  first pitch) feeds `dim_pitcher_role` (SP/RP/Swing per pitcher × level × season).
+  `scripts/check_roles.py` re-checks G/GS against MLB's official stats after pipeline changes.
 - `baseball/export_site_data.py`: the ONLY thing that writes `site/data/baseball/*.json` and
   `site/_generated/baseball.yml` (every number quoted in baseball prose). Each output declares the
   columns the pages read; a missing column fails the build. It also asserts the claims articles
