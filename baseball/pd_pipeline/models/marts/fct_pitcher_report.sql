@@ -33,6 +33,9 @@ select
     pl.throws,
     s.team,
     s.games,
+    d.starts                                        as games_started,
+    d.role,
+    s.pitches,
     s.pa                                            as bf,
     s.pa >= {{ var('min_bf_qualified') }}           as qualified,
     s.last_game,
@@ -63,3 +66,5 @@ from season s
 left join recent r using (pitcher_id)
 left join fb_velo v using (pitcher_id)
 left join {{ ref('stg_players') }} pl on pl.player_id = s.pitcher_id
+left join {{ ref('dim_pitcher_role') }} d
+    on d.pitcher_id = s.pitcher_id and d.level = 'AAA' and d.season = {{ var('season') }}

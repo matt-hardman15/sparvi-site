@@ -9,10 +9,15 @@ macro-paths: ["macros"]
 target-path: "target"
 clean-targets: ["target", "dbt_packages"]
 
-# `season` and `as_of_date` have no defaults on purpose: build.sh passes them, with the
-# season from sparvi.toml and as_of_date = the last game in the data. A run without them fails.
+# `season`, `as_of_date` (Triple-A) and `as_of_date_mlb` have no defaults on purpose: build.sh
+# passes them, with the season from sparvi.toml and each as-of = the last game at that level.
+# A run without them fails.
 vars:
   affiliate: "ALL"          # a Savant team code (e.g. "OMA") or ALL
+  # Pitcher roles (dim_pitcher_role). The glossary quotes these via the export.
+  role_sp_min_share: 0.5    # SP: at least half of his games are starts...
+  role_sp_min_starts: 3     # ...and at least this many starts
+  role_rp_max_share: 0.2    # RP: at most this share of games are starts; otherwise Swing
   trend_days: 14             # recent window compared against season-to-date
   min_pa_qualified: 150      # league percentile pool, hitters
   min_bf_qualified: 150      # league percentile pool, pitchers

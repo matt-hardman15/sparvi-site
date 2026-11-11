@@ -110,17 +110,51 @@ def num_input(p):
     return p.locator("#c input[type=number]")
 
 
+def col_values(p, scope, header):
+    """Text of every visible cell in the column whose header is `header`."""
+    heads = [h.strip() for h in p.locator(f"{scope} table.s-table thead th").all_text_contents()]
+    i = heads.index(header) + 1
+    return p.locator(f"{scope} table.s-table tbody tr td:nth-child({i})").all_text_contents()
+
+
+def role_on(p, label):
+    return p.locator("#c .seg button.on", has_text=label).count() == 1
+
+
+def query(p):
+    from urllib.parse import parse_qs, urlparse
+    return {k: v[0] for k, v in parse_qs(urlparse(p.url).query).items()}
+
+
 def act_leaderboard(p):
     assert rows(p, "#t") == 25
+    assert "500+ pitches for starters, 250+ for relievers" in p.text_content("#scap")
+    assert p.locator("#c .seg button", has_text="Swing").count() == 1  # MLB has swingmen
     p.locator("#t th", has_text="RV+").first.click(); wait(p)
     p.locator(".pager button", has_text="Next").click(); wait(p)
-    seg(p, "#c", "Triple-A"); assert num_input(p).input_value() == "300"
-    seg(p, "#c", "Individual pitches"); assert num_input(p).input_value() == "100"
-    select(p, "#c", "Pitch group", "breaking")
-    seg(p, "#c", "Pitchers"); assert num_input(p).input_value() == "300"
-    seg(p, "#c", "MLB"); assert num_input(p).input_value() == "500"
+    # Role filter: table, caption, and URL follow it.
+    seg(p, "#c", "Relievers")
+    assert set(col_values(p, "#t", "Role")) == {"RP"}
+    assert "250+ pitches (relievers minimum)" in p.text_content("#scap")
+    assert query(p).get("role") == "RP"
+    # ...and it survives switching level, team, and view.
+    seg(p, "#c", "Triple-A")
+    assert role_on(p, "Relievers") and set(col_values(p, "#t", "Role")) == {"RP"}
+    assert "150+ pitches (relievers minimum)" in p.text_content("#scap")
     select(p, "#c", "Team", nth_option(p, "#c", "Team", 1))
-    assert rows(p, "#t") > 0
+    assert role_on(p, "Relievers") and set(col_values(p, "#t", "Role")) <= {"RP"}
+    seg(p, "#c", "Individual pitches")
+    assert role_on(p, "Relievers") and set(col_values(p, "#t", "Role")) <= {"RP"}
+    q = query(p)
+    assert q.get("role") == "RP" and q.get("level") == "AAA" and q.get("view") == "pitches" and q.get("team")
+    # Reloading the URL restores the view.
+    p.reload(wait_until="networkidle"); wait(p, 800)
+    assert role_on(p, "Relievers") and set(col_values(p, "#t", "Role")) <= {"RP"}
+    select(p, "#c", "Pitch group", "breaking")
+    seg(p, "#c", "Pitchers"); seg(p, "#c", "MLB"); seg(p, "#c", "Starters")
+    assert set(col_values(p, "#t", "Role")) == {"SP"} and "500+ pitches (starters minimum)" in p.text_content("#scap")
+    num_input(p).fill("1500"); num_input(p).press("Enter"); wait(p)
+    assert "1500+ pitches" in p.text_content("#scap") and query(p).get("min") == "1500"
     p.set_viewport_size({"width": 700, "height": 900}); wait(p, 600)
     assert p.locator("#scatter svg").count() == 1
 
@@ -128,10 +162,20 @@ def act_leaderboard(p):
 def act_triple_a(p):
     assert rows(p, "#t") == 25
     assert "r = " in p.text_content("#scap")
+    assert p.locator("#c .seg button", has_text="Starters").count() == 0  # no role filter for hitters
     select(p, "#c", "Team", nth_option(p, "#c", "Team", 5))
     assert p.locator("#flags .flag-list").count() == 1
     seg(p, "#c", "Pitchers"); p.locator("#t th", has_text="BB%").click(); wait(p)
-    select(p, "#c", "Team", ""); search(p, "#c", "a"); seg(p, "#c", "Hitters")
+    assert "300+ pitches for starters, 150+ for relievers" in p.text_content("#scap")
+    seg(p, "#c", "Starters")
+    assert set(col_values(p, "#t", "Role")) <= {"SP"} and query(p).get("role") == "SP"
+    select(p, "#c", "Team", "")
+    assert role_on(p, "Starters") and set(col_values(p, "#t", "Role")) == {"SP"}
+    assert "300+ pitches (starters minimum)" in p.text_content("#scap")
+    p.reload(wait_until="networkidle"); wait(p, 800)
+    assert role_on(p, "Starters") and set(col_values(p, "#t", "Role")) == {"SP"}
+    search(p, "#c", "a"); seg(p, "#c", "Hitters")
+    assert "role" not in query(p)
     p.set_viewport_size({"width": 700, "height": 900}); wait(p, 600)
     assert p.locator("#scatter svg").count() == 1
 
@@ -148,11 +192,15 @@ def player_pitcher():
     return first_id("aaa_pitchers.json", "player_id", lambda r: r["bf"] >= 300)
 
 
-def act_player(*sections):
+def act_player(*sections, role_tag=False):
     def check(p):
         h2 = p.locator("#root h2").all_text_contents()
         for s in sections:
             assert s in h2, f"missing section {s!r}: {h2}"
+        if role_tag:
+            import re
+            tags = p.locator("#root .role-tag").all_text_contents()
+            assert tags and all(re.fullmatch(r"(SP|RP|Swing) · \d+ G, \d+ GS", t) for t in tags), tags
     return check
 
 
@@ -165,7 +213,7 @@ PAGES = [
     ("stuff-leaderboard", "/baseball/tools/stuff-leaderboard.html", act_leaderboard),
     ("triple-a", "/baseball/tools/triple-a.html", act_triple_a),
     ("player-hitter", lambda: f"/baseball/player.html?id={player_hitter()}", act_player("Hitting · Triple-A")),
-    ("player-pitcher", lambda: f"/baseball/player.html?id={player_pitcher()}", act_player("Pitching · Triple-A")),
+    ("player-pitcher", lambda: f"/baseball/player.html?id={player_pitcher()}", act_player("Pitching · Triple-A", role_tag=True)),
     ("player-missing", "/baseball/player.html?id=1", lambda p: "No " in p.text_content("#root")),
     ("glossary", "/glossary.html", None),
     ("about", "/about.html", None),

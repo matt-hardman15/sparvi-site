@@ -25,9 +25,9 @@ def built(tmp_path_factory):
         "SPARVI_PQ_DIR": tmp.as_posix(),
         "PD_DB_PATH": db.as_posix(),
     }
-    as_of = f"{season}-08-28"  # last synthetic game day (150 days from April 1)
+    as_of = f"{season}-08-28"  # last synthetic game day (150 days from April 1), both levels
     r = subprocess.run(
-        [DBT, "build", "--vars", f"{{season: {season}, as_of_date: '{as_of}'}}",
+        [DBT, "build", "--vars", f"{{season: {season}, as_of_date: '{as_of}', as_of_date_mlb: '{as_of}'}}",
          "--target-path", (tmp / "target").as_posix(), "--log-path", (tmp / "logs").as_posix()],
         cwd=PIPELINE, env=env, capture_output=True, text=True,
     )
@@ -55,5 +55,38 @@ def test_primary_fastball_is_one_pitch_type(built):
     bad = built.sql("""
         select count(*) from fct_pitcher_report r
         where recent_fb_velo is not null and abs(recent_fb_velo - fb_velo) > 4
+    """).fetchone()[0]
+    assert bad == 0
+
+
+@pytest.mark.skipif(DBT is None, reason="dbt not installed")
+def test_appearances_cover_both_levels(built):
+    rows = dict(built.sql("select level, count(distinct season) from int_pitcher_appearances group by 1").fetchall())
+    assert rows == {"AAA": 2, "MLB": 3}
+
+
+@pytest.mark.skipif(DBT is None, reason="dbt not installed")
+def test_starter_is_first_pitch_of_the_game(built):
+    # Fixture: pitchers 0-4 of each team (id % 100 < 5) start; 5-11 only relieve.
+    wrong = built.sql("""
+        select count(*) from int_pitcher_appearances
+        where started != (pitcher_id % 100 < 5)
+    """).fetchone()[0]
+    assert wrong == 0
+
+
+@pytest.mark.skipif(DBT is None, reason="dbt not installed")
+def test_roles_follow_the_rotation(built):
+    roles = dict(built.sql("""
+        select pitcher_id % 100 < 5 as rotation, string_agg(distinct role) from dim_pitcher_role group by 1
+    """).fetchall())
+    assert roles == {True: "SP", False: "RP"}
+
+
+@pytest.mark.skipif(DBT is None, reason="dbt not installed")
+def test_games_and_starts_add_up(built):
+    bad = built.sql("""
+        select count(*) from dim_pitcher_role
+        where games != starts + relief_apps or start_share != starts / games
     """).fetchone()[0]
     assert bad == 0

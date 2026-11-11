@@ -48,6 +48,7 @@ def blocks(side_col: str) -> pd.DataFrame:
         with p as (
             select *, floor(date_diff('day', min(game_date) over (partition by season), game_date) / {BLOCK_DAYS}) as blk
             from stg_pitches
+            where level = 'AAA'
         )
         select season, blk, {side_col} as player_id, {RATES},
                avg(release_speed) filter (where pitch_type in ('FF', 'SI')) as fb_velo

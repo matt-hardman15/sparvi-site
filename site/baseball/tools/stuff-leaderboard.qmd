@@ -4,7 +4,7 @@ description: "Every MLB and Triple-A pitcher and pitch this season, graded on ve
 page-layout: full
 ---
 
-Stuff+ grades a pitch only on physical traits the pitcher controls: velocity, movement, spin, release point, extension, arm angle, and how the pitch differs from his primary fastball. **100 is an average MLB pitcher and every 10 points is one standard deviation.** RV+ is actual run value on the same scale, so you can see who got results their stuff doesn't explain, and vice versa. How the model works and how well it predicts: [Stuff predicts next season better than results do](/baseball/stuff-plus/).
+Stuff+ grades a pitch only on physical traits the pitcher controls: velocity, movement, spin, release point, extension, arm angle, and how the pitch differs from his primary fastball. **100 is an average MLB pitcher and every 10 points is one standard deviation.** RV+ is actual run value on the same scale, so you can see who got results their stuff doesn't explain, and vice versa. Filter by role to compare starters with starters and relievers with relievers; the default pitch minimum follows the role. How the model works and how well it predicts: [Stuff predicts next season better than results do](/baseball/stuff-plus/).
 
 ```{=html}
 <div class="explorer">
@@ -15,27 +15,35 @@ Stuff+ grades a pitch only on physical traits the pitcher controls: velocity, mo
 </div>
 <script>
 (async () => {
-  const S = Sparvi, f = S.fmt;
-  const [pitchers, pitches] = await Promise.all([S.load("/data/baseball/stuff_pitchers.json"), S.load("/data/baseball/stuff_pitches.json")]);
-  const st = { view: "pitchers", level: "MLB", team: "", group: "", min: 500, q: "" };
-  // Default pitch minimum: 100 per pitch type; 500 per MLB pitcher, 300 per Triple-A pitcher.
-  const defMin = () => (st.view === "pitches" ? 100 : st.level === "AAA" ? 300 : 500);
+  const S = Sparvi, f = S.fmt, U = S.urlState;
+  const [pitchers, pitches, meta] = await Promise.all(["stuff_pitchers", "stuff_pitches", "meta"].map(n => S.load(`/data/baseball/${n}.json`)));
+  const Q = meta.qualifiers;
+  const DEF = { view: "pitchers", level: "MLB", team: "", role: "all", group: "" };
+  const st = {
+    view: U.get("view", DEF.view), level: U.get("level", DEF.level), team: U.get("team", DEF.team),
+    role: U.get("role", DEF.role), group: U.get("group", DEF.group), q: "",
+    min: U.get("min") == null ? null : +U.get("min"),  // null = default (role-aware for pitchers, 100 per pitch type)
+  };
+  const PITCH_MIN = 100;
   const teams = (lvl) => [...new Set(pitchers.filter(d => d.level === lvl).map(d => d.team))].sort();
   const c = document.getElementById("c");
-  let teamSel;
+  const roleHost = S.el("span", { class: "role-host" });
+  const reset = () => { st.min = null; };
   function controls() {
-    teamSel = S.select("Team", [["", "All teams"], ...teams(st.level).map(t => [t, t])], st.team, v => { st.team = v; draw(); });
+    const minPh = st.view === "pitches" ? String(PITCH_MIN) : st.role === "all" ? "by role" : String(Q[st.level][st.role]);
     c.replaceChildren(...[
-      S.el("label", {}, "View", S.seg([["pitchers", "Pitchers"], ["pitches", "Individual pitches"]], st.view, v => { st.view = v; st.min = defMin(); controls(); draw(); })),
-      S.el("label", {}, "Level", S.seg([["MLB", "MLB"], ["AAA", "Triple-A"]], st.level, v => { st.level = v; st.team = ""; st.min = defMin(); controls(); draw(); })),
-      teamSel,
+      S.el("label", {}, "View", S.seg([["pitchers", "Pitchers"], ["pitches", "Individual pitches"]], st.view, v => { st.view = v; reset(); controls(); draw(); })),
+      S.el("label", {}, "Level", S.seg([["MLB", "MLB"], ["AAA", "Triple-A"]], st.level, v => { st.level = v; st.team = ""; reset(); controls(); draw(); })),
+      S.select("Team", [["", "All teams"], ...teams(st.level).map(t => [t, t])], st.team, v => { st.team = v; draw(); }),
+      roleHost,
       st.view === "pitches" ? S.select("Pitch group", [["", "All"], ["fastball", "Fastballs"], ["breaking", "Breaking balls"], ["offspeed", "Offspeed"]], st.group, v => { st.group = v; draw(); }) : null,
-      S.number("Min. pitches", st.min, 50, v => { st.min = v; draw(); }),
+      S.number(st.view === "pitches" ? "Min. of the pitch" : "Min. pitches", st.min, 50, v => { st.min = v; draw(); }, minPh),
       S.search("Find a pitcher", "e.g. Misiorowski", v => { st.q = v; draw(); })].filter(Boolean));
   }
   const pitcherCols = [
     { key: "name", label: "Pitcher", align: "l", html: r => S.playerLink(r.id, r.name) },
     { key: "team", label: "Team", align: "l" },
+    { key: "role", label: "Role", align: "l", title: "SP starter · RP reliever · Swing (see glossary)" },
     { key: "throws", label: "T", align: "l" },
     { key: "pitches", label: "Pitches", fmt: f.int },
     { key: "stuff_plus", label: "Stuff+", heat: "plus", fmt: v => f.num(v, 0) },
@@ -45,6 +53,7 @@ Stuff+ grades a pitch only on physical traits the pitcher controls: velocity, mo
   const pitchCols = [
     { key: "name", label: "Pitcher", align: "l", html: r => S.playerLink(r.id, r.name) },
     { key: "team", label: "Team", align: "l" },
+    { key: "role", label: "Role", align: "l" },
     { key: "pt", label: "Pitch", align: "l" },
     { key: "n", label: "Pitches", fmt: f.int },
     { key: "velo", label: "Velo", fmt: v => f.num(v) },
@@ -52,21 +61,27 @@ Stuff+ grades a pitch only on physical traits the pitcher controls: velocity, mo
     { key: "hb", label: "HB", fmt: v => f.num(v), title: "Horizontal break, inches, arm side positive" },
     { key: "stuff_plus", label: "Stuff+", heat: "plus", fmt: v => f.num(v, 0) },
   ];
-  const table = { pitchers: S.table(document.getElementById("t"), pitcherCols, { sortKey: "stuff_plus" }), pitches: null };
+  const table = { pitchers: null, pitches: null };
   const host = document.getElementById("scatter");
   function draw() {
-    let rows;
+    // Everything except the role filter, so the Swing button knows whether any swingmen remain.
+    let base;
     if (st.view === "pitchers") {
-      rows = pitchers.filter(d => d.level === st.level && d.pitches >= st.min && (!st.team || d.team === st.team))
-        .map(d => ({ ...d, gap: d.rv_plus - d.stuff_plus }));
+      base = pitchers.filter(d => d.level === st.level && (!st.team || d.team === st.team)
+        && S.qualifies(Q, st.level, st.min, d.pitches, d.role)).map(d => ({ ...d, gap: d.rv_plus - d.stuff_plus }));
     } else {
-      rows = pitches.filter(d => d.level === st.level && d.n >= st.min && (!st.team || d.team === st.team) && (!st.group || d.group === st.group));
+      base = pitches.filter(d => d.level === st.level && d.n >= (st.min ?? PITCH_MIN) && (!st.team || d.team === st.team)
+        && (!st.group || d.group === st.group));
     }
+    roleHost.replaceChildren(S.roleFilter(st.role, v => { st.role = v; reset(); controls(); draw(); },
+      { swing: base.filter(d => d.role === "Swing").length }));
+    const rows = st.role === "all" ? base : base.filter(d => d.role === st.role);
     const shown = st.q ? rows.filter(d => d.name.toLowerCase().includes(st.q)) : rows;
     const tbl = st.view === "pitchers" ? (table.pitchers ||= S.table(document.getElementById("t"), pitcherCols, { sortKey: "stuff_plus" }))
                                        : (table.pitches ||= S.table(document.getElementById("t"), pitchCols, { sortKey: "stuff_plus" }));
     if (st.view === "pitchers") table.pitches = null; else table.pitchers = null;
     tbl.update(shown);
+    U.set({ view: st.view, level: st.level, team: st.team, role: st.role, group: st.view === "pitches" ? st.group : "", min: st.min }, DEF);
     S.plot(host, w => st.view === "pitchers"
       ? Plot.plot({ ...S.plotDefaults(w), height: 340, grid: true,
           x: { label: "Stuff+ →", nice: true }, y: { label: "↑ RV+ (results)", nice: true },
@@ -74,17 +89,18 @@ Stuff+ grades a pitch only on physical traits the pitcher controls: velocity, mo
             Plot.dot(rows, { x: "stuff_plus", y: "rv_plus", r: 3.5, fill: "#2a78d6", fillOpacity: st.q ? 0.15 : 0.55 }),
             st.q ? Plot.dot(shown, { x: "stuff_plus", y: "rv_plus", r: 6, fill: "#eb6834", stroke: "#fff", strokeWidth: 1.5 }) : null,
             st.q ? Plot.text(shown.slice(0, 8), { x: "stuff_plus", y: "rv_plus", text: "name", dy: -12, fontWeight: 600 }) : null,
-            Plot.tip(rows, Plot.pointer({ x: "stuff_plus", y: "rv_plus", title: d => `${d.name} (${d.team})\nStuff+ ${f.num(d.stuff_plus,0)} · RV+ ${f.num(d.rv_plus,0)}\n${f.int(d.pitches)} pitches` }))] })
+            Plot.tip(rows, Plot.pointer({ x: "stuff_plus", y: "rv_plus", title: d => `${d.name} (${d.team}, ${d.role})\nStuff+ ${f.num(d.stuff_plus,0)} · RV+ ${f.num(d.rv_plus,0)}\n${f.int(d.pitches)} pitches · ${d.g} G, ${d.gs} GS` }))] })
       : Plot.plot({ ...S.plotDefaults(w), height: 340, grid: true, clip: true,
           x: { label: "Horizontal break, arm side + (in) →", domain: [-24, 24] }, y: { label: "↑ Induced vertical break (in)", domain: [-24, 24] },
           color: { type: "diverging", domain: [70, 130], pivot: 100, range: ["#2a78d6", "#d9d8d3", "#eb6834"], legend: true, label: "Stuff+" },
           marks: [Plot.ruleX([0], { stroke: "#ccc" }), Plot.ruleY([0], { stroke: "#ccc" }),
             Plot.dot(rows, { x: "hb", y: "ivb", r: 3, fill: "stuff_plus", fillOpacity: st.q ? 0.2 : 0.75 }),
             st.q ? Plot.dot(shown, { x: "hb", y: "ivb", r: 6, fill: "stuff_plus", stroke: "#16181d", strokeWidth: 1.5 }) : null,
-            Plot.tip(rows, Plot.pointer({ x: "hb", y: "ivb", title: d => `${d.name} ${d.pt}\n${f.num(d.velo)} mph · ${f.num(d.ivb)} IVB · ${f.num(d.hb)} HB\nStuff+ ${f.num(d.stuff_plus,0)}` }))] }));
+            Plot.tip(rows, Plot.pointer({ x: "hb", y: "ivb", title: d => `${d.name} ${d.pt} (${d.role})\n${f.num(d.velo)} mph · ${f.num(d.ivb)} IVB · ${f.num(d.hb)} HB\nStuff+ ${f.num(d.stuff_plus,0)}` }))] }));
+    const who = st.role === "all" ? "" : ` ${S.ROLES[st.role].toLowerCase()}`;
     document.getElementById("scap").textContent = st.view === "pitchers"
-      ? `${rows.length} pitchers. Upper left: results better than the stuff. Lower right: stuff better than the results. Hover for details; search to highlight.`
-      : `${rows.length} pitches by movement shape, colored by Stuff+. Hover for details; search to highlight one pitcher's arsenal.`;
+      ? `${rows.length}${who || " pitchers"}. Qualifier: ${S.qualifierText(Q, st.level, st.min, st.role)}. Upper left: results better than the stuff. Lower right: stuff better than the results. Hover for details; search to highlight.`
+      : `${rows.length} pitches by movement shape${who ? ` from${who}` : ""}, colored by Stuff+. Qualifier: ${st.min ?? PITCH_MIN}+ of that pitch. Hover for details; search to highlight one pitcher's arsenal.`;
   }
   controls(); draw();
 })();
@@ -92,5 +108,5 @@ Stuff+ grades a pitch only on physical traits the pitcher controls: velocity, mo
 ```
 
 ::: {.note}
-{{< meta baseball.season >}} regular season. Triple-A pitchers are graded on the same MLB-trained model, so their numbers are directly comparable with big leaguers'. Triple-A RV+ is measured against weaker hitters, so expect it to run high. [How Stuff+ is built](/baseball/stuff-plus/#method).
+{{< meta baseball.season >}} regular season. Triple-A pitchers are graded on the same MLB-trained model, so their numbers are directly comparable with big leaguers'. Triple-A RV+ is measured against weaker hitters, so expect it to run high. Roles (SP, RP, Swing) and the role-based pitch minimums are defined in the [glossary](/glossary.html#roles). [How Stuff+ is built](/baseball/stuff-plus/#method).
 :::

@@ -93,6 +93,8 @@ table.s-table td.heat { font-weight: 600; }
 .card-link { display: block; background: #fff; border: 1px solid var(--rule); border-radius: 8px; padding: 1rem 1.1rem; text-decoration: none; color: var(--ink); transition: border-color .15s, transform .15s; }
 .card-link:hover { border-color: var(--accent); transform: translateY(-1px); }
 .card-link .kicker { display: block; margin-bottom: .3rem; }
+.role-tag { display: inline-block; margin: -.4rem 0 .8rem; padding: .1rem .55rem; border-radius: 999px; font-size: .8rem; font-weight: 600; letter-spacing: .02em; color: var(--accent); border: 1px solid currentColor; }
+.role-host { display: contents; }
 .card-link h3 { margin: 0 0 .35rem; font-size: 1.15rem; }
 .card-link p { margin: 0; color: var(--ink-2); font-size: .92rem; line-height: 1.45; }
 .hero { padding: 2.2rem 0 1rem; }

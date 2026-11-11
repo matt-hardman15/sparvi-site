@@ -18,18 +18,33 @@
         / nullif(sum(woba_denom) filter (where ends_pa), 0)         as xwoba
 {% endmacro %}
 
-{%- macro windowed(relation) -%}
-{#- Season-to-date and trailing-window copies of the pitch set, as of the run date. -#}
+{%- macro as_of(level) -%}
+{#- The run date for a level. Triple-A and MLB seasons end on different days, so each has its own:
+    as_of_date (Triple-A, also the date the PD report is "as of") and as_of_date_mlb. -#}
+    {%- if level == 'MLB' -%} date '{{ var("as_of_date_mlb") }}'
+    {%- else -%} date '{{ var("as_of_date") }}'
+    {%- endif -%}
+{%- endmacro %}
+
+{%- macro as_of_by_level(level_col='level') -%}
+{#- The same, as a SQL expression for models that span both levels. -#}
+    case {{ level_col }} when 'MLB' then {{ as_of('MLB') }} else {{ as_of('AAA') }} end
+{%- endmacro %}
+
+{%- macro windowed(relation, level='AAA') -%}
+{#- Season-to-date and trailing-window copies of one level's pitches, as of the run date. -#}
     select *, 'season' as window_name
     from {{ relation }}
-    where season = {{ var('season') }}
-      and game_date <= date '{{ var("as_of_date") }}'
+    where level = '{{ level }}'
+      and season = {{ var('season') }}
+      and game_date <= {{ as_of(level) }}
     union all
     select *, 'recent' as window_name
     from {{ relation }}
-    where season = {{ var('season') }}
-      and game_date <= date '{{ var("as_of_date") }}'
-      and game_date > date '{{ var("as_of_date") }}' - interval {{ var('trend_days') }} day
+    where level = '{{ level }}'
+      and season = {{ var('season') }}
+      and game_date <= {{ as_of(level) }}
+      and game_date > {{ as_of(level) }} - interval {{ var('trend_days') }} day
 {%- endmacro %}
 
 {%- macro league_pct(metric, pool, higher_is_better=true) -%}

@@ -1,10 +1,11 @@
 """Synthetic Triple-A Statcast for testing the dbt pipeline in CI.
 
-Real pitch-level data can't be committed or published (CLAUDE.md rule 1), so CI builds the
+Real pitch-level data can't be committed or published (aggregates only), so CI builds the
 pipeline against this instead. It has the same columns and plausible values, enough players to
 fill the qualified percentile pools and the trailing window, and nothing real in it.
 
     write_fixture(out_dir, season)  ->  statcast_aaa_{season-1,season}.parquet,
+                                        statcast_mlb_{season-2..season}.parquet,
                                         milb_players_{season}.parquet,
                                         pitch_type_aaa_{season}.csv
 """
@@ -31,7 +32,7 @@ def _players() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def _season(season: int, rng: np.random.Generator) -> pd.DataFrame:
+def _season(season: int, rng: np.random.Generator, pk_offset: int = 0) -> pd.DataFrame:
     start = date(season, 4, 1)
     days = [start + timedelta(d) for d in range(150)]
     # Four games a day: every team plays daily.
@@ -41,7 +42,7 @@ def _season(season: int, rng: np.random.Generator) -> pd.DataFrame:
         for g in range(len(TEAMS) // 2):
             games.append((d, TEAMS[order[2 * g]], TEAMS[order[2 * g + 1]]))
     g = pd.DataFrame(games, columns=["game_date", "home_team", "away_team"])
-    g["game_pk"] = season * 10000 + np.arange(len(g))
+    g["game_pk"] = season * 10000 + pk_offset + np.arange(len(g))
 
     # Plate appearances: each half-inning side gets PA_PER_HALF PAs.
     pa = g.loc[g.index.repeat(2 * PA_PER_HALF)].reset_index(drop=True)
@@ -53,7 +54,12 @@ def _season(season: int, rng: np.random.Generator) -> pd.DataFrame:
     bt = np.vectorize(tidx.get)(bat_team)
     ft = np.vectorize(tidx.get)(fld_team)
     pa["batter"] = 100000 + bt * 100 + (pa["at_bat_number"] - 1) % PER_TEAM
-    pa["pitcher"] = 200000 + ft * 100 + rng.integers(0, PER_TEAM, len(pa))
+    # Every team plays daily, so a five-man rotation runs by day: pitchers 0-4 start and face the
+    # first 18 batters; relievers 5-11 take the rest. That gives SP and RP roles to test against.
+    day = (pd.to_datetime(pa["game_date"]) - pd.Timestamp(start)).dt.days.to_numpy()
+    k = (pa["at_bat_number"].to_numpy() - 1) % PA_PER_HALF
+    slot = np.where(k < 18, day % 5, 5 + rng.integers(0, PER_TEAM - 5, len(pa)))
+    pa["pitcher"] = 200000 + ft * 100 + slot
     pa["inning"] = (pa["at_bat_number"] - 1) % PA_PER_HALF // 4 + 1
 
     # Pitches: 1-6 per PA, the last one ends it.
@@ -103,6 +109,8 @@ def write_fixture(out: Path, season: int, seed: int = 0) -> None:
     rng = np.random.default_rng(seed)
     for s in (season - 1, season):
         _season(s, rng).to_parquet(out / f"statcast_aaa_{s}.parquet", index=False)
+    for s in (season - 2, season - 1, season):
+        _season(s, rng, pk_offset=5000).to_parquet(out / f"statcast_mlb_{s}.parquet", index=False)
 
     pl = _players()
     pl["birth_date"] = [f"{season - 22 - i % 10}-05-01" for i in range(len(pl))]

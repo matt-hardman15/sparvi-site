@@ -12,7 +12,8 @@ behind them in explorers readers can filter and check. Live at **https://sparvi.
 | `scripts/pull_data.py` | Pulls pitch-level Statcast (MLB, Triple-A) and MLB Stats API rosters into `data/raw/` (not committed) |
 | `baseball/pitch_quality/` | Stuff+ model (LightGBM): `train.py`, `robustness.py` |
 | `baseball/shape_stability/` | Do midseason pitch shape changes persist into next season? |
-| `baseball/pd_pipeline/` | dbt + DuckDB player development pipeline: windows, percentiles, change flags |
+| `baseball/pd_pipeline/` | dbt + DuckDB pipeline over MLB and Triple-A pitches: pitcher appearances and roles (SP/RP/Swing), Triple-A windows, percentiles, change flags |
+| `scripts/check_roles.py` | Spot-checks pitcher games and starts against MLB's official stats |
 | `baseball/two_week_signal/` | Which two-week Triple-A numbers carry into the next two weeks |
 | `baseball/export_site_data.py` | Writes aggregated JSON for the site and the numbers quoted in article prose (no pitch-level data is published) |
 | `site/` | Quarto site. Interactive charts use Observable Plot and d3, self-hosted in `site/assets/js/`. Article numbers come from `site/_generated/<sport>.yml` |
@@ -49,7 +50,8 @@ and an `export_site_data.py` that writes `site/data/<sport>/` and `site/_generat
 through the shared `sparvi` package, plus a `[<sport>]` section in `sparvi.toml` and its own
 `refresh-<sport>.yml` on its own calendar. Pages go in `site/<sport>/` and reuse
 `site/assets/js/sparvi.js` (tables, charts, percentile bars, controls) and `site/assets/css/sparvi.css`,
-so every sport looks like one site. CLAUDE.md has the full checklist.
+so every sport looks like one site. Also add `_generated/<sport>.yml` to `metadata-files` in
+`site/_quarto.yml`, the sport to the navbar and home-page sport strip, and its pages to `tests/test_site.py`.
 
 ## Season rollover (each spring)
 

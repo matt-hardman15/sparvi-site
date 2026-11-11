@@ -15,6 +15,10 @@ description: "What the numbers on Sparvi mean and how they're calculated."
 
 **FB velo**: Average velocity of the pitcher's primary fastball: the four-seamer or sinker thrown most over the season. "Velo Δ14" compares that same pitch over the final 14 days with its season average.
 
+**Role (SP, RP, Swing)** {#roles}: Set from how often a pitcher started, separately for each level and season. A **start** means he threw his team's first pitch of the game, so an opener gets the start and the pitcher who follows him doesn't. **SP**: at least {{< meta baseball.role_sp_min_share >}} of his games were starts, with at least {{< meta baseball.role_sp_min_starts >}} starts. **RP**: no more than {{< meta baseball.role_rp_max_share >}} of his games were starts. **Swing**: everyone in between, such as spot starters, pitchers who moved between the rotation and the bullpen, and MLB pitchers making a couple of rehab starts. Player pages show it as, for example, "SP · 27 G, 26 GS" (games, games started).
+
+**Role-based pitch minimums**: The Stuff+ leaderboard and the Triple-A explorer hold each pitcher to his role's minimum by default. MLB: {{< meta baseball.q_mlb_sp >}}+ pitches for starters, {{< meta baseball.q_mlb_rp >}}+ for relievers and swingmen. Triple-A: {{< meta baseball.q_aaa_sp >}}+ and {{< meta baseball.q_aaa_rp >}}+. Typing a minimum overrides this for everyone.
+
 **CSW rate**: Called strikes plus whiffs, divided by pitches.
 
 **Chase induced**: Share of pitches outside the zone that the hitter swung at.

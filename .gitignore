@@ -13,3 +13,9 @@ baseball/pd_pipeline/logs/
 baseball/pd_pipeline/.user.yml
 baseball/*/figures/
 .idea/
+
+# Local working notes and assistant instructions: kept on disk, not published
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+PLAN*.md
