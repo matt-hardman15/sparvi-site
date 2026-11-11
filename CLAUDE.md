@@ -20,7 +20,9 @@ Matt Hardman runs it; his name appears only on the About page.
   - `refresh-baseball.yml`: Apr–Oct daily = re-pull current season, `./build.sh`, commit data,
     call deploy. Nov–Mar weekly = keep the past-season raw-data cache from expiring.
   - `check.yml`: every PR = ruff, dbt on synthetic data, render + browser test of every page.
-  main is protected: changes go through a PR with passing checks (the refresh bot is exempt).
+  main is protected (ruleset "Protect main"): changes go through a PR with passing lint, pipeline,
+  and site checks; no force-push or deletion. The refresh pushes its data commit with a deploy key
+  (secret `SPARVI_DEPLOY_KEY`), the one actor the ruleset exempts. Rotate it by replacing both.
 
 ## Layout
 - `sparvi.toml`: the current season and season windows. The only place a season is set.
