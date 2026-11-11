@@ -70,7 +70,7 @@ The difference isn't huge, and it shouldn't be: plenty of what happens next seas
 
 ## What the model pays attention to
 
-Importance is spread across many traits rather than dominated by velocity. Averaged across the three models, {{< meta baseball.stuff_top_features >}} carry the most, and {{< meta baseball.stuff_least_feature >}} the least. The mix shifts by pitch type: for breaking balls and offspeed pitches, the gaps from the fastball matter more.
+Importance is spread across many traits rather than dominated by velocity. Averaged across the three models, {{< meta baseball.stuff_top_features >}} carry the most, and {{< meta baseball.stuff_least_feature >}} the least. The mix shifts by pitch type. {{< meta baseball.stuff_gap_mix >}}
 
 ```{=html}
 <div class="explorer">

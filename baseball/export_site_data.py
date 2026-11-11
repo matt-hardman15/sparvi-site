@@ -238,8 +238,15 @@ N["stuff_top_features"] = f"{top[0]}, {top[1]}, {top[2]}, and {top[3]}"
 N["stuff_least_feature"] = FEATURE_WORDS[rank.index[-1]]
 by_group = imp.pivot(index="feature", columns="group", values="gain")
 diffs = by_group.loc[["velo_diff", "ivb_diff", "hb_diff"]].sum()
-if not (diffs["breaking"] > diffs["fastball"] and diffs["offspeed"] > diffs["fastball"]):
-    raise StaleProse("Stuff+ article says fastball-gap features matter more for breaking and offspeed models.")
+# How much the fastball-gap features carry in each non-fastball model, worded from the shares. A gap of
+# under 2 points counts as "about the same": the breaking-ball share sits within a fraction of a point of
+# the fastball model's and flips between the Windows and Linux builds.
+GAP_MARGIN = 0.02
+pct = lambda x: f"{100 * x:.0f}%"  # noqa: E731
+parts = [f"for {name}, {'more' if diffs[g] - diffs['fastball'] >= GAP_MARGIN else 'less' if diffs['fastball'] - diffs[g] >= GAP_MARGIN else 'about the same'} ({pct(diffs[g])})"
+         for g, name in [("offspeed", "offspeed pitches"), ("breaking", "breaking balls")]]
+N["stuff_gap_mix"] = (f"The gaps from the fastball (velocity, ride, and run) carry {pct(diffs['fastball'])} of the "
+                      f"fastball model's gain; {parts[0]}; {parts[1]}.")
 
 # Shape-changes article
 M, V = shape_res["metrics"], shape_res["velo_by_pitch_class"]

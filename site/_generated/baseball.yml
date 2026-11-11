@@ -42,6 +42,7 @@ baseball:
   stuff_aaa_r_stuff: "0.14"
   stuff_gap_hi: "+0.22"
   stuff_gap_lo: "+0.00"
+  stuff_gap_mix: "The gaps from the fastball (velocity, ride, and run) carry 25% of the fastball model's gain; for offspeed pitches, more (30%); for breaking balls, about the same (25%)."
   stuff_gap_sentence: "The interval sits just above zero, so Stuff+ is better, but the true margin could be close to nothing."
   stuff_holdout_r2: "0.0005"
   stuff_least_feature: "extension"
