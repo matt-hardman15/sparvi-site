@@ -7,6 +7,10 @@ description: "What the numbers on Sparvi mean and how they're calculated."
 
 **Stuff+**: Pitch quality graded only on physical traits (velocity, movement, spin, release point, extension, arm angle, and gaps from the pitcher's primary fastball). 100 is an average qualified MLB pitcher from the season before ({{< meta baseball.scale_ref_season >}}), and the scale stays fixed all season; 10 points is one standard deviation. Pitch-level grades are scaled within fastballs, breaking balls, and offspeed pitches. [How it's built](/baseball/stuff-plus/#method).
 
+**Location+** {#location-plus}: Pitch quality graded only on where the pitch crossed the plate (side, mirrored so inside is the same for every batter, and height within the batter's rulebook zone), the count, and whether pitcher and batter are on the same side. Same target and same frozen scale as Stuff+. The zone comes from each batter's listed height ({{< meta baseball.loc_zone_bottom >}} to {{< meta baseball.loc_zone_top >}} of it), because Statcast's own zone fields changed definition in {{< meta baseball.season >}}. [How it's built](/baseball/stuff-or-command/#method).
+
+**Pitching+**: Stuff+ inputs and Location+ inputs in one model, on the same scale.
+
 **RV+**: Actual run value per 100 pitches, on the same scale as Stuff+.
 
 **IVB (induced vertical break)**: How far a pitch finishes above or below where a spinless pitch would, in inches. High-IVB fastballs "ride"; curveballs have negative IVB.
@@ -17,7 +21,7 @@ description: "What the numbers on Sparvi mean and how they're calculated."
 
 **Role (SP, RP, Swing)** {#roles}: Set from how often a pitcher started, separately for each level and season. A **start** means he threw his team's first pitch of the game, so an opener gets the start and the pitcher who follows him doesn't. **SP**: at least {{< meta baseball.role_sp_min_share >}} of his games were starts, with at least {{< meta baseball.role_sp_min_starts >}} starts. **RP**: no more than {{< meta baseball.role_rp_max_share >}} of his games were starts. **Swing**: everyone in between, such as spot starters, pitchers who moved between the rotation and the bullpen, and MLB pitchers making a couple of rehab starts. Player pages show it as, for example, "SP · 27 G, 26 GS" (games, games started).
 
-**Role-based pitch minimums**: The Stuff+ leaderboard and the Triple-A explorer hold each pitcher to his role's minimum by default. MLB: {{< meta baseball.q_mlb_sp >}}+ pitches for starters, {{< meta baseball.q_mlb_rp >}}+ for relievers and swingmen. Triple-A: {{< meta baseball.q_aaa_sp >}}+ and {{< meta baseball.q_aaa_rp >}}+. Typing a minimum overrides this for everyone.
+**Role-based pitch minimums**: The pitch-grade leaderboard and the Triple-A explorer hold each pitcher to his role's minimum by default. MLB: {{< meta baseball.q_mlb_sp >}}+ pitches for starters, {{< meta baseball.q_mlb_rp >}}+ for relievers and swingmen. Triple-A: {{< meta baseball.q_aaa_sp >}}+ and {{< meta baseball.q_aaa_rp >}}+. Typing a minimum overrides this for everyone.
 
 **CSW rate**: Called strikes plus whiffs, divided by pitches.
 

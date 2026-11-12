@@ -9,8 +9,8 @@ behind them in explorers readers can filter and check. Live at **https://sparvi.
 |---|---|
 | `sparvi.toml` | The current season and season windows: the only place a season is set |
 | `sparvi/` | Shared Python package: config, site-data writers with schema checks, provenance, plot style |
-| `scripts/pull_data.py` | Pulls pitch-level Statcast (MLB, Triple-A) and MLB Stats API rosters into `data/raw/` (not committed) |
-| `baseball/pitch_quality/` | Stuff+ model (LightGBM): `train.py`, `robustness.py` |
+| `scripts/pull_data.py` | Pulls pitch-level Statcast (MLB, Triple-A), MLB Stats API rosters, and batter heights (for the Location+ strike zone) into `data/raw/` (not committed) |
+| `baseball/pitch_quality/` | Stuff+, Location+, and Pitching+ models (LightGBM): `train.py`, `robustness.py` (out-of-sample validation), `thumb.py` |
 | `baseball/shape_stability/` | Do midseason pitch shape changes persist into next season? |
 | `baseball/pd_pipeline/` | dbt + DuckDB pipeline over MLB and Triple-A pitches: pitcher appearances and roles (SP/RP/Swing), Triple-A windows, percentiles, change flags, and weekly snapshots (season to date and last 30 days) behind the date slider |
 | `baseball/rule5/` | Rule 5 eligibility estimate, its validation against published lists, and the board's thumbnail |

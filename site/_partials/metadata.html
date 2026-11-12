@@ -34,7 +34,7 @@ $endif$
     var add = function (f) { var l = document.createElement("link"); l.rel = "preload"; l.as = "fetch";
       l.crossOrigin = "anonymous"; l.href = "/data/baseball/" + f; document.head.appendChild(l); };
     if (/\/tools\/triple-a(\.html)?$$/.test(p)) { add("meta.json"); add("snapshots_" + (q.get("side") || "hitters") + "_aaa" + w + ".json"); }
-    else if (/\/tools\/stuff-leaderboard(\.html)?$$/.test(p)) { add("meta.json"); add("snapshots_pitchers_" + (q.get("level") || "MLB").toLowerCase() + w + ".json"); }
+    else if (/\/tools\/stuff-leaderboard(\.html)?$$/.test(p)) { add("meta.json"); add("snapshots_grades_" + (q.get("level") || "MLB").toLowerCase() + w + ".json"); }
     else if (/\/baseball\/player(\.html)?$$/.test(p)) { add("meta.json"); add("players_index.json"); }
   })();
 </script>

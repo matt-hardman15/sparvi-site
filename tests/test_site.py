@@ -180,6 +180,16 @@ def act_leaderboard(p):
     assert rows(p, "#t") == 25
     assert qtext("MLB", "all") in p.text_content("#scap")
     assert p.locator("#c .seg button", has_text="Swing").count() == 1  # MLB has swingmen
+    # Grade picker: sort, Δ column, chart axis, and URL follow it; the split chart plots Stuff+ vs Location+.
+    seg(p, "#c", "Location+")
+    assert query(p).get("grade") == "loc" and p.locator("#t th", has_text="Δ Location+").count() == 1
+    assert "Location+ grade" in p.text_content("#scap")
+    seg(p, "#c2", "Stuff+ vs. Location+")
+    assert query(p).get("chart") == "split" and "better location" in p.text_content("#scap")
+    p.reload(wait_until="networkidle"); wait(p, 800)
+    assert query(p).get("grade") == "loc" and "better location" in p.text_content("#scap")
+    seg(p, "#c2", "vs. results"); seg(p, "#c", "Pitching+"); seg(p, "#c", "Stuff+")
+    assert "grade" not in query(p) and "chart" not in query(p)
     p.locator("#t th", has_text="RV+").first.click(); wait(p)
     p.locator(".pager button", has_text="Next").click(); wait(p)
     # Role filter: table, caption, and URL follow it.
@@ -219,6 +229,17 @@ def act_leaderboard(p):
     assert p.locator("#scatter svg").count() == 1
 
 
+def act_stuff_or_command(p):
+    assert "bootstrap" in p.text_content("#cap1") and p.locator("#p1 svg circle").count() == 4
+    for t in ["Stable within a season", "Stable year to year", "Triple-A to MLB", "Predicts next season"]:
+        seg(p, "#c1", t)
+        assert p.locator("#p1 svg circle").count() == 4
+    assert "r = " in p.text_content("#cap2")
+    seg(p, "#c2", "Triple-A"); assert "Triple-A" in p.text_content("#cap2")
+    seg(p, "#c2", "Relievers"); search(p, "#c2", "a")
+    assert p.locator("#p2 svg").count() >= 1
+
+
 def act_triple_a(p):
     assert rows(p, "#t") == 25
     assert "r = " in p.text_content("#scap")
@@ -251,6 +272,7 @@ def act_rule5(p):
     assert ("Preliminary" in banner) == (meta["snapshot_date"] <= meta["protection_deadline"])
     # Every status cell carries its reasoning as a tooltip.
     assert p.locator("#t .r5-status[title]").count() == min(25, rows(p, "#t"))
+    assert p.locator("#t th", has_text="Pitching+").count() == 1
     seg(p, "#c", "Relievers")
     assert set(col_values(p, "#t", "Role")) <= {"RP"} and query(p).get("role") == "RP"
     select(p, "#c", "Organization", nth_option(p, "#c", "Organization", 3))
@@ -301,7 +323,9 @@ def act_player(*sections, role_tag=False):
         assert "asof" in query(p)
         p.locator(".date-slider input[type=range]").focus(); p.keyboard.press("End"); wait(p, 700)
         assert "asof" not in query(p)
-        if role_tag:
+        if role_tag:  # pitcher pages: the per-pitch timeline has its own grade picker
+            seg(p, "#root", "Location+")
+            assert query(p).get("pgrade") == "loc" and "Location+ by pitch" in p.text_content("#root")
             import re
             tags = p.locator("#root .role-tag").all_text_contents()
             assert tags and all(re.fullmatch(r"(SP|RP|Swing) · \d+ G, \d+ GS · through \w+ \d+", t) for t in tags), tags
@@ -312,6 +336,7 @@ PAGES = [
     ("home", "/", None),
     ("baseball", "/baseball/", None),
     ("stuff-plus", "/baseball/stuff-plus/", act_stuff_plus),
+    ("stuff-or-command", "/baseball/stuff-or-command/", act_stuff_or_command),
     ("shape-changes", "/baseball/shape-changes/", act_shape),
     ("two-week", "/baseball/two-week-signal/", act_two_week),
     ("stuff-leaderboard", "/baseball/tools/stuff-leaderboard.html", act_leaderboard),

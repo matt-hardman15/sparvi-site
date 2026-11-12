@@ -102,7 +102,7 @@ Importance is spread across many traits rather than dominated by velocity. Avera
 
 Statcast tracking covers every Triple-A park, so the same model, trained only on MLB pitches, can grade minor leaguers on the same scale. The average qualified Triple-A pitcher grades out around {{< meta baseball.stuff_aaa_mean >}}, a little under one standard deviation below an average big leaguer. For {{< meta baseball.stuff_aaa_n >}} pitchers who threw {{< meta baseball.stuff_aaa_min_pitches >}}+ Triple-A pitches in {{< meta baseball.season_prev >}} and {{< meta baseball.stuff_min_pitches >}}+ MLB pitches in {{< meta baseball.season >}}, Triple-A Stuff+ correlated with MLB run value at r = {{< meta baseball.stuff_aaa_r_stuff >}}, and Triple-A results at r = {{< meta baseball.stuff_aaa_r_results >}}. Both samples are small, but only one of those numbers carried any information.
 
-Every {{< meta baseball.season >}} grade, at both levels and by individual pitch, is in the **[Stuff+ leaderboard](/baseball/tools/stuff-leaderboard.html)**.
+Every {{< meta baseball.season >}} grade, at both levels and by individual pitch, is in the **[pitch-grade leaderboard](/baseball/tools/stuff-leaderboard.html)**, alongside Location+ and Pitching+.
 
 <details class="method" id="method">
 <summary>Method and caveats</summary>
@@ -119,7 +119,7 @@ Every {{< meta baseball.season >}} grade, at both levels and by individual pitch
 
 **Checks.** Pitch-level R² on the {{< meta baseball.season >}} holdout is {{< meta baseball.stuff_holdout_r2 >}}, which is expected because single pitches are coin flips. Split-half reliability within a season is {{< meta baseball.stuff_split_half_stuff >}} for Stuff+ and {{< meta baseball.stuff_split_half_rv >}} for actual run value.
 
-**Not included.** Location and command, count and sequencing, park or tracking-system differences between levels (not corrected), and errors in Savant's pitch-type labels (inherited by the fastball-gap features).
+**Not included.** Location and command (graded separately in [Stuff or command?](/baseball/stuff-or-command/)), count and sequencing, park or tracking-system differences between levels (not corrected), and errors in Savant's pitch-type labels (inherited by the fastball-gap features).
 
 Code: [`baseball/pitch_quality/`](https://github.com/matt-hardman15/sparvi-site/tree/main/baseball/pitch_quality)
 </details>
