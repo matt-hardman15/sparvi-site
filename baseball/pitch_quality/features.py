@@ -1,13 +1,34 @@
 """Feature engineering shared by training and scoring.
 
-Every pitch is described only by what the pitcher controls physically: velocity,
-movement, spin, release point, extension, arm angle, and how the pitch differs
-from that pitcher's primary fastball. No location, count, or outcome information
-goes into the features, so the model grades the pitch itself rather than how it
-was used.
+Three feature sets, one model family each (all graded on the same target):
+  FEATURES          Stuff+: only what the pitcher controls physically (velocity, movement, spin,
+                    release, extension, arm angle, and gaps from his primary fastball). No location,
+                    count, or outcome, so it grades the pitch itself rather than how it was used.
+  LOC_FEATURES      Location+: only where the pitch crossed the plate, in the count it was thrown.
+                    Horizontal location is mirrored by batter side (positive = inside); height is
+                    scaled to the rulebook zone from the batter's listed height (0 = bottom at 27%,
+                    1 = top at 53.5%). No velocity or movement.
+  PITCHING_FEATURES Pitching+: both, so the model can value a pitch's shape where it was thrown.
 """
+from functools import cache
+
 import numpy as np
 import pandas as pd
+
+from sparvi.config import RAW
+
+# The rulebook strike zone as a share of the batter's height: what Statcast's sz_top/sz_bot record
+# from 2026 (checked: 53.5% and 27.0% of listed height, to rounding). Before 2026 those fields were set
+# from the batter's stance on each pitch, a different and taller zone, so Location+ uses height for
+# every season to keep one definition.
+ZONE_TOP, ZONE_BOT = 0.535, 0.27
+
+
+@cache
+def batter_heights() -> pd.Series:
+    """Listed height in feet by batter id (scripts/pull_data.py writes batter_heights.parquet)."""
+    h = pd.read_parquet(RAW / "batter_heights.parquet")
+    return (h.set_index("batter")["height_in"] / 12).astype(float)
 
 FASTBALLS = {"FF", "SI", "FC"}
 BREAKING = {"SL", "ST", "CU", "KC", "SV", "CS"}
@@ -20,6 +41,9 @@ FEATURES = [
     "rel_z", "rel_x", "arm_angle",
     "velo_diff", "ivb_diff", "hb_diff",
 ]
+LOC_FEATURES = ["loc_x", "loc_z", "balls", "strikes", "same_hand"]
+PITCHING_FEATURES = FEATURES + LOC_FEATURES
+FEATURE_SETS = {"stuff": FEATURES, "loc": LOC_FEATURES, "pitching": PITCHING_FEATURES}
 
 
 def pitch_group(pt: pd.Series) -> pd.Series:
@@ -56,6 +80,15 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
     out["rel_z"] = df["release_pos_z"]
     out["rel_x"] = df["release_pos_x"] * -sign
     out["arm_angle"] = df["arm_angle"]
+
+    # Location and count. Statcast's plate_x is from the catcher's view (positive = first-base side),
+    # so inside is negative for a right-handed batter: mirror so positive = inside for everyone.
+    out["loc_x"] = np.where(df["stand"].eq("R"), -df["plate_x"], df["plate_x"])
+    height = df["batter"].map(batter_heights())  # NaN if unknown; LightGBM handles missing values
+    out["loc_z"] = (df["plate_z"] - ZONE_BOT * height) / ((ZONE_TOP - ZONE_BOT) * height)
+    out["balls"] = df["balls"]
+    out["strikes"] = df["strikes"]
+    out["same_hand"] = (df["p_throws"] == df["stand"]).astype(float)
 
     # Primary fastball = the pitcher's most-thrown FF/SI/FC that season.
     fb = out[out["group"].eq("fastball")]
