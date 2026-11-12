@@ -48,6 +48,13 @@ PARAMS = dict(
     lambda_l2=10.0,
     verbose=-1,
     seed=SEED,
+    # Same data, same model. LightGBM's default thread count follows the machine's cores, and the
+    # order of its multithreaded histogram sums (so their rounding) can depend on it: two
+    # refreshes on unchanged data moved published numbers in the second decimal. A fixed thread
+    # count, row-wise histograms, and deterministic mode pin it. The refresh checks it on each run.
+    deterministic=True,
+    force_row_wise=True,
+    num_threads=4,
 )
 TARGET = "rv_x"     # see features.py; "rv" = raw run value
 MIN_PITCHES = 500   # pitcher-season qualifier for scaling and evaluation

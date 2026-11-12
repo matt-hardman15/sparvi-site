@@ -114,6 +114,17 @@ jobs:
       - name: Rebuild models, pipeline, and site
         run: uv run ./build.sh
 
+      # Same data must give the same model. Retrain the out-of-sample test (one season, ~2 min) and
+      # require byte-identical outputs; a failure here means training stopped being repeatable and
+      # published numbers would drift between refreshes on unchanged data.
+      - name: Check training is repeatable
+        run: |
+          echo "CPU: $(nproc) cores, $(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2)"
+          o=baseball/pitch_quality/output
+          sha256sum $o/robustness.json $o/metrics_location.json $o/yoy_pairs.csv > /tmp/first.sha
+          uv run python baseball/pitch_quality/robustness.py > /dev/null
+          sha256sum -c /tmp/first.sha
+
       - name: Commit refreshed data
         run: |
           git config user.name "sparvi-bot"
