@@ -4,6 +4,7 @@
 --   fb_velo     primary fastball as of the snapshot (most-thrown FF/SI season to date, ties to FF),
 --               measured within the window, same definition as fct_pitcher_report
 --   stuff_plus  on the frozen prior-season scale (scale_reference), so 100 means the same all season;
+--   loc_plus, pitching_plus  the location and combined models, same frozen scale (kinds 'loc', 'pitching')
 --   rv_plus     actual run value on the same kind of frozen scale
 --   *_pctl      against that snapshot's qualified pool: BF >= the prorated minimum (macro qualifier)
 with pitches as (
@@ -44,19 +45,21 @@ fb as (
 preds as (select * from {{ ref('int_pitch_predictions') }}),
 pw as ({{ snapshot_windows('preds') }}),
 ref as (
-    select max(mean) filter (where kind = 'stuff') as m_stuff, max(sd) filter (where kind = 'stuff') as sd_stuff,
-           max(mean) filter (where kind = 'rv') as m_rv, max(sd) filter (where kind = 'rv') as sd_rv
+    select {% for k in ['stuff', 'loc', 'pitching', 'rv'] %}max(mean) filter (where kind = '{{ k }}') as m_{{ k }},
+           max(sd) filter (where kind = '{{ k }}') as sd_{{ k }}{{ ',' if not loop.last }}
+           {% endfor %}
     from {{ source('pitch_quality', 'scale_reference') }}
 ),
 stuff as (
     select level, snapshot_date, window_name, pitcher_id, count(*) as graded_pitches,
-           100 + 10 * (100 * avg(xrv_stuff) - any_value(ref.m_stuff)) / any_value(ref.sd_stuff) as stuff_plus,
-           100 + 10 * (100 * avg(rv) - any_value(ref.m_rv)) / any_value(ref.sd_rv) as rv_plus
+           {% for k, col in [('stuff', 'xrv_stuff'), ('loc', 'xrv_loc'), ('pitching', 'xrv_pitching'), ('rv', 'rv')] %}
+           100 + 10 * (100 * avg({{ col }}) - any_value(ref.m_{{ k }})) / any_value(ref.sd_{{ k }}) as {{ k }}_plus{{ ',' if not loop.last }}
+           {% endfor %}
     from pw, ref group by level, snapshot_date, window_name, pitcher_id
 ),
 
 base as (
-    select r.*, r.pa as bf, ro.role, ro.games_std, ro.starts, fb.fb_velo, st.graded_pitches, st.stuff_plus, st.rv_plus,
+    select r.*, r.pa as bf, ro.role, ro.games_std, ro.starts, fb.fb_velo, st.graded_pitches, st.stuff_plus, st.loc_plus, st.pitching_plus, st.rv_plus,
            {{ qualifier(var('min_bf_qualified'),
                         "case r.window_name when 'std' then d.team_games else d.team_games_last end", 'r.level') }} as qual_min
     from rates r
@@ -77,7 +80,7 @@ pctl as (
 select b.level, {{ var('season') }} as season, b.snapshot_date, b.window_name, b.pitcher_id, b.team, b.role,
        b.games_std as games, b.starts, b.games as window_games, b.pitches, b.graded_pitches, b.bf,
        b.bf >= b.qual_min as qualified, b.qual_min,
-       b.k_pct, b.bb_pct, b.csw_pct, b.whiff_pct, b.chase_pct, b.zone_pct, b.hard_hit_pct, b.xwoba, b.fb_velo, b.stuff_plus, b.rv_plus,
+       b.k_pct, b.bb_pct, b.csw_pct, b.whiff_pct, b.chase_pct, b.zone_pct, b.hard_hit_pct, b.xwoba, b.fb_velo, b.stuff_plus, b.loc_plus, b.pitching_plus, b.rv_plus,
        {% for m, _ in pitcher_pctl_metrics() %}p.{{ m }}_pctl{{ ',' if not loop.last }}{% endfor %}
 from base b
 left join pctl p using (level, snapshot_date, window_name, pitcher_id)

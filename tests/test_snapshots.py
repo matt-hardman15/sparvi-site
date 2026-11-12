@@ -29,12 +29,12 @@ def close(a, b, tol):
 
 
 @pytest.mark.parametrize("level", ["MLB", "AAA"])
-def test_pitcher_stuff_role_and_counts(level):
-    snap, season = load(f"snapshots_pitchers_{level.lower()}"), [r for r in load("stuff_pitchers") if r["level"] == level]
+def test_pitcher_grades_role_and_counts(level):
+    snap, season = load(f"snapshots_grades_{level.lower()}"), [r for r in load("stuff_pitchers") if r["level"] == level]
     for r in random.Random(7).sample(season, N):
         pid = r["id"]
-        assert close(final(snap, pid, "stuff_plus"), r["stuff_plus"], 0), (pid, "stuff_plus")
-        assert close(final(snap, pid, "rv_plus"), r["rv_plus"], 0), (pid, "rv_plus")
+        for g in ["stuff_plus", "loc_plus", "pitching_plus", "rv_plus"]:
+            assert close(final(snap, pid, g), r[g], 0), (pid, g)
         assert (final(snap, pid, "role"), final(snap, pid, "games"), final(snap, pid, "starts")) == (r["role"], r["g"], r["gs"]), pid
 
 
@@ -68,16 +68,17 @@ def test_triple_a_hitter_rates_and_percentiles():
 
 
 @pytest.mark.parametrize("level", ["MLB", "AAA"])
-def test_pitch_type_stuff(level):
+def test_pitch_type_grades(level):
     snap = load(f"snapshots_pitches_{level.lower()}")
     by_key = {(p["id"], p["pt"]): p["series"] for p in snap["pitches"]}
     season = [r for r in load("stuff_pitches") if r["level"] == level]
     for r in random.Random(17).sample(season, N):
         s = by_key[(r["id"], r["pt"])]
-        assert close(s["stuff_plus"][-1], r["stuff_plus"], 0) and s["pitches"][-1] >= r["n"], (r["id"], r["pt"])
+        assert all(close(s[g][-1], r[g], 0) for g in ["stuff_plus", "loc_plus", "pitching_plus"]), (r["id"], r["pt"])
+        assert s["pitches"][-1] >= r["n"], (r["id"], r["pt"])
 
 
-@pytest.mark.parametrize("name", ["snapshots_pitchers_mlb", "snapshots_pitchers_aaa", "snapshots_hitters_aaa"])
+@pytest.mark.parametrize("name", ["snapshots_grades_mlb", "snapshots_grades_aaa", "snapshots_pitchers_aaa", "snapshots_hitters_aaa"])
 def test_cumulative_counts_never_decrease(name):
     count = "pa" if "hitters" in name else "pitches"
     for p in load(name)["players"]:
