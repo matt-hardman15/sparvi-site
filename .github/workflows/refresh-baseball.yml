@@ -118,10 +118,12 @@ jobs:
         run: |
           git config user.name "sparvi-bot"
           git config user.email "sparvi-bot@users.noreply.github.com"
-          git add site/data/baseball site/_generated/baseball.yml baseball/*/output
+          # Everything the build regenerates: data, prose numbers, model outputs, listing thumbnails.
+          git add site/data/baseball site/_generated/baseball.yml baseball/*/output site/baseball/*/thumb.png
           if git diff --cached --quiet; then echo "No data changes."; exit 0; fi
           git commit -m "Baseball data refresh $(date -u +%Y-%m-%d)"
-          git pull --rebase origin main
+          git status --short  # anything left unstaged is listed here; --autostash keeps it from blocking the rebase
+          git pull --rebase --autostash origin main
           git push origin HEAD:main
 
   deploy:
