@@ -7,6 +7,7 @@ fill the qualified percentile pools and the trailing window, and nothing real in
     write_fixture(out_dir, season)  ->  statcast_aaa_{season-1,season}.parquet,
                                         statcast_mlb_{season-2..season}.parquet,
                                         milb_players_{season}.parquet,
+                                        batter_heights.parquet,
                                         pitch_type_aaa_{season}.csv,
                                         pitch_predictions_{mlb,aaa}_{season}.parquet,
                                         scale_reference.csv
@@ -80,6 +81,8 @@ def _season(season: int, rng: np.random.Generator, pk_offset: int = 0) -> pd.Dat
     p["balls"] = rng.integers(0, 4, N)
     p["strikes"] = rng.integers(0, 3, N)
     p["zone"] = rng.integers(1, 15, N)
+    p["plate_x"] = rng.normal(0, 0.8, N)
+    p["plate_z"] = rng.normal(2.4, 0.9, N)
 
     bip = p["description"].eq("hit_into_play").to_numpy()
     p["launch_speed"] = np.where(bip, rng.normal(88, 12, N), np.nan)
@@ -129,6 +132,10 @@ def write_fixture(out: Path, season: int, seed: int = 0) -> None:
                  ).to_csv(out / "scale_reference.csv", index=False)
 
     pl = _players()
+    # Listed heights for every hitter but one, so in_zone's fallback to Statcast's zone is exercised.
+    hitters = pl.loc[pl["role"].eq("H"), "player_id"].to_numpy()
+    pd.DataFrame({"batter": hitters[1:], "height_in": 70 + np.arange(len(hitters) - 1) % 8}).to_parquet(
+        out / "batter_heights.parquet", index=False)
     pl["birth_date"] = [f"{season - 22 - i % 10}-05-01" for i in range(len(pl))]
     pl["position"] = np.where(pl["role"].eq("P"), "P", "CF")
     pl["bats"], pl["throws"], pl["level"] = "R", "R", "AAA"

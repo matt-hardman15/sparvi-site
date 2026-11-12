@@ -28,6 +28,15 @@ vars:
   trend_days: 14             # recent window compared against season-to-date
   min_pa_qualified: 150      # league percentile pool, hitters
   min_bf_qualified: 150      # league percentile pool, pitchers
+  # The strike zone behind in_zone (chase, zone swing, zone contact, zone rate). Statcast's `zone`
+  # follows sz_top/sz_bot, which were set from the batter's stance per pitch for MLB before 2026 and
+  # from listed height after (Triple-A: height in every season we use). Defining it from height for
+  # every season and level keeps one zone; it matches Statcast's own flag 99.6% where Statcast
+  # already uses height. Shares must equal ZONE_TOP/ZONE_BOT in pitch_quality/features.py (tested).
+  zone_top_share: 0.535      # top of the zone, share of listed height
+  zone_bot_share: 0.27       # bottom of the zone
+  zone_half_width_ft: 0.83   # half the plate (8.5 in) plus a ball radius
+  ball_radius_ft: 0.12       # a pitch touching the top or bottom edge counts
 
 models:
   pd_pipeline:
