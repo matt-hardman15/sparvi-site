@@ -11,7 +11,7 @@
       "n_pairs": 5086
     },
     "zone_swing_pct": {
-      "r": 0.516,
+      "r": 0.515,
       "n_pairs": 5086
     },
     "whiff_pct": {
@@ -61,7 +61,7 @@
       "n_pairs": 2811
     },
     "chase_pct": {
-      "r": 0.183,
+      "r": 0.185,
       "n_pairs": 2810
     },
     "hard_hit_pct": {
