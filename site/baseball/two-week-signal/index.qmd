@@ -102,7 +102,7 @@ Browse it for any club: **[Triple-A explorer](/baseball/tools/triple-a.html)**. 
 
 **Windows.** Each season is split into consecutive {{< meta baseball.tw_block_days >}}-day blocks from opening day. A player-fortnight counts if the player had {{< meta baseball.tw_min >}}+ plate appearances (hitters) or {{< meta baseball.tw_min >}}+ batters faced (pitchers). Pairs are the same player in block *k* and block *k+1* of the same season: {{< meta baseball.tw_hit_pairs >}} hitter pairs and {{< meta baseball.tw_pit_pairs >}} pitcher pairs (depending on the metric) across {{< meta baseball.tw_seasons >}}.
 
-**Definitions.** Swings exclude bunt attempts. Whiffs include foul tips (matching Baseball Savant). The zone is Statcast zones 1–9. Hard-hit means 95+ mph exit velocity. xwOBA uses expected wOBA on balls in play and actual values on strikeouts, walks, and hit-by-pitches. Fastball velocity is the average of four-seamers and sinkers.
+**Definitions.** Swings exclude bunt attempts. Whiffs include foul tips (matching Baseball Savant). The [strike zone](/glossary.html#strike-zone) runs from {{< meta baseball.loc_zone_bottom >}} to {{< meta baseball.loc_zone_top >}} of the batter's listed height, as wide as the plate, and a pitch counts if any part of the ball touches it. Hard-hit means 95+ mph exit velocity. xwOBA uses expected wOBA on balls in play and actual values on strikeouts, walks, and hit-by-pitches. Fastball velocity is the average of four-seamers and sinkers.
 
 **What the correlation means.** It measures how consistently two weeks of a number ranks players, so it mixes real differences between players with week-to-week noise. A low correlation doesn't make a metric useless over a season. It means two weeks isn't enough to read it.
 

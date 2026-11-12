@@ -5,19 +5,27 @@ import subprocess
 
 import duckdb
 import pytest
+import yaml
 from synthetic_statcast import write_fixture
 
 from sparvi.config import ROOT, baseball
 
 PIPELINE = ROOT / "baseball" / "pd_pipeline"
 DBT = shutil.which("dbt")
+PROJECT = yaml.safe_load((PIPELINE / "dbt_project.yml").read_text(encoding="utf-8"))
 
 
 @pytest.fixture(scope="module")
-def built(tmp_path_factory):
+def raw(tmp_path_factory):
     tmp = tmp_path_factory.mktemp("pd")
+    write_fixture(tmp, baseball().season)
+    return tmp
+
+
+@pytest.fixture(scope="module")
+def built(raw):
+    tmp = raw
     season = baseball().season
-    write_fixture(tmp, season)
     db = tmp / "pd.duckdb"
     env = os.environ | {
         "DBT_PROFILES_DIR": ".",
@@ -41,6 +49,35 @@ def built(tmp_path_factory):
 ])
 def test_marts_have_rows(built, table, min_rows):
     assert built.sql(f"select count(*) from {table}").fetchone()[0] >= min_rows
+
+
+@pytest.mark.skipif(DBT is None, reason="dbt not installed")
+def test_in_zone_is_the_height_zone(built, raw):
+    # in_zone comes from the batter's listed height for every season and level; Statcast's own
+    # `zone` (whose definition changed for MLB in 2026) only when the height is missing.
+    v = {k: PROJECT["vars"][k] for k in ("zone_top_share", "zone_bot_share", "zone_half_width_ft", "ball_radius_ft")}
+    rows = built.sql(f"""
+        with r as (
+            select 'MLB' as level, * from read_parquet('{raw.as_posix()}/statcast_mlb_*.parquet')
+            union all by name
+            select 'AAA' as level, * from read_parquet('{raw.as_posix()}/statcast_aaa_*.parquet')
+        ),
+        expect as (
+            select r.level || '-' || r.game_pk || '-' || r.at_bat_number || '-' || r.pitch_number as pitch_id,
+                   h.height_in is null as no_height,
+                   case when h.height_in is null then r.zone between 1 and 9
+                        else abs(r.plate_x) <= {v['zone_half_width_ft']}
+                         and r.plate_z between {v['zone_bot_share']} * h.height_in / 12 - {v['ball_radius_ft']}
+                                           and {v['zone_top_share']} * h.height_in / 12 + {v['ball_radius_ft']} end as want
+            from r left join read_parquet('{raw.as_posix()}/batter_heights.parquet') h using (batter)
+        )
+        select e.no_height, count(*) n, count(*) filter (where s.in_zone is distinct from e.want) bad,
+               avg(s.in_zone::int) as zone_rate
+        from stg_pitches s join expect e using (pitch_id) group by 1 order by 1
+    """).fetchall()
+    assert [r[0] for r in rows] == [False, True]          # both paths are exercised
+    assert all(r[2] == 0 for r in rows), rows
+    assert 0.2 < rows[0][3] < 0.6                         # a plausible zone rate, not all-or-nothing
 
 
 @pytest.mark.skipif(DBT is None, reason="dbt not installed")

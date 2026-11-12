@@ -11,6 +11,10 @@ with raw as (
     select *, 'MLB' as level from {{ source('savant', 'statcast_mlb_prev') }}
     union all by name
     select *, 'MLB' as level from {{ source('savant', 'statcast_mlb_cur') }}
+),
+
+heights as (
+    select batter, height_in / 12.0 as height_ft from {{ source('savant', 'batter_heights') }}
 )
 
 select
@@ -47,7 +51,15 @@ select
     woba_denom,
 
     -- Swing decisions. Bunt attempts are excluded from swings on purpose.
-    zone between 1 and 9                                     as in_zone,
+    -- In zone: the rulebook zone from the batter's listed height, the same in every season and level
+    -- (see the zone_* vars in dbt_project.yml). Statcast's own `zone` only if the height is missing.
+    case
+        when plate_x is null or plate_z is null then null
+        when h.height_ft is null then zone between 1 and 9
+        else abs(plate_x) <= {{ var('zone_half_width_ft') }}
+         and plate_z between {{ var('zone_bot_share') }} * h.height_ft - {{ var('ball_radius_ft') }}
+                         and {{ var('zone_top_share') }} * h.height_ft + {{ var('ball_radius_ft') }}
+    end                                                      as in_zone,
     description in ('foul', 'foul_tip', 'hit_into_play',
                     'swinging_strike', 'swinging_strike_blocked') as is_swing,
     description in ('swinging_strike', 'swinging_strike_blocked',
@@ -69,5 +81,6 @@ select
     end                                                      as outs_on_play,
     description = 'hit_into_play' and launch_speed >= 95     as is_hard_hit
 from raw
+left join heights h using (batter)
 where game_type = 'R'
   and description not in ('pitchout', 'intent_ball', 'automatic_ball', 'automatic_strike')

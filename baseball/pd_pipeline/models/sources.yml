@@ -20,6 +20,9 @@ sources:
         identifier: "statcast_mlb_{{ var('season') - 1 }}"
       - name: statcast_mlb_cur
         identifier: "statcast_mlb_{{ var('season') }}"
+      - name: batter_heights
+        description: Listed height (inches) per batter, from the MLB Stats API (scripts/pull_data.py)
+        identifier: batter_heights
       - name: milb_players_cur
         identifier: "milb_players_{{ var('season') }}"
 
