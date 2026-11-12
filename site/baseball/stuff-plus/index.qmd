@@ -1,6 +1,6 @@
 ---
-title: "Stuff predicts next season better than results do"
-description: "A pitch-quality model built only on velocity, movement, and release predicts a pitcher's next season better than his run value does, and it works on Triple-A pitchers too."
+title: "Stuff predicts next season at least as well as results do"
+description: "A pitch-quality model built only on velocity, movement, and release predicts a pitcher's next season at least as well as his run value does, settles far sooner, and carries over from Triple-A."
 date: 2026-10-21
 categories: [pitching, models]
 image: thumb.png
@@ -8,13 +8,13 @@ image: thumb.png
 
 ::: {.finding}
 [The finding]{.label}
-A pitcher's **Stuff+**, graded only on velocity, movement, spin, and release, predicted his {{< meta baseball.season >}} run value better than his {{< meta baseball.season_prev >}} run value did (r = {{< meta baseball.stuff_yoy_r_stuff >}} vs. {{< meta baseball.stuff_yoy_r_results >}}, {{< meta baseball.stuff_yoy_n >}} pitchers). {{< meta baseball.stuff_finding_certainty >}} Stuff+ also stabilizes almost immediately, while a season of actual results is still mostly noise.
+A pitcher's **Stuff+**, graded only on velocity, movement, spin, and release, predicted his {{< meta baseball.season >}} run value at least as well as his {{< meta baseball.season_prev >}} run value did (r = {{< meta baseball.stuff_yoy_r_stuff >}} vs. {{< meta baseball.stuff_yoy_r_results >}}, {{< meta baseball.stuff_yoy_n >}} pitchers). {{< meta baseball.stuff_finding_certainty >}} Its clearer advantage is stability: Stuff+ settles almost immediately, while a season of actual results is still mostly noise.
 :::
 
 ::: {.so-what}
 [So what]{.label}
 
-- **When results and stuff disagree, lean toward the stuff.** A pitcher with good stuff and bad results is a better bet to improve than his ERA suggests, and the reverse holds too.
+- **When results and stuff disagree, don't ignore the stuff.** Stuff+ forecast next season at least as well as results did and needs far fewer pitches to trust, so a pitcher with good stuff and bad results deserves more patience than his ERA suggests, and the reverse holds too.
 - **It works on minor leaguers.** For pitchers who moved from Triple-A in {{< meta baseball.season_prev >}} to MLB in {{< meta baseball.season >}}, Triple-A Stuff+ had some signal for big-league results (r = {{< meta baseball.stuff_aaa_r_stuff >}}). Triple-A results had none (r = {{< meta baseball.stuff_aaa_r_results >}}).
 - **It tells you what to fix, not just how good a pitcher is.** Because the inputs are physical, a low grade points at a specific shape, velocity, or release issue a coach can work on.
 :::

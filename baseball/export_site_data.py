@@ -415,9 +415,13 @@ N |= {
     "stuff_pitches_mlb": millions(metrics["n_pitches_mlb"]),
     "stuff_pitches_aaa": millions(metrics["n_pitches_aaa"]),
 }
-# The finding states the point estimate: Stuff+ predicted next season better than results did.
+# The finding says Stuff+ predicted next season at least as well as results did; the certainty sentence
+# below says whether the edge is distinguishable from zero.
 if not robust["r_stuff_prev_to_rv_cur"] > robust["r_rv_prev_to_rv_cur"]:
-    raise StaleProse("Stuff+ article says last season's Stuff+ predicted this season's run value better than results.")
+    raise StaleProse("Stuff+ article says last season's Stuff+ predicted this season's run value at least as well as results.")
+# ...and that its clearer advantage is stability (split-half reliability).
+if not metrics["split_half_r_stuff"] > metrics["split_half_r_actual_rv"] + 0.3:
+    raise StaleProse("Stuff+ article says Stuff+ settles almost immediately while a season of results is mostly noise.")
 # How sure: worded from the interval itself. Its low end sits near zero, and tiny platform differences in
 # the model (Windows vs the Linux runner) can move it across zero, so the sentence follows the number.
 lo = robust["gap_ci90"][0]
@@ -430,10 +434,10 @@ N["stuff_gap_sentence"] = (
     "out ahead, but not by a margin the data can confirm.")
 # The finding box says how sure, in one line, from the same interval.
 N["stuff_finding_certainty"] = (
-    "The edge held up across resamples, though it's modest."
+    "Stuff+ came out ahead, and the edge held up across resamples, though it's modest."
     if lo > 0 else
-    "That edge isn't statistically certain: across resamples of these pitchers the gap ranged from "
-    f"{signed2(robust['gap_ci90'][0])} to {signed2(robust['gap_ci90'][1])}, so the two could be equally predictive.")
+    f"Stuff+ came out ahead in this sample, but not by enough to call it the better forecaster: across resamples "
+    f"of these pitchers the gap ranged from {signed2(robust['gap_ci90'][0])} to {signed2(robust['gap_ci90'][1])}.")
 if not 0 < metrics["aaa_mean_stuff_plus_qualified"] < 100:
     raise StaleProse("Stuff+ article says the average qualified Triple-A pitcher grades below an MLB average of 100.")
 FEATURE_WORDS = {"velo": "velocity", "ivb": "induced vertical break", "hb": "horizontal break", "spin": "spin rate",
