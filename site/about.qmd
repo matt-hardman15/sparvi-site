@@ -14,6 +14,10 @@ Baseball data comes from [Baseball Savant](https://baseballsavant.mlb.com) (pitc
 
 All code (data pulls, models, pipelines, and this site) is public on [GitHub](https://github.com/matt-hardman15/sparvi-site), and every number on the site can be rebuilt from scratch.
 
+## Privacy
+
+Sparvi counts visits with [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/), which sets no cookies, doesn't fingerprint your browser, and doesn't follow you to other sites. It records which pages are read, roughly from where, and how fast they load, only as totals. There are no ads, no ad networks, and no other analytics.
+
 ## Who runs it
 
 Sparvi is run by [Matt Hardman](https://www.linkedin.com/in/matthew-hardman/), an analytics engineer in Kansas City who spends his working hours on data pipelines and reporting.
