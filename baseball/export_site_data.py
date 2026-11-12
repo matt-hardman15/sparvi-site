@@ -67,18 +67,19 @@ roles = con.sql(f"""
 p = pd.concat([pd.read_csv(PQ / f"pitcher_season_{lvl}_{SEASON}.csv").assign(level=lvl.upper()) for lvl in ["mlb", "aaa"]])
 p["name"] = p["name"].map(first_last)
 p = p.rename(columns={"pitcher": "id"}).merge(roles, on=["id", "level"], how="left")
-cols = ["id", "name", "team", "level", "throws", "role", "g", "gs", "pitches", "stuff_plus", "rv_plus"]
+GRADES = ["stuff_plus", "loc_plus", "pitching_plus"]  # Stuff+, Location+, Pitching+ (pitch_quality/train.py)
+cols = ["id", "name", "team", "level", "throws", "role", "g", "gs", "pitches", *GRADES, "rv_plus"]
 write_records(OUT / "stuff_pitchers.json", p[cols].sort_values(["level", "id"]),
-              required=cols, not_null=["id", "name", "level", "role"], min_rows=500, digits={"stuff_plus": 1, "rv_plus": 1})
+              required=cols, not_null=["id", "name", "level", "role"], min_rows=500, digits=dict.fromkeys([*GRADES, "rv_plus"], 1))
 
 t = pd.concat([pd.read_csv(PQ / f"pitch_type_{lvl}_{SEASON}.csv").query("n >= 30").assign(level=lvl.upper())
                for lvl in ["mlb", "aaa"]])
 t["name"] = t["player_name"].map(first_last)
 t = t.rename(columns={"pitcher": "id", "pitch_type": "pt"}).merge(roles[["id", "level", "role"]], on=["id", "level"], how="left")
-cols = ["id", "name", "team", "level", "role", "pt", "group", "n", "velo", "ivb", "hb", "stuff_plus"]
+cols = ["id", "name", "team", "level", "role", "pt", "group", "n", "velo", "ivb", "hb", *GRADES]
 write_records(OUT / "stuff_pitches.json", t[cols].sort_values(["level", "id", "pt"]),
               required=cols, not_null=["id", "name", "pt", "role"], min_rows=1000,
-              digits={"velo": 1, "ivb": 1, "hb": 1, "stuff_plus": 1})
+              digits={"velo": 1, "ivb": 1, "hb": 1} | dict.fromkeys(GRADES, 1))
 
 yy = pd.read_csv(PQ / "yoy_pairs.csv")
 yy["name"] = yy["name_prev"].map(first_last)
@@ -148,7 +149,7 @@ e5 = board_ids[["player_id", "org", "status", "reason"]].rename(columns={"org": 
 best = (t[(t["level"] == "AAA") & (t["n"] >= 50)].sort_values(["id", "stuff_plus"], ascending=[True, False])
         .drop_duplicates("id")[["id", "pt", "stuff_plus"]].rename(columns={"id": "player_id", "pt": "best_pt",
                                                                              "stuff_plus": "best_pt_stuff"}))
-aaa_stuff = p[p["level"] == "AAA"][["id", "stuff_plus"]].rename(columns={"id": "player_id"})
+aaa_stuff = p[p["level"] == "AAA"][["id", *GRADES]].rename(columns={"id": "player_id"})
 mlb_g = roles[roles["level"] == "MLB"][["id", "g"]].rename(columns={"id": "player_id", "g": "mlb_g"})
 
 
@@ -162,11 +163,11 @@ r5p = with_org(pr.merge(e5, on="player_id").merge(aaa_stuff, on="player_id", how
                .merge(best, on="player_id", how="left").merge(mlb_g, on="player_id", how="left"))
 r5p["k_bb_pct"] = r5p["k_pct"] - r5p["bb_pct"]
 r5p["mlb_g"] = r5p["mlb_g"].fillna(0).astype(int)
-cols = ["player_id", "name", "org", "team", "age", "role", "games", "games_started", "pitches", "bf", "stuff_plus",
+cols = ["player_id", "name", "org", "team", "age", "role", "games", "games_started", "pitches", "bf", *GRADES,
         "k_pct", "bb_pct", "k_bb_pct", "csw_pct", "fb_velo", "best_pt", "best_pt_stuff", "mlb_g", "status", "reason"]
 write_records(OUT / "rule5_pitchers.json", r5p[cols].sort_values("player_id"), required=cols,
               not_null=["player_id", "name", "status", "reason", "role"], min_rows=50,
-              digits={"stuff_plus": 1, "best_pt_stuff": 1, "k_pct": 4, "bb_pct": 4, "k_bb_pct": 4, "csw_pct": 4, "fb_velo": 1})
+              digits=dict.fromkeys(GRADES, 1) | {"best_pt_stuff": 1, "k_pct": 4, "bb_pct": 4, "k_bb_pct": 4, "csw_pct": 4, "fb_velo": 1})
 
 R5_HIT = ["chase_pct", "zone_contact_pct", "ev90", "hard_hit_pct"]
 r5h = with_org(h.merge(e5, on="player_id"))
@@ -182,14 +183,16 @@ write_records(OUT / "rule5_hitters.json", r5h[cols].sort_values("player_id"), re
 # Per-player files (players/{id}.json) carry everything a player page needs, so a page loads one
 # small file instead of every league table.
 P_FIELDS = {"team": None, "role": None, "games": 0, "starts": 0, "pitches": 0, "bf": 0, "qualified": "bool",
-            "stuff_plus": 1, "rv_plus": 1, "k_pct": 3, "bb_pct": 3, "csw_pct": 3, "whiff_pct": 3, "chase_pct": 3,
+            "stuff_plus": 1, "loc_plus": 1, "pitching_plus": 1, "rv_plus": 1, "k_pct": 3, "bb_pct": 3, "csw_pct": 3, "whiff_pct": 3, "chase_pct": 3,
             "hard_hit_pct": 3, "xwoba": 3, "fb_velo": 1}
 P_PCTL = {f"{m}_pctl": 0 for m in ["k_pct", "bb_pct", "csw_pct", "whiff_pct", "chase_pct", "hard_hit_pct", "xwoba"]}
 H_FIELDS = {"team": None, "pa": 0, "qualified": "bool", "chase_pct": 3, "zone_swing_pct": 3, "zone_contact_pct": 3,
             "whiff_pct": 3, "k_pct": 3, "bb_pct": 3, "hard_hit_pct": 3, "ev90": 1, "xwoba": 3}
 H_PCTL = {f"{m}_pctl": 0 for m in ["chase_pct", "zone_swing_pct", "zone_contact_pct", "whiff_pct", "k_pct", "bb_pct",
                                     "hard_hit_pct", "ev90", "xwoba"]}
-PT_FIELDS = {"pitches": 0, "usage_pct": 3, "velo": 1, "ivb": 1, "hb": 1, "spin": 0, "whiff_pct": 3, "stuff_plus": 1}
+PT_FIELDS = {"pitches": 0, "usage_pct": 3, "velo": 1, "ivb": 1, "hb": 1, "spin": 0, "whiff_pct": 3,
+             "stuff_plus": 1, "loc_plus": 1, "pitching_plus": 1}
+PT_KEEP = ["pitches", "velo", "ivb", "hb", "stuff_plus", "loc_plus", "pitching_plus"]  # what the leaderboard shows
 
 
 def _clean(v):
@@ -257,17 +260,22 @@ timelines: dict[int, dict] = {}  # id -> level -> {...}, reused for the player f
 for lvl in ["MLB", "AAA"]:
     fields = P_FIELDS | (P_PCTL if lvl == "AAA" else {})
     dates, ser = columnar(snap_p[snap_p["level"] == lvl], ["pitcher_id"], fields)
-    keep = ["team", "role", "games", "starts", "pitches", "bf", "qualified", "stuff_plus", "rv_plus"] + (
-        ["k_pct", "bb_pct", "csw_pct", "whiff_pct", "hard_hit_pct", "xwoba", "fb_velo",
-         "k_pct_pctl", "bb_pct_pctl", "csw_pct_pctl", "whiff_pct_pctl", "hard_hit_pct_pctl", "xwoba_pctl"] if lvl == "AAA" else [])
-    players = write_league(f"snapshots_pitchers_{lvl.lower()}", lvl, dates, fields, ser, static_p[lvl], keep)
+    # The leaderboard reads the grades file (both levels); the Triple-A explorer reads the pitchers file,
+    # which leaves the grades out to stay small (it is the largest page; see tests/test_perf.py).
+    base = ["team", "role", "games", "starts", "pitches", "bf", "qualified"]
+    players = write_league(f"snapshots_grades_{lvl.lower()}", lvl, dates, fields, ser, static_p[lvl], base + GRADES + ["rv_plus"])
+    if lvl == "AAA":
+        write_league("snapshots_pitchers_aaa", lvl, dates, fields, ser, static_p[lvl], base + [
+            "k_pct", "bb_pct", "csw_pct", "whiff_pct", "hard_hit_pct", "xwoba", "fb_velo",
+            "k_pct_pctl", "bb_pct_pctl", "csw_pct_pctl", "whiff_pct_pctl", "hard_hit_pct_pctl", "xwoba_pctl"])
     for pl in players:
         timelines.setdefault(pl["id"], {}).setdefault(lvl, {"dates": dates})["pitcher"] = pl["series"]
 
     pdates, pser = columnar(snap_pt[snap_pt["level"] == lvl], ["pitcher_id", "pitch_type"], PT_FIELDS, by_window=False)
     rows = [{"id": int(k[0]), "pt": k[1], "group": group_of.get(k), "name": names.get(k[0], str(k[0])), "series": v}
             for k, v in sorted(pser.items())]
-    write_json(OUT / f"snapshots_pitches_{lvl.lower()}.json", {"level": lvl, "dates": pdates, "fields": list(PT_FIELDS), "pitches": rows})
+    write_json(OUT / f"snapshots_pitches_{lvl.lower()}.json", {"level": lvl, "dates": pdates, "fields": PT_KEEP, "pitches": [
+        {**r, "series": {f: r["series"][f] for f in PT_KEEP}} for r in rows]})
     print(f"snapshots_pitches_{lvl.lower()}.json  {len(rows):>7,} pitch types")
     for r in rows:
         timelines.setdefault(r["id"], {}).setdefault(lvl, {"dates": pdates}).setdefault("pitch_types", []).append(
@@ -316,7 +324,7 @@ sizes = sorted(f.stat().st_size for f in PLAYERS.glob("*.json"))
 print(f"players/*.json {len(sizes):>14,} files, median {sizes[len(sizes) // 2] / 1024:.0f} KB, "
       f"max {sizes[-1] / 1024:.0f} KB, total {sum(sizes) / 1e6:.1f} MB")
 
-metrics, robust = read_json(PQ / "metrics.json"), read_json(PQ / "robustness.json")
+metrics, robust, locm = read_json(PQ / "metrics.json"), read_json(PQ / "robustness.json"), read_json(PQ / "metrics_location.json")
 shape_res, tw = read_json(SS / "results.json"), read_json(TW / "results.json")
 strip = lambda d: {k: v for k, v in d.items() if k != "provenance"}  # noqa: E731  (provenance stays in the repo, not on the site)
 as_of = str(con.sql("select max(last_game) from fct_hitter_report").fetchone()[0])
@@ -330,6 +338,7 @@ meta = {
     "qualifiers": QUALIFIERS,
     "stuff_metrics": strip(metrics),
     "stuff_robustness": strip(robust),
+    "location_metrics": locm,
     "shape_results": strip(shape_res),
     "rule5": {"snapshot_date": r5res["snapshot_date"], "statuses": R5_STATUSES, **section("baseball", "rule5")},
     # Snapshot calendars, for the date slider and for prorating pitch minimums at earlier dates.
@@ -446,6 +455,106 @@ parts = [f"for {name}, {'more' if diffs[g] - diffs['fastball'] >= GAP_MARGIN els
          for g, name in [("offspeed", "offspeed pitches"), ("breaking", "breaking balls")]]
 N["stuff_gap_mix"] = (f"The gaps from the fastball (velocity, ride, and run) carry {pct(diffs['fastball'])} of the "
                       f"fastball model's gain; {parts[0]}; {parts[1]}.")
+
+# Stuff-or-command article (Location+ and Pitching+). Validation from robustness.py: the same fully
+# out-of-sample year-over-year test as the Stuff+ article, run for every grade with one bootstrap.
+YO, SH, AM = locm["yoy"], locm["split_half"], locm["aaa_to_mlb"]
+KIND_WORDS = {"stuff": "Stuff+", "loc": "Location+", "pitching": "Pitching+", "results": "results"}
+
+
+def ci_words(lo: float, hi: float) -> str:
+    return f"{r2(lo)} to {r2(hi)}"
+
+
+N |= {"loc_yoy_n": f"{YO['n']:,}", "loc_aaa_n": f"{AM['n']:,}", "loc_boot": f"{YO['bootstrap_samples']:,}",
+      "loc_train_season": locm["seasons"]["train"],
+      "loc_zone_top": f"{100 * locm['zone_share_of_height']['top']:.1f}%",
+      "loc_zone_bottom": f"{100 * locm['zone_share_of_height']['bottom']:.1f}%",
+      "loc_mean_mlb_cur": f"{metrics['mlb_mean_loc_plus_qualified']:.0f}",
+      "loc_mean_aaa_cur": f"{metrics['aaa_mean_loc_plus_qualified']:.0f}",
+      "pitching_mean_aaa_cur": f"{metrics['aaa_mean_pitching_plus_qualified']:.0f}",
+      "loc_holdout_r2": f"{locm['holdout_pitch_r2']['loc']:.3f}",
+      "loc_holdout_r2_pitching": f"{locm['holdout_pitch_r2']['pitching']:.3f}",
+      "loc_holdout_r2_stuff": f"{locm['holdout_pitch_r2']['stuff']:.4f}"}
+for k in ["stuff", "loc", "pitching", "results"]:
+    v = YO["r_next_rv"][k]
+    N |= {f"loc_split_{k}": r2(SH[k]), f"loc_next_{k}": r2(v["r"]), f"loc_next_{k}_ci": ci_words(*v["ci90"]),
+          f"loc_self_{k}": r2(YO["r_self"][k]), f"loc_aaa_{k}": r2(AM[k])}
+for g, v in YO["gaps"].items():
+    N |= {f"loc_gap_{g}": signed2(v["est"]), f"loc_gap_{g}_ci": f"{signed2(v['ci90'][0])} to {signed2(v['ci90'][1])}"}
+
+# Directional claims the article makes regardless of wording.
+if not SH["results"] < SH["loc"] < SH["stuff"]:
+    raise StaleProse("Stuff-or-command article: Location+ is more reliable within a season than results, less than Stuff+.")
+if not YO["r_self"]["loc"] > YO["r_self"]["results"]:
+    raise StaleProse("Stuff-or-command article: Location+ carries from one season to the next better than results do.")
+if not YO["gaps"]["loc_minus_stuff"]["ci90"][1] < 0:
+    raise StaleProse("Stuff-or-command article: Stuff+ predicts next season reliably better than Location+.")
+
+# The rest is worded from the intervals, so a refresh (or the Linux vs Windows model builds) can't strand it.
+lr, (llo, lhi) = YO["r_next_rv"]["loc"]["r"], YO["r_next_rv"]["loc"]["ci90"]
+N["loc_next_sentence"] = (
+    f"Location+ on its own predicted next season's run value at r = {r2(lr)}, with an interval ({ci_words(llo, lhi)}) "
+    "that runs across zero: no detectable signal." if llo <= 0 <= lhi else
+    f"Location+ on its own predicted next season's run value at r = {r2(lr)} ({ci_words(llo, lhi)}), "
+    + ("a real but small signal." if llo > 0 else "in the wrong direction."))
+pg = YO["gaps"]["pitching_minus_stuff"]
+N["pitching_vs_stuff_sentence"] = (
+    f"Pitching+, which adds location and count to the same stuff inputs, predicted it at r = {N['loc_next_pitching']}, "
+    f"against {N['loc_next_stuff']} for Stuff+ alone. The difference ({signed2(pg['est'])}, interval "
+    f"{N['loc_gap_pitching_minus_stuff_ci']}) is " + (
+        "indistinguishable from zero: adding location did not improve the forecast." if pg["ci90"][0] <= 0 <= pg["ci90"][1] else
+        "reliably above zero, so location adds a little to the forecast." if pg["ci90"][0] > 0 else
+        "reliably below zero: adding location made the forecast worse."))
+# The finding box, in one sentence about the forecast, from the same two intervals.
+N["loc_finding_forecast"] = (
+    "but it did almost nothing to predict next season's run value, and adding it to Stuff+ didn't improve the forecast"
+    if llo <= 0 <= lhi and pg["ci90"][0] <= 0 <= pg["ci90"][1] else
+    "and adding it to Stuff+ improved the forecast" if pg["ci90"][0] > 0 else
+    "but adding it to Stuff+ didn't improve the forecast")
+N["loc_sowhat_forecast"] = (
+    f"**Forecast with Stuff+.** Adding location (Pitching+) predicted next season no better ({N['loc_next_pitching']} "
+    f"vs. {N['loc_next_stuff']}), so the bigger model adds nothing to a projection." if pg["ci90"][0] <= 0 <= pg["ci90"][1] else
+    f"**Forecast with Pitching+.** Adding location predicted next season reliably better ({N['loc_next_pitching']} "
+    f"vs. {N['loc_next_stuff']} for Stuff+ alone)." if pg["ci90"][0] > 0 else
+    f"**Forecast with Stuff+.** Adding location (Pitching+) made the forecast worse ({N['loc_next_pitching']} "
+    f"vs. {N['loc_next_stuff']}).")
+pr_ = YO["gaps"]["pitching_minus_results"]
+N["pitching_vs_results_sentence"] = (
+    f"Pitching+ still beat last season's results ({N['loc_next_results']}), with an interval for the gap of "
+    f"{N['loc_gap_pitching_minus_results_ci']}" + (" that stays above zero." if pr_["ci90"][0] > 0 else ", which includes zero."))
+am = AM["loc"]
+N["loc_aaa_sentence"] = (
+    f"Triple-A Location+ said nothing about the same pitchers' MLB run value the next season (r = {r2(am)}, "
+    f"n = {N['loc_aaa_n']})" if abs(am) < 0.1 else
+    f"Triple-A Location+ tracked the same pitchers' MLB run value the next season at r = {r2(am)} (n = {N['loc_aaa_n']})")
+if not AM["stuff"] > AM["loc"]:
+    raise StaleProse("Stuff-or-command article: Triple-A Stuff+ carried to MLB better than Triple-A Location+.")
+
+# Same-season picture among qualified MLB pitchers this season: who leads, and how the grades relate.
+qm = p[(p["level"] == "MLB") & (p["pitches"] >= metrics["min_pitches"])]
+cs = qm[["stuff_plus", "loc_plus", "pitching_plus", "rv_plus"]].corr()
+N |= {"loc_q_mlb_n": f"{len(qm):,}", "loc_r_stuff_loc": r2(cs.loc["stuff_plus", "loc_plus"]),
+      "loc_r_loc_rv": r2(cs.loc["loc_plus", "rv_plus"]), "loc_r_stuff_rv": r2(cs.loc["stuff_plus", "rv_plus"]),
+      "loc_r_pitching_rv": r2(cs.loc["pitching_plus", "rv_plus"]),
+      "loc_top_mlb": "; ".join(f"{d['name']} ({d['team']}, {d['loc_plus']:.0f})"
+                               for _, d in qm.sort_values("loc_plus", ascending=False).head(5).iterrows()),
+      "pitching_top_mlb": "; ".join(f"{d['name']} ({d['team']}, {d['pitching_plus']:.0f})"
+                                    for _, d in qm.sort_values("pitching_plus", ascending=False).head(5).iterrows())}
+if not cs.loc["stuff_plus", "loc_plus"] < 0:
+    raise StaleProse("Stuff-or-command article: among qualified MLB pitchers, better stuff goes with slightly worse location.")
+if not cs.loc["loc_plus", "rv_plus"] < cs.loc["stuff_plus", "rv_plus"] < cs.loc["pitching_plus", "rv_plus"]:
+    raise StaleProse("Stuff-or-command article: within a season, Pitching+ tracks results best, then Stuff+, then Location+.")
+if not cs.loc["loc_plus", "rv_plus"] > 0:
+    raise StaleProse("Stuff-or-command article: within a season, Location+ goes with better results.")
+for k in ["loc", "pitching"]:
+    if not metrics[f"aaa_mean_{k}_plus_qualified"] < min(100, metrics[f"mlb_mean_{k}_plus_qualified"]):
+        raise StaleProse(f"Stuff-or-command article: qualified Triple-A pitchers average below big leaguers on {KIND_WORDS[k]}.")
+if not SH["pitching"] > SH["results"]:
+    raise StaleProse("Stuff-or-command article: every grade is more reliable within a season than results.")
+# Triple-A paragraph: "stuff carried a little, location and results didn't".
+if not (AM["stuff"] >= 0.1 and abs(AM["loc"]) < 0.1 and abs(AM["results"]) < 0.1):
+    raise StaleProse("Stuff-or-command article: Triple-A Stuff+ carried to MLB a little; Location+ and results didn't.")
 
 # Shape-changes article
 M, V = shape_res["metrics"], shape_res["velo_by_pitch_class"]

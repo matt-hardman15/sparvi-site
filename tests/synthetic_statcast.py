@@ -114,15 +114,18 @@ def write_fixture(out: Path, season: int, seed: int = 0) -> None:
         for s in seasons:
             df = _season(s, rng, pk_offset=off)
             df.to_parquet(out / f"statcast_{lvl}_{s}.parquet", index=False)
-            if s == season:  # Stuff+ predictions for the current season, as train.py writes them
+            if s == season:  # Stuff+/Location+/Pitching+ predictions for the current season, as train.py writes them
                 pred = df[["game_pk", "game_date", "at_bat_number", "pitch_number", "pitcher", "pitch_type"]].copy()
                 pred["group"] = pred["pitch_type"].map(groups)
                 pred["xrv_stuff"] = rng.normal(0.0, 0.02, len(pred))
+                pred["xrv_loc"] = rng.normal(0.0, 0.02, len(pred))
+                pred["xrv_pitching"] = pred["xrv_stuff"] + pred["xrv_loc"]
                 pred["rv"] = rng.normal(0.0, 0.25, len(pred))
                 pred.to_parquet(out / f"pitch_predictions_{lvl}_{s}.parquet", index=False)
-    pd.DataFrame([{"kind": "stuff", "grp": "all", "mean": 0.0, "sd": 0.2, "n": 400},
-                  {"kind": "rv", "grp": "all", "mean": 0.0, "sd": 2.5, "n": 400}]
-                 + [{"kind": "pitch_type", "grp": g, "mean": 0.0, "sd": 0.3, "n": 400} for g in ("fastball", "breaking", "offspeed")]
+    pd.DataFrame([{"kind": k, "grp": "all", "mean": 0.0, "sd": 0.2, "n": 400} for k in ("stuff", "loc", "pitching")]
+                 + [{"kind": "rv", "grp": "all", "mean": 0.0, "sd": 2.5, "n": 400}]
+                 + [{"kind": k, "grp": g, "mean": 0.0, "sd": 0.3, "n": 400}
+                    for k in ("pitch_type", "pitch_type_loc", "pitch_type_pitching") for g in ("fastball", "breaking", "offspeed")]
                  ).to_csv(out / "scale_reference.csv", index=False)
 
     pl = _players()

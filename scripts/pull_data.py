@@ -179,6 +179,37 @@ def pull_milb_rosters(season: int) -> None:
     print(f"wrote {out.name}: {len(rows):,} player-level rows")
 
 
+def pull_heights() -> None:
+    """Listed height for every batter in the raw files (data/raw/batter_heights.parquet).
+
+    Location+ measures pitch height against the rulebook zone (27% to 53.5% of the batter's height,
+    the definition Statcast uses from 2026). Earlier seasons recorded a stance-based zone per pitch,
+    so the height lets every season share one definition. Only batters not already on file are
+    fetched, so this takes seconds.
+    """
+    import re
+    out = RAW / "batter_heights.parquet"
+    have = pd.read_parquet(out) if out.exists() else pd.DataFrame(columns=["batter", "height_in"])
+    files = sorted(RAW.glob("statcast_*_*.parquet"))
+    if not files:
+        return
+    ids = pd.concat([pd.read_parquet(f, columns=["batter"]) for f in files])["batter"].dropna().astype(int).unique()
+    need = sorted(set(ids) - set(have["batter"].astype(int)))
+    rows = []
+    for i in range(0, len(need), 100):
+        r = requests.get("https://statsapi.mlb.com/api/v1/people",
+                         params={"personIds": ",".join(map(str, need[i:i + 100]))}, timeout=60)
+        r.raise_for_status()
+        for person in r.json().get("people", []):
+            m = re.match(r"(\d+)' (\d+)\"", person.get("height") or "")
+            rows.append({"batter": person["id"], "height_in": int(m[1]) * 12 + int(m[2]) if m else None})
+        time.sleep(0.3)
+    allh = pd.concat([have, pd.DataFrame(rows)], ignore_index=True).drop_duplicates("batter", keep="last")
+    allh["batter"] = allh["batter"].astype("int64")
+    allh.sort_values("batter").to_parquet(out, index=False)
+    print(f"batter heights: {len(allh):,} on file ({len(rows):,} new), {int(allh['height_in'].isna().sum())} unknown")
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--seasons", nargs="+", type=int, default=CFG.mlb_seasons)
@@ -203,3 +234,4 @@ if __name__ == "__main__":
             if lvl == "AAA" and s not in CFG.aaa_seasons:
                 continue
             (update_season if args.incremental else pull_season)(s, lvl)
+    pull_heights()

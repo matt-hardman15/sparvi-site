@@ -24,6 +24,7 @@ python baseball/two_week_signal/analysis.py
 if compgen -G "data/raw/rosters_40man_*.parquet" > /dev/null; then python baseball/rule5/analysis.py; fi
 python baseball/export_site_data.py
 python baseball/rule5/thumb.py
+python baseball/pitch_quality/thumb.py
 (cd site && quarto render)
 # Quarto renders a missing prose number as "?meta:..." instead of failing. Fail here instead.
 if grep -rl "?meta:" docs --include=*.html; then echo "ERROR: unresolved prose numbers (see files above)"; exit 1; fi

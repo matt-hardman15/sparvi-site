@@ -4,7 +4,7 @@ description: "Triple-A players likely eligible for the Rule 5 Draft and not on a
 page-layout: full
 ---
 
-Every {{< meta baseball.season >}} Triple-A player who is likely eligible for the Rule 5 Draft and isn't on a 40-man roster, as of the {{< meta baseball.r5_snapshot >}} roster snapshot. Pitchers are graded on [Stuff+](/baseball/stuff-plus/) and strikeout-minus-walk rate; hitters on swing decisions and contact quality, the numbers that [carry over best](/baseball/two-week-signal/). Eligibility is an **estimate** from signing dates and ages; hover a status for the reasoning. What the board shows and what it can't: [the Rule 5 board, explained](/baseball/rule-5/).
+Every {{< meta baseball.season >}} Triple-A player who is likely eligible for the Rule 5 Draft and isn't on a 40-man roster, as of the {{< meta baseball.r5_snapshot >}} roster snapshot. Pitchers are graded on [Stuff+](/baseball/stuff-plus/) and strikeout-minus-walk rate, with [Location+ and Pitching+](/baseball/stuff-or-command/) alongside; hitters on swing decisions and contact quality, the numbers that [carry over best](/baseball/two-week-signal/). Eligibility is an **estimate** from signing dates and ages; hover a status for the reasoning. What the board shows and what it can't: [the Rule 5 board, explained](/baseball/rule-5/).
 
 ```{=html}
 <div class="explorer">
@@ -49,11 +49,13 @@ Every {{< meta baseball.season >}} Triple-A player who is likely eligible for th
     { key: "role", label: "Role", align: "l", title: "SP starter · RP reliever · Swing (see glossary)" },
     { key: "bf", label: "BF" },
     { key: "stuff_plus", label: "Stuff+", heat: "plus", fmt: v => f.num(v, 0) },
+    { key: "loc_plus", label: "Loc+", heat: "plus", fmt: v => f.num(v, 0), title: "Location+: where his pitches crossed the plate. Steady for a pitcher, but it hasn't carried from Triple-A to MLB results (see the stuff-or-command article)." },
+    { key: "pitching_plus", label: "Pitching+", heat: "plus", fmt: v => f.num(v, 0), title: "Stuff and location together" },
     { key: "k_pct", label: "K%", fmt: v => f.pct(v) }, { key: "bb_pct", label: "BB%", fmt: v => f.pct(v) },
     { key: "k_bb_pct", label: "K−BB%", fmt: v => f.pct(v), title: "Strikeout rate minus walk rate" },
     { key: "csw_pct", label: "CSW%", fmt: v => f.pct(v) }, { key: "fb_velo", label: "FB velo", fmt: v => f.num(v) },
     { key: "best_pt_stuff", label: "Best pitch", html: r => r.best_pt ? `${r.best_pt} <span class="muted">${f.num(r.best_pt_stuff, 0)}</span>` : "—", title: "His highest-graded pitch (50+ thrown) and its Stuff+" },
-    { key: "mlb_g", label: "MLB G", fmt: v => v || "—", title: "MLB games in 2026. Players outrighted off a 40-man stay on the board." },
+    { key: "mlb_g", label: "MLB G", fmt: v => v || "—", title: `MLB games in ${meta.season}. Players outrighted off a 40-man stay on the board.` },
     { key: "status", label: "Eligibility", align: "l", html: statusCell, title: "Estimated from signing date and age; hover for the reasoning" },
   ];
   const hCols = [
@@ -91,7 +93,8 @@ Every {{< meta baseball.season >}} Triple-A player who is likely eligible for th
         Plot.dot(hi.filter(d => d[X] != null && d[Y] != null), { x: X, y: Y, r: 6, fill: "#eb6834", stroke: "#fff", strokeWidth: 1.2 }),
         hi.length && hi.length <= 15 ? Plot.text(hi.filter(d => d[X] != null && d[Y] != null), { x: X, y: Y, text: d => d.name.split(" ").filter(w => !/^(Jr\.?|Sr\.?|II|III|IV)$/.test(w)).slice(-1)[0], dy: -11, fontSize: 10.5 }) : null,
         Plot.tip(pts, Plot.pointer({ x: X, y: Y, title: d => `${d.name} (${d.org}${pitch ? `, ${d.role}` : `, ${d.position}`}, age ${d.age})\n` + (pitch
-          ? `Stuff+ ${f.num(d.stuff_plus, 0)} · K−BB ${f.pct(d.k_bb_pct)} · ${d.bf} BF`
+          ? `Stuff+ ${f.num(d.stuff_plus, 0)} · Location+ ${f.num(d.loc_plus, 0)} · Pitching+ ${f.num(d.pitching_plus, 0)}
+K−BB ${f.pct(d.k_bb_pct)} · ${d.bf} BF`
           : `Chase pctl ${d.chase_pct_pctl} · EV90 pctl ${d.ev90_pctl} · ${d.pa} PA`) + `\n${d.status}` }))] }));
     const who = pitch ? (st.role === "all" ? "pitchers" : S.ROLES[st.role].toLowerCase()) : "hitters";
     document.getElementById("scap").textContent = (pitch

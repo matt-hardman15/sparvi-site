@@ -31,7 +31,7 @@ sources:
       - name: pitch_type_aaa_cur
         identifier: "pitch_type_aaa_{{ var('season') }}"
       - name: scale_reference
-        description: Frozen prior-season Stuff+ scale (mean, SD) written by train.py
+        description: Frozen prior-season Stuff+/Location+/Pitching+ scale (mean, SD) written by train.py
         identifier: scale_reference
 
   - name: pitch_predictions

@@ -24,8 +24,9 @@ page-layout: article
   // latest snapshot on or before the chosen date.
   const allDates = [...new Set(Object.values(tl).flatMap(t => t.dates))].sort();
   const LAST = allDates.length - 1;
-  const DEF = { window: "std" };
-  const st = { window: U.get("window", DEF.window), asof: U.get("asof") };
+  const DEF = { window: "std", pgrade: "stuff" };
+  const PG = { stuff: "Stuff+", loc: "Location+", pitching: "Pitching+" };
+  const st = { window: U.get("window", DEF.window), asof: U.get("asof"), pgrade: PG[U.get("pgrade")] ? U.get("pgrade") : DEF.pgrade };
   const iso = () => (st.asof && S.snapIndex(allDates, st.asof) >= 0 ? allDates[S.snapIndex(allDates, st.asof)] : allDates[LAST]);
   const idx = (lvl) => (tl[lvl] ? S.snapIndex(tl[lvl].dates, iso()) : -1);
   const at = (ser, field, i) => (ser && ser[field] && i >= 0 ? ser[field][i] : null);
@@ -59,15 +60,15 @@ page-layout: article
   const F = { pct: { tick: "%", val: v => f.pct(v) }, num: { tick: null, val: v => f.num(v) }, plus: { tick: null, val: v => f.num(v, 0) },
               woba: { tick: ".3f", val: v => f.woba(v) } };
   const pitchLines = (host, lvl) => () => {
-    const pts = (tl[lvl]?.pitch_types || []).flatMap(pt => tl[lvl].dates.map((d, k) => ({ pt: pt.pt, date: new Date(d + "T12:00:00"), d, v: pt.series.stuff_plus?.[k], n: pt.series.pitches?.[k] })))
+    const pts = (tl[lvl]?.pitch_types || []).flatMap(pt => tl[lvl].dates.map((d, k) => ({ pt: pt.pt, date: new Date(d + "T12:00:00"), d, v: pt.series[st.pgrade + "_plus"]?.[k], n: pt.series.pitches?.[k] })))
       .filter(x => x.v != null && x.n >= 30);
-    S.plot(host, w => Plot.plot({ ...S.plotDefaults(w), height: 190, marginLeft: 44, marginRight: 34, grid: true, title: "Stuff+ by pitch (30+ thrown)",
+    S.plot(host, w => Plot.plot({ ...S.plotDefaults(w), height: 190, marginLeft: 44, marginRight: 34, grid: true, title: `${PG[st.pgrade]} by pitch (30+ thrown)`,
       x: { type: "time", label: null, ticks: 4 }, y: { label: null, nice: true },
       color: { range: ["#0f5257", "#4f8a8b", "#8fbcbb", "#6b6a65", "#b9b7b0", "#2f3437"] },
       marks: [Plot.ruleY([100], { stroke: "#c9c7c0" }), Plot.lineY(pts, { x: "date", y: "v", z: "pt", stroke: "pt", strokeWidth: 1.6 }),
         Plot.text(pts, Plot.selectLast({ x: "date", y: "v", z: "pt", text: "pt", dx: 4, textAnchor: "start", fontSize: 10.5, fill: "pt" })),
         S.asOfMark(iso()),
-        Plot.tip(pts, Plot.pointer({ x: "date", y: "v", title: x => `${x.pt} through ${S.dateLabel(x.d)}: Stuff+ ${f.num(x.v, 0)} (${x.n} thrown)` }))] }));
+        Plot.tip(pts, Plot.pointer({ x: "date", y: "v", title: x => `${x.pt} through ${S.dateLabel(x.d)}: ${PG[st.pgrade]} ${f.num(x.v, 0)} (${x.n} thrown)` }))] }));
   };
   function timelineSection(lvl, charts) {
     const grid = S.el("div", { class: "small-multiples" });
@@ -120,10 +121,16 @@ page-layout: article
     const charts = S.el("div", { style: "display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem" });
     const mv = S.el("div", { class: "plot-host" }), vl = S.el("div", { class: "plot-host" });
     charts.append(mv); if (lvl === "AAA") charts.append(vl);
-    const tline = timelineSection(lvl, [["stuff_plus", "Stuff+", F.plus], ["fb_velo", "Fastball velocity (mph)", F.num],
+    const tline = timelineSection(lvl, [["stuff_plus", "Stuff+", F.plus], ["loc_plus", "Location+", F.plus], ["pitching_plus", "Pitching+", F.plus], ["fb_velo", "Fastball velocity (mph)", F.num],
       ["k_pct", "Strikeout rate", F.pct], ["bb_pct", "Walk rate", F.pct], ["whiff_pct", "Whiff rate", F.pct]].map(c => [...c, T.pitcher.std]));
-    const pl = S.el("div", { class: "plot-host" }); tline.el[1].append(pl);
-    const drawLines = pitchLines(pl, lvl);
+    // Per-pitch timeline with its own grade picker (shared by both levels' sections, so rebuilt on each render).
+    const pl = S.el("div", { class: "plot-host" }), plCtl = S.el("div", { class: "controls" });
+    tline.el[1].append(S.el("div", {}, plCtl, pl));
+    const linesOf = pitchLines(pl, lvl);
+    const drawLines = () => {
+      plCtl.replaceChildren(S.el("label", {}, "By pitch", S.seg(Object.entries(PG), st.pgrade, v => { st.pgrade = v; render(); })));
+      linesOf();
+    };
     out.push(tag, tiles, pb, note, S.el("h3", {}, "Arsenal"), arsHost, arsNote, charts, ...tline.el);
     const final14 = new Map((lvl === "AAA" ? data.arsenal_aaa : []).map(d => [d.pitch_type, d]));
     let arsTable;
@@ -135,8 +142,8 @@ page-layout: article
       if (at(s, "pitches", i) == null) { tiles.replaceChildren(empty(lvl, "pitches")); pb.replaceChildren(); note.textContent = ""; }
       else {
         tiles.replaceChildren(tile(lvl === "AAA"
-          ? [["BF", at(s, "bf", i)], ["K%", f.pct(at(s, "k_pct", i))], ["BB%", f.pct(at(s, "bb_pct", i))], ["Stuff+", f.num(at(s, "stuff_plus", i), 0)], ["FB velo", f.num(at(s, "fb_velo", i)) + " mph"]]
-          : [["Pitches", f.int(at(s, "pitches", i))], ["Stuff+", f.num(at(s, "stuff_plus", i), 0)], ["RV+ (results)", f.num(at(s, "rv_plus", i), 0)], ["K%", f.pct(at(s, "k_pct", i))], ["BB%", f.pct(at(s, "bb_pct", i))]]));
+          ? [["BF", at(s, "bf", i)], ["K%", f.pct(at(s, "k_pct", i))], ["BB%", f.pct(at(s, "bb_pct", i))], ["Stuff+", f.num(at(s, "stuff_plus", i), 0)], ["Location+", f.num(at(s, "loc_plus", i), 0)], ["FB velo", f.num(at(s, "fb_velo", i)) + " mph"]]
+          : [["Pitches", f.int(at(s, "pitches", i))], ["Stuff+", f.num(at(s, "stuff_plus", i), 0)], ["Location+", f.num(at(s, "loc_plus", i), 0)], ["Pitching+", f.num(at(s, "pitching_plus", i), 0)], ["RV+ (results)", f.num(at(s, "rv_plus", i), 0)], ["K%", f.pct(at(s, "k_pct", i))], ["BB%", f.pct(at(s, "bb_pct", i))]]));
         if (lvl === "AAA") {
           S.pbars(pb, [["Strikeout rate", "k_pct", f.pct], ["Walk rate", "bb_pct", f.pct], ["CSW rate", "csw_pct", f.pct], ["Whiff rate", "whiff_pct", f.pct],
             ["Chase induced", "chase_pct", f.pct], ["Hard-hit allowed", "hard_hit_pct", f.pct], ["xwOBA allowed", "xwoba", f.woba],
@@ -153,11 +160,13 @@ page-layout: article
         { key: "pitch_type", label: "Pitch", align: "l" }, { key: "pitches", label: "Thrown", fmt: f.int }, { key: "usage_pct", label: "Usage", fmt: v => f.pct(v, 0) },
         { key: "velo", label: "Velo", fmt: v => f.num(v) }, { key: "ivb", label: "IVB", fmt: v => f.num(v) }, { key: "hb", label: "HB", fmt: v => f.num(v) },
         { key: "whiff_pct", label: "Whiff%", fmt: v => f.pct(v, 0) }, { key: "stuff_plus", label: "Stuff+", heat: "plus", fmt: v => f.num(v, 0) },
+        { key: "loc_plus", label: "Loc+", heat: "plus", fmt: v => f.num(v, 0), title: "Location+: where this pitch crossed the plate, in the count" },
+        { key: "pitching_plus", label: "Pitching+", heat: "plus", fmt: v => f.num(v, 0) },
         ...(lvl === "AAA" ? [{ key: "velo_delta", label: "Velo Δ14", fmt: (v, r) => (r.recent_pitches >= 15 ? f.signed(v) : "—") },
                              { key: "ivb_delta", label: "IVB Δ14", fmt: (v, r) => (r.recent_pitches >= 15 ? f.signed(v) : "—") }] : []),
       ], { sortKey: "usage_pct", pageSize: 12 });
       arsTable.update(ars);
-      arsNote.textContent = `Season to date through ${S.dateLabel(T.dates[i])}. Movement in inches; horizontal break positive toward the pitcher's arm side. Stuff+: 100 is an average qualified MLB pitcher (or pitch, within its group) from ${meta.scale_reference.reference_season}.`
+      arsNote.textContent = `Season to date through ${S.dateLabel(T.dates[i])}. Movement in inches; horizontal break positive toward the pitcher's arm side. Stuff+, Location+, Pitching+: 100 is an average qualified MLB pitcher (or pitch, within its group) from ${meta.scale_reference.reference_season}.`
         + (lvl === "AAA" ? (isFinal() ? " Δ14 compares the final 14 days with the season (blank under 15 pitches)." : " Δ14 columns show at the season's final date.") : "");
       S.plot(mv, w => Plot.plot({ ...S.plotDefaults(w), height: w * 0.9, grid: true, clip: true, title: `Pitch shapes through ${S.dateLabel(T.dates[i])}`, marginBottom: 42,
         x: { domain: [-24, 24], label: "Horizontal break, arm side + →", labelAnchor: "center", labelOffset: 38 }, y: { domain: [-24, 24], label: "↑ Induced vertical break" },
@@ -165,7 +174,7 @@ page-layout: article
         marks: [Plot.ruleX([0], { stroke: "#ccc" }), Plot.ruleY([0], { stroke: "#ccc" }),
           Plot.dot(ars, { x: "hb", y: "ivb", r: "usage_pct", fill: d => S.plusColor(d.stuff_plus ?? 100), stroke: "#16181d", strokeWidth: 0.6 }),
           w < 560 ? null : Plot.text(ars, { x: "hb", y: "ivb", text: "pitch_type", dx: 16, textAnchor: "start", fontWeight: 600 }),
-          Plot.tip(ars, Plot.pointer({ x: "hb", y: "ivb", title: d => `${d.pitch_type}: ${f.num(d.velo)} mph\nIVB ${f.num(d.ivb)} · HB ${f.num(d.hb)}\nUsage ${f.pct(d.usage_pct, 0)} · Stuff+ ${f.num(d.stuff_plus, 0)}` }))] }));
+          Plot.tip(ars, Plot.pointer({ x: "hb", y: "ivb", title: d => `${d.pitch_type}: ${f.num(d.velo)} mph\nIVB ${f.num(d.ivb)} · HB ${f.num(d.hb)}\nUsage ${f.pct(d.usage_pct, 0)} · Stuff+ ${f.num(d.stuff_plus, 0)} · Location+ ${f.num(d.loc_plus, 0)}` }))] }));
       if (lvl === "AAA") {
         const g = data.fb_games.map(d => ({ ...d, date: new Date(d.d + "T12:00:00") }));
         const avg = d3.mean(g, d => d.velo);
@@ -184,7 +193,7 @@ page-layout: article
 
   function render() {
     const i = S.snapIndex(allDates, iso());
-    U.set({ asof: i === LAST ? null : allDates[i], window: st.window }, DEF);
+    U.set({ asof: i === LAST ? null : allDates[i], window: st.window, pgrade: st.pgrade }, DEF);
     const fl = data.flags;
     flagBox.replaceChildren(!(h || p) ? "" : !isFinal()
       ? S.el("div", { class: "flag-list none" }, "Change flags describe the season's final 14 days; move the slider to the end of the season with the season-to-date window to see them.")
