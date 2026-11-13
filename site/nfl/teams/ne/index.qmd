@@ -1,7 +1,7 @@
 ---
 title: "New England Patriots"
-pagetitle: "New England Patriots: offense and defense efficiency, week by week"
-description: "New England Patriots (AFC East) offense and defense in EPA per play and success rate, week by week, with passing and rushing splits and every result, 2016–2026."
+pagetitle: "New England Patriots efficiency: EPA by week"
+description: "New England Patriots (AFC East) offense and defense in EPA per play and success rate, week by week, with pass and run splits and results, 2016–2026."
 image: preview.png
 page-layout: full
 ---

@@ -230,6 +230,16 @@
       host.replaceChildren(host._sparviMake(w));
     };
     draw();
+    // Screen readers: the chart is a figure described by the first caption after it in its explorer
+    // (captions are rewritten as controls change, so the description stays current).
+    if (!host.hasAttribute("role")) {
+      host.setAttribute("role", "figure");
+      const box = host.closest(".explorer") || host.parentElement;
+      const cap = [...box.querySelectorAll(".caption[id]")]
+        .find((c) => host.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING);
+      if (cap) host.setAttribute("aria-describedby", cap.id);
+      else host.setAttribute("aria-label", "Chart");
+    }
     if (!host._sparviObserver) {
       let t, lastW = host.clientWidth;
       host._sparviObserver = new ResizeObserver(() => {

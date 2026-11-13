@@ -1,6 +1,7 @@
 ---
 title: "The Rule 5 board: unprotected Triple-A players whose numbers travel"
-description: "Which Triple-A players clubs left exposed to the Rule 5 Draft, ranked on the numbers that carry to the majors: stuff for pitchers, swing decisions and contact quality for hitters."
+pagetitle: "The Rule 5 board, explained"
+description: "Which Triple-A players clubs left exposed to the Rule 5 Draft, ranked on what carries to the majors: stuff for pitchers, swing decisions for hitters."
 date: 2026-11-11
 categories: [pitching, hitting, Triple-A, roster rules]
 image: thumb.png

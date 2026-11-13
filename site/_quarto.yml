@@ -5,6 +5,9 @@ project:
     - assets/**
     - data/**
     - CNAME
+  # Canonical URLs, sitemap lastmod from git, sitemap index, robots.txt, and metadata checks.
+  post-render:
+    - build/seo.py
 
 # Numbers quoted in article prose, written by each sport's export_site_data.py.
 # Use them as {{< meta baseball.<key> >}}; never hand-type a number into an article.
@@ -18,6 +21,8 @@ website:
   description: "Free sports analytics: findings you can act on, with the data out in the open so you can check them."
   favicon: assets/favicon.svg
   # Social previews: pages with an `image` (articles' thumb.png, NFL team pages' preview.png) share it.
+  # Pages without their own image (tools, hubs, glossary, about) share this one.
+  image: assets/og-default.png
   open-graph: true
   twitter-card: true
   navbar:
@@ -58,11 +63,7 @@ format:
     html-math-method: plain
     anchor-sections: false
     smooth-scroll: false
-    # Quarto's own metadata partial plus an early data preload (see _partials/metadata.html).
+    # Quarto's own metadata partial, an early data preload, and the deferred chart libraries
+    # (see _partials/metadata.html).
     template-partials:
       - _partials/metadata.html
-    include-in-header:
-      - text: |
-          <script src="/assets/js/d3.min.js"></script>
-          <script src="/assets/js/plot.umd.min.js"></script>
-          <script src="/assets/js/sparvi.js"></script>

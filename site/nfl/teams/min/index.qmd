@@ -1,7 +1,7 @@
 ---
 title: "Minnesota Vikings"
-pagetitle: "Minnesota Vikings: offense and defense efficiency, week by week"
-description: "Minnesota Vikings (NFC North) offense and defense in EPA per play and success rate, week by week, with passing and rushing splits and every result, 2016–2026."
+pagetitle: "Minnesota Vikings efficiency: EPA by week"
+description: "Minnesota Vikings (NFC North) offense and defense in EPA per play and success rate, week by week, with pass and run splits and results, 2016–2026."
 image: preview.png
 page-layout: full
 ---

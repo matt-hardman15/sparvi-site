@@ -1,6 +1,8 @@
 ---
+no-chart-libs: true
 title: "Baseball"
-description: "Pitch quality, player development, and the minor leagues, built on public Statcast data."
+pagetitle: "Baseball analytics: pitch quality and prospects"
+description: "Pitch quality, player development, and the minor leagues: articles and tools built on public Statcast data, with every number open to check."
 page-layout: full
 listing:
   id: articles

@@ -1,7 +1,7 @@
 ---
 title: "Arizona Cardinals"
-pagetitle: "Arizona Cardinals: offense and defense efficiency, week by week"
-description: "Arizona Cardinals (NFC West) offense and defense in EPA per play and success rate, week by week, with passing and rushing splits and every result, 2016–2026."
+pagetitle: "Arizona Cardinals efficiency: EPA by week"
+description: "Arizona Cardinals (NFC West) offense and defense in EPA per play and success rate, week by week, with pass and run splits and results, 2016–2026."
 image: preview.png
 page-layout: full
 ---

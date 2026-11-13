@@ -1,6 +1,7 @@
 ---
 title: "Stuff predicts next season at least as well as results do"
-description: "A pitch-quality model built only on velocity, movement, and release predicts a pitcher's next season at least as well as his run value does, settles far sooner, and carries over from Triple-A."
+pagetitle: "Stuff+: a pitch model that predicts next season"
+description: "A pitch model built only on velocity, movement, and release predicts next season at least as well as run value, settles sooner, and carries from Triple-A."
 date: 2026-10-21
 categories: [pitching, models]
 image: thumb.png

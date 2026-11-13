@@ -1,6 +1,8 @@
 ---
+no-chart-libs: true
 title: "Glossary"
-description: "What the numbers on Sparvi mean and how they're calculated."
+pagetitle: "Glossary of Sparvi metrics and terms"
+description: "What every number on Sparvi means and how it's calculated: pitch grades, swing decisions, percentiles, pitcher roles, EPA, success rate, and more."
 ---
 
 ## Pitching

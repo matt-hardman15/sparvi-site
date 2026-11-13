@@ -1,6 +1,7 @@
 ---
 title: "NFL team efficiency"
-description: "Every NFL team's offense and defense in EPA per play and success rate, week by week since 2016: opponent-adjusted or raw, with or without garbage time, passing and rushing."
+pagetitle: "NFL team efficiency: EPA per play by week"
+description: "Every NFL offense and defense in EPA per play and success rate, week by week: opponent-adjusted or raw, with or without garbage time, passing and rushing."
 page-layout: full
 ---
 
