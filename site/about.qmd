@@ -9,11 +9,15 @@ Sparvi is a free, independent sports analytics site. It doesn't run ads or sell 
 
 The goal is analysis that's useful to someone making a decision (a coach, a front office, a fan arguing with a friend), presented so you can check the work. Every article leads with the finding and what to do with it. Below that is the data, in an explorer you can filter, sort, and search. Below that is the method, including what the analysis can't tell you.
 
-Baseball comes first because the public data is the richest. Basketball, football, and soccer will follow when there's a question worth answering with the data that's available.
+Sparvi covers baseball and football (the NFL and college) now. Other sports may follow when there's a question worth answering with the data that's available.
 
 ## Data
 
-Baseball data comes from [Baseball Savant](https://baseballsavant.mlb.com) (pitch-level Statcast) and the MLB Stats API. Sparvi publishes aggregated statistics only, never raw pitch-level data. Sparvi isn't affiliated with Major League Baseball, Minor League Baseball, or any club.
+Every number on the site comes from public data. Sparvi publishes aggregated statistics only (team and player totals and rates), never raw pitch-level or play-level data.
+
+- **Baseball:** [Baseball Savant](https://baseballsavant.mlb.com) (pitch-level Statcast for MLB and Triple-A) and the MLB Stats API (rosters, transactions, player details). Sparvi isn't affiliated with Major League Baseball, Minor League Baseball, or any club.
+- **NFL:** [nflverse](https://github.com/nflverse) play-by-play, schedules, and team stats, used under the CC-BY 4.0 license. Thanks to the nflverse maintainers for keeping it open.
+- **College football:** data provided by [CollegeFootballData.com](https://collegefootballdata.com) (play-by-play, games, polls, Elo, and lines), used under its terms: Sparvi shows derived aggregates and doesn't redistribute the raw data. Betting lines appear only as an after-the-fact accuracy benchmark. Sparvi isn't affiliated with the NCAA, any conference, or any school.
 
 All code (data pulls, models, pipelines, and this site) is public on [GitHub](https://github.com/matt-hardman15/sparvi-site), and every number on the site can be rebuilt from scratch.
 
@@ -25,4 +29,4 @@ Sparvi counts visits with [Cloudflare Web Analytics](https://www.cloudflare.com/
 
 Sparvi is run by [Matt Hardman](https://www.linkedin.com/in/matthew-hardman/), an analytics engineer in Kansas City who spends his working hours on data pipelines and reporting.
 
-Corrections, questions, and ideas are welcome: open an issue on [GitHub](https://github.com/matt-hardman15/sparvi-site/issues).
+Corrections, questions, and ideas are welcome: email [contact@sparvi.io](mailto:contact@sparvi.io) or open an issue on [GitHub](https://github.com/matt-hardman15/sparvi-site/issues). Sparvi is also on [X](https://x.com/SparviAnalytics).

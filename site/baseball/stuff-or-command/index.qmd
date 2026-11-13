@@ -3,8 +3,12 @@ title: "Stuff or command? Splitting pitching into what the ball does and where i
 pagetitle: "Stuff or command? Location+ and Pitching+"
 description: "Location+ grades where a pitch crosses the plate. It's a steady trait, but it barely predicts next season, and adding it to Stuff+ doesn't help."
 date: 2026-11-12
-categories: [pitching, models]
+categories: [Baseball, pitching, models]
 image: thumb.png
+card-key: baseball.loc_self_loc
+card-prefix: "r = "
+card-suffix: ""
+card-label: "Location+ from one season to the next"
 ---
 
 ::: {.finding}

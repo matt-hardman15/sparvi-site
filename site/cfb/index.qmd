@@ -1,5 +1,6 @@
 ---
 title: "College Football"
+image: /assets/og-default.png
 pagetitle: "College football analytics: power ratings and polls"
 description: "FBS team ratings from play-by-play: opponent-adjusted efficiency and a power rating, week by week, compared with the AP poll and the CFP rankings."
 page-layout: full
@@ -7,10 +8,9 @@ listing:
   id: cfb-articles
   contents: "*/index.qmd"
   sort: "date desc"
-  type: grid
-  grid-columns: 3
-  fields: [image, title, description]
-  image-height: 150px
+  template: ../_listing-cards.ejs
+  fields: [image, date, title, description, categories, card-key, card-prefix, card-suffix, card-label]
+  date-format: "MMM D, YYYY"
 ---
 
 ## Tools

@@ -66,6 +66,33 @@ def lastmod(rel_html: str) -> str:
     return git_date(paths) or git_date(["."]) or "1970-01-01"
 
 
+def prose_numbers() -> dict[str, str]:
+    """Every value in site/_generated/*.yml as 'sport.key' -> string (the files are flat: sport -> key: "value")."""
+    out = {}
+    for f in sorted((SITE / "_generated").glob("*.yml")):
+        sport = None
+        for line in f.read_text(encoding="utf-8").splitlines():
+            if line and not line.startswith((" ", "#")) and line.endswith(":"):
+                sport = line[:-1]
+            elif sport and line.startswith("  ") and ": " in line:
+                k, v = line.strip().split(": ", 1)
+                out[f"{sport}.{k}"] = v.strip().strip('"').replace('\\"', '"')
+    return out
+
+
+CARD_STAT = re.compile(r'(<span class="card-stat-v" data-key="([\w.]+)">)([^<]*)…([^<]*)(</span>)')
+
+
+def fill_card_stats(h: str, numbers: dict[str, str], problems: list[str], where: str) -> str:
+    """Listing cards (site/_listing-cards.ejs) name a prose-number key; put its value in."""
+    def sub(m):
+        if m[2] not in numbers:
+            problems.append(f"{where}: card-key {m[2]} is not a prose number")
+            return m[0]
+        return f"{m[1]}{html.escape(m[3])}{html.escape(numbers[m[2]])}{html.escape(m[4])}{m[5]}"
+    return CARD_STAT.sub(sub, h)
+
+
 def tag(h: str, pattern: str) -> str | None:
     m = re.search(pattern, h, re.S)
     return html.unescape(m[1].strip()) if m else None
@@ -78,6 +105,7 @@ def main() -> int:
     locs = re.findall(r"<loc>(.*?)</loc>", sm.read_text(encoding="utf-8"))
     entries, problems = [], []
     titles, descs = defaultdict(list), defaultdict(list)
+    numbers = prose_numbers()
 
     for loc in sorted(set(locs)):
         f = html_path(loc)
@@ -90,6 +118,7 @@ def main() -> int:
         h, n = re.subn(r'<link rel="canonical"[^>]*>', link, h)
         if n == 0:
             h = h.replace("</head>", link + "\n</head>", 1)
+        h = fill_card_stats(h, numbers, problems, url)
         # decorative listing thumbnails
         h = re.sub(r'<img (?![^>]*\balt=)([^>]*class="thumbnail-image[^"]*")', r'<img alt="" \1', h)
         f.write_text(h, encoding="utf-8", newline="\n")

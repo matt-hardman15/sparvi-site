@@ -3,8 +3,12 @@ title: "Two weeks of swing decisions tells you something. Two weeks of results d
 pagetitle: "Two weeks of Triple-A data: what carries over"
 description: "Which short-window Triple-A numbers carry over to the next two weeks, and what that means for building a player development report coaches can trust."
 date: 2026-11-10
-categories: [player development, hitting, pitching, Triple-A]
+categories: [Baseball, player development, hitting, pitching, Triple-A]
 image: thumb.png
+card-key: baseball.tw_hit_chase
+card-prefix: "r = "
+card-suffix: ""
+card-label: "two weeks of chase rate vs. the next two weeks"
 ---
 
 ::: {.finding}

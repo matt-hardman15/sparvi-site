@@ -1,5 +1,6 @@
 ---
 no-chart-libs: true
+image: /assets/og-default.png
 pagetitle: "Free sports analytics with the data in the open"
 description: "Free, independent sports analytics: findings you can act on, with the data behind them in interactive tools you can filter and check yourself."
 page-layout: full
@@ -8,10 +9,9 @@ listing:
   id: latest
   contents: ["baseball/*/index.qmd", "cfb/*/index.qmd", "nfl/*/index.qmd"]
   sort: "date desc"
-  type: grid
-  grid-columns: 3
-  fields: [image, title, description]
-  image-height: 170px
+  template: _listing-cards.ejs
+  fields: [image, date, title, description, categories, card-key, card-prefix, card-suffix, card-label]
+  date-format: "MMM D, YYYY"
 ---
 
 ::: {.hero}
@@ -20,7 +20,8 @@ listing:
 Sparvi publishes analysis meant to change a decision, not just describe a game. Every finding comes with the data behind it, in an explorer you can filter and search, so you can check it yourself or come to a different conclusion.
 
 ```{=html}
-<div class="sport-strip"><span class="live">Baseball</span><span>Basketball · planned</span><span class="live">Football</span><span>Soccer · planned</span></div>
+<div class="sport-strip"><span class="live">Baseball</span><span class="live">Football</span></div>
+<!-- TODO(newsletter): add one line, "Get new findings by email", linking to the signup page once Matt sets one up. No form on the site. -->
 ```
 :::
 
