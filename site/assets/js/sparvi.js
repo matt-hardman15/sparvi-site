@@ -128,19 +128,20 @@
   S.loadSnap = (stem, win = "std") => S.load(`/data/baseball/${stem}${win === "last30" ? "_last30" : ""}.json`);
   S.dateLabel = (iso) => new Date(iso + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
   S.asOfMark = (iso) => Plot.ruleX([new Date(iso + "T12:00:00")], { stroke: "#0f5257", strokeWidth: 1.5, strokeDasharray: "4,3" });
-  // Range input over snapshot dates with step buttons and play. Keyboard: the slider takes arrow
-  // keys/Home/End natively; buttons are real buttons. Returns {el, set(i)}; onchange(i) on every move.
-  S.dateSlider = (dates, value, onchange) => {
+  // Range input over snapshot dates (or NFL weeks) with step buttons and play. Keyboard: the slider
+  // takes arrow keys/Home/End natively; buttons are real buttons. Returns {el, set(i)}; onchange(i) on
+  // every move. opts.label(i) sets the readout (default "Through <date>"), opts.aria the slider's name.
+  S.dateSlider = (dates, value, onchange, opts = {}) => {
     let i = Math.max(0, Math.min(dates.length - 1, value)), timer = null;
     const label = S.el("span", { class: "ds-label", "aria-live": "polite" });
     const range = S.el("input", { type: "range", min: 0, max: dates.length - 1, step: 1, value: i,
-      "aria-label": "Snapshot date", oninput: (e) => go(+e.target.value) });
+      "aria-label": opts.aria || "Snapshot date", oninput: (e) => go(+e.target.value) });
     const btn = (txt, aria, fn) => S.el("button", { type: "button", class: "ds-btn", "aria-label": aria, onclick: fn }, txt);
     const prev = btn("◀", "Previous week", () => { stop(); go(i - 1); });
     const next = btn("▶", "Next week", () => { stop(); go(i + 1); });
     const play = btn("▶ Play", "Play through the season", () => (timer ? stop() : start()));
     function render() {
-      range.value = i; label.textContent = `Through ${S.dateLabel(dates[i])}`;
+      range.value = i; label.textContent = opts.label ? opts.label(i) : `Through ${S.dateLabel(dates[i])}`;
       range.setAttribute("aria-valuetext", label.textContent);
       prev.disabled = i === 0; next.disabled = i === dates.length - 1;
     }
@@ -261,5 +262,17 @@
   };
 
   S.playerLink = (id, name) => `<a href="/baseball/player.html?id=${id}">${name ?? id}</a>`;
+  // NFL team pages are static, one per team: /nfl/teams/kc/ (query string carries the view state).
+  S.nflTeamHref = (id, qs = "") => `/nfl/teams/${String(id).toLowerCase()}/${qs ? "?" + qs : ""}`;
+  S.nflTeamLink = (id, label, qs = "") => `<a href="${S.nflTeamHref(id, qs)}">${label ?? id}</a>`;
+  // Rank percentile (0-100) of each row's value within rows, higher = better unless lowerBetter.
+  S.rankPct = (rows, key, lowerBetter = false) => {
+    const v = rows.map((r) => r[key]).filter((x) => x != null).sort(d3.ascending), n = v.length;
+    return (x) => (x == null || n < 2 ? null : (() => {
+      const below = d3.bisectLeft(v, x), above = n - d3.bisectRight(v, x);
+      const p = 100 * (below + (n - below - above - 1) / 2) / (n - 1);
+      return lowerBetter ? 100 - p : p;
+    })());
+  };
   window.Sparvi = S;
 })();

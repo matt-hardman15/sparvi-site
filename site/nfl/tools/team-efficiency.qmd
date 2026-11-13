@@ -1,0 +1,154 @@
+---
+title: "NFL team efficiency"
+description: "Every NFL team's offense and defense in EPA per play and success rate, week by week since 2016: opponent-adjusted or raw, with or without garbage time, passing and rushing."
+page-layout: full
+---
+
+How well each team moves the ball, and stops it, per play. **EPA per play** (expected points added) measures how much each play changed a team's expected points, so it credits a 6-yard gain on 3rd-and-5 more than on 3rd-and-10. **Success rate** is the share of plays with positive EPA. Defense numbers are what the defense allowed, so lower is better there; the chart flips that axis so up is always better. **Opponent-adjusted** numbers remove the strength of the opponents each team faced (see the note below). Move the week slider, or press play, to watch the season unfold. Click a team for its weekly page.
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c"></div>
+  <div class="controls" id="c2"></div>
+  <div id="scatter" class="plot-host"></div>
+  <p class="caption" id="scap"></p>
+  <div id="t"><div class="loading">Loading…</div></div>
+  <p class="caption" id="tcap"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt, U = S.urlState;
+  const weekFile = (s, win = "std") => S.load(`/data/nfl/team_week_${s}${win === "last4" ? "_last4" : ""}.json`);
+  const meta = await S.load("/data/nfl/meta.json"), D = meta.defs;
+  weekFile(U.get("season", meta.season));  // start the data request now
+  const teams = new Map((await S.load("/data/nfl/teams.json")).map(t => [t.id, t]));
+  const SEASONS = meta.seasons.map(String);
+  const DEF = { season: String(meta.season), win: "std", adj: "adj", gt: "no_gt", split: "all", team: "" };
+  const st = {
+    season: SEASONS.includes(U.get("season")) ? U.get("season") : DEF.season,
+    win: U.get("win") === "last4" ? "last4" : DEF.win, adj: U.get("adj") === "raw" ? "raw" : DEF.adj,
+    gt: U.get("gt") === "all" ? "all" : DEF.gt, split: ["pass", "run"].includes(U.get("split")) ? U.get("split") : DEF.split,
+    team: teams.has(U.get("team")) ? U.get("team") : DEF.team, week: U.get("week") == null ? null : +U.get("week"),
+  };
+  const SPLITS = { all: "All plays", pass: "Passes", run: "Runs" };
+  const weeks = () => meta.weeks[st.season];
+  const wi = () => { const w = weeks(), k = st.week == null ? w.length - 1 : w.indexOf(st.week); return k < 0 ? w.length - 1 : k; };
+  const useAdj = () => st.adj === "adj" && st.win === "std";
+  const pre = () => (st.split === "all" ? "" : st.split + "_");
+  const epaKey = (side) => `${side}_${pre()}epa${useAdj() ? "_adj" : ""}`;
+  const srKey = (side) => `${side}_${pre()}sr`;
+  const c = document.getElementById("c"), c2 = document.getElementById("c2");
+  let slider;
+
+  function controls() {
+    c.replaceChildren(
+      S.select("Season", SEASONS.slice().reverse().map(s => [s, s]), st.season, v => { st.season = v; st.week = null; controls(); draw(); }),
+      S.el("label", {}, "Numbers", S.seg([["adj", "Opponent-adjusted"], ["raw", "Raw"]], st.adj, v => { st.adj = v; controls(); draw(); })),
+      S.el("label", {}, "Garbage time", S.seg([["no_gt", "Removed"], ["all", "Included"]], st.gt, v => { st.gt = v; draw(); })),
+      S.el("label", {}, "Plays", S.seg(Object.entries(SPLITS), st.split, v => { st.split = v; draw(); })),
+      S.select("Highlight", [["", "No team"], ...[...teams.values()].map(t => [t.id, `${t.id} · ${t.name}`])], st.team, v => { st.team = v; draw(); }));
+    slider = S.dateSlider(weeks(), wi(), k => { st.week = weeks()[k]; draw(); },
+      { label: k => `Through week ${weeks()[k]}`, aria: "Week" });
+    c2.replaceChildren(...[slider.el,
+      S.el("label", {}, "Window", S.seg([["std", "Season to date"], ["last4", `Last ${meta.trailing_weeks} weeks`]], st.win, v => { st.win = v; controls(); draw(); })),
+      st.adj === "adj" && st.win === "last4"
+        ? S.el("p", { class: "muted", style: "margin:.35rem 0;max-width:22rem" }, `Opponent adjustment covers the season to date; the last-${meta.trailing_weeks}-weeks view shows raw numbers.`)
+        : null].filter(Boolean));
+  }
+
+  const cols = () => {
+    const off = epaKey("off"), def = epaKey("def");
+    return [
+      { key: "id", label: "Team", align: "l", html: r => S.nflTeamLink(r.id, `${r.id} <span class="muted">${r.nick}</span>`, `season=${st.season}`), sortVal: r => r.id },
+      { key: "games", label: "G", fmt: f.int },
+      { key: "net", label: "Net EPA/play", heat: "pct", heatVal: r => r.p_net, fmt: v => f.signed(v, 3), title: "Offense EPA/play minus defense EPA/play allowed" },
+      { key: off, label: "Off EPA/play", heat: "pct", heatVal: r => r.p_off, fmt: v => f.signed(v, 3) },
+      { key: def, label: "Def EPA/play", heat: "pct", heatVal: r => r.p_def, fmt: v => f.signed(v, 3), title: "EPA/play allowed: lower is better" },
+      { key: srKey("off"), label: "Off success", heat: "pct", heatVal: r => r.p_osr, fmt: v => f.pct(v) },
+      { key: srKey("def"), label: "Def success", heat: "pct", heatVal: r => r.p_dsr, fmt: v => f.pct(v), title: "Success rate allowed: lower is better" },
+      { key: "off_edpr", label: "Early-down pass", fmt: v => f.pct(v), title: `Pass rate on 1st and 2nd down with win probability ${f.pct(D.neutral_wp[0], 0)}–${f.pct(D.neutral_wp[1], 0)}` },
+      { key: "off_proe", label: "PROE", fmt: v => f.pts(v), title: "Pass rate over expected (nflverse xpass), percentage points" },
+      { key: "off_expl", label: "Off explosive", heat: "pct", heatVal: r => r.p_oex, fmt: v => f.pct(v), title: `Passes of ${D.explosive_pass_yds}+ yards and runs of ${D.explosive_run_yds}+, share of plays` },
+      { key: "def_expl", label: "Def explosive", heat: "pct", heatVal: r => r.p_dex, fmt: v => f.pct(v), title: "Explosive plays allowed: lower is better" },
+      { key: "off_to", label: "Off TO", heat: "pct", heatVal: r => r.p_oto, fmt: v => f.pct(v), title: "Interceptions and lost fumbles, share of plays: lower is better" },
+      { key: "def_to", label: "Def TO", heat: "pct", heatVal: r => r.p_dto, fmt: v => f.pct(v), title: "Takeaways, share of plays: higher is better" },
+    ];
+  };
+  let table = null, tableKey = "";
+  const host = document.getElementById("scatter");
+
+  function rowsAt(file, k) {
+    return file.teams.map(t => {
+      const s = t.series[st.gt], r = { id: t.id, nick: teams.get(t.id).nick, name: teams.get(t.id).name };
+      for (const fld of file.fields) r[fld] = s[fld] ? s[fld][k] : null;
+      return r;
+    }).filter(r => r.games > 0);
+  }
+
+  async function draw() {
+    const file = await weekFile(st.season, st.win), k = wi(), W = weeks()[k];
+    const off = epaKey("off"), def = epaKey("def");
+    const rows = rowsAt(file, k).map(r => ({ ...r, x: r[off], y: r[def], net: r[off] != null && r[def] != null ? r[off] - r[def] : null }))
+      .filter(r => r.x != null && r.y != null);
+    const rk = (key, lower) => S.rankPct(rows, key, lower);
+    const P = { p_net: rk("net"), p_off: rk(off), p_def: rk(def, true), p_osr: rk(srKey("off")), p_dsr: rk(srKey("def"), true),
+                p_oex: rk("off_expl"), p_dex: rk("def_expl", true), p_oto: rk("off_to", true), p_dto: rk("def_to") };
+    const src = { p_net: "net", p_off: off, p_def: def, p_osr: srKey("off"), p_dsr: srKey("def"), p_oex: "off_expl", p_dex: "def_expl", p_oto: "off_to", p_dto: "def_to" };
+    rows.forEach(r => { for (const [p, fn] of Object.entries(P)) r[p] = fn(r[src[p]]); });
+
+    const key = cols().map(x => x.key).join();
+    if (!table || key !== tableKey) { table = S.table(document.getElementById("t"), cols(), { sortKey: "net", pageSize: 32 }); tableKey = key; }
+    table.update(rows);
+
+    // Highlighted team's path through the season (same variant), up to the slider's week.
+    const trail = [];
+    if (st.team) for (let j = 0; j <= k; j++) {
+      const r = rowsAt(file, j).find(d => d.id === st.team);
+      if (r && r[off] != null && r[def] != null) trail.push({ week: weeks()[j], x: r[off], y: r[def] });
+    }
+    const mx = d3.mean(rows, d => d.x), my = d3.mean(rows, d => d.y);
+    const ext = (a) => { const [lo, hi] = d3.extent(a); const pad = (hi - lo) * 0.12 || 0.05; return [lo - pad, hi + pad]; };
+    const xd = ext(rows.map(d => d.x).concat(trail.map(d => d.x))), yd = ext(rows.map(d => d.y).concat(trail.map(d => d.y)));
+    const corner = (text, frameAnchor) => Plot.text([text], { frameAnchor, dx: frameAnchor.endsWith("left") ? 6 : -6,
+      dy: frameAnchor.startsWith("top") ? 8 : -8, fill: "#8a8b8f", fontSize: 11, fontStyle: "italic" });
+    S.plot(host, w => {
+      const R = w < 560 ? 9 : 13, FS = w < 560 ? 7.5 : 9.5;
+      const fig = Plot.plot({ ...S.plotDefaults(w), height: Math.min(520, Math.max(360, w * 0.62)), grid: true, clip: true,
+        x: { label: `Offense EPA/play${useAdj() ? " (adjusted)" : ""} →`, domain: xd, tickFormat: "+.2f" },
+        y: { label: `↑ Defense EPA/play allowed${useAdj() ? " (adjusted)" : ""}, better is up`, domain: yd, reverse: true, tickFormat: "+.2f" },
+        color: { type: "diverging", domain: [0, 100], pivot: 50, range: ["#2a78d6", "#d9d8d3", "#eb6834"], legend: true, label: "Net EPA/play, rank percentile" },
+        marks: [
+          Plot.ruleX([mx], { stroke: "#8a8b8f", strokeDasharray: "3,3" }), Plot.ruleY([my], { stroke: "#8a8b8f", strokeDasharray: "3,3" }),
+          corner(w < 560 ? "Good O, good D" : "Good offense, good defense", "top-right"),
+          corner(w < 560 ? "Good D" : "Good defense, weak offense", "top-left"),
+          corner(w < 560 ? "Good O" : "Good offense, weak defense", "bottom-right"),
+          corner(w < 560 ? "Weak both" : "Weak on both sides", "bottom-left"),
+          trail.length > 1 ? Plot.line(trail, { x: "x", y: "y", stroke: "#0f5257", strokeWidth: 1.5, strokeOpacity: 0.7, marker: "dot" }) : null,
+          Plot.dot(rows, { x: "x", y: "y", r: R, fill: "p_net", fillOpacity: st.team ? 0.25 : 0.9, stroke: "#fff" }),
+          Plot.text(rows, { x: "x", y: "y", text: "id", fontSize: FS, fontWeight: 600, fill: d => S.textOn(S.pctColor(d.p_net)), fillOpacity: st.team ? 0.4 : 1 }),
+          st.team ? Plot.dot(rows.filter(d => d.id === st.team), { x: "x", y: "y", r: R + 2, fill: "p_net", stroke: "#16181d", strokeWidth: 2 }) : null,
+          st.team ? Plot.text(rows.filter(d => d.id === st.team), { x: "x", y: "y", text: "id", fontSize: 10, fontWeight: 700, fill: d => S.textOn(S.pctColor(d.p_net)) }) : null,
+          Plot.tip(rows, Plot.pointer({ x: "x", y: "y", title: d => `${d.name}, through week ${W}${st.win === "last4" ? ` (last ${meta.trailing_weeks} weeks)` : ""}\nOffense ${f.signed(d.x, 3)} EPA/play · defense ${f.signed(d.y, 3)} allowed\nNet ${f.signed(d.net, 3)} (${Math.round(d.p_net)}th percentile) · ${d.games} G\nClick for the team page` })),
+        ] });
+      fig.style.cursor = "pointer";
+      fig.addEventListener("click", () => { if (fig.value) location.href = S.nflTeamHref(fig.value.id, `season=${st.season}`); });
+      return fig;
+    });
+
+    const last = k === weeks().length - 1;
+    U.set({ season: st.season, week: last ? null : W, win: st.win, adj: st.adj, gt: st.gt, split: st.split, team: st.team }, DEF);
+    const what = `${SPLITS[st.split].toLowerCase()}, ${useAdj() ? "opponent-adjusted" : "raw"}, garbage time ${st.gt === "no_gt" ? "removed" : "included"}`;
+    const when = st.win === "last4" ? `weeks ${Math.max(1, W - meta.trailing_weeks + 1)}–${W}` : `through week ${W}`;
+    document.getElementById("scap").textContent = `${st.season}, ${when}: ${rows.length} teams (${what}). Right is a better offense, up a better defense; dashed lines mark the average team. Color is net EPA/play rank. `
+      + (st.team ? `The line traces ${teams.get(st.team).name} week by week. ` : "")
+      + "Hover for details; click a team for its page.";
+    document.getElementById("tcap").textContent = `Heat colors rank each column among the ${rows.length} teams (orange better, blue worse; for defense and turnovers lost, lower is better). Early-down pass rate and PROE describe tendencies, not quality, so they're uncolored. Opponent adjustment applies to the EPA columns only.`;
+  }
+  controls(); draw();
+})();
+</script>
+```
+
+::: {.note}
+Regular season only, {{< meta nfl.first_season >}}–{{< meta nfl.season >}} (through week {{< meta nfl.last_week >}} of {{< meta nfl.season >}}). Plays counted: passes (including sacks and scrambles) and runs; two-point tries, kneel-downs, and spikes are left out. **Garbage time** removes 4th-quarter plays when the offense's win probability is below {{< meta nfl.garbage_wp_lo >}} or above {{< meta nfl.garbage_wp_hi >}}. **Opponent adjustment** removes the strength of the opponents each team faced: every play's EPA is fit on the offense, the defense, and home field together (ridge regression), and each team's own EPA/play is corrected by the average strength of the defenses (or offenses) it played. The team-strength estimates use a penalty λ = {{< meta nfl.adj_lambda >}} plays, the value that best predicted the next week's game margins from ratings through each week ({{< meta nfl.adj_first_season >}}–{{< meta nfl.adj_last_season >}}, weeks {{< meta nfl.adj_min_week >}} on, {{< meta nfl.adj_n_games >}} games). In the NFL the correction is modest, because schedules are fairly balanced: adjusted EPA/play predicted the next week's margins about as well as raw (mean absolute error {{< meta nfl.adj_mae >}} vs. {{< meta nfl.adj_mae_raw >}} points), and both beat home field alone ({{< meta nfl.adj_mae_home >}}). The strength estimates themselves, which also pull teams toward average when there's little data, predicted best ({{< meta nfl.adj_mae_ridge >}}): for forecasting, regression to the mean matters more than schedule. Definitions are in the [glossary](/glossary.html#nfl). Data: [nflverse](https://github.com/nflverse) play-by-play (CC-BY 4.0), whose EPA, win probability, and expected pass rate models these numbers use.
+:::

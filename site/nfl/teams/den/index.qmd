@@ -1,0 +1,13 @@
+---
+title: "Denver Broncos"
+pagetitle: "Denver Broncos: offense and defense efficiency, week by week"
+description: "Denver Broncos (AFC West) offense and defense in EPA per play and success rate, week by week, with passing and rushing splits and every result, 2016–2026."
+image: preview.png
+page-layout: full
+---
+
+```{=html}
+<div id="team-root" data-team="DEN"></div>
+```
+
+{{< include ../_team.qmd >}}

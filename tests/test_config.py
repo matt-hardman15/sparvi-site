@@ -28,3 +28,10 @@ def test_zone_shares_agree_between_dbt_and_location_plus():
     from features import ZONE_BOT, ZONE_TOP
     v = yaml.safe_load((ROOT / "baseball/pd_pipeline/dbt_project.yml").read_text(encoding="utf-8"))["vars"]
     assert (v["zone_top_share"], v["zone_bot_share"]) == (ZONE_TOP, ZONE_BOT)
+
+
+def test_nfl_seasons_from_config():
+    from sparvi.config import nfl
+    n = nfl()
+    assert n.seasons[0] == n.first_season and n.seasons[-1] == n.season
+    assert n.past_seasons == n.seasons[:-1]

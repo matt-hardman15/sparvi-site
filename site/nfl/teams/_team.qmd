@@ -1,0 +1,120 @@
+```{=html}
+<div class="team-head" id="head"></div>
+<div class="explorer">
+  <div class="controls" id="c"></div>
+  <div class="controls" id="c2"></div>
+  <div id="tiles"></div>
+  <h3>Offense by week</h3>
+  <div id="off" class="plot-host"></div>
+  <h3>Defense by week</h3>
+  <div id="def" class="plot-host"></div>
+  <p class="caption" id="cap"></p>
+</div>
+<div class="explorer">
+  <h3>Results</h3>
+  <div id="games"><div class="loading">Loading…</div></div>
+  <p class="caption" id="gcap"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt, U = S.urlState;
+  const TEAM = document.getElementById("team-root").dataset.team;
+  const meta = await S.load("/data/nfl/meta.json");
+  const SEASONS = meta.seasons.map(String);
+  const season0 = SEASONS.includes(U.get("season")) ? U.get("season") : String(meta.season);
+  const weekFile = (s) => S.load(`/data/nfl/team_week_${s}.json`), gameFile = (s) => S.load(`/data/nfl/team_games_${s}.json`);
+  weekFile(season0); gameFile(season0);  // start both requests now
+  const teams = new Map((await S.load("/data/nfl/teams.json")).map(t => [t.id, t]));
+  const T = teams.get(TEAM);
+  const DEF = { season: String(meta.season), adj: "adj", gt: "no_gt", split: "all" };
+  const st = { season: season0, adj: U.get("adj") === "raw" ? "raw" : DEF.adj, gt: U.get("gt") === "all" ? "all" : DEF.gt,
+               split: ["pass", "run"].includes(U.get("split")) ? U.get("split") : DEF.split, week: U.get("week") == null ? null : +U.get("week") };
+  const SPLITS = { all: "All plays", pass: "Passes", run: "Runs" };
+  document.getElementById("head").innerHTML =
+    `<p class="team-sub" style="border-left:4px solid ${T.color};padding-left:.6rem">${T.division} · <a href="/nfl/tools/team-efficiency.html?team=${TEAM}">compare with every team</a></p>`;
+  const weeks = () => meta.weeks[st.season];
+  const wi = () => { const w = weeks(), k = st.week == null ? w.length - 1 : w.indexOf(st.week); return k < 0 ? w.length - 1 : k; };
+  const pre = () => (st.split === "all" ? "" : st.split + "_");
+  const c = document.getElementById("c"), c2 = document.getElementById("c2");
+  let gtable = null;
+
+  function controls() {
+    c.replaceChildren(
+      S.select("Season", SEASONS.slice().reverse().map(s => [s, s]), st.season, v => { st.season = v; st.week = null; controls(); draw(); }),
+      S.el("label", {}, "Numbers", S.seg([["adj", "Opponent-adjusted"], ["raw", "Raw"]], st.adj, v => { st.adj = v; draw(); })),
+      S.el("label", {}, "Garbage time", S.seg([["no_gt", "Removed"], ["all", "Included"]], st.gt, v => { st.gt = v; draw(); })),
+      S.el("label", {}, "Plays", S.seg(Object.entries(SPLITS), st.split, v => { st.split = v; draw(); })));
+    const sl = S.dateSlider(weeks(), wi(), k => { st.week = weeks()[k]; draw(); }, { label: k => `Through week ${weeks()[k]}`, aria: "Week" });
+    c2.replaceChildren(sl.el);
+  }
+
+  async function draw() {
+    const [wf, gf] = await Promise.all([weekFile(st.season), gameFile(st.season)]);
+    const k = wi(), W = weeks()[k], adj = st.adj === "adj";
+    const cum = (side) => `${side}_${pre()}epa${adj ? "_adj" : ""}`;
+    const at = (t, fld, j) => { const s = t.series[st.gt][fld]; return s ? s[j] : null; };
+    const me = wf.teams.find(t => t.id === TEAM);
+
+    // Tiles: record and ranks through the slider's week.
+    const games = (gf.teams[TEAM] || []).filter(g => g.week <= W && g.res);
+    const rec = ["W", "L", "T"].map(r => games.filter(g => g.res === r).length);
+    const vals = (fld) => wf.teams.map(t => at(t, fld, k)).filter(v => v != null);
+    const rank = (fld, lower) => { const v = at(me, fld, k); if (v == null) return null; return 1 + vals(fld).filter(x => lower ? x < v : x > v).length; };
+    const netOf = (t) => { const o = at(t, cum("off"), k), d = at(t, cum("def"), k); return o == null || d == null ? null : o - d; };
+    const nets = wf.teams.map(netOf).filter(v => v != null), myNet = netOf(me);
+    const ord = (r) => r == null ? "—" : r + (r % 100 >= 11 && r % 100 <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" }[r % 10] || "th"));
+    const tile = (label, value, sub) => S.el("div", { class: "stat" }, S.el("div", { class: "v" }, value), S.el("div", { class: "k" }, `${label} · ${sub}`));
+    document.getElementById("tiles").replaceChildren(S.el("div", { class: "stat-row" },
+      tile("Record", `${rec[0]}–${rec[1]}${rec[2] ? "–" + rec[2] : ""}`, `through week ${W}`),
+      tile("Offense EPA/play", f.signed(at(me, cum("off"), k), 3), `${ord(rank(cum("off"), false))} of ${vals(cum("off")).length}`),
+      tile("Defense EPA/play", f.signed(at(me, cum("def"), k), 3), `${ord(rank(cum("def"), true))} of ${vals(cum("def")).length} (allowed)`),
+      tile("Net EPA/play", f.signed(myNet, 3), `${ord(myNet == null ? null : 1 + nets.filter(x => x > myNet).length)} of ${nets.length}`)));
+
+    // Weekly lines: season-to-date (line) and each game (dots), with the league average as a reference.
+    for (const side of ["off", "def"]) {
+      const pts = weeks().map((w, j) => ({ week: w, cum: at(me, cum(side), j) })).filter(d => d.cum != null);
+      const gk = `${side}_${st.gt === "no_gt" ? "ng_" : ""}${pre()}epa`;
+      const gp = (gf.teams[TEAM] || []).filter(g => g[gk] != null).map(g => ({ week: g.week, v: g[gk], opp: g.opp, res: g.res, pf: g.pf, pa: g.pa }));
+      const lg = weeks().map((w, j) => ({ week: w, v: d3.mean(wf.teams, t => at(t, cum(side), j)) })).filter(d => d.v != null);
+      const good = side === "off" ? "Offense EPA/play" : "Defense EPA/play allowed";
+      S.plot(document.getElementById(side), w => Plot.plot({ ...S.plotDefaults(w), height: 240, grid: true,
+        x: { label: "Week →", domain: [0.5, Math.max(...weeks()) + 0.5], ticks: weeks() },
+        y: { label: `↑ ${good}${side === "def" ? ", better is up" : ""}`, reverse: side === "def", tickFormat: "+.2f", nice: true },
+        marks: [
+          Plot.line(lg, { x: "week", y: "v", stroke: "#c9c7c0", strokeDasharray: "4,3" }),
+          Plot.dot(gp, { x: "week", y: "v", r: 3.5, fill: "#8a8b8f", fillOpacity: 0.6 }),
+          Plot.line(pts, { x: "week", y: "cum", stroke: "#0f5257", strokeWidth: 2.2 }),
+          Plot.ruleX([W], { stroke: "#0f5257", strokeWidth: 1.5, strokeDasharray: "4,3" }),
+          Plot.tip(gp, Plot.pointer({ x: "week", y: "v", title: d => `Week ${d.week} ${d.res ?? ""} ${d.pf ?? ""}–${d.pa ?? ""} vs ${d.opp}\nThis game: ${f.signed(d.v, 3)} EPA/play${side === "def" ? " allowed" : ""} (raw)` })),
+        ] }));
+    }
+    document.getElementById("cap").textContent = `${T.name}, ${st.season}, ${SPLITS[st.split].toLowerCase()}, garbage time ${st.gt === "no_gt" ? "removed" : "included"}. `
+      + `The teal line is the season to date (${adj ? "opponent-adjusted" : "raw"}); gray dots are single games (raw); the dashed gray line is the average team. `
+      + `Defense is EPA allowed, with the axis flipped so up is better. The dashed teal rule marks week ${W}. Hover a dot for the game.`;
+
+    // Game log
+    const cols = [
+      { key: "week", label: "Wk", fmt: f.int },
+      { key: "opp", label: "Opponent", align: "l", html: r => `${r.home ? "vs" : "@"} ${S.nflTeamLink(r.opp, r.opp, `season=${st.season}`)}`, sortVal: r => r.opp },
+      { key: "res", label: "Result", align: "l", html: r => r.res ? `${r.res} ${r.pf}–${r.pa}` : "—" },
+      { key: "o", label: "Off EPA/play", fmt: v => f.signed(v, 3) },
+      { key: "d", label: "Def EPA/play", fmt: v => f.signed(v, 3), title: "Allowed: lower is better" },
+      { key: "op", label: "Off pass", fmt: v => f.signed(v, 3) },
+      { key: "or", label: "Off run", fmt: v => f.signed(v, 3) },
+      { key: "osr", label: "Off success", fmt: v => f.pct(v) },
+    ];
+    const g = st.gt === "no_gt" ? "ng_" : "";
+    const rows = (gf.teams[TEAM] || []).map(r => ({ ...r, o: r[`off_${g}epa`], d: r[`def_${g}epa`], op: r[`off_${g}pass_epa`], or: r[`off_${g}run_epa`], osr: r[`off_${g}sr`] }));
+    gtable ||= S.table(document.getElementById("games"), cols, { sortKey: "week", desc: false, pageSize: 20 });
+    gtable.update(rows);
+    document.getElementById("gcap").textContent = `Every ${st.season} regular-season game. Single-game numbers are raw (not opponent-adjusted), garbage time ${st.gt === "no_gt" ? "removed" : "included"}.`;
+    U.set({ season: st.season, week: k === weeks().length - 1 ? null : W, adj: st.adj, gt: st.gt, split: st.split }, DEF);
+  }
+  controls(); draw();
+})();
+</script>
+```
+
+::: {.note}
+Regular season only. EPA per play and success rate count passes (including sacks and scrambles) and runs; garbage time is the 4th quarter with the offense's win probability below {{< meta nfl.garbage_wp_lo >}} or above {{< meta nfl.garbage_wp_hi >}}. Opponent-adjusted numbers remove the strength of the opponents the team faced; [how they're made](/nfl/tools/team-efficiency.html). Definitions are in the [glossary](/glossary.html#nfl). Data: [nflverse](https://github.com/nflverse) play-by-play (CC-BY 4.0).
+:::

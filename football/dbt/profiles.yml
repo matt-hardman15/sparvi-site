@@ -1,0 +1,11 @@
+football:
+  target: local
+  outputs:
+    local:
+      type: duckdb
+      path: "{{ env_var('FOOTBALL_DB_PATH', 'football.duckdb') }}"
+      threads: 4
+      # One DuckDB thread per query, as in baseball: parallel float sums vary in the last bit
+      # between runs and would make every refresh commit spurious changes.
+      settings:
+        threads: 1

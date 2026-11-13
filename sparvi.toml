@@ -24,3 +24,10 @@ aaa_seasons = 2
 protection_deadline = "2026-11-17"
 draft_date = "2026-12-09"
 cba_expires = "2026-12-01"
+
+[nfl]
+# The current NFL season (the year it kicks off; the 2026 season ends in February 2027).
+# Every pull, model, and page derives its years from it.
+season = 2026
+# First season pulled for the team-efficiency tool (2016 = the Next Gen Stats era).
+first_season = 2016
