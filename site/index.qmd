@@ -1,5 +1,7 @@
 ---
-pagetitle: "Sparvi · Sports analytics with the data out in the open"
+no-chart-libs: true
+pagetitle: "Free sports analytics with the data in the open"
+description: "Free, independent sports analytics: findings you can act on, with the data behind them in interactive tools you can filter and check yourself."
 page-layout: full
 title-block-style: none
 listing:

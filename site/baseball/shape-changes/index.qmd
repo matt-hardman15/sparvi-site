@@ -1,6 +1,7 @@
 ---
 title: "Midseason pitch changes mostly stick. Lost fastball velocity mostly doesn't."
-description: "When a pitch's velocity or movement changes during the season, how much is still there the next spring? Movement changes hold; fastball velocity losses mostly come back."
+pagetitle: "Do midseason pitch shape changes stick?"
+description: "When a pitch's velocity or movement changes midseason, how much is still there next spring? Movement changes hold; lost fastball velocity mostly returns."
 date: 2026-10-31
 categories: [pitching, player development]
 image: thumb.png

@@ -1,5 +1,6 @@
 ---
 title: "Triple-A explorer"
+pagetitle: "Triple-A explorer: stats and percentiles"
 description: "Swing decisions, contact quality, and pitching profiles for every Triple-A player, with league percentiles and what changed over the final two weeks."
 page-layout: full
 ---

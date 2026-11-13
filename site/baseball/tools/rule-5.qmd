@@ -1,5 +1,6 @@
 ---
 title: "Rule 5 board"
+pagetitle: "Rule 5 draft board: eligible Triple-A players"
 description: "Triple-A players likely eligible for the Rule 5 Draft and not on a 40-man roster, ranked on the numbers that carry to the majors."
 page-layout: full
 ---

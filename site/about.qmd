@@ -1,5 +1,8 @@
 ---
+no-chart-libs: true
 title: "About Sparvi"
+description: "Who runs Sparvi, where the data comes from, how the numbers are built and checked, and what the site does and doesn't collect about its visitors."
+pagetitle: "About Sparvi: data, methods, and privacy"
 ---
 
 Sparvi is a free, independent sports analytics site. It doesn't run ads or sell anything.

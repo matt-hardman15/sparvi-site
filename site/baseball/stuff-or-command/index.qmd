@@ -1,6 +1,7 @@
 ---
 title: "Stuff or command? Splitting pitching into what the ball does and where it goes"
-description: "Location+ grades where a pitch crosses the plate. It is a steady, repeatable trait, but it barely predicts next season's results, and adding it to Stuff+ doesn't improve the forecast."
+pagetitle: "Stuff or command? Location+ and Pitching+"
+description: "Location+ grades where a pitch crosses the plate. It's a steady trait, but it barely predicts next season, and adding it to Stuff+ doesn't help."
 date: 2026-11-12
 categories: [pitching, models]
 image: thumb.png

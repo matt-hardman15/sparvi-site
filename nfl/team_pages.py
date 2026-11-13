@@ -28,8 +28,8 @@ series = {t["id"]: t["series"]["no_gt"] for t in wk["teams"]}
 
 PAGE = """---
 title: "{name}"
-pagetitle: "{name}: offense and defense efficiency, week by week"
-description: "{name} ({division}) offense and defense in EPA per play and success rate, week by week, with passing and rushing splits and every result, {first}–{last}."
+pagetitle: "{name} efficiency: EPA by week"
+description: "{name} ({division}) offense and defense in EPA per play and success rate, week by week, with pass and run splits and results, {first}–{last}."
 image: preview.png
 page-layout: full
 ---

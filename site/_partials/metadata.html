@@ -41,3 +41,13 @@ $endif$
       if ((q.get("side") || "pitchers") === "pitchers" && !q.get("dy")) add("farm_staff.json"); }
   })();
 </script>
+
+<!-- Chart libraries (blocking: deferring them painted sooner but made data pages slower to become
+     interactive on Fast 4G, which is the budget that counts here). Pages without charts set
+     `no-chart-libs: true` and skip ~500 KB. -->
+$if(no-chart-libs)$
+$else$
+<script src="/assets/js/d3.min.js"></script>
+<script src="/assets/js/plot.umd.min.js"></script>
+<script src="/assets/js/sparvi.js"></script>
+$endif$

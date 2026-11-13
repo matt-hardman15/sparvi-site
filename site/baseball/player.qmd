@@ -1,5 +1,7 @@
 ---
 title: "Player"
+description: "Statcast profile for one MLB or Triple-A player: pitch grades, swing decisions, league percentiles, and how each number moved through the season."
+pagetitle: "Player profile: Statcast grades and percentiles"
 page-layout: article
 ---
 

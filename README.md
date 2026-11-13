@@ -26,6 +26,7 @@ behind them in explorers readers can filter and check. Live at **https://sparvi.
 | `nfl/team_efficiency/` | Opponent adjustment as of every week, and the choice of its ridge penalty by next-week margin prediction |
 | `nfl/export_site_data.py`, `nfl/team_pages.py` | NFL site data and prose numbers; the 32 static team pages and their preview images |
 | `site/` | Quarto site. Player pages load one `data/baseball/players/{id}.json` each; the tools load columnar weekly snapshot files. Interactive charts use Observable Plot and d3, self-hosted in `site/assets/js/`. Article numbers come from `site/_generated/<sport>.yml` |
+| `site/build/` | `seo.py` runs after every render: canonical URLs, sitemap `lastmod` from each page's last commit, `sitemap-index.xml`, `robots.txt`, and a check that fails the build on missing or duplicate titles/descriptions; `og_default.py` draws the default social image |
 | `tests/` | Config, the dbt pipeline on synthetic data, and a browser test of every page |
 
 ## Build locally

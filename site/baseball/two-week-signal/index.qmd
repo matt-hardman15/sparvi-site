@@ -1,5 +1,6 @@
 ---
 title: "Two weeks of swing decisions tells you something. Two weeks of results doesn't."
+pagetitle: "Two weeks of Triple-A data: what carries over"
 description: "Which short-window Triple-A numbers carry over to the next two weeks, and what that means for building a player development report coaches can trust."
 date: 2026-11-10
 categories: [player development, hitting, pitching, Triple-A]

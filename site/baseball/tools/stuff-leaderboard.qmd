@@ -1,5 +1,6 @@
 ---
 title: "Pitch-grade leaderboard"
+pagetitle: "Stuff+ leaderboard: MLB and Triple-A pitch grades"
 description: "Every MLB and Triple-A pitcher and pitch this season, graded on stuff (Stuff+), location (Location+), and both together (Pitching+)."
 page-layout: full
 ---
