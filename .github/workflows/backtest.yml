@@ -11,13 +11,17 @@ name: backtest
 # (never committed, never published).
 
 on:
+  # Every PR runs this workflow, because `backtest` is a required check: a PR that doesn't touch the
+  # paths below passes at the "Changed paths" step without backtesting (a path filter here would leave
+  # the required check waiting forever).
   pull_request:
-    paths: [models/**, backtest/**, baseball/pitch_quality/**, ingest/**, football/common/**,
-            nfl/team_efficiency/**, cfb/adjusted_ratings/**, .github/workflows/backtest.yml]
   push:
     branches: [main]
+    # The full run commits its own reports and run log; those paths are excluded (the `!` patterns
+    # come last and win) so that commit can't trigger another run.
     paths: [models/**, backtest/**, baseball/pitch_quality/**, ingest/**, football/common/**,
-            nfl/team_efficiency/**, cfb/adjusted_ratings/**]
+            nfl/team_efficiency/**, cfb/adjusted_ratings/**,
+            "!backtest/runs/**", "!models/*/*/backtest/**"]
   schedule:
     - cron: "30 10 * * 1"     # Mondays
   workflow_dispatch:
@@ -35,17 +39,35 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
+      - name: Changed paths (pull request)
+        id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then echo "run=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          files=$(gh pr diff ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --name-only)
+          if echo "$files" | grep -qE '^(models/|backtest/|baseball/pitch_quality/|ingest/|football/common/|nfl/team_efficiency/|cfb/adjusted_ratings/|\.github/workflows/backtest\.yml$)'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "No model or harness files changed: nothing to backtest." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        if: steps.gate.outputs.run == 'true'
         with:
           ssh-key: ${{ github.event_name != 'pull_request' && secrets.SPARVI_DEPLOY_KEY || '' }}
 
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        if: steps.gate.outputs.run == 'true'
         with:
           enable-cache: true
 
-      - run: uv sync --frozen
+      - if: steps.gate.outputs.run == 'true'
+        run: uv sync --frozen
 
       - name: Raw-data cache keys (same as refresh-baseball)
+        if: steps.gate.outputs.run == 'true'
         id: cfg
         run: |
           season=$(uv run python -m sparvi.config baseball.season)
@@ -59,6 +81,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Restore past-season raw data
+        if: steps.gate.outputs.run == 'true'
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: ${{ steps.cfg.outputs.paths }}
@@ -67,6 +90,7 @@ jobs:
 
       # Same path list as refresh-baseball's (a cache entry only matches its exact paths).
       - name: Restore current-season raw data
+        if: steps.gate.outputs.run == 'true'
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: data/raw/*_${{ steps.cfg.outputs.season }}.parquet
@@ -76,6 +100,7 @@ jobs:
 
       # Batter heights (Location+'s zone) aren't in refresh-baseball's caches: this workflow keeps its own.
       - name: Restore batter heights
+        if: steps.gate.outputs.run == 'true'
         id: heights
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
@@ -84,10 +109,11 @@ jobs:
           restore-keys: baseball-heights-
 
       - name: Pull missing batter heights (MLB Stats API)
+        if: steps.gate.outputs.run == 'true'
         run: uv run python -c "from ingest.baseball.pull import pull_heights; pull_heights()"
 
       - name: Save batter heights
-        if: steps.heights.outputs.cache-matched-key == ''
+        if: ${{ steps.gate.outputs.run == 'true' && steps.heights.outputs.cache-matched-key == '' }}
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: data/raw/batter_heights.parquet
@@ -95,16 +121,16 @@ jobs:
 
       - name: Fast backtest (pull request)
         id: fast
-        if: github.event_name == 'pull_request'
+        if: ${{ steps.gate.outputs.run == 'true' && github.event_name == 'pull_request' }}
         run: uv run python -m backtest.ci --fast --summary backtest-summary.md
 
       - name: Full backtest (main, weekly)
         id: full
-        if: github.event_name != 'pull_request'
+        if: ${{ steps.gate.outputs.run == 'true' && github.event_name != 'pull_request' }}
         run: uv run python -m backtest.ci --write --summary backtest-summary.md
 
       - name: Summary and PR comment
-        if: ${{ !cancelled() && hashFiles('backtest-summary.md') != '' }}
+        if: ${{ steps.gate.outputs.run == 'true' && !cancelled() && hashFiles('backtest-summary.md') != '' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -115,7 +141,7 @@ jobs:
           fi
 
       - name: Commit reports and the run log
-        if: ${{ !cancelled() && github.event_name != 'pull_request' && steps.full.outcome != 'skipped' }}
+        if: ${{ steps.gate.outputs.run == 'true' && !cancelled() && github.event_name != 'pull_request' && steps.full.outcome != 'skipped' }}
         run: |
           git config user.name "sparvi-bot"
           git config user.email "sparvi-bot@users.noreply.github.com"
