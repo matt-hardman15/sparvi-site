@@ -1,0 +1,13 @@
+---
+title: "Kansas City Chiefs"
+pagetitle: "Kansas City Chiefs: offense and defense efficiency, week by week"
+description: "Kansas City Chiefs (AFC West) offense and defense in EPA per play and success rate, week by week, with passing and rushing splits and every result, 2016–2026."
+image: preview.png
+page-layout: full
+---
+
+```{=html}
+<div id="team-root" data-team="KC"></div>
+```
+
+{{< include ../_team.qmd >}}

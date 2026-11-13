@@ -88,3 +88,10 @@ def write_numbers(sport: str, numbers: dict[str, object], source: str) -> Path:
     _write(path, "\n".join(lines) + "\n")
     print(f"{path.name:<28} {len(numbers):>7} prose numbers")
     return path
+
+
+class StaleProse(AssertionError):
+    """An article or page states something about the data that the data no longer supports.
+
+    Raised by an export when a directional claim fails. Rewrite the sentence; don't loosen the check.
+    """
