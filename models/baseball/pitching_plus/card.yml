@@ -3,7 +3,7 @@ name: pitching_plus
 title: Pitching+
 sport: baseball
 status: champion
-version: 1.0.0
+version: 1.0.1
 owner: Matt
 spec: Stuff and location features together, in the count.
 target: Pitcher run value of the pitch (rv, denoised on balls in play), scaled to 100 = prior-season MLB average

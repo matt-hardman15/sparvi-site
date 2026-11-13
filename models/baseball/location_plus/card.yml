@@ -3,7 +3,7 @@ name: location_plus
 title: Location+
 sport: baseball
 status: champion
-version: 1.0.0
+version: 1.0.1
 owner: Matt
 spec: Where the pitch crossed the plate (mirrored for batter handedness, height-based zone) in the count. No velocity
   or movement.

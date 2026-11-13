@@ -1,0 +1,42 @@
+{
+  "model": "pitching_plus",
+  "version": "1.0.1",
+  "status": "champion",
+  "registered": "2026-11-13",
+  "note": "PATCH: build_features() takes the batter heights as an argument (backtests pass the as-of loader's copy). Same features, same models.",
+  "code_hash": "c9b85b9a1c9f48bc67ea259d4d532b316d927c90b86a11b5dbf6f296f2dbc1d9",
+  "code_files": {
+    "baseball/pitch_quality/train.py": "eb13ce66f434daeb7ca15001fb88e14638d4111252bb91147ffafe7e08ad9ff9",
+    "baseball/pitch_quality/features.py": "f987ab72a067f7d255dbc4b7bae595394a4d37118f82ec3bc4833c6e87ae8e71"
+  },
+  "training_data": {
+    "data/raw/statcast_mlb_2024.parquet": "c5676654e7f48e22834e8a769256354ba890560b6862502a4e8b5722c960ddb4",
+    "data/raw/statcast_mlb_2025.parquet": "ae3d141a26a1ac8f6d4ab8c8a1cd93d2e791ee976fc58a3920c9c0bf00b59d0a",
+    "data/raw/statcast_mlb_2026.parquet": "d94f4ad13ed089e60b901c5e101aca511519a80d72e559e30c4d77b101751cab",
+    "data/raw/batter_heights.parquet": "8ef788c005dc68e9038b11d9091eb654d68a871d81b294a0f4b9892639326383"
+  },
+  "artifacts": {
+    "baseball/pitch_quality/output/model_pitching_fastball.txt": "cbf012a345ddd3ddafc3eab264ccfa6c9dcc63ea6e4e5dfb68b9b268fcbea3ee",
+    "baseball/pitch_quality/output/model_pitching_breaking.txt": "88d1b7ecd713bad1b1745cd6f5770abe4c89f9a1dbc482a1577ef9980aecbb0f",
+    "baseball/pitch_quality/output/model_pitching_offspeed.txt": "886ec2c5d5cb3006e275fb4fd914763c186956b00894e21a5a0182f56b2595e8",
+    "baseball/pitch_quality/output/scale_reference.json": "0aa1659bb92b7fe3134af8e6fd41e36fb8c17a053086f5a7466c8181d8ec44c5"
+  },
+  "eval": {
+    "set": "Out-of-sample year over year: models refit on the earliest season only, grade the next season, and correlate with the season after's run value (MLB pitchers with enough pitches both years). Same split as the published Stuff+ validation.",
+    "set_keys": {
+      "train_season": 2024,
+      "predictor_season": 2025,
+      "outcome_season": 2026,
+      "min_pitches": 500
+    },
+    "primary": "r_next_rv",
+    "higher_is_better": true
+  },
+  "metrics": {
+    "r_next_rv": 0.31825205418222746,
+    "r_self": 0.7537405075208511,
+    "split_half": 0.830753561457812,
+    "aaa_to_mlb": 0.11530468620539641,
+    "holdout_pitch_r2": 0.035998719336026275
+  }
+}
