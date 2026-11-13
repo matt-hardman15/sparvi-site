@@ -31,3 +31,14 @@ cba_expires = "2026-12-01"
 season = 2026
 # First season pulled for the team-efficiency tool (2016 = the Next Gen Stats era).
 first_season = 2016
+
+[cfb]
+# College football (FBS), from the CollegeFootballData.com API (key in CFBD_API_KEY: .env locally,
+# an Actions secret in CI; never in code, logs, or site/). The season is the year it kicks off.
+season = 2026
+# First season pulled (2014 = the College Football Playoff era).
+first_season = 2014
+# CFBD quota (free tier: 1,000 calls/month, shared with basketball). Pulls stop at the reserve,
+# and a run that needs more than `approve_over` uncached calls asks before starting (--yes).
+call_reserve = 100
+approve_over = 300

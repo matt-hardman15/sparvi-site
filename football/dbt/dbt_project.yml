@@ -10,8 +10,8 @@ target-path: "target"
 clean-targets: ["target", "dbt_packages"]
 
 # One project for both football sports: NFL models are prefixed nfl_, college models (F2) cfb_.
-# `nfl_season` and `nfl_first_season` have no defaults on purpose: nfl/build.sh passes them from
-# sparvi.toml. A run without them fails.
+# Build one sport with `--select stg_nfl_plays+` or `--select stg_cfb_plays+` (nfl/build.sh, cfb/build.sh).
+# The season vars have no defaults on purpose; both builds pass all four from sparvi.toml.
 vars:
   # Garbage time (NFL): a 4th-quarter play with the offense's win probability below/above these.
   # Must equal football/common/filters.py (tested).
@@ -26,6 +26,13 @@ vars:
   explosive_run_yds: 12
   # The trailing window on the week slider.
   nfl_trailing_weeks: 4
+  # College football (F2). `cfb_season` and `cfb_first_season` come from sparvi.toml (cfb/build.sh).
+  # Garbage time: a play when the score margin exceeds these in the 2nd/3rd/4th quarter.
+  # Must equal football/common/filters.py (tested).
+  cfb_garbage_q2: 38
+  cfb_garbage_q3: 28
+  cfb_garbage_q4: 22
+  cfb_trailing_weeks: 4
 
 models:
   football:

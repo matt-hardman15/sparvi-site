@@ -54,3 +54,31 @@
     {{ t }}explosives::double / nullif({{ t }}plays, 0)              as explosive_rate,
     {{ t }}turnovers::double / nullif({{ t }}plays, 0)               as turnover_rate
 {%- endmacro %}
+
+{#- ---- College football ------------------------------------------------------------------------ -#}
+
+{%- macro cfb_garbage_time(period='period', margin='margin') -%}
+{#- The common score-margin rule: 2nd quarter by more than 38, 3rd by more than 28, 4th by more
+    than 22 (the score before the play, either team ahead). Same rule as football/common/filters.py. -#}
+    coalesce(({{ period }} = 2 and abs({{ margin }}) > {{ var('cfb_garbage_q2') }})
+          or ({{ period }} = 3 and abs({{ margin }}) > {{ var('cfb_garbage_q3') }})
+          or ({{ period }} = 4 and abs({{ margin }}) > {{ var('cfb_garbage_q4') }}), false)
+{%- endmacro %}
+
+{%- macro cfb_pass_types() -%}
+('Pass Reception', 'Pass Incompletion', 'Passing Touchdown', 'Sack', 'Pass Interception Return',
+ 'Interception Return Touchdown', 'Interception')
+{%- endmacro %}
+
+{%- macro cfb_run_types() -%}
+{#- Fumbles and safeties count as runs: CFBD's play type doesn't say which kind of play fumbled, and
+    most fumbles happen on runs (noted in the method section). -#}
+('Rush', 'Rushing Touchdown', 'Fumble Recovery (Own)', 'Fumble Recovery (Opponent)', 'Fumble Return Touchdown', 'Safety')
+{%- endmacro %}
+
+{%- macro cfb_success(down='down', distance='distance', gained='yards_gained') -%}
+{#- College success rate: at least 50% of the yards to go on 1st down, 70% on 2nd, 100% on 3rd/4th. -#}
+    case when {{ down }} = 1 then {{ gained }} >= 0.5 * {{ distance }}
+         when {{ down }} = 2 then {{ gained }} >= 0.7 * {{ distance }}
+         else {{ gained }} >= {{ distance }} end
+{%- endmacro %}

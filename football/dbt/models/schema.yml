@@ -85,3 +85,70 @@ models:
               config:
                 severity: warn
                 where: "season = {{ var('nfl_season') }}"
+
+  # ---- College football (F2) --------------------------------------------------------------------
+  - name: stg_cfb_plays
+    description: College efficiency plays (passes incl. sacks, runs incl. fumbles) in games involving an FBS team.
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [game_id, play_id]
+    columns:
+      - name: epa
+        tests: [not_null]
+      - name: offense
+        tests: [not_null]
+
+  - name: int_cfb_team_games
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [game_id, team, side, gt]
+
+  - name: cfb_team_week
+    description: Team x season x week x side x garbage-time variant x window (std, last4); bowls are the last week.
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [season, week, team, side, gt, win]
+      - final_week_equals_season:
+          arguments:
+            season_model: ref('cfb_team_season')
+            cols: [games, plays, epa_sum, successes, pass_plays, pass_epa_sum, run_plays, run_epa_sum,
+                   explosives, turnovers]
+    columns:
+      - name: success_rate
+        tests:
+          - value_in_range:
+              arguments: {min_value: 0, max_value: 1}
+
+  - name: cfb_team_season
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [season, team, side, gt]
+    columns:
+      - name: games
+        tests:
+          - value_in_range:
+              arguments: {min_value: 1, max_value: 16}
+
+  - name: cfb_team_games
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [game_id, team, side, gt]
+
+  - name: cfb_reconcile_scores
+    description: >
+      Play-by-play final scores vs CFBD's official game results. CFBD's play-by-play has gaps and bad
+      score fields in about 3% of games, so the bar (agreed with Matt, Nov 13 2026) is: every completed
+      game has an official result, and at least 90% of each season's games agree; games off by 9+
+      points are listed on /status/ (ingest/cfb/checks.py).
+    tests:
+      - cfb_completed_games_have_results
+    columns:
+      - name: matches
+        tests:
+          - min_share_true:
+              arguments: {min_share: 0.90, group_by: season}

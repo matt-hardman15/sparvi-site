@@ -32,6 +32,9 @@ python baseball/aaa_translation/thumb.py
 # NFL: rebuilt when its raw data is here (python ingest/nfl/pull.py); otherwise the committed
 # site/data/nfl is rendered as-is.
 if [ -d data/raw/nfl ]; then ./nfl/build.sh; fi
+# College football: rebuilt when its raw data is here (python ingest/cfb/pull.py); otherwise the committed
+# site/data/cfb is rendered as-is.
+if [ -d data/raw/cfb ]; then ./cfb/build.sh; fi
 (cd site && quarto render)
 # Quarto renders a missing prose number as "?meta:..." instead of failing. Fail here instead.
 if grep -rl "?meta:" docs --include=*.html; then echo "ERROR: unresolved prose numbers (see files above)"; exit 1; fi

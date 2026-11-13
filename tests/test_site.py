@@ -20,7 +20,9 @@ from sparvi.config import ROOT
 DOCS = ROOT / "docs"
 DATA = ROOT / "site" / "data"
 # What a visitor downloads (GitHub Pages serves gzip) and what each page loads, not raw bytes on disk.
-GZ_BUDGET_MB = 15          # all of site/data, gzipped
+# Gzipped size of each sport's site/data folder (each sport has its own budget so adding a sport can't
+# quietly squeeze another; the site-wide hosting limit is checked by SEO-2's budget check).
+GZ_BUDGET_MB = {"baseball": 15, "nfl": 3, "cfb": 6, "status": 0.5}
 LEAGUE_FILE_GZ_MB = 2      # each snapshot league file (plan target for the date slider)
 PLAYER_FILE_KB = 100       # each per-player file, raw
 
@@ -42,8 +44,11 @@ def test_site_data_within_budget():
     import gzip
     files = [p for p in DATA.rglob("*.json")]
     gz = {p: len(gzip.compress(p.read_bytes(), 6)) for p in files}
-    total = sum(gz.values()) / 1e6
-    assert total < GZ_BUDGET_MB, f"site/data is {total:.1f} MB gzipped (budget {GZ_BUDGET_MB} MB)"
+    sports = {p.relative_to(DATA).parts[0] for p in files}
+    assert sports <= set(GZ_BUDGET_MB), f"no data budget for {sorted(sports - set(GZ_BUDGET_MB))}"
+    for sport, budget in GZ_BUDGET_MB.items():
+        total = sum(v for p, v in gz.items() if p.relative_to(DATA).parts[0] == sport) / 1e6
+        assert total < budget, f"site/data/{sport} is {total:.1f} MB gzipped (budget {budget} MB)"
     for p in DATA.glob("baseball/snapshots_*.json"):
         assert gz[p] / 1e6 < LEAGUE_FILE_GZ_MB, f"{p.name}: {gz[p] / 1e6:.2f} MB gzipped"
     big = [p.name for p in DATA.glob("baseball/players/*.json") if p.stat().st_size > PLAYER_FILE_KB * 1024]
@@ -442,6 +447,28 @@ def act_status(p):
         assert card.locator("tbody tr").count() >= 10
 
 
+def act_cfb_ratings(p):
+    assert rows(p, "#t") == 25 and "#" in p.text_content("#t thead")
+    assert p.locator("#scatter svg circle").count() >= 100
+    select(p, "#c", "Conference", "power"); wait(p, 400)
+    assert query(p)["conf"] == "power" and "power conferences" in p.text_content("#scap")
+    select(p, "#c", "Conference", "all")
+    seg(p, "#c", "Raw"); assert query(p)["adj"] == "raw"
+    seg(p, "#c", "Opponent-adjusted")
+    seg(p, "#c2", "Last 4 weeks"); assert "raw numbers" in p.text_content("#c2")
+    seg(p, "#c2", "Season to date")
+    select(p, "#c", "Season", "2019"); assert query(p)["season"] == "2019" and "bowls" in p.text_content("#scap")
+    p.locator(".date-slider input[type=range]").first.focus(); p.keyboard.press("Home"); wait(p, 500)
+    assert "faded" in p.text_content("#scap")
+
+
+def act_cfb_article(p):
+    assert "of the time" in p.text_content(".finding")
+    assert p.locator("#scatter svg circle").count() >= 20
+    select(p, "#c", "Season", "2024"); wait(p, 500)
+    assert "the bowls" in p.text_content("#scap")
+
+
 PAGES = [
     ("home", "/", None),
     ("baseball", "/baseball/", None),
@@ -462,6 +489,9 @@ PAGES = [
     ("nfl", "/nfl/", act_nfl_index),
     ("nfl-team-efficiency", "/nfl/tools/team-efficiency.html", act_nfl_efficiency),
     ("nfl-team", "/nfl/teams/kc/", act_nfl_team),
+    ("cfb", "/cfb/", lambda p: p.locator(".card-link").count() >= 1),
+    ("cfb-team-ratings", "/cfb/tools/team-ratings.html", act_cfb_ratings),
+    ("cfb-ranked-vs-good", "/cfb/ranked-vs-good/", act_cfb_article),
     ("glossary", "/glossary.html", None),
     ("about", "/about.html", None),
     ("status", "/status.html", act_status),
@@ -496,6 +526,8 @@ SLIDER_SCATTERS = [
     ("triple-a-pitchers", "/baseball/tools/triple-a.html?side=pitchers"),
     ("triple-a-hitters", "/baseball/tools/triple-a.html"),
     ("nfl-efficiency", "/nfl/tools/team-efficiency.html"),
+    ("cfb-ratings", "/cfb/tools/team-ratings.html"),
+    ("cfb-article", "/cfb/ranked-vs-good/"),
 ]
 
 

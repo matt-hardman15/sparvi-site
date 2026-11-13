@@ -24,17 +24,17 @@ def library_versions() -> dict[str, str]:
     return out
 
 
-def data_summary(files: list[Path]) -> dict[str, dict]:
-    """Row count and game-date range for each raw Statcast file used."""
+def data_summary(files: list[Path], date_expr: str = "game_date") -> dict[str, dict]:
+    """Row count and game-date range for each raw file used (`date_expr`: the date column or expression)."""
     out = {}
     for f in sorted(files):
         rows, lo, hi = duckdb.sql(
-            f"select count(*), min(game_date)::date::varchar, max(game_date)::date::varchar "
+            f"select count(*), min({date_expr})::date::varchar, max({date_expr})::date::varchar "
             f"from read_parquet('{f.as_posix()}')"
         ).fetchone()
         out[f.name] = {"rows": int(rows), "first_game": lo, "last_game": hi}
     return out
 
 
-def provenance(files: list[Path], seeds: dict[str, int] | None = None, **extra) -> dict:
-    return {"data": data_summary(files), "libraries": library_versions(), "seeds": seeds or {}, **extra}
+def provenance(files: list[Path], seeds: dict[str, int] | None = None, date_expr: str = "game_date", **extra) -> dict:
+    return {"data": data_summary(files, date_expr), "libraries": library_versions(), "seeds": seeds or {}, **extra}

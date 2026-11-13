@@ -1,0 +1,132 @@
+# Ingest contract for cfb (PLAN-scout A0): the raw files the downstream stages read, the columns and
+# types they rely on, and the rules ingest/cfb/checks.py enforces before any build. A source changing
+# a column's type or dropping one fails the checks, and the CFB refresh stops (the site keeps the last
+# good data). To accept a change, update this file in the same PR as the code that handles it.
+# max_null: largest allowed share of missing values. Row counts may not drop more than 1% below the
+# last accepted pull (ingest/common/checks.py).
+tables:
+  plays:
+    description: CFBD play-by-play with EPA (ppa), one file per season
+    files: "cfb/plays_{season}.parquet"
+    key: [id]
+    min_rows: 50000
+    max_null:
+      id: 0
+      gameId: 0
+      playType: 0
+      period: 0
+    columns:
+      season: BIGINT
+      week: BIGINT
+      seasonType: VARCHAR
+      id: VARCHAR
+      gameId: BIGINT
+      driveId: VARCHAR
+      driveNumber: BIGINT
+      playNumber: BIGINT
+      offense: VARCHAR
+      offenseConference: VARCHAR
+      defense: VARCHAR
+      defenseConference: VARCHAR
+      home: VARCHAR
+      away: VARCHAR
+      offenseScore: DOUBLE
+      defenseScore: DOUBLE
+      period: BIGINT
+      down: DOUBLE
+      distance: DOUBLE
+      yardline: DOUBLE
+      yardsToGoal: DOUBLE
+      yardsGained: DOUBLE
+      playType: VARCHAR
+      ppa: DOUBLE
+      scoring: BOOLEAN
+  games:
+    description: Every game involving an FBS team (regular season + postseason), with pre-game Elo
+    files: "cfb/games_{season}.parquet"
+    key: [id]
+    min_rows: 400
+    max_null:
+      id: 0
+      season: 0
+      week: 0
+      homeTeam: 0
+      awayTeam: 0
+    columns:
+      id: BIGINT
+      season: BIGINT
+      week: BIGINT
+      seasonType: VARCHAR
+      startDate: VARCHAR
+      completed: BOOLEAN
+      neutralSite: BOOLEAN
+      conferenceGame: BOOLEAN
+      homeId: BIGINT
+      homeTeam: VARCHAR
+      homeConference: VARCHAR
+      homeClassification: VARCHAR
+      homePoints: DOUBLE
+      homePregameElo: DOUBLE
+      homePostgameElo: DOUBLE
+      awayId: BIGINT
+      awayTeam: VARCHAR
+      awayConference: VARCHAR
+      awayClassification: VARCHAR
+      awayPoints: DOUBLE
+      awayPregameElo: DOUBLE
+      awayPostgameElo: DOUBLE
+  teams:
+    description: FBS teams and conferences
+    files: "cfb/teams_{season}.parquet"
+    key: [id]
+    min_rows: 120
+    max_null:
+      id: 0
+      school: 0
+    columns:
+      id: BIGINT
+      school: VARCHAR
+      mascot: VARCHAR
+      abbreviation: VARCHAR
+      conference: VARCHAR
+      division: VARCHAR
+      classification: VARCHAR
+      color: VARCHAR
+      alternateColor: VARCHAR
+  rankings:
+    description: Poll rankings (AP, Coaches, CFP, ...) by week
+    files: "cfb/rankings_{season}.parquet"
+    key: [season, seasonType, week, poll, school]
+    max_null:
+      school: 0
+      rank: 0
+    columns:
+      season: BIGINT
+      seasonType: VARCHAR
+      week: BIGINT
+      poll: VARCHAR
+      rank: BIGINT
+      school: VARCHAR
+      teamId: BIGINT
+      points: DOUBLE
+  lines:
+    description: "Betting lines per game and sportsbook, opening and closing. Accuracy benchmark only, never published per game"
+    files: "cfb/lines_{season}.parquet"
+    key: [game_id, provider]
+    max_null:
+      game_id: 0
+      provider: 0
+    columns:
+      game_id: BIGINT
+      season: BIGINT
+      week: BIGINT
+      seasonType: VARCHAR
+      homeTeam: VARCHAR
+      awayTeam: VARCHAR
+      provider: VARCHAR
+      spread: DOUBLE
+      spreadOpen: DOUBLE
+      overUnder: DOUBLE
+      overUnderOpen: DOUBLE
+      homeMoneyline: DOUBLE
+      awayMoneyline: DOUBLE

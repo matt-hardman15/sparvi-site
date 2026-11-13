@@ -1,0 +1,176 @@
+---
+title: "College football team ratings"
+pagetitle: "College football power ratings by week"
+description: "Every FBS team's power rating and opponent-adjusted offense and defense, week by week, next to its AP and CFP rank, with conference filters."
+page-layout: full
+---
+
+Every FBS team, week by week. The **power rating** is how many points better than an average FBS team a team should be on a neutral field. It combines two things: how efficiently the team has actually played (**EPA per play**, adjusted for the strength of every opponent it faced) and CFBD's **Elo** rating, which carries information from past seasons. In a backtest the combination predicted next week's margins better than either one alone (see the note below). The chart shows the efficiency half on its own: offense across, defense up. Move the week slider to watch the season unfold; ratings before week {{< meta cfb.min_week >}} rest on very few games and are faded.
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c"></div>
+  <div class="controls" id="c2"></div>
+  <div id="scatter" class="plot-host"></div>
+  <p class="caption" id="scap"></p>
+  <div id="t"><div class="loading">Loading…</div></div>
+  <p class="caption" id="tcap"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt, U = S.urlState;
+  const weekFile = (s, win = "std") => S.load(`/data/cfb/team_week_${s}${win === "last4" ? "_last4" : ""}.json`);
+  const meta = await S.load("/data/cfb/meta.json");
+  weekFile(U.get("season", meta.season));
+  const teams = new Map((await S.load("/data/cfb/teams.json")).map(t => [t.id, t]));
+  const SEASONS = meta.seasons.map(String);
+  // Power conferences by season (the Pac-12 counts through 2023, before it lost ten members).
+  const POWER = s => ["ACC", "Big 12", "Big Ten", "SEC", ...(+s <= 2023 ? ["Pac-12"] : [])];
+  const DEF = { season: String(meta.season), win: "std", adj: "adj", gt: "no_gt", split: "all", conf: "all", team: "" };
+  const st = {
+    season: SEASONS.includes(U.get("season")) ? U.get("season") : DEF.season,
+    win: U.get("win") === "last4" ? "last4" : DEF.win, adj: U.get("adj") === "raw" ? "raw" : DEF.adj,
+    gt: U.get("gt") === "all" ? "all" : DEF.gt, split: ["pass", "run"].includes(U.get("split")) ? U.get("split") : DEF.split,
+    conf: U.get("conf") || DEF.conf, team: teams.has(U.get("team")) ? U.get("team") : DEF.team,
+    week: U.get("week") == null ? null : +U.get("week"),
+  };
+  const SPLITS = { all: "All plays", pass: "Passes", run: "Runs" };
+  const weeks = () => meta.weeks[st.season];
+  const wi = () => { const w = weeks(), k = st.week == null ? w.length - 1 : w.indexOf(st.week); return k < 0 ? w.length - 1 : k; };
+  const useAdj = () => st.adj === "adj" && st.win === "std";
+  const pre = () => (st.split === "all" ? "" : st.split + "_");
+  const epaKey = side => `${side}_${pre()}epa${useAdj() ? "_adj" : ""}`;
+  const srKey = side => `${side}_${pre()}sr`;
+  const lastWeek = () => Math.max(...weeks());
+  const weekLabel = w => (w === lastWeek() && +st.season < meta.season ? "bowls" : `week ${w}`);
+  const inConf = (conf) => st.conf === "all" || (st.conf === "power" ? POWER(st.season).includes(conf)
+    : st.conf === "g5" ? !POWER(st.season).includes(conf) && conf !== "FBS Independents" : conf === st.conf);
+  const c = document.getElementById("c"), c2 = document.getElementById("c2");
+
+  function controls() {
+    const confs = [...new Set([...teams.values()].map(t => t.conf))].sort();
+    c.replaceChildren(
+      S.select("Season", SEASONS.slice().reverse().map(s => [s, s]), st.season, v => { st.season = v; st.week = null; controls(); draw(); }),
+      S.select("Conference", [["all", "All FBS"], ["power", "Power conferences"], ["g5", "Group of Five"], ...confs.map(x => [x, x])], st.conf, v => { st.conf = v; draw(); }),
+      S.el("label", {}, "Numbers", S.seg([["adj", "Opponent-adjusted"], ["raw", "Raw"]], st.adj, v => { st.adj = v; controls(); draw(); })),
+      S.el("label", {}, "Garbage time", S.seg([["no_gt", "Removed"], ["all", "Included"]], st.gt, v => { st.gt = v; draw(); })),
+      S.el("label", {}, "Plays", S.seg(Object.entries(SPLITS), st.split, v => { st.split = v; draw(); })),
+      S.select("Highlight", [["", "No team"], ...[...teams.values()].map(t => [t.id, t.name])], st.team, v => { st.team = v; draw(); }));
+    const slider = S.dateSlider(weeks(), wi(), k => { st.week = weeks()[k]; draw(); },
+      { label: k => `Through ${weekLabel(weeks()[k])}`, aria: "Week" });
+    c2.replaceChildren(...[slider.el,
+      S.el("label", {}, "Window", S.seg([["std", "Season to date"], ["last4", `Last ${meta.trailing_weeks} weeks`]], st.win, v => { st.win = v; controls(); draw(); })),
+      st.adj === "adj" && st.win === "last4"
+        ? S.el("p", { class: "muted", style: "margin:.35rem 0;max-width:22rem" }, `Opponent adjustment and the power rating cover the season to date; the last-${meta.trailing_weeks}-weeks view shows raw numbers.`)
+        : null].filter(Boolean));
+  }
+
+  const cols = () => {
+    const off = epaKey("off"), def = epaKey("def"), std = st.win === "std";
+    return [
+      ...(std ? [{ key: "rank", label: "#", fmt: f.int, title: "Power rating rank among FBS teams", sortVal: r => r.rank ?? 999 }] : []),
+      { key: "name", label: "Team", align: "l", sortVal: r => r.name },
+      { key: "conf", label: "Conf", align: "l" },
+      { key: "games", label: "G", fmt: f.int },
+      ...(std ? [
+        { key: "power", label: "Power", heat: "pct", heatVal: r => r.p_power, fmt: v => f.signed(v, 1), title: "Points better than an average FBS team on a neutral field" },
+        { key: "ap", label: "AP", fmt: v => v ?? "", sortVal: r => r.ap ?? 99, title: "AP poll rank as of this week" },
+        { key: "cfp", label: "CFP", fmt: v => v ?? "", sortVal: r => r.cfp ?? 99, title: "College Football Playoff committee rank as of this week" },
+        { key: "gap", label: "AP vs power", fmt: v => (v == null ? "" : v > 0 ? `${v} spots lower` : v < 0 ? `${-v} spots higher` : "same"),
+          sortVal: r => r.gap ?? -999, title: "Where the power rating ranks the team relative to its AP rank" },
+      ] : []),
+      { key: "net", label: "Net EPA/play", heat: "pct", heatVal: r => r.p_net, fmt: v => f.signed(v, 3), title: "Offense EPA/play minus defense EPA/play allowed" },
+      { key: off, label: "Off EPA/play", heat: "pct", heatVal: r => r.p_off, fmt: v => f.signed(v, 3) },
+      { key: def, label: "Def EPA/play", heat: "pct", heatVal: r => r.p_def, fmt: v => f.signed(v, 3), title: "EPA/play allowed: lower is better" },
+      { key: srKey("off"), label: "Off success", heat: "pct", heatVal: r => r.p_osr, fmt: v => f.pct(v), title: "College success rate: 50% of the yards to go on 1st down, 70% on 2nd, all of it on 3rd and 4th" },
+      { key: srKey("def"), label: "Def success", heat: "pct", heatVal: r => r.p_dsr, fmt: v => f.pct(v), title: "Success rate allowed: lower is better" },
+      ...(std ? [{ key: "elo", label: "Elo", fmt: f.int, title: "CFBD's Elo rating as of this week" }] : []),
+    ];
+  };
+  let table = null, tableKey = "";
+  const host = document.getElementById("scatter");
+
+  function rowsAt(file, k) {
+    return file.teams.map(t => {
+      const s = t.series[st.gt], info = teams.get(t.id) || {};
+      const r = { id: t.id, name: t.id, abbr: info.abbr || t.id, conf: t.conf };
+      for (const fld of file.fields) r[fld] = s[fld] ? s[fld][k] : null;
+      return r;
+    }).filter(r => r.games > 0);
+  }
+  // One axis range per season x window x variant, pooled over every week from the first rated week on.
+  const domCache = {};
+  function domains(file, off, def) {
+    const key = [st.season, st.win, st.gt, off, def].join("|");
+    if (domCache[key]) return domCache[key];
+    const xs = [], ys = [];
+    weeks().forEach((wk, j) => { if (wk >= meta.min_week) for (const r of rowsAt(file, j)) if (r[off] != null && r[def] != null) { xs.push(r[off]); ys.push(r[def]); } });
+    return (domCache[key] = [S.stableDomain(xs), S.stableDomain(ys)]);
+  }
+
+  async function draw() {
+    const file = await weekFile(st.season, st.win), k = wi(), W = weeks()[k], early = W < meta.min_week;
+    const off = epaKey("off"), def = epaKey("def");
+    const all = rowsAt(file, k).map(r => ({ ...r, x: r[off], y: r[def], net: r[off] != null && r[def] != null ? r[off] - r[def] : null,
+                                            gap: r.ap != null && r.rank != null ? r.rank - r.ap : null }))
+      .filter(r => r.x != null && r.y != null);
+    const rows = all.filter(r => inConf(r.conf));
+    const rk = (key, lower) => S.rankPct(all, key, lower);     // percentiles among all FBS teams, whatever the filter
+    const P = { p_power: rk("power"), p_net: rk("net"), p_off: rk(off), p_def: rk(def, true), p_osr: rk(srKey("off")), p_dsr: rk(srKey("def"), true) };
+    const src = { p_power: "power", p_net: "net", p_off: off, p_def: def, p_osr: srKey("off"), p_dsr: srKey("def") };
+    rows.forEach(r => { for (const [p, fn] of Object.entries(P)) r[p] = r[src[p]] == null ? null : fn(r[src[p]]); });
+
+    const key = cols().map(x => x.key).join();
+    if (!table || key !== tableKey) { table = S.table(document.getElementById("t"), cols(), { sortKey: st.win === "std" ? "rank" : "net", desc: st.win !== "std", pageSize: 25 }); tableKey = key; }
+    table.update(rows);
+
+    const [xd, yd] = domains(file, off, def);
+    const pin = (v, d) => Math.max(d[0], Math.min(d[1], v));
+    const pr = rows.map(d => ({ ...d, x0: d.x, y0: d.y, x: pin(d.x, xd), y: pin(d.y, yd), _off: pin(d.x, xd) !== d.x || pin(d.y, yd) !== d.y }));
+    const label = pr.filter(d => d.id === st.team || (rows.length <= 20) || (d.rank != null && d.rank <= 10 && st.win === "std"));
+    const mx = d3.mean(all, d => d.x), my = d3.mean(all, d => d.y);
+    S.plot(host, w => Plot.plot({ ...S.plotDefaults(w), height: Math.min(560, Math.max(380, w * 0.62)), grid: true, clip: true,
+      x: { label: `Offense EPA/play${useAdj() ? " (adjusted)" : ""} →`, domain: xd, tickFormat: "+.2f" },
+      y: { label: `↑ Defense EPA/play allowed${useAdj() ? " (adjusted)" : ""}, better is up`, domain: yd, reverse: true, tickFormat: "+.2f" },
+      color: { type: "diverging", domain: [0, 100], pivot: 50, range: ["#2a78d6", "#d9d8d3", "#eb6834"], legend: true, label: "Net EPA/play, rank percentile (all FBS)" },
+      marks: [
+        Plot.ruleX([mx], { stroke: "#8a8b8f", strokeDasharray: "3,3" }), Plot.ruleY([my], { stroke: "#8a8b8f", strokeDasharray: "3,3" }),
+        Plot.dot(pr, { x: "x", y: "y", r: 6, fill: "p_net", fillOpacity: early ? 0.3 : st.team ? 0.3 : 0.85,
+                       stroke: d => d._off ? "#16181d" : "#fff", strokeDasharray: d => d._off ? "2,2" : null }),
+        Plot.text(label, { x: "x", y: "y", text: "abbr", dy: -11, fontSize: 10, fontWeight: 600, fill: "#16181d", clip: false,
+                           textAnchor: d => d._off && d.x >= xd[1] ? "end" : d._off && d.x <= xd[0] ? "start" : "middle" }),
+        st.team ? Plot.dot(pr.filter(d => d.id === st.team), { x: "x", y: "y", r: 9, fill: "p_net", stroke: "#16181d", strokeWidth: 2 }) : null,
+        Plot.tip(pr, Plot.pointer({ x: "x", y: "y", title: d => `${d.name} (${d.conf}), through ${weekLabel(W)}\nOffense ${f.signed(d.x0, 3)} EPA/play · defense ${f.signed(d.y0, 3)} allowed`
+          + (d.power != null && st.win === "std" ? `\nPower ${f.signed(d.power, 1)} (#${d.rank})` : "") + (d.ap ? ` · AP ${d.ap}` : "") + (d.cfp ? ` · CFP ${d.cfp}` : "") }))
+      ] }));
+
+    const last = k === weeks().length - 1;
+    U.set({ season: st.season, week: last ? null : W, win: st.win, adj: st.adj, gt: st.gt, split: st.split, conf: st.conf, team: st.team }, DEF);
+    const what = st.conf === "all" ? "all FBS" : st.conf === "power" ? "power conferences" : st.conf === "g5" ? "Group of Five" : st.conf;
+    document.getElementById("scap").textContent = `${st.season}, through ${weekLabel(W)}: ${rows.length} teams (${what}). `
+      + `Right is a better offense, up a better defense; dashed lines mark the average FBS team. Color is net EPA/play rank among all FBS teams. `
+      + (early ? `Before week ${meta.min_week} these numbers rest on very few games, so the dots are faded. ` : "")
+      + `Labels show the power rating's top 10${st.team ? " and the highlighted team" : ""}.`;
+    document.getElementById("tcap").textContent = (st.win === "std"
+      ? (meta.poll_week[st.season].ap[k] !== W ? `AP and CFP columns show the latest polls (after week ${meta.poll_week[st.season].ap[k]}; the next ones aren't out yet). ` : "")
+        + `Sorted by the power rating. "AP vs power" says where the power rating puts a ranked team relative to its AP rank: "12 spots lower" means the numbers think the poll has it too high. `
+      : "") + `Heat colors rank each column among all FBS teams (orange better, blue worse; for defense, lower is better). Opponent adjustment applies to the EPA columns.`;
+  }
+  controls(); draw();
+})();
+</script>
+```
+
+::: {.callout-note collapse="true"}
+## How the ratings work, and how well they predict
+
+**Opponent adjustment.** A ridge regression of every play's EPA on the offense, the defense, and home field estimates each team's strength; a team's adjusted number is its own EPA/play minus the strength of the opponents it actually faced. The penalty (λ = {{< meta cfb.lambda >}}) was chosen by how well the ratings predicted the next week's margins. Garbage time removes plays when the margin is more than {{< meta cfb.garbage_q2 >}} points in the 2nd quarter, {{< meta cfb.garbage_q3 >}} in the 3rd, or {{< meta cfb.garbage_q4 >}} in the 4th.
+
+**The backtest.** From week {{< meta cfb.min_week >}} on, ratings through each week predicted the next week's games between FBS teams, {{< meta cfb.bt_first_season >}}–{{< meta cfb.bt_last_season >}}, bowls included; each season was predicted from a model fit on the other seasons. Average miss on the same {{< meta cfb.bt_n_games >}} games, in points: power rating {{< meta cfb.bt_mae_power >}}, CFBD Elo {{< meta cfb.bt_mae_elo >}}, our efficiency rating alone {{< meta cfb.bt_mae_ours >}}, raw EPA/play {{< meta cfb.bt_mae_raw_epa >}}, home field alone {{< meta cfb.bt_mae_home_only >}}. The power rating beat Elo by {{< meta cfb.bt_power_vs_elo >}} points per game (90% interval {{< meta cfb.bt_power_vs_elo_ci >}}). The betting market did better than all of them: the median opening line missed by {{< meta cfb.bt_mae_line_open >}} and the closing line by {{< meta cfb.bt_mae_line_close >}}. Lines are used only as this after-the-fact benchmark.
+
+**Against CFBD's WEPA.** WEPA (CFBD's own opponent-adjusted EPA) is only published as season totals, so it can't be tested inside a season without seeing the future. Instead, each season's final numbers predicted the next season's first {{< meta cfb.wt_weeks >}} weeks ({{< meta cfb.wt_n_games >}} games): our rating missed by {{< meta cfb.wt_mae_ours >}} points and WEPA by {{< meta cfb.wt_mae_wepa >}} (ours better by {{< meta cfb.wt_ours_vs_wepa >}}; 90% interval {{< meta cfb.wt_ours_vs_wepa_ci >}}). Preseason Elo ({{< meta cfb.wt_mae_elo_pregame >}}) and SP+ ({{< meta cfb.wt_mae_sp_plus >}}) beat both: they also account for returning players and regression toward the mean.
+
+**What it can't tell you.** Ratings early in the season rest on a handful of games. Games against FCS teams count for the opponent adjustment but aren't shown. Injuries, quarterback changes, and motivation aren't in the data. CFBD's play-by-play has gaps in about 3% of games ([data status](/status.html)).
+
+Data provided by [CollegeFootballData.com](https://collegefootballdata.com). Sparvi is not affiliated with the NCAA, any conference, or any school.
+:::

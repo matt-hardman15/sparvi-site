@@ -34,7 +34,8 @@ def built(raw):
     db = raw / "football.duckdb"
     env = os.environ | {"DBT_PROFILES_DIR": ".", "SPARVI_RAW_DIR": raw.as_posix(), "FOOTBALL_DB_PATH": db.as_posix()}
     r = subprocess.run(
-        [DBT, "build", "--vars", f"{{nfl_season: {SEASON}, nfl_first_season: {SEASON - 1}}}",
+        [DBT, "build", "--select", "stg_nfl_plays+", "nfl_reconcile_team_stats", "--vars",
+         f"{{nfl_season: {SEASON}, nfl_first_season: {SEASON - 1}, cfb_season: {SEASON}, cfb_first_season: {SEASON - 1}}}",
          "--target-path", (raw / "target").as_posix(), "--log-path", (raw / "logs").as_posix()],
         cwd=PROJECT, env=env, capture_output=True, text=True)
     # dbt build runs every schema test too: unique keys, the final week equals the season totals,
@@ -47,6 +48,16 @@ def built(raw):
 def test_garbage_thresholds_match_dbt():
     assert (VARS["nfl_garbage_qtr"], VARS["nfl_garbage_wp_lo"], VARS["nfl_garbage_wp_hi"]) == (
         filters.NFL_GARBAGE_QTR, filters.NFL_GARBAGE_WP_LO, filters.NFL_GARBAGE_WP_HI)
+
+
+def test_cfb_garbage_thresholds_match_dbt():
+    assert {2: VARS["cfb_garbage_q2"], 3: VARS["cfb_garbage_q3"], 4: VARS["cfb_garbage_q4"]} == filters.CFB_GARBAGE_MARGIN
+
+
+def test_cfb_garbage_time_rule():
+    period = [1, 2, 2, 3, 3, 4, 4, 5]
+    margin = [50, 38, -39, 28, 29, -22, 23, 40]
+    assert filters.cfb_garbage_time(period, margin).tolist() == [False, False, True, False, True, False, True, False]
 
 
 def test_garbage_time_rule():

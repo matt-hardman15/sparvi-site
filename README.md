@@ -28,6 +28,8 @@ behind them in explorers readers can filter and check. Live at **https://sparvi.
 | `football/dbt/` | dbt + DuckDB project for football (`nfl_*` models): efficiency plays, team-game sums, weekly windows (season to date, last 4 weeks), season totals, game logs, and a reconciliation against nflverse team stats |
 | `nfl/team_efficiency/` | Opponent adjustment as of every week, and the choice of its ridge penalty by next-week margin prediction |
 | `nfl/export_site_data.py`, `nfl/team_pages.py` | NFL site data and prose numbers; the 32 static team pages and their preview images |
+| `ingest/cfb/` | College football from CollegeFootballData.com (`pull.py`: cached responses, a call log, a monthly-quota reserve; `checks.py`: contract, coverage, and the score check). Needs `CFBD_API_KEY` (`.env` locally, an Actions secret) |
+| `cfb/` | `adjusted_ratings/adjusted.py`: opponent-adjusted ratings, the backtest against Elo, WEPA, SP+, and betting lines, and the power rating (efficiency + Elo); `polls.py`: AP poll vs. power rating; `export_site_data.py`; `build.sh` |
 | `site/` | Quarto site. Player pages load one `data/baseball/players/{id}.json` each; the tools load columnar weekly snapshot files. Interactive charts use Observable Plot and d3, self-hosted in `site/assets/js/`. Article numbers come from `site/_generated/<sport>.yml` |
 | `site/build/` | `seo.py` runs after every render: canonical URLs, sitemap `lastmod` from each page's last commit, `sitemap-index.xml`, `robots.txt`, and a check that fails the build on missing or duplicate titles/descriptions; `og_default.py` draws the default social image |
 | `models/`, `forecasts/`, `scoring/`, `review/` | Later stages (model registry, forecast ledger, scoring, review log); placeholders with a README each until A2, L1, L2. `review/model-changes.md` logs model changes |
@@ -72,6 +74,9 @@ GitHub Actions deploys to GitHub Pages:
   (secrets `R2_ENDPOINT`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`; locally the same
   names in `.env`). Snapshots are never overwritten or deleted. A failed snapshot still updates the
   site but turns the run red, so a missed day gets noticed and rerun.
+- **`cfb`**: Sundays and Mondays, August through January, pulls the current college football season
+  (finished weeks and past seasons come from the raw-data cache: ~20 API calls a run), rebuilds the
+  `cfb_*` models, ratings, power rating, and export, commits the CFB data, and deploys.
 - **`check`**: every pull request runs lint, both dbt projects on synthetic data, and a browser test of
   every page. `main` only accepts pull requests that pass. Dependabot opens weekly upgrade PRs.
 
@@ -95,7 +100,7 @@ Each has its own top-level folder for analyses (`nfl/`, `cfb/`), its own workflo
 
 ## Season rollover
 
-NFL (each August): bump `season` under `[nfl]` in `sparvi.toml`.
+NFL and college football (each August): bump `season` under `[nfl]` and `[cfb]` in `sparvi.toml`.
 
 Baseball (each spring):
 

@@ -1,0 +1,31 @@
+---
+title: "College Football"
+pagetitle: "College football analytics: power ratings and polls"
+description: "FBS team ratings from play-by-play: opponent-adjusted efficiency and a power rating, week by week, compared with the AP poll and the CFP rankings."
+page-layout: full
+listing:
+  id: cfb-articles
+  contents: "*/index.qmd"
+  sort: "date desc"
+  type: grid
+  grid-columns: 3
+  fields: [image, title, description]
+  image-height: 150px
+---
+
+## Tools
+
+```{=html}
+<div class="cards">
+<a class="card-link" href="/cfb/tools/team-ratings.html"><span class="kicker">Tool</span><h3>Team ratings</h3><p>Every FBS team's power rating and opponent-adjusted offense and defense, week by week since {{< meta cfb.first_season >}}, next to its AP and CFP rank.</p></a>
+</div>
+```
+
+## Articles
+
+::: {#cfb-articles}
+:::
+
+::: {.note}
+Data provided by [CollegeFootballData.com](https://collegefootballdata.com): play-by-play, games, polls, and Elo, FBS seasons {{< meta cfb.first_season >}}–{{< meta cfb.season >}}. Sparvi publishes team aggregates only and isn't affiliated with the NCAA, any conference, or any school.
+:::

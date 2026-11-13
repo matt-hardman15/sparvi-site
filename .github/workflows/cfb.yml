@@ -1,0 +1,138 @@
+name: cfb
+
+# In season: pull the current college football season from CollegeFootballData.com (finished weeks
+# and past seasons come from the raw-data cache, so a run uses ~20 API calls), rebuild the cfb_*
+# models, ratings, backtest, power rating, poll test, and export, commit the CFB site data, and
+# deploy. Its own workflow, so a failure here never blocks baseball or the NFL.
+
+on:
+  schedule:
+    - cron: "15 15 * 1,8-12 0,1"   # Sundays and Mondays Aug-Jan, after Saturday's games and CFBD's updates
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: cfb
+  cancel-in-progress: false
+
+env:
+  QUARTO_VERSION: "1.11.9"
+
+jobs:
+  refresh:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      # Pushes with the deploy key (the one actor the main-branch ruleset exempts); see refresh-baseball.yml.
+      - uses: actions/checkout@v7
+        with:
+          ssh-key: ${{ secrets.SPARVI_DEPLOY_KEY }}
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        with:
+          enable-cache: true
+
+      - run: uv sync --frozen
+
+      - uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: ${{ env.QUARTO_VERSION }}
+
+      # Raw CFBD data (and the response cache) carries over between runs: past seasons never change,
+      # so only the current season is fetched. Raw data is never committed or published (CFBD terms).
+      - name: Restore raw CFB data
+        uses: actions/cache/restore@v6
+        with:
+          path: data/raw/cfb
+          key: cfb-raw-${{ github.run_id }}
+          restore-keys: cfb-raw-
+
+      # The key never appears in logs; the client stops at the call reserve in sparvi.toml [cfb].
+      - name: Pull CollegeFootballData.com
+        env:
+          CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
+        run: |
+          if [ -d data/raw/cfb ]; then uv run python ingest/cfb/pull.py --current; else uv run python ingest/cfb/pull.py --yes; fi
+
+      - name: Save raw CFB data
+        uses: actions/cache/save@v6
+        with:
+          path: data/raw/cfb
+          key: cfb-raw-${{ github.run_id }}
+
+      # Data checks (ingest/cfb/checks.py, contracts/cfb_ingest.yml) before anything is built. On a
+      # failure nothing is rebuilt: the site keeps the last good data, the failure is committed to
+      # site/data/status/cfb.json (shown on /status/), and the run ends red.
+      - name: Data checks
+        id: checks
+        run: |
+          if uv run python -m ingest.cfb.checks; then echo "ok=true" >> "$GITHUB_OUTPUT"
+          else echo "ok=false" >> "$GITHUB_OUTPUT"; fi
+
+      # Append-only snapshot of what this pull returned (ingest/snapshot.py, private R2 bucket): only
+      # rows that are new, changed, or gone since the last snapshot. Snapshots can't be made after the
+      # fact, so a failure here doesn't stop the site update but does turn the run red (last step).
+      - name: Snapshot raw data
+        id: snapshot
+        if: steps.checks.outputs.ok == 'true'
+        continue-on-error: true
+        env:
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: uv run python -m ingest.snapshot cfb --require
+
+      - name: Rebuild CFB models, ratings, power rating, export
+        id: build
+        if: steps.checks.outputs.ok == 'true'
+        run: uv run cfb/build.sh
+
+      - name: Render (fails on unresolved prose numbers)
+        id: render
+        if: steps.checks.outputs.ok == 'true'
+        run: |
+          cd site && quarto render && cd ..
+          if grep -rl "?meta:" docs --include=*.html; then echo "unresolved prose numbers"; exit 1; fi
+
+      # The data-check status every run; the rebuilt data only when the build and render passed.
+      - name: Commit refreshed data
+        if: ${{ !cancelled() && steps.checks.outcome == 'success' && steps.build.outcome != 'failure' && steps.render.outcome != 'failure' }}
+        run: |
+          git config user.name "sparvi-bot"
+          git config user.email "sparvi-bot@users.noreply.github.com"
+          git add site/data/status/cfb.json
+          if [ "${{ steps.checks.outputs.ok }}" = "true" ]; then
+            git add site/data/cfb site/_generated/cfb.yml cfb/*/output site/cfb/*/thumb.png
+          fi
+          if git diff --cached --quiet; then echo "No data changes."; exit 0; fi
+          git commit -m "College football data refresh $(date -u +%Y-%m-%d)"
+          git status --short
+          git pull --rebase --autostash origin main
+          git push origin HEAD:main
+
+      - name: Fail the run if a data check failed
+        if: steps.checks.outputs.ok == 'false'
+        run: |
+          echo "::error::College football data checks failed; the site still serves the last good data. See /status/."
+          exit 1
+
+      - name: Fail the run if the snapshot failed
+        if: steps.snapshot.outcome == 'failure'
+        run: |
+          echo "::error::The raw-data snapshot failed (the site was still updated). Rerun the workflow so today's data is recorded."
+          exit 1
+
+  # Deploys after a failed data check too, so /status/ shows the failure (the data is unchanged).
+  deploy:
+    needs: refresh
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/deploy.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write

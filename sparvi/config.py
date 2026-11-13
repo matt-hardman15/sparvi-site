@@ -94,6 +94,32 @@ def nfl() -> NFL:
     return n
 
 
+@dataclass(frozen=True)
+class CFB:
+    season: int
+    first_season: int
+    call_reserve: int        # stop CFBD pulls when the monthly quota left falls to this
+    approve_over: int        # a backfill needing more calls than this asks first (--yes)
+
+    @property
+    def seasons(self) -> list[int]:
+        return list(range(self.first_season, self.season + 1))
+
+    @property
+    def past_seasons(self) -> list[int]:
+        return [s for s in self.seasons if s != self.season]
+
+
+@cache
+def cfb() -> CFB:
+    c = _load()["cfb"]
+    x = CFB(season=int(c["season"]), first_season=int(c["first_season"]),
+            call_reserve=int(c.get("call_reserve", 100)), approve_over=int(c.get("approve_over", 300)))
+    if x.first_season > x.season:
+        raise ValueError("sparvi.toml: [cfb] first_season is after season")
+    return x
+
+
 def section(*keys: str) -> dict:
     """A raw table from sparvi.toml, e.g. section("baseball", "rule5")."""
     d = _load()
@@ -104,7 +130,7 @@ def section(*keys: str) -> dict:
 
 def _cli(key: str) -> str:
     sport, _, attr = key.partition(".")
-    obj = {"baseball": baseball, "nfl": nfl}[sport]()
+    obj = {"baseball": baseball, "nfl": nfl, "cfb": cfb}[sport]()
     val = getattr(obj, attr)
     return " ".join(map(str, val)) if isinstance(val, (list, tuple)) else str(val)
 

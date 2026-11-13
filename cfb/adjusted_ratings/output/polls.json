@@ -1,0 +1,17 @@
+{
+  "seasons": [
+    2014,
+    2025
+  ],
+  "min_week": 5,
+  "n_games": 2149,
+  "ap_right": 0.7547696603071196,
+  "power_right": 0.7677989762680316,
+  "n_disagree": 208,
+  "power_right_when_disagree": 0.5673076923076923,
+  "n_both_ranked": 441,
+  "power_right_when_disagree_ci90": [
+    0.5102896560193042,
+    0.6225969095167312
+  ]
+}
