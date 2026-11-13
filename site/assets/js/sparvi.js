@@ -251,6 +251,27 @@
     }
     return { redraw: draw };
   };
+  // ---- axes that stay put while a date/week slider moves --------------------------------------------
+  // A chart behind a slider must keep one scale for the whole season, or points look like they move
+  // when only the axis moved. S.stableDomain pools a variable over *every* date of the current view and
+  // takes the 2nd-98th percentile (early weeks' tiny samples would otherwise stretch it), padded.
+  // S.onScale pins anything beyond the domain to the edge (_x/_y) and marks it (_off) so the chart can
+  // draw it as an open circle; tooltips keep the true values.
+  S.stableDomain = (vals, { q = [0.02, 0.98], pad = 0.08, include = [] } = {}) => {
+    const v = vals.filter(x => x != null && Number.isFinite(x)).sort(d3.ascending);
+    if (!v.length) return undefined;
+    let lo = d3.quantileSorted(v, q[0]), hi = d3.quantileSorted(v, q[1]);
+    for (const x of include) { lo = Math.min(lo, x); hi = Math.max(hi, x); }
+    const p = (hi - lo) * pad || Math.abs(hi) * 0.1 || 1;
+    return [lo - p, hi + p];
+  };
+  S.onScale = (rows, xk, yk, xd, yd) => rows.map(d => {
+    const cx = xd ? Math.max(xd[0], Math.min(xd[1], d[xk])) : d[xk], cy = yd ? Math.max(yd[0], Math.min(yd[1], d[yk])) : d[yk];
+    return { ...d, _x: cx, _y: cy, _off: cx !== d[xk] || cy !== d[yk] };
+  });
+  // The marks for pinned points: open circles at the edge, so nothing silently drops off the chart.
+  S.offScaleDots = (rows, opts = {}) => Plot.dot(rows.filter(d => d._off), { x: "_x", y: "_y", r: 4, stroke: "#8a8b8f", fill: "none", clip: false, ...opts });
+
   S.plotDefaults = (w) => ({
     width: w, marginLeft: 50, style: { fontFamily: "Inter, sans-serif", fontSize: "12px", background: "transparent", color: "#4d4f55" },
   });

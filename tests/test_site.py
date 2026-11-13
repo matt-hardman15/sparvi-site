@@ -487,3 +487,36 @@ def test_page(browser, base_url, name, path, act):
     finally:
         ctx.close()
     assert not errors, "\n".join(errors)
+
+
+# Charts behind a date or week slider keep one axis scale for the whole season (S.stableDomain), so
+# moving the slider moves the points, not the axes.
+SLIDER_SCATTERS = [
+    ("leaderboard", "/baseball/tools/stuff-leaderboard.html"),
+    ("triple-a-pitchers", "/baseball/tools/triple-a.html?side=pitchers"),
+    ("triple-a-hitters", "/baseball/tools/triple-a.html"),
+    ("nfl-efficiency", "/nfl/tools/team-efficiency.html"),
+]
+
+
+@pytest.mark.parametrize("name,path", SLIDER_SCATTERS, ids=[s[0] for s in SLIDER_SCATTERS])
+def test_slider_axes_are_stable(browser, base_url, name, path):
+    ctx = browser.new_context(viewport={"width": 1280, "height": 900})
+    p = ctx.new_page()
+    try:
+        p.goto(base_url + path, wait_until="networkidle")
+        wait(p, 800)
+        ticks = lambda: p.eval_on_selector_all(  # noqa: E731
+            "#scatter svg [aria-label='x-axis tick label'] text, #scatter svg [aria-label='y-axis tick label'] text",
+            "e => e.map(t => t.textContent).join('|')")
+        end = ticks()
+        assert end, "no axis ticks found"
+        p.locator(".date-slider input[type=range]").first.focus()
+        p.keyboard.press("Home"); wait(p, 700)
+        start = ticks()
+        for _ in range(4):
+            p.keyboard.press("ArrowRight")
+        wait(p, 700)
+        assert start == ticks() == end, "the axes changed when the slider moved"
+    finally:
+        ctx.close()
