@@ -364,6 +364,26 @@ def act_player(*sections, role_tag=False):
     return check
 
 
+def act_farm(p):
+    assert "r = " in p.text_content("#cap1") and p.locator("#p1 svg circle").count() >= 25
+    select(p, "#c1", "Measure", "fb_velo")
+    assert query(p).get("m") == "fb_velo" and "Fastball velocity" in p.text_content("#cap1")
+    assert rows(p, "#t2") == 30 and "orgs have an interval" in p.text_content("#cap2")
+    select(p, "#c2", "Measure", "chase_pct"); seg(p, "#c2", "2025")
+    assert query(p).get("om") == "chase_pct" and "2025" in p.text_content("#cap2")
+    org = p.locator("#t2 .org-pick").first.get_attribute("data-org")
+    p.locator("#t2 .org-pick").first.click(); wait(p, 900)
+    assert query(p).get("org") == org and query(p).get("side") == "hitters"
+    assert org in p.text_content("#cap3") and rows(p, "#t3") > 0
+    seg(p, "#c3", "Pitchers"); seg(p, "#c3", "Relievers"); seg(p, "#c3", "All")
+    seg(p, "#c3", "Pitching+")
+    assert p.locator("#slider3 .date-slider").count() == 1 and "Through" in p.text_content("#cap3b")
+    p.locator("#slider3 input[type=range]").focus(); p.keyboard.press("Home"); wait(p, 700)
+    assert "asof" in query(p)
+    seg(p, "#c3", "2025")
+    assert "current season" in p.text_content("#cap3b")
+
+
 def nfl_week_slider(p, caption):
     """Week slider: step back, jump to week 1, reload restores, play advances."""
     final_label, final_cap = slider_label(p), p.text_content(caption)
@@ -421,6 +441,7 @@ PAGES = [
     ("stuff-or-command", "/baseball/stuff-or-command/", act_stuff_or_command),
     ("shape-changes", "/baseball/shape-changes/", act_shape),
     ("two-week", "/baseball/two-week-signal/", act_two_week),
+    ("farm-systems", "/baseball/farm-systems/", act_farm),
     ("stuff-leaderboard", "/baseball/tools/stuff-leaderboard.html", act_leaderboard),
     ("triple-a", "/baseball/tools/triple-a.html", act_triple_a),
     ("triple-a-mlb", "/baseball/tools/triple-a.html?view=mlb", act_triple_a_mlb),

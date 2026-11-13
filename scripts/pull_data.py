@@ -179,6 +179,26 @@ def pull_milb_rosters(season: int) -> None:
     print(f"wrote {out.name}: {len(rows):,} player-level rows")
 
 
+def pull_affiliates(season: int) -> None:
+    """Triple-A club -> parent MLB org for one season (data/raw/aaa_affiliates_SEASON.parquet).
+
+    Farm-system rankings attribute each Triple-A player-season to an org through this. Same schema as
+    scripts/pull_rosters.py writes for the current season; skipped if the file exists.
+    """
+    out = RAW / f"aaa_affiliates_{season}.parquet"
+    if out.exists():
+        print(f"skip {out.name} (exists)")
+        return
+    api = "https://statsapi.mlb.com/api/v1/teams"
+    orgs = {t["id"]: t["abbreviation"]
+            for t in requests.get(api, params={"sportId": 1, "season": season}, timeout=60).json()["teams"]}
+    rows = [{"season": season, "team_id": t["id"], "team": t["abbreviation"], "team_name": t["name"],
+             "org_id": t.get("parentOrgId"), "org": orgs.get(t.get("parentOrgId"))}
+            for t in requests.get(api, params={"sportId": 11, "season": season}, timeout=60).json()["teams"]]
+    pd.DataFrame(rows).to_parquet(out, index=False)
+    print(f"wrote {out.name}: {len(rows)} clubs")
+
+
 def pull_heights() -> None:
     """Listed height for every batter in the raw files (data/raw/batter_heights.parquet).
 
@@ -233,5 +253,7 @@ if __name__ == "__main__":
         for lvl in args.levels:
             if lvl == "AAA" and s not in CFG.aaa_seasons:
                 continue
+            if lvl == "AAA":
+                pull_affiliates(s)
             (update_season if args.incremental else pull_season)(s, lvl)
     pull_heights()

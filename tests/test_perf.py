@@ -57,6 +57,7 @@ def base_url():
     ("/baseball/tools/triple-a.html", "#t table tbody tr"),
     ("/baseball/tools/stuff-leaderboard.html", "#t table tbody tr"),
     ("/baseball/player.html?id=691769", "#root .stat-row"),
+    ("/baseball/farm-systems/", "#t3 table tbody tr"),
     ("/nfl/tools/team-efficiency.html", "#t table tbody tr"),
     ("/nfl/teams/kc/", "#tiles .stat-row"),
 ])
