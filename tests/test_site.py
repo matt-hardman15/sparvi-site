@@ -10,6 +10,7 @@ import functools
 import http.server
 import json
 import os
+import re
 import threading
 
 import pytest
@@ -240,6 +241,34 @@ def act_stuff_or_command(p):
     assert p.locator("#p2 svg").count() >= 1
 
 
+def act_translation(p):
+    assert p.locator("#p1 svg circle").count() == 10 and "bootstrap" in p.text_content("#cap1")
+    assert rows(p, "#t1") == 10
+    seg(p, "#c1", "Predicts MLB production"); assert "MLB xwOBA" in p.text_content("#cap1")
+    seg(p, "#c1", "Within a season"); assert p.locator("#p1 svg circle").count() == 10
+    seg(p, "#c1", "Pitchers"); seg(p, "#c1", "Both cohorts")
+    assert p.locator("#p1 svg circle").count() == 9 and "RV+" in p.text_content("#cap1")
+    seg(p, "#c1", "Starters"); assert "starters" in p.text_content("#cap1") and p.locator("#p1 svg circle").count() == 9
+    assert "r = " in p.text_content("#cap2")
+    select(p, "#c2", "Number", "ev90"); assert query(p).get("tm") == "ev90"
+    seg(p, "#c2", "Pitchers"); seg(p, "#c2", "Same season"); seg(p, "#c2", "Relievers")
+    assert query(p).get("tside") == "pitcher" and query(p).get("trole") == "RP" and query(p).get("tcohort") == "within"
+    p.reload(wait_until="networkidle"); wait(p, 900)
+    assert p.locator("#c2 .seg button.on", has_text="Relievers").count() == 1 and "relievers in MLB" in p.text_content("#cap2")
+    search(p, "#c2", "a"); assert p.locator("#p2 svg").count() >= 1
+    p.set_viewport_size({"width": 390, "height": 900}); wait(p, 600)
+    assert p.locator("#p1 svg").count() == 1 and p.locator("#p2 svg").count() >= 1
+
+
+def act_triple_a_mlb(p):
+    # ?view=mlb: the stat columns carry the translation marker and the caption explains it.
+    assert "▲" in p.locator("#t thead").text_content() and "translated to MLB" in p.text_content("#scap")
+    seg(p, "#c", "Pitchers")
+    assert "▲" in p.locator("#t thead").text_content() and "batters faced" in p.text_content("#scap")
+    seg(p, "#c2", "Triple-A")
+    assert "▲" not in p.locator("#t thead").text_content() and "view" not in query(p)
+
+
 def act_triple_a(p):
     assert rows(p, "#t") == 25
     assert "r = " in p.text_content("#scap")
@@ -314,6 +343,9 @@ def act_player(*sections, role_tag=False):
         h2 = p.locator("#root h2").all_text_contents()
         for s in sections:
             assert s in h2, f"missing section {s!r}: {h2}"
+        # Triple-A players (these have 300+ PA or BF) get the MLB translation table.
+        assert "Translated to MLB" in p.locator("#root h3").all_text_contents()
+        assert "range" in p.text_content("#root") and "How the translation works" in p.text_content("#root")
         tiles = p.locator("#root .stat-row").first.text_content()
         p.locator(".date-slider input[type=range]").focus(); p.keyboard.press("Home"); wait(p, 700)
         rows_now = p.locator("#root .stat-row")
@@ -352,6 +384,56 @@ def act_farm(p):
     assert "current season" in p.text_content("#cap3b")
 
 
+def nfl_week_slider(p, caption):
+    """Week slider: step back, jump to week 1, reload restores, play advances."""
+    final_label, final_cap = slider_label(p), p.text_content(caption)
+    p.locator(".date-slider .ds-btn", has_text="◀").first.click(); wait(p, 500)
+    assert slider_label(p) != final_label and "week" in query(p)
+    slide_to_start(p)
+    assert slider_label(p) == "Through week 1" and query(p)["week"] == "1"
+    assert p.text_content(caption) != final_cap
+    p.reload(wait_until="networkidle"); wait(p, 900)
+    assert slider_label(p) == "Through week 1"
+    p.locator(".date-slider .ds-btn", has_text="Play").first.click(); wait(p, 1500)
+    p.locator(".date-slider .ds-btn", has_text="Pause").first.click()
+    assert int(query(p)["week"]) > 1, "play should advance the week"
+
+
+def act_nfl_efficiency(p):
+    assert rows(p, "#t") == 32
+    assert p.locator("#scatter svg text", has_text="KC").count() >= 1
+    cap = p.text_content("#scap")
+    seg(p, "#c", "Raw"); assert query(p)["adj"] == "raw" and p.text_content("#scap") != cap
+    seg(p, "#c", "Included"); assert query(p)["gt"] == "all"
+    seg(p, "#c", "Passes"); assert "passes" in p.text_content("#scap")
+    seg(p, "#c", "Runs"); assert col_values(p, "#t", "Off EPA/play")
+    seg(p, "#c", "All plays"); seg(p, "#c", "Opponent-adjusted")
+    seg(p, "#c2", "Last 4 weeks"); assert "raw numbers" in p.text_content("#c2") and "weeks" in p.text_content("#scap")
+    seg(p, "#c2", "Season to date")
+    select(p, "#c", "Highlight", "KC"); assert "Kansas City Chiefs" in p.text_content("#scap") and query(p)["team"] == "KC"
+    select(p, "#c", "Season", "2020"); assert query(p)["season"] == "2020" and rows(p, "#t") == 32
+    nfl_week_slider(p, "#scap")
+    p.locator("#t table.s-table tbody tr a").first.click(); p.wait_for_load_state("networkidle"); wait(p, 800)
+    assert "/nfl/teams/" in p.url and "season=2020" in p.url
+
+
+def act_nfl_team(p):
+    tiles = p.locator(".stat-row .stat").all_text_contents()
+    assert len(tiles) == 4 and re.search(r"\d+–\d+", tiles[0]), tiles
+    assert p.locator("#off svg").count() == 1 and p.locator("#def svg").count() == 1
+    assert rows(p, "#games") >= 8
+    seg(p, "#c", "Raw"); seg(p, "#c", "Included"); seg(p, "#c", "Passes")
+    assert "passes" in p.text_content("#cap")
+    seg(p, "#c", "All plays")
+    select(p, "#c", "Season", "2016"); assert query(p)["season"] == "2016" and rows(p, "#games") >= 16
+    nfl_week_slider(p, "#cap")
+
+
+def act_nfl_index(p):
+    assert p.locator("#team-grid li a").count() == 32
+    assert p.locator(".team-div h4").count() == 8
+
+
 PAGES = [
     ("home", "/", None),
     ("baseball", "/baseball/", None),
@@ -362,11 +444,16 @@ PAGES = [
     ("farm-systems", "/baseball/farm-systems/", act_farm),
     ("stuff-leaderboard", "/baseball/tools/stuff-leaderboard.html", act_leaderboard),
     ("triple-a", "/baseball/tools/triple-a.html", act_triple_a),
+    ("triple-a-mlb", "/baseball/tools/triple-a.html?view=mlb", act_triple_a_mlb),
+    ("aaa-translation", "/baseball/aaa-translation/", act_translation),
     ("rule-5-board", "/baseball/tools/rule-5.html", act_rule5),
     ("rule-5-article", "/baseball/rule-5/", act_rule5_article),
     ("player-hitter", lambda: f"/baseball/player.html?id={player_hitter()}", act_player("Hitting · Triple-A")),
     ("player-pitcher", lambda: f"/baseball/player.html?id={player_pitcher()}", act_player("Pitching · Triple-A", role_tag=True)),
     ("player-missing", "/baseball/player.html?id=1", lambda p: "No " in p.text_content("#root")),
+    ("nfl", "/nfl/", act_nfl_index),
+    ("nfl-team-efficiency", "/nfl/tools/team-efficiency.html", act_nfl_efficiency),
+    ("nfl-team", "/nfl/teams/kc/", act_nfl_team),
     ("glossary", "/glossary.html", None),
     ("about", "/about.html", None),
 ]

@@ -72,6 +72,26 @@ models:
   - name: rpt_flags
     description: Today's change flags for the affiliate roster.
 
+  - name: int_mlb_debuts
+    description: First MLB game per player, side (hitter/pitcher), and season.
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [side, season, player_id]
+
+  - name: fct_translation_lines
+    description: Season and pre-debut lines for the Triple-A -> MLB translation, both levels, last two seasons.
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [side, player_id, season, level, segment]
+    columns:
+      - name: segment
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['full', 'pre_debut']
+
   - name: int_snapshot_dates
     description: Weekly snapshot dates (last game on or before each Sunday) plus the final day, per level.
     tests:

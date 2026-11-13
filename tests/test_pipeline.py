@@ -6,7 +6,7 @@ import subprocess
 import duckdb
 import pytest
 import yaml
-from synthetic_statcast import write_fixture
+from synthetic_statcast import CALLUP_DATE, CALLUP_EVERY, write_fixture
 
 from sparvi.config import ROOT, baseball
 
@@ -127,6 +127,32 @@ def test_games_and_starts_add_up(built):
         where games != starts + relief_apps or start_share != starts / games
     """).fetchone()[0]
     assert bad == 0
+
+
+@pytest.mark.skipif(DBT is None, reason="dbt not installed")
+def test_translation_lines_split_at_the_mlb_debut(built):
+    # Fixture: hitters with id % 7 == 0 first appear in MLB on June 1 of each season.
+    debuts = built.sql(f"""
+        select count(*) filter (where player_id % {CALLUP_EVERY} = 0 and strftime(first_mlb_game, '%m-%d') < '{CALLUP_DATE}'),
+               count(*) filter (where player_id % {CALLUP_EVERY} = 0)
+        from int_mlb_debuts where side = 'hitter'""").fetchone()
+    assert debuts[0] == 0 and debuts[1] > 0
+    pre = built.sql("""
+        select p.player_id, p.season, p.last_game, p.pa, f.pa as full_pa, d.first_mlb_game
+        from fct_translation_lines p
+        join fct_translation_lines f using (side, player_id, season, level)
+        join int_mlb_debuts d using (side, player_id, season)
+        where p.side = 'hitter' and p.segment = 'pre_debut' and f.segment = 'full'""").df()
+    assert len(pre) > 0 and (pre["player_id"] % CALLUP_EVERY == 0).all()  # only late debuts have a pre-debut line
+    assert (pre["last_game"] < pre["first_mlb_game"]).all() and (pre["pa"] < pre["full_pa"]).all()
+    levels = built.sql("select segment, string_agg(distinct level order by level) from fct_translation_lines group by 1").fetchall()
+    assert dict(levels) == {"full": "AAA,MLB", "pre_debut": "AAA"}
+    # Pitchers carry grades at both levels in both seasons; hitters don't.
+    g = dict(built.sql("""select side, count(*) filter (where stuff_plus is null) from fct_translation_lines
+                         where segment = 'full' group by 1""").fetchall())
+    assert g["pitcher"] == 0 and g["hitter"] == built.sql("select count(*) from fct_translation_lines where side = 'hitter' and segment = 'full'").fetchone()[0]
+    seasons = built.sql("select count(distinct season) from fct_translation_lines").fetchone()[0]
+    assert seasons == 2
 
 
 FINAL = """(select max(snapshot_date) from int_snapshot_dates where level = '{lvl}')"""

@@ -1,0 +1,195 @@
+---
+title: "Which Triple-A numbers travel to the majors"
+description: "Swing decisions, whiffs, and exit velocity come up from Triple-A almost intact, with a predictable shift. Triple-A results don't. For pitchers, Stuff+ travels; run value doesn't."
+date: 2026-11-25
+categories: [hitting, pitching, prospects]
+image: thumb.png
+---
+
+::: {.finding}
+[The finding]{.label}
+Across {{< meta baseball.tr_h_n_pooled >}} moves from Triple-A to the majors by {{< meta baseball.tr_h_players >}} hitters, **swing decisions, whiffs, and power carried almost intact**: chase rate (r = {{< meta baseball.tr_h_r_chase_pct >}}), whiff rate ({{< meta baseball.tr_h_r_whiff_pct >}}), and 90th-percentile exit velocity ({{< meta baseball.tr_h_r_ev90 >}}). **Triple-A wOBA carried nothing** (r = {{< meta baseball.tr_h_r_woba >}}). For pitchers ({{< meta baseball.tr_p_n_pooled >}} moves by {{< meta baseball.tr_p_players >}} players), Stuff+ carried best ({{< meta baseball.tr_p_r_stuff_plus >}}), strikeout rate partly ({{< meta baseball.tr_p_r_k_pct >}}), and run value not at all ({{< meta baseball.tr_p_r_rv_plus >}}). {{< meta baseball.tr_finding_cv >}}
+:::
+
+::: {.so-what}
+[So what]{.label}
+
+- **Judge a Triple-A hitter by his swing, not his slash line.** Chase, whiff, and EV90 in Triple-A are close to what he'll show in the majors, after a predictable shift: chase rate up {{< meta baseball.tr_h_adj_chase_pct_abs >}} points, whiff rate up {{< meta baseball.tr_h_adj_whiff_pct_abs >}}, EV90 down {{< meta baseball.tr_h_adj_ev90_abs >}} mph. His Triple-A wOBA tells you almost nothing.
+- **Expect fewer walks and more strikeouts.** The typical hitter's walk rate fell {{< meta baseball.tr_h_adj_bb_pct_abs >}} points and his strikeout rate rose {{< meta baseball.tr_h_adj_k_pct_abs >}}. Pitchers' strikeout rates fell {{< meta baseball.tr_p_adj_k_pct_abs >}} points.
+- **For pitchers, start with Stuff+.** It was the most portable pitching number. Triple-A run value, the closest thing here to ERA, said nothing about MLB run value.
+:::
+
+## What carries and what doesn't
+
+Each bar is one Triple-A number's correlation with the same number in the majors, for the same players. A high correlation means the order of players held: the hitter who chased least in Triple-A tended to chase least in the majors. It says nothing about the level, which is the next section.
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c1"></div>
+  <div class="plot-host" id="p1"></div>
+  <p class="caption" id="cap1"></p>
+  <div id="t1"></div>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt;
+  const R = await S.load("/data/baseball/translation_results.json");
+  const NAMES = { chase_pct: "Chase rate", zone_swing_pct: "Zone swing", zone_contact_pct: "Zone contact", whiff_pct: "Whiff rate",
+    k_pct: "Strikeout rate", bb_pct: "Walk rate", hard_hit_pct: "Hard-hit rate", ev90: "EV90", xwoba: "xwOBA", woba: "wOBA",
+    stuff_plus: "Stuff+", loc_plus: "Location+", pitching_plus: "Pitching+", csw_pct: "CSW rate", rv_plus: "RV+ (run value)" };
+  const RESULTS = new Set(["woba", "rv_plus", "xwoba"]);  // outcome-type numbers, drawn in gray
+  const fmtAdj = (m, v) => v == null ? "—" : ["ev90", "stuff_plus", "loc_plus", "pitching_plus", "rv_plus"].includes(m) ? f.signed(v)
+    : ["xwoba", "woba"].includes(m) ? (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(3).replace(/^0/, "") : f.pts(v);
+  const fmtLvl = (m, v) => ["ev90", "stuff_plus", "loc_plus", "pitching_plus", "rv_plus"].includes(m) ? f.num(v) : ["xwoba", "woba"].includes(m) ? f.woba(v) : f.pct(v);
+  const st = { side: "hitter", cohort: "pooled", role: "all", view: "carry" };
+  const COH = [["pooled", "Both cohorts"], ["across", `${R.seasons.aaa_across} → ${R.seasons.mlb_across}`], ["within", "Within a season"]];
+  const roleHost = S.el("span", { class: "role-host" });
+  let tbl;
+  function controls() {
+    document.getElementById("c1").replaceChildren(...[
+      S.el("label", {}, "Players", S.seg([["hitter", "Hitters"], ["pitcher", "Pitchers"]], st.side, v => { st.side = v; st.role = "all"; controls(); draw(); })),
+      S.el("label", {}, "Cohort", S.seg(COH, st.cohort, v => { st.cohort = v; if (v !== "pooled") st.role = "all"; controls(); draw(); })),
+      st.side === "pitcher" && st.cohort === "pooled" ? roleHost : null,
+      S.el("label", {}, "Show", S.seg([["carry", "Carries to MLB"], ["out", "Predicts MLB production"]], st.view, v => { st.view = v; draw(); })),
+    ].filter(Boolean));
+    if (st.side === "pitcher" && st.cohort === "pooled") roleHost.replaceChildren(S.roleFilter(st.role, v => { st.role = v; draw(); }));
+  }
+  function draw() {
+    const block = st.role !== "all" ? R.pitcher.roles[st.role] : R[st.side].cohorts[st.cohort];
+    const carry = st.view === "carry";
+    const d = Object.entries(block.metrics).map(([m, v]) => ({ m, name: NAMES[m], ...v,
+      r: carry ? v.carryover_r : v.r_with_mlb_outcome, lo: (carry ? v.carryover_ci90 : v.r_with_mlb_outcome_ci90)[0], hi: (carry ? v.carryover_ci90 : v.r_with_mlb_outcome_ci90)[1] }))
+      .sort((a, b) => b.r - a.r);
+    S.plot(document.getElementById("p1"), w => Plot.plot({ ...S.plotDefaults(w), height: 34 * d.length + 50, marginLeft: 120, marginRight: 44,
+      x: { label: "Correlation (r) →", domain: [Math.min(-0.2, d3.min(d, x => x.lo)), 1], grid: true },
+      y: { label: null, domain: d.map(x => x.name) },
+      marks: [Plot.ruleX([0], { stroke: "#8a8b8f" }),
+        Plot.ruleY(d, { y: "name", x1: "lo", x2: "hi", stroke: x => RESULTS.has(x.m) ? "#8a8b8f" : "#0f5257", strokeWidth: 2 }),
+        Plot.dot(d, { x: "r", y: "name", r: 6, fill: x => RESULTS.has(x.m) ? "#8a8b8f" : "#0f5257" }),
+        Plot.text(d, { x: "hi", y: "name", text: x => f.num(x.r, 2), dx: 20, fontWeight: 600 }),
+        Plot.tip(d, Plot.pointer({ x: "r", y: "name", title: x => `${x.name}: r = ${f.num(x.r, 2)}\n90% interval ${f.num(x.lo, 2)} to ${f.num(x.hi, 2)}\n${x.n} players` }))] }));
+    const who = st.side === "hitter" ? "hitters" : st.role === "all" ? "pitchers" : S.ROLES[st.role].toLowerCase();
+    const outName = st.side === "hitter" ? "MLB xwOBA" : "MLB run value (RV+)";
+    document.getElementById("cap1").textContent = (carry
+      ? `Each Triple-A number against the same number in MLB, ${block.n} ${who}.`
+      : `Each Triple-A number against ${outName}, ${block.n} ${who}: which Triple-A number best predicts MLB production.`)
+      + ` Bars: 90% bootstrap intervals (${R.bootstrap_samples.toLocaleString()} resamples of players). Gray: results-type numbers.`
+      + (carry ? " Look at how far the results sit below the swing and stuff measures." : " Every bar here is short: no single Triple-A number predicts MLB production well.")
+      + (st.cohort === "within" ? " Within-season samples are small, so the intervals are wide." : "");
+    tbl ||= S.table(document.getElementById("t1"), [
+      { key: "name", label: "Metric", align: "l" }, { key: "aaa_mean", label: "Triple-A avg", fmt: (v, r) => fmtLvl(r.m, v) },
+      { key: "mlb_mean", label: "MLB avg", fmt: (v, r) => fmtLvl(r.m, v) },
+      { key: "adjustment", label: "Typical shift", fmt: (v, r) => fmtAdj(r.m, v), title: "Weighted median of (MLB − Triple-A) for the same player; percentage points for rates" },
+      { key: "adjustment_ci90", label: "90% interval", sortVal: r => r.adjustment, fmt: (v, r) => `${fmtAdj(r.m, v[0])} to ${fmtAdj(r.m, v[1])}` },
+      { key: "carryover_r", label: "Carryover r", fmt: v => f.num(v, 2) },
+    ], { sortKey: "carryover_r", pageSize: 12 });
+    tbl.update(d);
+  }
+  controls(); draw();
+})();
+</script>
+```
+
+Swing decisions and contact quality kept their order best: chase rate (r = {{< meta baseball.tr_h_r_chase_pct >}}, interval {{< meta baseball.tr_h_r_chase_pct_ci >}}), whiff rate ({{< meta baseball.tr_h_r_whiff_pct >}}), and EV90 ({{< meta baseball.tr_h_r_ev90 >}}). Strikeout rate ({{< meta baseball.tr_h_r_k_pct >}}) and hard-hit rate ({{< meta baseball.tr_h_r_hard_hit_pct >}}) were close behind; walk rate ({{< meta baseball.tr_h_r_bb_pct >}}) less so. Triple-A xwOBA carried some ({{< meta baseball.tr_h_r_xwoba >}}, interval {{< meta baseball.tr_h_r_xwoba_ci >}}). Triple-A wOBA, the number closest to a batting line, carried nothing (r = {{< meta baseball.tr_h_r_woba >}}, interval {{< meta baseball.tr_h_r_woba_ci >}}).
+
+Pitchers looked the same way. Stuff+, which grades only the pitch itself, held its order at {{< meta baseball.tr_p_r_stuff_plus >}} (interval {{< meta baseball.tr_p_r_stuff_plus_ci >}}). Strikeout rate ({{< meta baseball.tr_p_r_k_pct >}}), whiff rate ({{< meta baseball.tr_p_r_whiff_pct >}}), and walk rate ({{< meta baseball.tr_p_r_bb_pct >}}) carried partly. Run value ({{< meta baseball.tr_p_r_rv_plus >}}) and xwOBA allowed ({{< meta baseball.tr_p_r_xwoba >}}) didn't carry at all. Split by MLB role, starters ({{< meta baseball.tr_p_n_sp >}}) and relievers ({{< meta baseball.tr_p_n_rp >}}) show the same pattern; pick a role above to see it.
+
+## How much each number shifts
+
+The table under the chart gives the typical change for the same player from Triple-A to the majors: the median, weighted so that players with more playing time count more. For hitters, the typical shifts were: chase rate {{< meta baseball.tr_h_adj_chase_pct >}} points (interval {{< meta baseball.tr_h_adj_chase_pct_ci >}}), strikeout rate {{< meta baseball.tr_h_adj_k_pct >}} ({{< meta baseball.tr_h_adj_k_pct_ci >}}), walk rate {{< meta baseball.tr_h_adj_bb_pct >}} ({{< meta baseball.tr_h_adj_bb_pct_ci >}}), hard-hit rate {{< meta baseball.tr_h_adj_hard_hit_pct >}}, EV90 {{< meta baseball.tr_h_adj_ev90 >}} mph, and xwOBA {{< meta baseball.tr_h_adj_xwoba >}}. For pitchers: strikeout rate {{< meta baseball.tr_p_adj_k_pct >}} points and whiff rate {{< meta baseball.tr_p_adj_whiff_pct >}}.
+
+Those shifts describe the players who were promoted, not a fixed exchange rate between leagues. The pitch grades show why that matters. {{< meta baseball.tr_stuff_shift_sentence >}}
+
+## What predicts major-league production
+
+The second view of the chart asks a different question: which Triple-A number best predicts how well a hitter produces in the majors (MLB xwOBA) or how well a pitcher prevents runs (MLB run value)? {{< meta baseball.tr_h_cv_sentence >}} {{< meta baseball.tr_p_cv_sentence >}}
+
+That's less bleak than it sounds. Many of these are short first stints in the majors, some as few as {{< meta baseball.tr_min_mlb >}} plate appearances or batters faced, where results are mostly noise. The process numbers, which do carry from level to level, are the better guide to what a player is.
+
+## The players behind each number
+
+Pick a number to see every player in the cohort: his Triple-A value across, his MLB value up. The dashed line is "no change"; the solid line is the fit. A fit flatter than the dashed line means the number regresses toward the middle on the way up.
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c2"></div>
+  <div class="plot-host" id="p2"></div>
+  <p class="caption" id="cap2"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt, U = S.urlState;
+  const files = { hitter: () => S.load("/data/baseball/translation_pairs_hitter.json"), pitcher: () => S.load("/data/baseball/translation_pairs_pitcher.json") };
+  const M = { hitter: [["chase_pct", "Chase rate"], ["whiff_pct", "Whiff rate"], ["zone_contact_pct", "Zone contact"], ["zone_swing_pct", "Zone swing"],
+                       ["k_pct", "Strikeout rate"], ["bb_pct", "Walk rate"], ["hard_hit_pct", "Hard-hit rate"], ["ev90", "EV90"], ["xwoba", "xwOBA"], ["woba", "wOBA"]],
+              pitcher: [["stuff_plus", "Stuff+"], ["loc_plus", "Location+"], ["pitching_plus", "Pitching+"], ["k_pct", "Strikeout rate"], ["bb_pct", "Walk rate"],
+                        ["csw_pct", "CSW rate"], ["whiff_pct", "Whiff rate"], ["xwoba", "xwOBA allowed"], ["rv_plus", "RV+ (run value)"]] };
+  const DEF = { tside: "hitter", tm: "chase_pct", tcohort: "all", trole: "all" };
+  const side0 = M[U.get("tside")] ? U.get("tside") : DEF.tside;
+  const st = { side: side0, m: M[side0].some(x => x[0] === U.get("tm")) ? U.get("tm") : M[side0][0][0],
+               cohort: ["all", "across", "within"].includes(U.get("tcohort")) ? U.get("tcohort") : DEF.tcohort,
+               role: ["all", "SP", "RP", "Swing"].includes(U.get("trole")) ? U.get("trole") : DEF.trole, q: "" };
+  const roleHost = S.el("span", { class: "role-host" });
+  const fmtV = m => ["ev90", "stuff_plus", "loc_plus", "pitching_plus", "rv_plus"].includes(m) ? (v => f.num(v)) : ["xwoba", "woba"].includes(m) ? f.woba : (v => f.pct(v));
+  function controls() {
+    document.getElementById("c2").replaceChildren(...[
+      S.el("label", {}, "Players", S.seg([["hitter", "Hitters"], ["pitcher", "Pitchers"]], st.side, v => { st.side = v; st.m = M[v][0][0]; st.role = "all"; controls(); draw(); })),
+      S.select("Number", M[st.side], st.m, v => { st.m = v; draw(); }),
+      S.el("label", {}, "Cohort", S.seg([["all", "Both"], ["across", "Next season"], ["within", "Same season"]], st.cohort, v => { st.cohort = v; draw(); })),
+      st.side === "pitcher" ? roleHost : null,
+      S.search("Find a player", "Name", v => { st.q = v; draw(); }, st.q)].filter(Boolean));
+  }
+  // Weighted least squares line (weights: the smaller of the two samples, as in the analysis).
+  function fit(d, x, y) {
+    const W = d3.sum(d, r => r.w), mx = d3.sum(d, r => r.w * r[x]) / W, my = d3.sum(d, r => r.w * r[y]) / W;
+    const b = d3.sum(d, r => r.w * (r[x] - mx) * (r[y] - my)) / d3.sum(d, r => r.w * (r[x] - mx) ** 2);
+    return { b, a: my - b * mx };
+  }
+  async function draw() {
+    const all = await files[st.side](), x = st.m + "_aaa", y = st.m + "_mlb";
+    const base = all.filter(r => r[x] != null && r[y] != null && (st.cohort === "all" || r.cohort === st.cohort));
+    if (st.side === "pitcher") roleHost.replaceChildren(S.roleFilter(st.role, v => { st.role = v; draw(); }, { swing: base.filter(r => r.role === "Swing").length }));
+    const d = st.side === "pitcher" && st.role !== "all" ? base.filter(r => r.role === st.role) : base;
+    const hi = st.q ? d.filter(r => r.name.toLowerCase().includes(st.q)) : [];
+    const lo = d3.min(d, r => Math.min(r[x], r[y])), up = d3.max(d, r => Math.max(r[x], r[y])), pad = (up - lo) * 0.04;
+    const dom = [lo - pad, up + pad], F = d.length > 2 ? fit(d, x, y) : null, fv = fmtV(st.m), label = M[st.side].find(k => k[0] === st.m)[1];
+    const pct = !["ev90", "stuff_plus", "loc_plus", "pitching_plus", "rv_plus", "xwoba", "woba"].includes(st.m);
+    S.plot(document.getElementById("p2"), w => Plot.plot({ ...S.plotDefaults(w), height: Math.min(460, w * 0.8), grid: true, clip: true,
+      x: { domain: dom, label: `Triple-A ${label} →`, tickFormat: pct ? "%" : null }, y: { domain: dom, label: `↑ MLB ${label}`, tickFormat: pct ? "%" : null },
+      marks: [Plot.line([[dom[0], dom[0]], [dom[1], dom[1]]], { stroke: "#8a8b8f", strokeDasharray: "4,3" }),
+        F ? Plot.line([[dom[0], F.a + F.b * dom[0]], [dom[1], F.a + F.b * dom[1]]], { stroke: "#0f5257", strokeWidth: 2 }) : null,
+        Plot.dot(d, { x, y, r: r => 2.5 + Math.sqrt(r.w) / 6, fill: "#0f5257", fillOpacity: hi.length ? 0.2 : 0.55 }),
+        Plot.dot(hi, { x, y, r: 6, fill: "#eb6834", stroke: "#fff", strokeWidth: 1.2 }),
+        Plot.text(hi.slice(0, 8), { x, y, text: "name", dy: -12, fontWeight: 600 }),
+        Plot.tip(d, Plot.pointer({ x, y, title: r => `${r.name}${r.role ? ` (${r.role})` : ""}\n${r.cohort === "across" ? `${r.season_mlb - 1} Triple-A → ${r.season_mlb} MLB` : `${r.season_mlb}: Triple-A before his first MLB game → MLB after`}\nTriple-A ${fv(r[x])} (${r.pa_aaa} ${st.side === "hitter" ? "PA" : "BF"}) · MLB ${fv(r[y])} (${r.pa_mlb})` }))] }));
+    const r = d.length > 2 ? S.corr(d, x, y) : NaN;
+    document.getElementById("cap2").textContent = `${d.length} ${st.side === "hitter" ? "hitters" : "pitchers"}${st.role !== "all" && st.side === "pitcher" ? ` (${S.ROLES[st.role].toLowerCase()} in MLB)` : ""}: r = ${isNaN(r) ? "—" : f.num(r, 2)}`
+      + (F ? `, fitted slope ${f.num(F.b, 2)}.` : ".") + " Dot size: the smaller of the two samples. "
+      + (F && F.b < 0.5 ? "The fit is much flatter than the dashed line: a great Triple-A number here mostly regresses in MLB." : "Points hug a line close to parallel with the dashed one: this number keeps its order on the way up.")
+      + (hi.length ? "" : " Search a name to highlight a player.");
+    U.set({ tside: st.side, tm: st.m, tcohort: st.cohort, trole: st.side === "pitcher" ? st.role : "all" }, DEF);
+  }
+  controls(); draw();
+})();
+</script>
+```
+
+## Translating a current Triple-A player
+
+Every Triple-A player with {{< meta baseball.tr_min_aaa >}}+ plate appearances or batters faced gets a translated line: each number run through its own fitted line from the scatter above, with a band that held {{< meta baseball.tr_band >}} of the cohort. The band is wide. For strikeout rate it's about ±{{< meta baseball.tr_band_k >}} points; for xwOBA, about ±{{< meta baseball.tr_band_xwoba >}}, and the xwOBA line is nearly flat (slope {{< meta baseball.tr_slope_xwoba >}}, against {{< meta baseball.tr_slope_chase >}} for chase rate), so a big Triple-A xwOBA translates to only a little above average. Stuff+, Location+, and Pitching+ are already on the MLB scale, and their shift is mostly the selection described above, so player pages don't translate them. Translations are on each Triple-A player's page and as a view in the **[Triple-A explorer](/baseball/tools/triple-a.html?view=mlb)**.
+
+<details class="method" id="method">
+<summary>Method and caveats</summary>
+
+**Data.** Pitch-level Statcast from Baseball Savant, Triple-A and MLB, {{< meta baseball.season_prev >}}–{{< meta baseball.season >}} regular seasons, aggregated to season lines in the dbt pipeline (`fct_translation_lines`). Stuff+, Location+, Pitching+, and RV+ use the same models and frozen scale as the [pitch-grade leaderboard](/baseball/tools/stuff-leaderboard.html). In-zone means the [height-based strike zone](/glossary.html#strike-zone), the same at both levels and in both seasons, so chase and zone rates compare directly.
+
+**Cohorts.** *Next season:* {{< meta baseball.tr_season_aaa >}} Triple-A ({{< meta baseball.tr_min_aaa >}}+ PA or batters faced) to {{< meta baseball.tr_season_mlb >}} MLB ({{< meta baseball.tr_min_mlb >}}+): {{< meta baseball.tr_h_n_across >}} hitters, {{< meta baseball.tr_p_n_across >}} pitchers. *Same season:* in {{< meta baseball.season_prev >}} and {{< meta baseball.season >}}, a player's Triple-A line before his first MLB game that season against his MLB line from that game on, same minimums: {{< meta baseball.tr_h_n_within >}} hitters, {{< meta baseball.tr_p_n_within >}} pitchers. Pooled: {{< meta baseball.tr_h_n_pooled >}} hitter pairs ({{< meta baseball.tr_h_players >}} players) and {{< meta baseball.tr_p_n_pooled >}} pitcher pairs ({{< meta baseball.tr_p_players >}} players). Pitchers take their MLB role ({{< meta baseball.tr_p_n_sp >}} SP, {{< meta baseball.tr_p_n_rp >}} RP, {{< meta baseball.tr_p_n_swing >}} Swing).
+
+**Statistics.** Every pair is weighted by the smaller of its two samples. Correlations are weighted Pearson; shifts are weighted medians of (MLB − Triple-A). Intervals are 90% bootstrap intervals over players ({{< meta baseball.tr_boot >}} resamples; a player in both cohorts is resampled as one). "Predicts MLB production" uses MLB xwOBA for hitters and MLB RV+ for pitchers; the cross-validated R² comes from ridge regressions (standardized inputs, penalty chosen by inner cross-validation) on {{< meta baseball.tr_cv_folds >}}-fold cross-validation grouped by player, repeated {{< meta baseball.tr_cv_repeats >}} times. Below zero means worse than predicting the cohort average for everyone.
+
+**Translation.** For each number, a weighted least-squares line of MLB on Triple-A over the pooled cohort; the band is the 10th to 90th percentile of the cohort's weighted residuals around that line. The same band applies to every player, whatever his sample.
+
+**What this can't tell you.** Only promoted players are observed, and promotion depends on things this data doesn't see: scouting reports, injuries, roster needs, and often the very Triple-A numbers being tested. Players who struggled in a short MLB stint and went back down are in the data; players who were never called up aren't. The samples are small, especially within a season, so read the broad pattern rather than the second decimal. The shifts mix the level with a season of development (next-season cohort) and with in-season change, and they don't adjust for park or for the Triple-A league environment (the Pacific Coast League plays as a hitters' league).
+
+Code: [`baseball/aaa_translation/`](https://github.com/matt-hardman15/sparvi-site/tree/main/baseball/aaa_translation) and [`fct_translation_lines`](https://github.com/matt-hardman15/sparvi-site/tree/main/baseball/pd_pipeline/models/marts/fct_translation_lines.sql)
+</details>

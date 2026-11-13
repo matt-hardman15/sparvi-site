@@ -3,11 +3,11 @@
   "predictor_season": 2025,
   "outcome_season": 2026,
   "n": 324,
-  "r_stuff_prev_to_rv_cur": 0.2935713134377121,
-  "r_rv_prev_to_rv_cur": 0.19259585980517258,
+  "r_stuff_prev_to_rv_cur": 0.2970318049352052,
+  "r_rv_prev_to_rv_cur": 0.19259585980517263,
   "gap_ci90": [
-    -0.009018631601796149,
-    0.20899988743609443
+    -0.005205073890397673,
+    0.2129687000641405
   ],
   "bootstrap_samples": 2000,
   "provenance": {

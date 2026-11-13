@@ -58,6 +58,8 @@ def base_url():
     ("/baseball/tools/stuff-leaderboard.html", "#t table tbody tr"),
     ("/baseball/player.html?id=691769", "#root .stat-row"),
     ("/baseball/farm-systems/", "#t3 table tbody tr"),
+    ("/nfl/tools/team-efficiency.html", "#t table tbody tr"),
+    ("/nfl/teams/kc/", "#tiles .stat-row"),
 ])
 def test_interactive_within_budget(base_url, path, ready):
     sync = pytest.importorskip("playwright.sync_api")

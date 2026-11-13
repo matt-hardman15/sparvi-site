@@ -1,0 +1,13 @@
+---
+title: "Pittsburgh Steelers"
+pagetitle: "Pittsburgh Steelers: offense and defense efficiency, week by week"
+description: "Pittsburgh Steelers (AFC North) offense and defense in EPA per play and success rate, week by week, with passing and rushing splits and every result, 2016–2026."
+image: preview.png
+page-layout: full
+---
+
+```{=html}
+<div id="team-root" data-team="PIT"></div>
+```
+
+{{< include ../_team.qmd >}}

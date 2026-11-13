@@ -3,6 +3,7 @@
 Python:  from sparvi.config import baseball; baseball().season
 Shell:   python -m sparvi.config baseball.season        -> 2026
          python -m sparvi.config baseball.mlb_seasons   -> 2024 2025 2026
+         python -m sparvi.config nfl.season             -> 2026
 """
 from __future__ import annotations
 
@@ -69,6 +70,30 @@ def baseball() -> Baseball:
     return b
 
 
+@dataclass(frozen=True)
+class NFL:
+    season: int
+    first_season: int
+
+    @property
+    def seasons(self) -> list[int]:
+        return list(range(self.first_season, self.season + 1))
+
+    @property
+    def past_seasons(self) -> list[int]:
+        """Seasons whose play-by-play no longer changes (safe to cache between runs)."""
+        return [s for s in self.seasons if s != self.season]
+
+
+@cache
+def nfl() -> NFL:
+    c = _load()["nfl"]
+    n = NFL(season=int(c["season"]), first_season=int(c["first_season"]))
+    if n.first_season > n.season:
+        raise ValueError("sparvi.toml: [nfl] first_season is after season")
+    return n
+
+
 def section(*keys: str) -> dict:
     """A raw table from sparvi.toml, e.g. section("baseball", "rule5")."""
     d = _load()
@@ -79,7 +104,7 @@ def section(*keys: str) -> dict:
 
 def _cli(key: str) -> str:
     sport, _, attr = key.partition(".")
-    obj = {"baseball": baseball}[sport]()
+    obj = {"baseball": baseball, "nfl": nfl}[sport]()
     val = getattr(obj, attr)
     return " ".join(map(str, val)) if isinstance(val, (list, tuple)) else str(val)
 

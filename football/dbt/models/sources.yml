@@ -1,0 +1,20 @@
+version: 2
+
+# nflverse files written by scripts/pull_nfl.py. The env var lets tests point the project at a
+# synthetic fixture instead of real (uncommitted) data.
+sources:
+  - name: nflverse
+    description: NFL play-by-play, schedules, and team stats from nflverse (CC-BY 4.0)
+    meta:
+      external_location: "{{ env_var('SPARVI_RAW_DIR', '../../data/raw') }}/nfl/{identifier}.parquet"
+    tables:
+      - name: pbp
+        description: Every season's play-by-play (one file per season)
+        identifier: "pbp_*"
+      - name: team_stats
+        description: nflverse regular-season team stats, one file per season (reconciliation only)
+        identifier: "team_stats_*"
+      - name: schedules
+        identifier: schedules
+      - name: teams
+        identifier: teams

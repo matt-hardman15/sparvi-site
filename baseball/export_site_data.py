@@ -9,7 +9,8 @@ Writes:
                                    {{< meta baseball.<key> >}}; see NUMBERS below
 
 Run after pitch_quality/train.py, pitch_quality/robustness.py,
-shape_stability/analysis.py, `dbt build` in pd_pipeline/, and two_week_signal/analysis.py.
+shape_stability/analysis.py, `dbt build` in pd_pipeline/, two_week_signal/analysis.py, and
+aaa_translation/analysis.py.
 """
 import json
 from datetime import date
@@ -401,6 +402,39 @@ write_json(OUT / "farm_staff.json", {"season": SEASON, "window": "last30", "fiel
                                      "dates": [pd.Timestamp(d).strftime("%Y-%m-%d") for d in staff_dates],
                                      "players": staff})
 
+# ---- Triple-A -> MLB translation (baseball/aaa_translation) ----------------------
+# translation_results.json  carryover, level adjustments, outcome correlations, CV, per-metric fits
+# translation_fits.json     just the per-metric lines and bands: the Triple-A explorer and player pages
+#                           translate whatever line is on screen with them
+# translation_pairs_{hitter,pitcher}.json  the cohort's season lines (aggregates) behind the article's scatter
+TR_DIR = HERE / "aaa_translation" / "output"
+TR = read_json(TR_DIR / "results.json")
+TR_METRICS = {"hitter": list(TR["hitter"]["fits"]), "pitcher": list(TR["pitcher"]["fits"])}
+
+
+def rounded(o, d: int = 4):
+    if isinstance(o, float):
+        return round(o, d)
+    if isinstance(o, dict):
+        return {k: rounded(v, d) for k, v in o.items()}
+    if isinstance(o, list):
+        return [rounded(v, d) for v in o]
+    return o
+
+
+write_json(OUT / "translation_results.json", rounded(strip(TR), 6))  # 6: tables re-round to match the prose
+write_json(OUT / "translation_fits.json", rounded({"min_aaa": TR["min_aaa"], "band_pct": TR["band_pct"],
+                                                   **{s: TR[s]["fits"] for s in ("hitter", "pitcher")}}, 5))
+trp = pd.read_csv(TR_DIR / "pairs.csv")  # sorted by aaa_translation/analysis.py
+trp = trp.rename(columns={"player_id": "id"})
+trp["name"] = trp["name"].fillna(trp["id"].astype(str))
+for side, ms in TR_METRICS.items():
+    cols = [f"{m}_{lv}" for m in ms for lv in ("aaa", "mlb")]
+    keep = ["cohort", "id", "name", "season_mlb", "team_mlb", "pa_aaa", "pa_mlb", "w", *cols] + (["role"] if side == "pitcher" else [])
+    write_records(OUT / f"translation_pairs_{side}.json", trp.loc[trp["side"] == side, keep], required=keep,
+                  not_null=["cohort", "id", "name"], min_rows=50,
+                  digits={c: (1 if c.split("_")[0] in ("ev90", "stuff", "loc", "pitching", "rv") else 4) for c in cols})
+
 # ---- Prose numbers ----------------------------------------------------------
 # Every number an article states comes from here, formatted the way the prose prints it.
 # Never hand-type a number into an article; add it here instead.
@@ -658,6 +692,152 @@ if not min(H["chase_pct"]["r"], H["whiff_pct"]["r"]) > H["xwoba"]["r"] > H["woba
     raise StaleProse("Two-week article ranks chase/whiff above xwOBA above wOBA for hitters.")
 if not H["hard_hit_pct"]["r"] > H["xwoba"]["r"]:
     raise StaleProse("Two-week article says hard-hit rate is more stable than xwOBA.")
+
+# Triple-A -> MLB translation article. Carryover = correlation of a Triple-A number with the same number
+# in MLB; adjustment = weighted median change; both from the pooled cohort unless named.
+TH, TP = TR["hitter"]["cohorts"], TR["pitcher"]["cohorts"]
+THm, TPm = TH["pooled"]["metrics"], TP["pooled"]["metrics"]
+
+
+def pts1(x: float) -> str:
+    """Percentage points, signed, 1 decimal."""
+    return ("+" if x >= 0 else MINUS) + f"{abs(100 * x):.1f}"
+
+
+def woba3(x: float) -> str:
+    """wOBA-scale change, signed, baseball style (".036")."""
+    return ("+" if x >= 0 else MINUS) + f"{abs(x):.3f}".lstrip("0")
+
+
+def num1(x: float) -> str:
+    return ("+" if x >= 0 else MINUS) + f"{abs(x):.1f}"
+
+
+TR_FMT = {"ev90": num1, "stuff_plus": num1, "loc_plus": num1, "pitching_plus": num1, "rv_plus": num1,
+          "xwoba": woba3, "woba": woba3}
+N |= {"tr_min_aaa": TR["min_aaa"], "tr_min_mlb": TR["min_mlb"], "tr_boot": f"{TR['bootstrap_samples']:,}",
+      "tr_band": f"{TR['band_pct'][1] - TR['band_pct'][0]}%", "tr_cv_folds": TR["cv"]["folds"], "tr_cv_repeats": TR["cv"]["repeats"],
+      "tr_season_aaa": TR["seasons"]["aaa_across"], "tr_season_mlb": TR["seasons"]["mlb_across"]}
+for side, C in (("h", TH), ("p", TP)):
+    for co in ("pooled", "across", "within"):
+        N[f"tr_{side}_n_{co}"] = f"{C[co]['n']:,}"
+    N[f"tr_{side}_players"] = f"{C['pooled']['players']:,}"
+    for m, v in C["pooled"]["metrics"].items():
+        N[f"tr_{side}_r_{m}"] = r2(v["carryover_r"])
+        N[f"tr_{side}_r_{m}_ci"] = ci_words(*v["carryover_ci90"])
+        N[f"tr_{side}_adj_{m}"] = TR_FMT.get(m, pts1)(v["adjustment"])
+        N[f"tr_{side}_adj_{m}_ci"] = " to ".join(TR_FMT.get(m, pts1)(x) for x in v["adjustment_ci90"])
+        N[f"tr_{side}_out_{m}"] = r2(v["r_with_mlb_outcome"])
+for r in ("SP", "RP"):
+    N[f"tr_p_n_{r.lower()}"] = f"{TR['pitcher']['roles'][r]['n']:,}"
+N["tr_p_n_swing"] = f"{TR['pitcher']['roles']['Swing_n']:,}"
+
+# Which hitter numbers carry: the three named in the finding must each beat Triple-A wOBA outright
+# (interval above wOBA's), and wOBA's own interval must include zero ("carried nothing").
+CARRY_H = ["chase_pct", "whiff_pct", "ev90"]
+if not all(THm[m]["carryover_ci90"][0] > THm["woba"]["carryover_ci90"][1] for m in CARRY_H):
+    raise StaleProse("Translation article: chase, whiff, and EV90 carry to MLB reliably better than Triple-A wOBA.")
+if not THm["woba"]["carryover_ci90"][0] <= 0 <= THm["woba"]["carryover_ci90"][1]:
+    raise StaleProse("Translation article: Triple-A wOBA carried nothing to MLB wOBA.")
+if not min(THm[m]["carryover_r"] for m in CARRY_H) >= 0.7:
+    raise StaleProse("Translation article: chase, whiff, and EV90 carried 'almost intact' (r >= 0.7).")
+if not THm["xwoba"]["carryover_r"] > THm["woba"]["carryover_r"]:
+    raise StaleProse("Translation article: Triple-A xwOBA carried more than Triple-A wOBA.")
+# Pitchers: Stuff+ carries best; strikeout rate partly; run value (RV+) nothing.
+if not TPm["stuff_plus"]["carryover_r"] == max(v["carryover_r"] for v in TPm.values()):
+    raise StaleProse("Translation article: Stuff+ is the pitcher number that carries best.")
+if not TPm["stuff_plus"]["carryover_ci90"][0] > TPm["k_pct"]["carryover_ci90"][1]:
+    raise StaleProse("Translation article: Stuff+ carries reliably better than strikeout rate.")
+if not TPm["rv_plus"]["carryover_ci90"][0] <= 0 <= TPm["rv_plus"]["carryover_ci90"][1]:
+    raise StaleProse("Translation article: Triple-A run value (RV+) carried nothing to MLB.")
+# "Strikeout rate and hard-hit rate were close behind; walk rate less so. Triple-A xwOBA carried some."
+if not (max(THm[m]["carryover_r"] for m in ("k_pct", "hard_hit_pct")) <= min(THm[m]["carryover_r"] for m in CARRY_H)
+        and min(THm[m]["carryover_r"] for m in ("k_pct", "hard_hit_pct")) > THm["bb_pct"]["carryover_r"]):
+    raise StaleProse("Translation article: hitters' K% and hard-hit rate carry just below chase/whiff/EV90 and above walk rate.")
+if not THm["xwoba"]["carryover_ci90"][0] > 0:
+    raise StaleProse("Translation article: Triple-A xwOBA carried some (interval above zero).")
+# Pitchers: "strikeout, whiff, and walk rate carried partly; run value and xwOBA allowed didn't carry at all".
+for m in ("k_pct", "whiff_pct", "bb_pct"):
+    if not (0 < TPm[m]["carryover_ci90"][0] and TPm[m]["carryover_r"] < 0.7):
+        raise StaleProse(f"Translation article: pitchers' {m} carried partly (above zero, below 0.7).")
+if not TPm["xwoba"]["carryover_ci90"][0] <= 0 <= TPm["xwoba"]["carryover_ci90"][1]:
+    raise StaleProse("Translation article: pitchers' Triple-A xwOBA allowed carried nothing.")
+# "Starters and relievers show the same pattern": Stuff+ carries best and run value nothing, in each role.
+for role in ("SP", "RP"):
+    RM = TR["pitcher"]["roles"][role]["metrics"]
+    if not (RM["stuff_plus"]["carryover_r"] == max(v["carryover_r"] for v in RM.values())
+            and RM["rv_plus"]["carryover_ci90"][0] <= 0):
+        raise StaleProse(f"Translation article: for {role}s too, Stuff+ carries best and run value doesn't carry.")
+# Direction of the level shifts the so-what box names: hitters chase more, whiff more, strike out more,
+# walk less, hit the ball less hard; pitchers strike out fewer. Each interval must exclude zero.
+SHIFT = [("h", "chase_pct", 1), ("h", "whiff_pct", 1), ("h", "k_pct", 1), ("h", "bb_pct", -1), ("h", "ev90", -1),
+         ("h", "hard_hit_pct", -1), ("p", "k_pct", -1), ("p", "whiff_pct", -1)]
+for side, m, sign in SHIFT:
+    v = (THm if side == "h" else TPm)[m]
+    lo, hi = v["adjustment_ci90"]
+    if not (lo > 0 if sign > 0 else hi < 0):
+        raise StaleProse(f"Translation article: {side} {m} shifts {'up' if sign > 0 else 'down'} from Triple-A to MLB.")
+    # Size only, for sentences that carry the direction in a verb ("walk rate fell 3.4 points").
+    N[f"tr_{side}_adj_{m}_abs"] = TR_FMT.get(m, pts1)(abs(v["adjustment"])).lstrip("+")
+
+# Pitchers' Stuff+ shift, across seasons vs within one: worded from the two intervals.
+sa, sw = TP["across"]["metrics"]["stuff_plus"], TP["within"]["metrics"]["stuff_plus"]
+N |= {"tr_p_adj_stuff_across": num1(sa["adjustment"]), "tr_p_adj_stuff_within": num1(sw["adjustment"]),
+      "tr_p_adj_stuff_within_ci": " to ".join(num1(x) for x in sw["adjustment_ci90"])}
+N["tr_stuff_shift_sentence"] = (
+    f"Pitchers who moved up within a season kept about the same Stuff+ in MLB (a shift of {N['tr_p_adj_stuff_within']}, "
+    f"interval {N['tr_p_adj_stuff_within_ci']}), while those compared a season apart graded "
+    f"{num1(sa['adjustment']).lstrip('+')} points higher. That gap more likely reflects a year of development, and the fact that "
+    "pitchers whose stuff improved were the ones who stayed in the majors, than anything about the majors themselves."
+    if sw["adjustment_ci90"][0] <= 0 <= sw["adjustment_ci90"][1] and sa["adjustment_ci90"][0] > 0 else
+    f"Stuff+ shifted {N['tr_p_adj_stuff_within']} for pitchers who moved up within a season and {N['tr_p_adj_stuff_across']} "
+    "for those compared a season apart.")
+
+# What predicts MLB production: cross-validated R², worded from the numbers.
+MH, MP = TR["hitter"]["model"], TR["pitcher"]["model"]
+SH_, SP_ = TR["hitter"]["model_single"], TR["pitcher"]["model_single"]
+best_h = max(SH_, key=SH_.get)
+TR_WORDS = {"chase_pct": "chase rate", "zone_swing_pct": "zone swing rate", "zone_contact_pct": "zone contact rate",
+            "whiff_pct": "whiff rate", "k_pct": "strikeout rate", "bb_pct": "walk rate", "hard_hit_pct": "hard-hit rate",
+            "ev90": "EV90", "xwoba": "xwOBA", "woba": "wOBA", "stuff_plus": "Stuff+", "loc_plus": "Location+",
+            "pitching_plus": "Pitching+", "csw_pct": "CSW rate", "rv_plus": "run value (RV+)"}
+
+
+def pct_r2(x: float) -> str:
+    return f"{100 * x:.0f}%" if x >= 0.005 else "none"
+
+
+N |= {"tr_h_cv_all": pct_r2(MH["all"]["r2"]), "tr_h_cv_results": f"{MH['results_only']['r2']:.3f}".replace("-", MINUS),
+      "tr_h_cv_best": pct_r2(SH_[best_h]), "tr_h_cv_best_metric": TR_WORDS[best_h],
+      "tr_p_cv_all": f"{MP['all']['r2']:.3f}".replace("-", MINUS), "tr_p_cv_best": f"{max(SP_.values()):.3f}".replace("-", MINUS),
+      "tr_p_cv_best_metric": TR_WORDS[max(SP_, key=SP_.get)]}
+N["tr_h_cv_sentence"] = (
+    f"Triple-A {TR_WORDS[best_h]} alone explained about {N['tr_h_cv_best']} of the differences in MLB xwOBA, out of sample. "
+    + (f"All ten Triple-A numbers together explained {N['tr_h_cv_all']}, no more than {TR_WORDS[best_h]} alone. "
+       if MH["all"]["r2"] <= SH_[best_h] + 0.01 else f"All ten Triple-A numbers together explained {N['tr_h_cv_all']}. ")
+    + ("Triple-A wOBA did worse than guessing the cohort average (cross-validated R² "
+       f"{N['tr_h_cv_results']})." if MH["results_only"]["r2"] < 0 else
+       f"Triple-A wOBA alone explained {pct_r2(MH['results_only']['r2'])}."))
+N["tr_p_cv_sentence"] = (
+    f"For pitchers, nothing did: the best single Triple-A number ({N['tr_p_cv_best_metric']}) reached a cross-validated R² of "
+    f"{N['tr_p_cv_best']}, and all nine together {N['tr_p_cv_all']}, no better than predicting the cohort average for everyone."
+    if max(SP_.values()) < 0.05 and MP["all"]["r2"] < 0.05 else
+    f"For pitchers, the best single Triple-A number ({N['tr_p_cv_best_metric']}) reached a cross-validated R² of "
+    f"{N['tr_p_cv_best']}, and all nine together {N['tr_p_cv_all']}.")
+N["tr_finding_cv"] = (
+    f"Even the best Triple-A number explained only about {N['tr_h_cv_best']} of a hitter's MLB xwOBA in his first "
+    f"{TR['min_mlb']}+ PA, and nothing predicted a pitcher's MLB run value."
+    if max(SP_.values()) < 0.05 and SH_[best_h] < 0.15 else
+    f"The best Triple-A number explained about {N['tr_h_cv_best']} of a hitter's MLB xwOBA.")
+if not SH_[best_h] > MH["results_only"]["r2"]:
+    raise StaleProse("Translation article: the best Triple-A number beats Triple-A wOBA at predicting MLB xwOBA.")
+# Band widths quoted in the projection section (80% of the cohort landed inside them).
+FH = TR["hitter"]["fits"]
+N |= {"tr_band_k": f"{100 * (FH['k_pct']['band'][1] - FH['k_pct']['band'][0]) / 2:.0f}",
+      "tr_band_xwoba": f"{(FH['xwoba']['band'][1] - FH['xwoba']['band'][0]) / 2:.3f}".lstrip("0"),
+      "tr_slope_xwoba": f"{FH['xwoba']['slope']:.2f}", "tr_slope_chase": f"{FH['chase_pct']['slope']:.2f}"}
+if not FH["xwoba"]["slope"] < 0.5 < FH["chase_pct"]["slope"]:
+    raise StaleProse("Translation article: xwOBA's translation is heavily regressed (slope < 0.5) while chase's isn't.")
 
 # Pitcher roles and role-aware qualifiers (glossary)
 if any(q["Swing"] != q["RP"] for q in QUALIFIERS.values()):

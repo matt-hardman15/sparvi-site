@@ -1,0 +1,87 @@
+version: 2
+
+models:
+  - name: stg_nfl_plays
+    description: Regular-season NFL efficiency plays (passes incl. sacks and scrambles, and runs).
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [game_id, play_id]
+    columns:
+      - name: epa
+        tests: [not_null]
+      - name: offense
+        tests: [not_null]
+
+  - name: int_nfl_team_games
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [game_id, team, side, gt]
+      - every_team_game_scheduled
+
+  - name: nfl_team_week
+    description: Team x season x week x side x garbage-time variant x window (std, last4).
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [season, week, team, side, gt, win]
+      - final_week_equals_season:
+          arguments:
+            season_model: ref('nfl_team_season')
+            cols: [games, plays, epa_sum, successes, pass_plays, pass_epa_sum, run_plays, run_epa_sum,
+                   early_plays, early_passes, xpass_plays, xpass_sum, explosives, turnovers]
+    columns:
+      - name: success_rate
+        tests:
+          - value_in_range:
+              arguments: {min_value: 0, max_value: 1}
+
+  - name: nfl_team_season
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [season, team, side, gt]
+    columns:
+      - name: games
+        tests:
+          - value_in_range:
+              arguments: {min_value: 1, max_value: 17}
+
+  - name: nfl_team_games
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [game_id, team, side, gt]
+      - not_null:
+          column_name: outcome
+          config:
+            where: "season < {{ var('nfl_season') }}"
+
+  - name: nfl_reconcile_team_stats
+    description: Our pbp totals vs nflverse team stats (must match to rounding).
+    columns:
+      - name: passing_diff
+        tests:
+          - value_in_range:
+              arguments: {min_value: 0, max_value: 0.01}
+              config:
+                where: "season < {{ var('nfl_season') }}"
+          - value_in_range:
+              name: current_season_passing_epa_matches_nflverse
+              arguments: {min_value: 0, max_value: 0.01}
+              config:
+                severity: warn
+                where: "season = {{ var('nfl_season') }}"
+      - name: rushing_diff
+        tests:
+          - value_in_range:
+              arguments: {min_value: 0, max_value: 0.01}
+              config:
+                where: "season < {{ var('nfl_season') }}"
+          - value_in_range:
+              name: current_season_rushing_epa_matches_nflverse
+              arguments: {min_value: 0, max_value: 0.01}
+              config:
+                severity: warn
+                where: "season = {{ var('nfl_season') }}"
