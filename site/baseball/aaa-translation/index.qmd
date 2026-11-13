@@ -1,7 +1,7 @@
 ---
 title: "Which Triple-A numbers travel to the majors"
 description: "Swing decisions, whiffs, and exit velocity come up from Triple-A almost intact, with a predictable shift. Triple-A results don't. For pitchers, Stuff+ travels; run value doesn't."
-date: 2026-11-25
+date: 2026-11-13
 categories: [hitting, pitching, prospects]
 image: thumb.png
 ---
