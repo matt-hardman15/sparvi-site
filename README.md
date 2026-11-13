@@ -44,6 +44,9 @@ GitHub Actions deploys to GitHub Pages:
   one on file, plus a 3-day overlap for Savant's revisions; a full re-pull on Mondays or on request),
   rebuilds every model and the dbt pipeline, commits the refreshed data, and deploys. Weekly in the off-season it keeps the
   past-season data cache alive. Run it by hand from the Actions tab ("Run workflow") at any time.
+  If the raw data and code match what the last refresh built from (`scripts/build_fingerprint.py`,
+  stored in `baseball/build_inputs.sha256`), it skips the rebuild: model training is repeatable on one
+  machine but not bit-for-bit across CPU models. The manual run's "rebuild" option overrides this.
 - **`check`**: every pull request runs lint, the dbt pipeline on synthetic data, and a browser test of
   every page. `main` only accepts pull requests that pass. Dependabot opens weekly upgrade PRs.
 
