@@ -1,0 +1,13 @@
+---
+title: "Carolina Panthers"
+pagetitle: "Carolina Panthers: offense and defense efficiency, week by week"
+description: "Carolina Panthers (NFC South) offense and defense in EPA per play and success rate, week by week, with passing and rushing splits and every result, 2016–2026."
+image: preview.png
+page-layout: full
+---
+
+```{=html}
+<div id="team-root" data-team="CAR"></div>
+```
+
+{{< include ../_team.qmd >}}

@@ -1,0 +1,32 @@
+---
+title: "NFL"
+description: "Team efficiency, week by week, from public play-by-play data."
+page-layout: full
+---
+
+## Tools
+
+```{=html}
+<div class="cards">
+<a class="card-link" href="/nfl/tools/team-efficiency.html"><span class="kicker">Tool</span><h3>Team efficiency</h3><p>Every team's offense and defense in EPA per play and success rate, opponent-adjusted or raw, week by week since {{< meta nfl.first_season >}}.</p></a>
+</div>
+```
+
+## Teams
+
+```{=html}
+<div id="team-grid" class="team-grid"><div class="loading">Loading…</div></div>
+<script>
+(async () => {
+  const S = Sparvi, teams = await S.load("/data/nfl/teams.json");
+  const divs = d3.groups(teams, t => t.division).sort((a, b) => d3.ascending(a[0], b[0]));
+  document.getElementById("team-grid").replaceChildren(...divs.map(([div, ts]) =>
+    S.el("div", { class: "team-div" }, S.el("h4", {}, div),
+      S.el("ul", {}, ts.map(t => S.el("li", { html: S.nflTeamLink(t.id, t.name) }))))));
+})();
+</script>
+```
+
+::: {.note}
+Data: [nflverse](https://github.com/nflverse) play-by-play, schedules, and team stats (CC-BY 4.0), regular seasons {{< meta nfl.first_season >}}–{{< meta nfl.season >}}. Sparvi publishes team aggregates only and isn't affiliated with the NFL or any club.
+:::

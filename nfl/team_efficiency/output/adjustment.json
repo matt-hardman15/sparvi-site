@@ -1,0 +1,145 @@
+{
+  "seasons": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "min_week": 3,
+  "variant": {
+    "gt": "no_gt",
+    "split": "all"
+  },
+  "grid": [
+    {
+      "lambda": 25,
+      "mae": 10.549056636318337,
+      "mae_adjusted": 10.565075443722717,
+      "n_games": 2160
+    },
+    {
+      "lambda": 50,
+      "mae": 10.514680271653583,
+      "mae_adjusted": 10.542018624009591,
+      "n_games": 2160
+    },
+    {
+      "lambda": 100,
+      "mae": 10.47845839117446,
+      "mae_adjusted": 10.521023695814527,
+      "n_games": 2160
+    },
+    {
+      "lambda": 200,
+      "mae": 10.441191557035532,
+      "mae_adjusted": 10.501352547945528,
+      "n_games": 2160
+    },
+    {
+      "lambda": 400,
+      "mae": 10.411378180052706,
+      "mae_adjusted": 10.48550015375107,
+      "n_games": 2160
+    },
+    {
+      "lambda": 800,
+      "mae": 10.393287101546884,
+      "mae_adjusted": 10.476307433157341,
+      "n_games": 2160
+    },
+    {
+      "lambda": 1600,
+      "mae": 10.385527421259454,
+      "mae_adjusted": 10.473218897769756,
+      "n_games": 2160
+    },
+    {
+      "lambda": 3200,
+      "mae": 10.386216563703085,
+      "mae_adjusted": 10.473097931116454,
+      "n_games": 2160
+    }
+  ],
+  "lambda": 1600,
+  "n_games": 2160,
+  "mae_adjusted": 10.473218897769756,
+  "mae_raw": 10.475241999311283,
+  "mae_home_only": 11.104256894732336,
+  "mae_ridge": 10.385527421259454,
+  "home_epa_per_play": -0.004383663881674106,
+  "provenance": {
+    "data": {
+      "pbp_2016.parquet": {
+        "rows": 47651,
+        "first_game": "2016-09-08",
+        "last_game": "2017-02-05"
+      },
+      "pbp_2017.parquet": {
+        "rows": 47245,
+        "first_game": "2017-09-07",
+        "last_game": "2018-02-04"
+      },
+      "pbp_2018.parquet": {
+        "rows": 47109,
+        "first_game": "2018-09-06",
+        "last_game": "2019-02-03"
+      },
+      "pbp_2019.parquet": {
+        "rows": 47260,
+        "first_game": "2019-09-05",
+        "last_game": "2020-02-02"
+      },
+      "pbp_2020.parquet": {
+        "rows": 47705,
+        "first_game": "2020-09-10",
+        "last_game": "2021-02-07"
+      },
+      "pbp_2021.parquet": {
+        "rows": 49922,
+        "first_game": "2021-09-09",
+        "last_game": "2022-02-13"
+      },
+      "pbp_2022.parquet": {
+        "rows": 49434,
+        "first_game": "2022-09-08",
+        "last_game": "2023-02-12"
+      },
+      "pbp_2023.parquet": {
+        "rows": 49665,
+        "first_game": "2023-09-07",
+        "last_game": "2024-02-11"
+      },
+      "pbp_2024.parquet": {
+        "rows": 49492,
+        "first_game": "2024-09-05",
+        "last_game": "2025-02-09"
+      },
+      "pbp_2025.parquet": {
+        "rows": 48771,
+        "first_game": "2025-09-04",
+        "last_game": "2026-02-08"
+      },
+      "pbp_2026.parquet": {
+        "rows": 24002,
+        "first_game": "2026-09-09",
+        "last_game": "2026-11-12"
+      }
+    },
+    "libraries": {
+      "python": "3.12",
+      "pandas": "3.1.1",
+      "numpy": "2.5.4",
+      "duckdb": "1.5.6",
+      "lightgbm": "4.7.0",
+      "scikit-learn": "1.9.1",
+      "dbt-duckdb": "1.11.1"
+    },
+    "seeds": {}
+  }
+}

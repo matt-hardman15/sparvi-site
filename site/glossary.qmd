@@ -58,3 +58,27 @@ description: "What the numbers on Sparvi mean and how they're calculated."
 **Δ14** compares the final (or most recent) 14 days with the season to date. Rates are in percentage points. [Why two weeks is enough for some numbers and not others](/baseball/two-week-signal/).
 
 [**Strike zone**]{#strike-zone}: the rulebook zone, from {{< meta baseball.loc_zone_bottom >}} to {{< meta baseball.loc_zone_top >}} of the batter's listed height, as wide as the plate, and a pitch counts if any part of the ball touches it. It's the definition Statcast uses for MLB from {{< meta baseball.season >}} and for Triple-A throughout; earlier MLB seasons recorded a taller zone set from each batter's stance, so Sparvi applies the height-based zone to every season and level to keep chase and zone rates comparable.
+
+## NFL {#nfl}
+
+[**EPA per play**]{#nfl-epa}: Expected points added. Every snap starts with an expected number of points for the offense, given down, distance, field position, and time; EPA is how much the play changed it. A 6-yard gain on 3rd-and-5 adds more than on 3rd-and-10. Sparvi uses nflverse's EPA model. Defense numbers are EPA allowed, so lower is better.
+
+[**Plays counted**]{#nfl-plays}: Passes (including sacks and scrambles) and runs with an EPA. Two-point tries, kneel-downs, and spikes are left out. Regular season only.
+
+[**Success rate (NFL)**]{#nfl-success}: Share of plays with positive EPA (the nflverse convention). College football pages use a different, yards-based definition, noted where it applies.
+
+**Pass/run splits**: Passes are dropbacks (attempts, sacks, and scrambles); runs are designed runs.
+
+[**Early-down pass rate**]{#nfl-edpr}: Pass rate on 1st and 2nd down when the offense's win probability is between {{< meta nfl.neutral_wp_lo >}} and {{< meta nfl.neutral_wp_hi >}}, so blowouts and comebacks don't skew it.
+
+[**PROE**]{#nfl-proe}: Pass rate over expected: actual pass rate minus nflverse's expected pass rate for the same situations (down, distance, field position, score, time), in percentage points. It describes tendency, not quality.
+
+[**Explosive plays**]{#nfl-explosive}: Passes of {{< meta nfl.explosive_pass_yds >}}+ yards and runs of {{< meta nfl.explosive_run_yds >}}+, as a share of plays.
+
+**Turnover rate**: Interceptions plus lost fumbles, per play.
+
+[**Garbage time**]{#nfl-garbage}: 4th-quarter plays when the offense's win probability is below {{< meta nfl.garbage_wp_lo >}} or above {{< meta nfl.garbage_wp_hi >}}. Teams play differently with the game decided, so the default view removes these plays; every team view can include them.
+
+[**Opponent-adjusted**]{#nfl-adjusted}: A team's own EPA/play with the strength of its opponents removed. Every play's EPA is fit on the offense, the defense, and home field together (ridge regression, as of each week), and each team is corrected by the average strength of the defenses (or offenses) it faced. The strength estimates use a penalty (λ = {{< meta nfl.adj_lambda >}} plays) chosen by how well they predict the next week's game margins. NFL schedules are balanced enough that the correction is usually small. [Details](/nfl/tools/team-efficiency.html).
+
+**Season to date / last {{< meta nfl.trailing_weeks >}} weeks**: The week slider shows every number as of the end of each week. "Season to date" counts weeks 1 through that week; the trailing window only the last {{< meta nfl.trailing_weeks >}} weeks. The final week's season-to-date numbers match the season totals exactly.
