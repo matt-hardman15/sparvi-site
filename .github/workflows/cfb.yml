@@ -28,7 +28,7 @@ jobs:
     timeout-minutes: 90
     steps:
       # Pushes with the deploy key (the one actor the main-branch ruleset exempts); see refresh-baseball.yml.
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           ssh-key: ${{ secrets.SPARVI_DEPLOY_KEY }}
 
@@ -38,14 +38,14 @@ jobs:
 
       - run: uv sync --frozen
 
-      - uses: quarto-dev/quarto-actions/setup@v2
+      - uses: quarto-dev/quarto-actions/setup@8a96df13519ee81fd526f2dfca5962811136661b  # v2.2.0
         with:
           version: ${{ env.QUARTO_VERSION }}
 
       # Raw CFBD data (and the response cache) carries over between runs: past seasons never change,
       # so only the current season is fetched. Raw data is never committed or published (CFBD terms).
       - name: Restore raw CFB data
-        uses: actions/cache/restore@v6
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: data/raw/cfb
           key: cfb-raw-${{ github.run_id }}
@@ -59,7 +59,7 @@ jobs:
           if [ -d data/raw/cfb ]; then uv run python ingest/cfb/pull.py --current; else uv run python ingest/cfb/pull.py --yes; fi
 
       - name: Save raw CFB data
-        uses: actions/cache/save@v6
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: data/raw/cfb
           key: cfb-raw-${{ github.run_id }}
