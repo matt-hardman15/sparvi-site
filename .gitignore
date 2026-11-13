@@ -22,3 +22,9 @@ PLAN*.md
 
 # Pitch-level model predictions: internal inputs to the snapshot marts, never published
 baseball/pitch_quality/output/pitch_predictions_*.parquet
+
+# Football dbt project: local database and build artifacts
+football/dbt/football.duckdb*
+football/dbt/target/
+football/dbt/logs/
+football/dbt/.user.yml
