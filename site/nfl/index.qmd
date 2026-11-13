@@ -4,7 +4,19 @@ image: /assets/og-default.png
 pagetitle: "NFL analytics: team EPA and efficiency"
 description: "NFL team efficiency from public play-by-play: offense and defense EPA per play, opponent-adjusted, week by week, with a page for every team."
 page-layout: full
+listing:
+  id: nfl-articles
+  contents: "*/index.qmd"
+  sort: "date desc"
+  template: ../_listing-cards.ejs
+  fields: [image, date, title, description, categories, card-key, card-prefix, card-suffix, card-label]
+  date-format: "MMM D, YYYY"
 ---
+
+## Articles
+
+::: {#nfl-articles}
+:::
 
 ## Tools
 

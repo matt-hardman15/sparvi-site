@@ -1,0 +1,215 @@
+{
+  "season": 2026,
+  "week": 10,
+  "team": "JAX",
+  "rival": "SF",
+  "net": 0.275865,
+  "rank": 1,
+  "off_rank": 5,
+  "def_rank": 3,
+  "net_raw": 0.276398,
+  "second": "SF",
+  "second_net": 0.262127,
+  "rival_net": 0.262127,
+  "rival_rank": 2,
+  "rival_off_rank": 1,
+  "rival_def_rank": 6,
+  "record": {
+    "JAX": [
+      6,
+      2
+    ],
+    "SF": [
+      7,
+      1
+    ]
+  },
+  "games": 8,
+  "n_teams": 32,
+  "bootstrap": {
+    "p_first": 0.4205,
+    "p_ahead_of_rival": 0.5045,
+    "samples": 2000,
+    "seed": 7
+  },
+  "history": {
+    "seasons": [
+      {
+        "season": 2016,
+        "team": "DAL",
+        "final_rank": 3,
+        "playoff_games": 1,
+        "made_sb": false,
+        "won_sb": false,
+        "champion": "NE"
+      },
+      {
+        "season": 2017,
+        "team": "JAX",
+        "final_rank": 1,
+        "playoff_games": 3,
+        "made_sb": false,
+        "won_sb": false,
+        "champion": "PHI"
+      },
+      {
+        "season": 2018,
+        "team": "CHI",
+        "final_rank": 1,
+        "playoff_games": 1,
+        "made_sb": false,
+        "won_sb": false,
+        "champion": "NE"
+      },
+      {
+        "season": 2019,
+        "team": "NE",
+        "final_rank": 3,
+        "playoff_games": 1,
+        "made_sb": false,
+        "won_sb": false,
+        "champion": "KC"
+      },
+      {
+        "season": 2020,
+        "team": "KC",
+        "final_rank": 2,
+        "playoff_games": 3,
+        "made_sb": true,
+        "won_sb": false,
+        "champion": "TB"
+      },
+      {
+        "season": 2021,
+        "team": "BUF",
+        "final_rank": 2,
+        "playoff_games": 2,
+        "made_sb": false,
+        "won_sb": false,
+        "champion": "LA"
+      },
+      {
+        "season": 2022,
+        "team": "PHI",
+        "final_rank": 3,
+        "playoff_games": 3,
+        "made_sb": true,
+        "won_sb": false,
+        "champion": "KC"
+      },
+      {
+        "season": 2023,
+        "team": "BAL",
+        "final_rank": 2,
+        "playoff_games": 2,
+        "made_sb": false,
+        "won_sb": false,
+        "champion": "KC"
+      },
+      {
+        "season": 2024,
+        "team": "MIN",
+        "final_rank": 5,
+        "playoff_games": 1,
+        "made_sb": false,
+        "won_sb": false,
+        "champion": "PHI"
+      },
+      {
+        "season": 2025,
+        "team": "LA",
+        "final_rank": 1,
+        "playoff_games": 3,
+        "made_sb": false,
+        "won_sb": false,
+        "champion": "SEA"
+      }
+    ],
+    "n": 10,
+    "finished_first": 3,
+    "finished_top3": 9,
+    "made_playoffs": 10,
+    "made_sb": 2,
+    "won_sb": 0
+  },
+  "predict": {
+    "n": 320,
+    "seasons": [
+      2016,
+      2025
+    ],
+    "r_net": 0.48762935540057334,
+    "r_win_pct": 0.4652854832326542
+  },
+  "provenance": {
+    "data": {
+      "pbp_2016.parquet": {
+        "rows": 47651,
+        "first_game": "2016-09-08",
+        "last_game": "2017-02-05"
+      },
+      "pbp_2017.parquet": {
+        "rows": 47245,
+        "first_game": "2017-09-07",
+        "last_game": "2018-02-04"
+      },
+      "pbp_2018.parquet": {
+        "rows": 47109,
+        "first_game": "2018-09-06",
+        "last_game": "2019-02-03"
+      },
+      "pbp_2019.parquet": {
+        "rows": 47260,
+        "first_game": "2019-09-05",
+        "last_game": "2020-02-02"
+      },
+      "pbp_2020.parquet": {
+        "rows": 47705,
+        "first_game": "2020-09-10",
+        "last_game": "2021-02-07"
+      },
+      "pbp_2021.parquet": {
+        "rows": 49922,
+        "first_game": "2021-09-09",
+        "last_game": "2022-02-13"
+      },
+      "pbp_2022.parquet": {
+        "rows": 49434,
+        "first_game": "2022-09-08",
+        "last_game": "2023-02-12"
+      },
+      "pbp_2023.parquet": {
+        "rows": 49665,
+        "first_game": "2023-09-07",
+        "last_game": "2024-02-11"
+      },
+      "pbp_2024.parquet": {
+        "rows": 49492,
+        "first_game": "2024-09-05",
+        "last_game": "2025-02-09"
+      },
+      "pbp_2025.parquet": {
+        "rows": 48771,
+        "first_game": "2025-09-04",
+        "last_game": "2026-02-08"
+      },
+      "pbp_2026.parquet": {
+        "rows": 24002,
+        "first_game": "2026-09-09",
+        "last_game": "2026-11-12"
+      }
+    },
+    "libraries": {
+      "python": "3.12",
+      "pandas": "3.1.1",
+      "numpy": "2.5.4",
+      "duckdb": "1.5.6",
+      "lightgbm": "4.7.0",
+      "scikit-learn": "1.9.1",
+      "dbt-duckdb": "1.11.1"
+    },
+    "seeds": {
+      "bootstrap": 7
+    }
+  }
+}

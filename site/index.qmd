@@ -7,7 +7,7 @@ page-layout: full
 title-block-style: none
 listing:
   id: latest
-  contents: ["baseball/*/index.qmd", "cfb/*/index.qmd"]
+  contents: ["baseball/*/index.qmd", "cfb/*/index.qmd", "nfl/*/index.qmd"]
   sort: "date desc"
   template: _listing-cards.ejs
   fields: [image, date, title, description, categories, card-key, card-prefix, card-suffix, card-label]
