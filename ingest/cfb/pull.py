@@ -12,6 +12,8 @@ Output (data/raw/cfb/, never committed; raw CFBD data is not redistributed):
     rankings_{season}.parquet   one row per poll x week x ranked team (AP, Coaches, CFP)
     wepa_{season}.parquet, sp_{season}.parquet   CFBD's season-level adjusted EPA (WEPA) and SP+ (benchmarks)
     plays_{season}.parquet      play-by-play with CFBD's EPA (`ppa`)
+    players/                    player-level data for every season (ingest/cfb/players.py), pulled on
+                                every run; finished seasons come from the cache
     cache/, _calls.csv          raw responses and the call log (see client.py)
 
 Calls: about five per season plus one per week of play-by-play. A finished week or season is
@@ -25,6 +27,7 @@ from datetime import UTC, datetime, timedelta
 
 import pandas as pd
 
+from ingest.cfb import players
 from ingest.cfb.client import BudgetExhausted, Client, cache_path
 from sparvi.config import RAW, cfb
 
@@ -178,6 +181,10 @@ def estimate(seasons: list[int]) -> int:
     return n
 
 
+def estimate_players() -> int:
+    return sum(1 for _, ep, prm, done, _ in players.requests() if not (done and cache_path(ep, prm).exists()))
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--current", action="store_true", help="only the current season")
@@ -186,7 +193,7 @@ def main() -> int:
     a = ap.parse_args()
     cfg = cfb()
     seasons = [cfg.season] if a.current else cfg.seasons
-    need = estimate(seasons)
+    need = estimate(seasons) + estimate_players()
     print(f"estimated uncached CFBD calls: {need} (approval line {cfg.approve_over}, reserve {cfg.call_reserve})")
     if a.estimate:
         return 0
@@ -203,6 +210,7 @@ def main() -> int:
     try:
         for s in seasons:
             pull_season(c, s)
+        players.pull(c)
     except BudgetExhausted as e:
         print(e)
         return 3

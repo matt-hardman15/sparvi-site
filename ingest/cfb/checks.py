@@ -8,6 +8,10 @@ contracts/cfb_ingest.yml, plus coverage and the score check agreed for F2 (Nov 1
   listed in the status file;
 - in season, games played more than a few days ago have a result.
 
+Player level (CFB-PLAYERS): every player file against the contract, plus: season stats link to the
+roster, usage and PPA describe the same players, heights are plausible, and every finished portal year
+has entries.
+
     python -m ingest.cfb.checks
 """
 from __future__ import annotations
@@ -25,6 +29,34 @@ MIN_SCORE_AGREEMENT = 0.90
 MAX_MISSING_PLAYS = 0.02
 BIG_GAP = 9
 STALE_DAYS = 3
+MIN_STATS_IN_ROSTER = 0.95     # player stats whose player id is on that season's roster
+MIN_PORTAL_ENTRIES = 1000      # a finished portal year (2021-25 had ~2,500-4,500)
+
+
+def player_checks(c: Checks, d, cfg) -> None:
+    from ingest.cfb import players
+    ss = players.seasons(cfg)
+    for s in ss["season"]:
+        ok = all([c.table(f"{t}_{s}", d / f"{f}_{s}.parquet", t) for t, f in
+                  (("roster", "roster"), ("player_stats", "stats"), ("player_usage", "usage"), ("player_ppa", "ppa"), ("player_wepa", "wepa"))])
+        if not ok:
+            continue
+        r = lambda f, s=s: f"read_parquet('{(d / f'{f}_{s}.parquet').as_posix()}')"  # noqa: E731
+        n, hit = c.sql(f"select count(distinct playerId), count(distinct playerId) filter (where playerId in (select id from {r('roster')})) from {r('stats')}")
+        share = hit / n if n else 1.0
+        c.add(f"player_stats_{s}: players on the roster", share >= MIN_STATS_IN_ROSTER,
+              f"{hit:,} of {n:,} players ({share:.1%}; bar {MIN_STATS_IN_ROSTER:.0%})")
+        diff = c.sql(f"select count(*) from ((select id, team from {r('usage')}) except (select id, team from {r('ppa')}))")[0]
+        c.add(f"player_usage_{s}: same players as PPA", diff == 0, f"{diff} usage rows without PPA" if diff else "")
+        bad, known = c.sql(f"select count(*) filter (where height not between 60 and 86), count(height) from {r('roster')}")
+        c.add(f"roster_{s}: heights plausible", bad <= 0.005 * known, f"{bad} of {known:,} outside 5'0\"-7'2\"")
+    for s in ss["portal"]:
+        if c.table(f"portal_{s}", d / f"portal_{s}.parquet", "portal") and players.portal_done(s):
+            n = c.rows[f"portal_{s}"]
+            c.add(f"portal_{s}: entries", n >= MIN_PORTAL_ENTRIES, f"{n:,} entries")
+    for s in ss["recruits"]:
+        if players.recruits_done(s):
+            c.table(f"recruits_{s}", d / f"recruits_{s}.parquet", "recruits")
 
 
 def run(today: date | None = None) -> bool:
@@ -73,6 +105,7 @@ def run(today: date | None = None) -> bool:
             c.add(f"games_{s}: results are current", stale == 0, f"{stale} games played by {cutoff} without a result" if stale else "")
             wk, last = c.sql(f"select max(week) filter (where completed and seasonType = 'regular'), max(startDate::timestamp::date) filter (where completed) from {g}")
             through = {"season": s, "week": wk, "last_game": str(last) if last else None}
+    player_checks(c, d / "players", cfg)
     ok = c.finish(through)
     # Listed for /status/: games whose play-by-play is far from the official score (kept in the ratings).
     st = json.loads((common.STATUS / "cfb.json").read_text(encoding="utf-8"))
