@@ -25,6 +25,8 @@ description: "What the numbers on Sparvi mean and how they're calculated."
 
 **CSW rate**: Called strikes plus whiffs, divided by pitches.
 
+[**Translated to MLB**]{#translation}: A Triple-A number run through its Triple-A → MLB line: the typical major-league value for players who posted that number in Triple-A before moving up (a weighted fit over the last two seasons' promotions). Each translation has a range that held {{< meta baseball.tr_band >}} of those players, and lines under {{< meta baseball.tr_min_aaa >}} PA or batters faced aren't translated. It describes where players like him have landed, not a forecast of his results. [How it's built](/baseball/aaa-translation/#method).
+
 **Chase induced**: Share of pitches outside the zone that the hitter swung at.
 
 ## Hitting
