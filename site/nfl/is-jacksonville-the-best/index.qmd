@@ -1,0 +1,115 @@
+---
+title: "Is Jacksonville the best team in football?"
+pagetitle: "Is Jacksonville the best team in the NFL?"
+description: "The Jaguars lead the NFL in opponent-adjusted efficiency through week 10, but barely. How sure that is, and what history says about the week-10 leader."
+date: 2026-11-13T22:00:00Z
+categories: [NFL, efficiency]
+image: thumb.png
+card-key: nfl.jax_p_first
+card-prefix: ""
+card-suffix: ""
+card-label: "chance Jacksonville is the NFL's single best team so far"
+---
+
+::: {.finding}
+Through week {{< meta nfl.jax_week >}} of {{< meta nfl.jax_season >}}, **Jacksonville ranks first in the NFL in opponent-adjusted net EPA per play** ({{< meta nfl.jax_net >}}), {{< meta nfl.jax_off_rank_ord >}} on offense and {{< meta nfl.jax_def_rank_ord >}} on defense. But the lead over the {{< meta nfl.jax_rival >}} is {{< meta nfl.jax_gap >}} EPA per play: resample each team's games and Jacksonville comes out ahead {{< meta nfl.jax_p_ahead >}} of the time, and first overall only {{< meta nfl.jax_p_first >}}.
+:::
+
+::: {.so-what}
+- **Treat Jacksonville and San Francisco as co-favorites, not a clear #1.** {{< meta nfl.jax_games >}} games isn't enough to separate teams this close.
+- **Expect the Jaguars to stay near the top.** The week-{{< meta nfl.jax_week >}} efficiency leader finished the regular season in the top three in {{< meta nfl.jax_hist_top3 >}} of the last {{< meta nfl.jax_hist_n >}} seasons and made the playoffs every time.
+- **Don't read it as a Super Bowl pick.** None of those {{< meta nfl.jax_hist_n >}} leaders won the title; {{< meta nfl.jax_hist_sb >}} reached the game.
+:::
+
+## The race at the top, week by week
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c"></div>
+  <div id="lines" class="plot-host"></div>
+  <p class="caption" id="cap"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt;
+  const meta = await S.load("/data/nfl/meta.json");
+  const season = meta.season, file = await S.load(`/data/nfl/team_week_${season}.json`);
+  const teams = new Map((await S.load("/data/nfl/teams.json")).map(t => [t.id, t]));
+  const k = file.fields;
+  const series = file.teams.map(t => ({ id: t.id, pts: file.weeks.map((w, i) => {
+      const s = t.series.no_gt, o = s.off_epa_adj[i], d = s.def_epa_adj[i];
+      return { week: w, net: o == null || d == null ? null : o - d, id: t.id };
+    }).filter(p => p.net != null) }));
+  const last = file.weeks.length - 1;
+  const latest = series.map(s => ({ id: s.id, net: (s.pts.find(p => p.week === file.weeks[last]) || {}).net })).filter(s => s.net != null)
+    .sort((a, b) => b.net - a.net);
+  const st = { team: "JAX" };
+  const top = new Set(latest.slice(0, 6).map(s => s.id).concat(["JAX"]));
+  // One y scale for the whole season, from week 3 on (week 1-2 values rest on one or two games).
+  const yd = S.stableDomain(series.flatMap(s => s.pts.filter(p => p.week >= 3).map(p => p.net)), { q: [0, 1] });
+  const c = document.getElementById("c"), host = document.getElementById("lines");
+  function draw() {
+    const pts = series.filter(s => top.has(s.id) || s.id === st.team).flatMap(s => s.pts.filter(p => p.week >= 3));
+    const others = series.filter(s => !top.has(s.id) && s.id !== st.team).flatMap(s => s.pts.filter(p => p.week >= 3));
+    const ends = latest.filter(s => top.has(s.id) || s.id === st.team).map(s => ({ ...s, week: file.weeks[last] }));
+    S.plot(host, w => Plot.plot({ ...S.plotDefaults(w), height: 380, marginRight: 46, grid: true, clip: true,
+      x: { label: "Through week →", domain: [3, file.weeks[last]], ticks: file.weeks.filter(x => x >= 3) },
+      y: { label: "↑ Net EPA/play, opponent-adjusted (offense minus defense)", domain: yd, tickFormat: "+.2f" },
+      marks: [
+        Plot.ruleY([0], { stroke: "#8a8b8f" }),
+        Plot.line(others, { x: "week", y: "net", z: "id", stroke: "#d9d8d3", strokeWidth: 1 }),
+        Plot.line(pts, { x: "week", y: "net", z: "id", stroke: d => d.id === st.team ? "#0f5257" : "#8a8b8f", strokeWidth: d => d.id === st.team ? 3 : 1.4 }),
+        Plot.text(ends, { x: "week", y: "net", text: "id", dx: 6, textAnchor: "start", fontSize: 10.5, fontWeight: d => d.id === st.team ? 700 : 500, clip: false }),
+        Plot.tip(pts, Plot.pointer({ x: "week", y: "net", title: d => `${teams.get(d.id).name}, through week ${d.week}\nNet EPA/play ${f.signed(d.net, 3)}` }))
+      ] }));
+    const me = latest.findIndex(s => s.id === st.team) + 1;
+    document.getElementById("cap").textContent = `${season}, garbage time removed. Dark line: ${teams.get(st.team).name}, now #${me} of ${latest.length}; gray: the current top six (labeled) and the rest of the league. `
+      + `Weeks 1–2 are left off: one or two games say little. This chart keeps updating each week; the article's numbers are as of week {{< meta nfl.jax_week >}}.`;
+  }
+  c.replaceChildren(S.select("Highlight", latest.map(s => [s.id, `${teams.get(s.id).name}`]), st.team, v => { st.team = v; draw(); }));
+  draw();
+})();
+</script>
+```
+
+## How Jacksonville got here
+
+The Jaguars are {{< meta nfl.jax_record >}} through week {{< meta nfl.jax_week >}}. Their offense ranks {{< meta nfl.jax_off_rank_ord >}} in expected points added per play and their defense {{< meta nfl.jax_def_rank_ord >}} in fewest allowed, once each opponent's strength is accounted for. The schedule hasn't flattered them: the opponent adjustment moves their net EPA/play by {{< meta nfl.jax_adj_shift >}}. San Francisco ({{< meta nfl.jax_rival_record >}}, {{< meta nfl.jax_rival_net >}}) gets there with the {{< meta nfl.jax_rival_off_rank_ord >}}-ranked offense and the {{< meta nfl.jax_rival_def_rank_ord >}}-ranked defense.
+
+## How sure is "first"?
+
+Not very. Jacksonville has played {{< meta nfl.jax_games >}} games and San Francisco {{< meta nfl.jax_rival_games >}}, and a single blowout moves a season-long average. To see how much, every team's games were resampled with replacement {{< meta nfl.jax_boot >}} times and the rankings recomputed. Jacksonville finished ahead of San Francisco in {{< meta nfl.jax_p_ahead >}} of those, which is a coin flip, and finished first in the whole league in {{< meta nfl.jax_p_first >}}: less likely than not.
+
+## What history says about the week-{{< meta nfl.jax_week >}} leader
+
+```{=html}
+<div id="hist"><div class="loading">Loading…</div></div>
+<p class="caption">The NFL's #1 team in opponent-adjusted net EPA/play through week {{< meta nfl.jax_week >}}, each season, and how it finished. Rank is the same measure at the end of the regular season.</p>
+<script>
+(async () => {
+  const S = Sparvi, h = await S.load("/data/nfl/jax_history.json");
+  const t = S.table(document.getElementById("hist"), [
+    { key: "season", label: "Season" }, { key: "name", label: "Leader after week " + h.week, align: "l" },
+    { key: "final_rank", label: "Final rank" }, { key: "playoff_games", label: "Playoff games" },
+    { key: "made_sb", label: "Super Bowl", fmt: (v, r) => r.won_sb ? "Won" : v ? "Lost" : "" },
+    { key: "champion", label: "Champion", align: "l" }], { sortKey: "season", desc: false, pageSize: 20 });
+  t.update(h.seasons);
+})();
+</script>
+```
+
+Across {{< meta nfl.jax_hist_first_season >}}–{{< meta nfl.jax_hist_last_season >}}, the leader after week {{< meta nfl.jax_week >}} finished the regular season first {{< meta nfl.jax_hist_first >}} times and in the top three {{< meta nfl.jax_hist_top3 >}} times; every one made the playoffs, {{< meta nfl.jax_hist_sb >}} reached the Super Bowl, and none won it. One of them was the 2017 Jaguars, who finished first. Efficiency this far into a season is a good guide to the rest of it, about as good as the standings: across {{< meta nfl.jax_pred_n >}} team-seasons, net EPA/play through week {{< meta nfl.jax_week >}} correlated with rest-of-season point differential at r = {{< meta nfl.jax_r_net >}}, and win percentage at {{< meta nfl.jax_r_win >}}. The playoffs are another matter: single-elimination football is short and noisy.
+
+<details class="method">
+<summary>Method, data, and limits</summary>
+
+**Data.** [nflverse](https://github.com/nflverse) play-by-play (CC-BY 4.0), regular season, garbage time removed (4th-quarter plays with the offense's win probability below {{< meta nfl.garbage_wp_lo >}} or above {{< meta nfl.garbage_wp_hi >}}). The article's numbers are as of week {{< meta nfl.jax_week >}} of {{< meta nfl.jax_season >}} and don't change; the chart above keeps updating.
+
+**Net EPA per play** is offense EPA/play minus defense EPA/play allowed. **Opponent-adjusted** numbers subtract the strength of the opponents each team actually faced, estimated with a ridge regression on every play (see the [team efficiency tool](/nfl/tools/team-efficiency.html) for details and its validation). Model version: [{{< meta models.nfl_team_efficiency >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/nfl/team_efficiency/card.yml) ({{< meta models.nfl_team_efficiency_status >}}).
+
+**The resampling** draws each team's games with replacement (same number of games, {{< meta nfl.jax_boot >}} times, fixed seed) and recomputes unadjusted net EPA/play; adjustment changes the top teams' numbers by almost nothing this season, and resampling the full ridge fit would add little but run time.
+
+**What it can't tell you.** Injuries, quarterback changes, and what's left on the schedule aren't in these numbers. Ten seasons is a small history: "none of ten won the Super Bowl" says the playoffs are noisy, not that the leader is cursed.
+
+Code: [`nfl/jacksonville/`](https://github.com/matt-hardman15/sparvi-site/tree/main/nfl/jacksonville) · Data: nflverse (CC-BY 4.0). Sparvi is not affiliated with the NFL or any club.
+</details>

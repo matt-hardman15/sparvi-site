@@ -166,4 +166,47 @@ if not abs(search["mae_adjusted"] - search["mae_raw"]) < 0.05:
     raise StaleProse("NFL method note says schedule adjustment predicts about as well as raw EPA; it no longer does.")
 if not search["mae_ridge"] < min(search["mae_adjusted"], search["mae_raw"]) < max(search["mae_adjusted"], search["mae_raw"]) < search["mae_home_only"]:
     raise StaleProse("NFL method note: shrunk ratings < adjusted/raw < home-field-only MAE no longer holds.")
+def ordinal(n: int) -> str:
+    return f"{n}{'th' if 10 <= n % 100 <= 20 else {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')}"
+
+
+# ---- "Is Jacksonville the best team in football?" (nfl/jacksonville/analysis.py, frozen at its week) ----
+J = json.loads((ROOT / "nfl" / "jacksonville" / "output" / "results.json").read_text(encoding="utf-8"))
+jh, jp, jb = J["history"], J["predict"], J["bootstrap"]
+names = {t["id"]: t["name"] for t in info}
+N.update({
+    "jax_season": str(J["season"]), "jax_week": str(J["week"]),
+    "jax_net": f"{J['net']:+.3f}", "jax_rank": str(J["rank"]), "jax_off_rank": str(J["off_rank"]), "jax_def_rank": str(J["def_rank"]),
+    "jax_record": f"{J['record']['JAX'][0]}–{J['record']['JAX'][1]}", "jax_games": str(J["games"]),
+    "jax_rival": names[J["rival"]], "jax_rival_net": f"{J['rival_net']:+.3f}",
+    "jax_rival_record": f"{J['record'][J['rival']][0]}–{J['record'][J['rival']][1]}",
+    "jax_gap": f"{J['net'] - J['rival_net']:.3f}",
+    "jax_p_first": f"{100 * jb['p_first']:.0f}%", "jax_p_ahead": f"{100 * jb['p_ahead_of_rival']:.0f}%", "jax_boot": f"{jb['samples']:,}",
+    "jax_hist_n": str(jh["n"]), "jax_hist_first": str(jh["finished_first"]), "jax_hist_top3": str(jh["finished_top3"]),
+    "jax_hist_playoffs": str(jh["made_playoffs"]), "jax_hist_sb": str(jh["made_sb"]), "jax_hist_won": str(jh["won_sb"]),
+    "jax_hist_first_season": str(jh["seasons"][0]["season"]), "jax_hist_last_season": str(jh["seasons"][-1]["season"]),
+    "jax_2017": next(f"{h['final_rank']}" for h in jh["seasons"] if h["season"] == 2017 and h["team"] == "JAX"),
+    "jax_r_net": f"{jp['r_net']:.2f}", "jax_r_win": f"{jp['r_win_pct']:.2f}", "jax_pred_n": f"{jp['n']:,}",
+    "jax_off_rank_ord": ordinal(J["off_rank"]), "jax_def_rank_ord": ordinal(J["def_rank"]),
+    "jax_rival_off_rank_ord": ordinal(J["rival_off_rank"]), "jax_rival_def_rank_ord": ordinal(J["rival_def_rank"]),
+    "jax_adj_shift": f"{abs(J['net'] - J['net_raw']):.4f}",
+    "jax_rival_games": str(J["record"][J["rival"]][0] + J["record"][J["rival"]][1]),
+})
+if not abs(J["net"] - J["net_raw"]) < 0.001:
+    raise StaleProse("JAX article: 'the opponent adjustment barely moves Jacksonville's number' no longer holds.")
+write_json(OUT / "jax_history.json", {"week": J["week"], "seasons": [
+    {"season": h["season"], "team": h["team"], "name": names.get(h["team"], h["team"]), "final_rank": h["final_rank"],
+     "playoff_games": h["playoff_games"], "made_sb": h["made_sb"], "won_sb": h["won_sb"],
+     "champion": names.get(h["champion"], h["champion"])} for h in jh["seasons"]]})
+# Claims the article makes, as of its week.
+if not (J["rank"] == 1 and J["rival_rank"] == 2):
+    raise StaleProse("JAX article: 'Jacksonville ranks first, San Francisco second' no longer holds for its week.")
+if not 0.3 <= jb["p_ahead_of_rival"] <= 0.7:
+    raise StaleProse("JAX article: 'Jacksonville vs. San Francisco is close to a coin flip' no longer holds.")
+if not jb["p_first"] < 0.5:
+    raise StaleProse("JAX article: 'less likely than not to be the single best team' no longer holds.")
+if not (jh["finished_top3"] > jh["finished_first"] and jh["won_sb"] == 0 and jh["made_playoffs"] == jh["n"]):
+    raise StaleProse("JAX article: the history summary (top 3 usually, #1 rarely, every one made the playoffs, none won it) no longer holds.")
+if not abs(jp["r_net"] - jp["r_win_pct"]) < 0.05:
+    raise StaleProse("JAX article: 'efficiency and record predict the rest of the season about equally' no longer holds.")
 write_numbers("nfl", N, "nfl/export_site_data.py")

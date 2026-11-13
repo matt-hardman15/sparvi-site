@@ -6,7 +6,7 @@ page-layout: full
 title-block-style: none
 listing:
   id: latest
-  contents: ["baseball/*/index.qmd", "cfb/*/index.qmd"]
+  contents: ["baseball/*/index.qmd", "cfb/*/index.qmd", "nfl/*/index.qmd"]
   sort: "date desc"
   type: grid
   grid-columns: 3
