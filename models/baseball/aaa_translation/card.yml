@@ -43,3 +43,4 @@ published_in:
 - baseball/aaa-translation
 - baseball/tools/triple-a
 - baseball/player
+experimental: validated before the backtest harness existed; its harness port is pending

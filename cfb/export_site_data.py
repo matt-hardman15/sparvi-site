@@ -19,11 +19,16 @@ import duckdb
 import numpy as np
 import pandas as pd
 
+from backtest.gate import require_passing
 from football.common.filters import CFB_GARBAGE_MARGIN
 from sparvi.config import RAW, ROOT, cfb
 from sparvi.io import SchemaError, StaleProse, write_json, write_numbers
 
 CFG = cfb()
+
+# Publish gate (PLAN-backtest §6): each model's output ships only with a passing backtest for this
+# exact version, or with its card's `experimental` flag (the pages then say so next to the version).
+MODEL_STATUS = {m: require_passing(m) for m in ['cfb_power_rating']}
 OUT = ROOT / "site" / "data" / "cfb"
 AR = ROOT / "cfb" / "adjusted_ratings" / "output"
 DB = Path(os.environ.get("FOOTBALL_DB_PATH", ROOT / "football" / "dbt" / "football.duckdb"))

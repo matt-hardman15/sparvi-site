@@ -54,8 +54,11 @@ def pitch_group(pt: pd.Series) -> pd.Series:
     )
 
 
-def build_features(df: pd.DataFrame) -> pd.DataFrame:
+def build_features(df: pd.DataFrame, heights: pd.Series | None = None) -> pd.DataFrame:
     """Return one row per pitch with handedness-normalized features.
+
+    `heights` (feet by batter id) defaults to the raw file; backtests pass the as-of loader's copy so
+    model code never reads raw data directly (PLAN-backtest §2).
 
     Lefties are mirrored so arm-side movement and release side are positive for
     everyone; a LHP sinker and a RHP sinker then live in the same feature space.
@@ -84,7 +87,7 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
     # Location and count. Statcast's plate_x is from the catcher's view (positive = first-base side),
     # so inside is negative for a right-handed batter: mirror so positive = inside for everyone.
     out["loc_x"] = np.where(df["stand"].eq("R"), -df["plate_x"], df["plate_x"])
-    height = df["batter"].map(batter_heights())  # NaN if unknown; LightGBM handles missing values
+    height = df["batter"].map(batter_heights() if heights is None else heights)  # NaN if unknown; LightGBM handles missing values
     out["loc_z"] = (df["plate_z"] - ZONE_BOT * height) / ((ZONE_TOP - ZONE_BOT) * height)
     out["balls"] = df["balls"]
     out["strikes"] = df["strikes"]

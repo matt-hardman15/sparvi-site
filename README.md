@@ -33,6 +33,7 @@ behind them in explorers readers can filter and check. Live at **https://sparvi.
 | `site/` | Quarto site. Player pages load one `data/baseball/players/{id}.json` each; the tools load columnar weekly snapshot files. Interactive charts use Observable Plot and d3, self-hosted in `site/assets/js/`. Article numbers come from `site/_generated/<sport>.yml` |
 | `site/build/` | `seo.py` runs after every render: canonical URLs, sitemap `lastmod` from each page's last commit, `sitemap-index.xml`, `robots.txt`, and a check that fails the build on missing or duplicate titles/descriptions; `og_default.py` draws the default social image |
 | `models/` | Model registry (A2): a `card.yml` per model behind a published number (Stuff+, Location+, Pitching+, the Triple-A translation, the NFL adjustment, the CFB power rating) and a record per version. `python -m sparvi.registry check` fails if model code changes without a new version; `promote` moves a challenger to champion only if it beats the champion on the same frozen evaluation set. Pages cite versions from `site/_generated/models.yml` |
+| `backtest/` | Backtest harness (A5): `asof.py` (the only way model code reads data: rows available by a date), `splits.py`, `metrics.py`, `leakage.py` (timestamp audit, future poisoning, label permutation, too-good, entity overlap, universe), `runner.py` (`python -m backtest.runner <model>`), `gate.py` (`require_passing` in every export), `ci.py`, and `runs/runs.jsonl` (every run, never edited). A model's pre-registered spec is the `backtest:` block in its card |
 | `forecasts/`, `scoring/`, `review/` | Later stages (ledger, scoring) and the review log; `review/model-changes.md` records every model version change |
 | `tests/` | Config, the dbt pipeline on synthetic data, and a browser test of every page |
 
@@ -78,6 +79,9 @@ GitHub Actions deploys to GitHub Pages:
 - **`cfb`**: Sundays and Mondays, August through January, pulls the current college football season
   (finished weeks and past seasons come from the raw-data cache: ~20 API calls a run), rebuilds the
   `cfb_*` models, ratings, power rating, and export, commits the CFB data, and deploys.
+- **`backtest`**: on pull requests touching models or the harness, a fast backtest with a comment (fails on a
+  leak, a regression, or an unflagged gate failure); on pushes to `main` and every Monday, full backtests whose
+  reports and run log are committed. Raw Statcast comes from `refresh-baseball`'s caches; batter heights from its own.
 - **`check`**: every pull request runs lint, both dbt projects on synthetic data, and a browser test of
   every page. `main` only accepts pull requests that pass. Dependabot opens weekly upgrade PRs.
 

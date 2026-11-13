@@ -193,5 +193,5 @@ Every Triple-A player with {{< meta baseball.tr_min_aaa >}}+ plate appearances o
 
 Code: [`baseball/aaa_translation/`](https://github.com/matt-hardman15/sparvi-site/tree/main/baseball/aaa_translation) and [`fct_translation_lines`](https://github.com/matt-hardman15/sparvi-site/tree/main/baseball/pd_pipeline/models/marts/fct_translation_lines.sql)
 
-**Model version.** [{{< meta models.aaa_translation >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/baseball/aaa_translation/card.yml).
+**Model version.** [{{< meta models.aaa_translation >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/baseball/aaa_translation/card.yml) ({{< meta models.aaa_translation_status >}}).
 </details>

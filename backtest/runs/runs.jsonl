@@ -1,0 +1,1 @@
+{"run_id":"5c930e83ad01","model":"stuff_plus","version":"1.0.1","ran_at":"2026-11-13T21:21:34Z","code_sha":"f05e152704517cf51eb3cb548921c0d9062777c9","kind":"full","passed":false,"primary":{"metric":"pearson_r","point":0.3013816525165655,"last_season":0.19259585980517263},"revision_safe":false}

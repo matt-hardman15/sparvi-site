@@ -15,11 +15,16 @@ from pathlib import Path
 import duckdb
 import pandas as pd
 
+from backtest.gate import require_passing
 from football.common.filters import NFL_GARBAGE_WP_HI, NFL_GARBAGE_WP_LO
 from sparvi.config import RAW, ROOT, nfl
 from sparvi.io import SchemaError, StaleProse, write_json, write_numbers
 
 CFG = nfl()
+
+# Publish gate (PLAN-backtest §6): each model's output ships only with a passing backtest for this
+# exact version, or with its card's `experimental` flag (the pages then say so next to the version).
+MODEL_STATUS = {m: require_passing(m) for m in ['nfl_team_efficiency']}
 OUT = ROOT / "site" / "data" / "nfl"
 TE = ROOT / "nfl" / "team_efficiency" / "output"
 DB = Path(os.environ.get("FOOTBALL_DB_PATH", ROOT / "football" / "dbt" / "football.duckdb"))

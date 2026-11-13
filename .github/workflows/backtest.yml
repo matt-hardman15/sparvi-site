@@ -1,0 +1,127 @@
+name: backtest
+
+# Backtests run on their own (PLAN-backtest §5): nobody has to remember to run one.
+#   pull request touching models or the harness -> fast backtest (latest fold) of every model with a
+#     pre-registered `backtest:` block; a comment with the metrics vs. the last recorded run; the job
+#     fails on any leakage test, a regression beyond tolerance, or a failed gate on a model that
+#     isn't flagged experimental (make this check required in the "Protect main" ruleset to block merges)
+#   push to main touching the same paths, and every Monday -> full backtests; reports and the run log
+#     are committed (every run is logged, passing or not)
+# Raw Statcast comes from refresh-baseball's caches; batter heights from this workflow's own cache
+# (never committed, never published).
+
+on:
+  pull_request:
+    paths: [models/**, backtest/**, baseball/pitch_quality/**, ingest/**, football/common/**,
+            nfl/team_efficiency/**, cfb/adjusted_ratings/**, .github/workflows/backtest.yml]
+  push:
+    branches: [main]
+    paths: [models/**, backtest/**, baseball/pitch_quality/**, ingest/**, football/common/**,
+            nfl/team_efficiency/**, cfb/adjusted_ratings/**]
+  schedule:
+    - cron: "30 10 * * 1"     # Mondays
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: backtest-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backtest:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ssh-key: ${{ github.event_name != 'pull_request' && secrets.SPARVI_DEPLOY_KEY || '' }}
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        with:
+          enable-cache: true
+
+      - run: uv sync --frozen
+
+      - name: Raw-data cache keys (same as refresh-baseball)
+        id: cfg
+        run: |
+          season=$(uv run python -m sparvi.config baseball.season)
+          past=$(uv run python -m sparvi.config baseball.past_seasons)
+          echo "season=$season" >> "$GITHUB_OUTPUT"
+          echo "key=baseball-raw-past-${past// /-}-v1" >> "$GITHUB_OUTPUT"
+          {
+            echo "paths<<EOF"
+            for y in $past; do echo "data/raw/*_${y}.parquet"; done
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Restore past-season raw data
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: ${{ steps.cfg.outputs.paths }}
+          key: ${{ steps.cfg.outputs.key }}
+          fail-on-cache-miss: true
+
+      # Same path list as refresh-baseball's (a cache entry only matches its exact paths).
+      - name: Restore current-season raw data
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: data/raw/*_${{ steps.cfg.outputs.season }}.parquet
+          key: baseball-raw-cur-${{ steps.cfg.outputs.season }}-none
+          restore-keys: baseball-raw-cur-${{ steps.cfg.outputs.season }}-
+          fail-on-cache-miss: true
+
+      # Batter heights (Location+'s zone) aren't in refresh-baseball's caches: this workflow keeps its own.
+      - name: Restore batter heights
+        id: heights
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: data/raw/batter_heights.parquet
+          key: baseball-heights-${{ github.run_id }}
+          restore-keys: baseball-heights-
+
+      - name: Pull missing batter heights (MLB Stats API)
+        run: uv run python -c "from ingest.baseball.pull import pull_heights; pull_heights()"
+
+      - name: Save batter heights
+        if: steps.heights.outputs.cache-matched-key == ''
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: data/raw/batter_heights.parquet
+          key: baseball-heights-${{ github.run_id }}
+
+      - name: Fast backtest (pull request)
+        id: fast
+        if: github.event_name == 'pull_request'
+        run: uv run python -m backtest.ci --fast --summary backtest-summary.md
+
+      - name: Full backtest (main, weekly)
+        id: full
+        if: github.event_name != 'pull_request'
+        run: uv run python -m backtest.ci --write --summary backtest-summary.md
+
+      - name: Summary and PR comment
+        if: ${{ !cancelled() && hashFiles('backtest-summary.md') != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat backtest-summary.md >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            gh pr comment ${{ github.event.pull_request.number }} --body-file backtest-summary.md --edit-last \
+              || gh pr comment ${{ github.event.pull_request.number }} --body-file backtest-summary.md
+          fi
+
+      - name: Commit reports and the run log
+        if: ${{ !cancelled() && github.event_name != 'pull_request' && steps.full.outcome != 'skipped' }}
+        run: |
+          git config user.name "sparvi-bot"
+          git config user.email "sparvi-bot@users.noreply.github.com"
+          uv run python -m sparvi.registry export      # the method boxes quote the latest report
+          git add models/*/*/backtest backtest/runs site/_generated/models.yml site/data/models
+          if git diff --cached --quiet; then echo "Nothing new."; exit 0; fi
+          git commit -m "Backtest run $(date -u +%Y-%m-%d)"
+          git pull --rebase --autostash origin main
+          git push origin HEAD:main
