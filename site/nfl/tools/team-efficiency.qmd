@@ -78,6 +78,14 @@ How well each team moves the ball, and stops it, per play. **EPA per play** (exp
   let table = null, tableKey = "";
   const host = document.getElementById("scatter");
 
+  const domCache = {};
+  function domains(file, off, def) {
+    const key = [st.season, st.win, off, def].join("|");
+    if (domCache[key]) return domCache[key];
+    const xs = [], ys = [];
+    weeks().forEach((wk, j) => { if (wk >= 3) for (const r of rowsAt(file, j)) if (r[off] != null && r[def] != null) { xs.push(r[off]); ys.push(r[def]); } });
+    return (domCache[key] = [S.stableDomain(xs, { q: [0, 1] }), S.stableDomain(ys, { q: [0, 1] })]);
+  }
   function rowsAt(file, k) {
     return file.teams.map(t => {
       const s = t.series[st.gt], r = { id: t.id, nick: teams.get(t.id).nick, name: teams.get(t.id).name };
@@ -108,8 +116,14 @@ How well each team moves the ball, and stops it, per play. **EPA per play** (exp
       if (r && r[off] != null && r[def] != null) trail.push({ week: weeks()[j], x: r[off], y: r[def] });
     }
     const mx = d3.mean(rows, d => d.x), my = d3.mean(rows, d => d.y);
-    const ext = (a) => { const [lo, hi] = d3.extent(a); const pad = (hi - lo) * 0.12 || 0.05; return [lo - pad, hi + pad]; };
-    const xd = ext(rows.map(d => d.x).concat(trail.map(d => d.x))), yd = ext(rows.map(d => d.y).concat(trail.map(d => d.y)));
+    // One axis range per season x window x variant, pooled over every week from week 3 on
+    // (S.stableDomain), so moving the week slider moves the teams, not the axes. Earlier weeks' extreme
+    // values sit at the edge with a dashed outline; the tooltip keeps the true numbers.
+    const [xd, yd] = domains(file, off, def);
+    const pin = (v, d) => Math.max(d[0], Math.min(d[1], v));
+    const pr = rows.filter(d => d.x != null && d.y != null).map(d => ({ ...d, x0: d.x, y0: d.y, x: pin(d.x, xd), y: pin(d.y, yd),
+                                                                        _off: pin(d.x, xd) !== d.x || pin(d.y, yd) !== d.y }));
+    for (const t of trail) { t.x = pin(t.x, xd); t.y = pin(t.y, yd); }
     const corner = (text, frameAnchor) => Plot.text([text], { frameAnchor, dx: frameAnchor.endsWith("left") ? 6 : -6,
       dy: frameAnchor.startsWith("top") ? 8 : -8, fill: "#8a8b8f", fontSize: 11, fontStyle: "italic" });
     S.plot(host, w => {
@@ -125,11 +139,12 @@ How well each team moves the ball, and stops it, per play. **EPA per play** (exp
           corner(w < 560 ? "Good O" : "Good offense, weak defense", "bottom-right"),
           corner(w < 560 ? "Weak both" : "Weak on both sides", "bottom-left"),
           trail.length > 1 ? Plot.line(trail, { x: "x", y: "y", stroke: "#0f5257", strokeWidth: 1.5, strokeOpacity: 0.7, marker: "dot" }) : null,
-          Plot.dot(rows, { x: "x", y: "y", r: R, fill: "p_net", fillOpacity: st.team ? 0.25 : 0.9, stroke: "#fff" }),
-          Plot.text(rows, { x: "x", y: "y", text: "id", fontSize: FS, fontWeight: 600, fill: d => S.textOn(S.pctColor(d.p_net)), fillOpacity: st.team ? 0.4 : 1 }),
-          st.team ? Plot.dot(rows.filter(d => d.id === st.team), { x: "x", y: "y", r: R + 2, fill: "p_net", stroke: "#16181d", strokeWidth: 2 }) : null,
-          st.team ? Plot.text(rows.filter(d => d.id === st.team), { x: "x", y: "y", text: "id", fontSize: 10, fontWeight: 700, fill: d => S.textOn(S.pctColor(d.p_net)) }) : null,
-          Plot.tip(rows, Plot.pointer({ x: "x", y: "y", title: d => `${d.name}, through week ${W}${st.win === "last4" ? ` (last ${meta.trailing_weeks} weeks)` : ""}\nOffense ${f.signed(d.x, 3)} EPA/play · defense ${f.signed(d.y, 3)} allowed\nNet ${f.signed(d.net, 3)} (${Math.round(d.p_net)}th percentile) · ${d.games} G\nClick for the team page` })),
+          Plot.dot(pr, { x: "x", y: "y", r: R, fill: "p_net", fillOpacity: st.team ? 0.25 : 0.9, stroke: d => d._off ? "#16181d" : "#fff",
+                         strokeDasharray: d => d._off ? "2,2" : null }),
+          Plot.text(pr, { x: "x", y: "y", text: "id", fontSize: FS, fontWeight: 600, fill: d => S.textOn(S.pctColor(d.p_net)), fillOpacity: st.team ? 0.4 : 1 }),
+          st.team ? Plot.dot(pr.filter(d => d.id === st.team), { x: "x", y: "y", r: R + 2, fill: "p_net", stroke: "#16181d", strokeWidth: 2 }) : null,
+          st.team ? Plot.text(pr.filter(d => d.id === st.team), { x: "x", y: "y", text: "id", fontSize: 10, fontWeight: 700, fill: d => S.textOn(S.pctColor(d.p_net)) }) : null,
+          Plot.tip(pr, Plot.pointer({ x: "x", y: "y", title: d => `${d.name}, through week ${W}${st.win === "last4" ? ` (last ${meta.trailing_weeks} weeks)` : ""}\nOffense ${f.signed(d.x0, 3)} EPA/play · defense ${f.signed(d.y0, 3)} allowed\nNet ${f.signed(d.net, 3)} (${Math.round(d.p_net)}th percentile) · ${d.games} G\nClick for the team page` })),
         ] });
       fig.style.cursor = "pointer";
       fig.addEventListener("click", () => { if (fig.value) location.href = S.nflTeamHref(fig.value.id, `season=${st.season}`); });

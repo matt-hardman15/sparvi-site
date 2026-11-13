@@ -123,6 +123,21 @@ Stuff+ grades a pitch only on physical traits the pitcher controls: velocity, mo
     return (seasonCache[key] = out);
   }
 
+  // One axis range per level x window x grade x chart, pooled over every snapshot date's qualified
+  // pitchers (S.stableDomain), so moving the slider moves the dots, not the axes.
+  const domCache = {};
+  function pitcherDomains(wf, win, sx, sy) {
+    const key = [st.level, st.window, sx, sy].join("|");
+    if (domCache[key]) return domCache[key];
+    const xs = [], ys = [];
+    wf.dates.forEach((_, k) => {
+      const fk = S.prorate(meta, st.level, k, st.window);
+      for (const r of S.snapRows(wf, win, k, "pitches"))
+        if (r[sx] != null && r[sy] != null && S.qualifies(Q, st.level, null, r.pitches, r.role, fk)) { xs.push(r[sx]); ys.push(r[sy]); }
+    });
+    return (domCache[key] = [S.stableDomain(xs, { include: [100] }), S.stableDomain(ys, { include: [100] })]);
+  }
+
   async function draw() {
     const i = idx(), j = baseIndex(i), win = st.view === "pitches" ? null : st.window, g = gk(), G = gl();
     const fac = S.prorate(meta, st.level, i, st.window);
@@ -158,16 +173,19 @@ Stuff+ grades a pitch only on physical traits the pitcher controls: velocity, mo
             chart: st.view === "pitchers" ? st.chart : DEF.chart }, DEF);
     const split = st.chart === "split";
     const sx = split ? "stuff_plus" : g, sy = split ? "loc_plus" : "rv_plus";
-    const pts = rows.filter(d => d[sx] != null && d[sy] != null), hits = shown.filter(d => d[sx] != null && d[sy] != null);
+    const [xd, yd] = st.view === "pitchers" ? pitcherDomains(wf, win, sx, sy) : [null, null];
+    const pts = S.onScale(rows.filter(d => d[sx] != null && d[sy] != null), sx, sy, xd, yd);
+    const hits = S.onScale(shown.filter(d => d[sx] != null && d[sy] != null), sx, sy, xd, yd);
     S.plot(host, w => st.view === "pitchers"
-      ? Plot.plot({ ...S.plotDefaults(w), height: 340, grid: true,
-          x: { label: `${split ? "Stuff+" : G} →`, nice: true }, y: { label: split ? "↑ Location+" : "↑ RV+ (results)", nice: true },
+      ? Plot.plot({ ...S.plotDefaults(w), height: 340, grid: true, clip: true,
+          x: { label: `${split ? "Stuff+" : G} →`, domain: xd }, y: { label: split ? "↑ Location+" : "↑ RV+ (results)", domain: yd },
           color: split ? { type: "diverging", domain: [70, 130], pivot: 100, range: ["#2a78d6", "#d9d8d3", "#eb6834"], legend: true, label: "RV+ (results)" } : undefined,
           marks: [Plot.ruleX([100], { stroke: "#8a8b8f", strokeDasharray: "3,3" }), Plot.ruleY([100], { stroke: "#8a8b8f", strokeDasharray: "3,3" }),
-            Plot.dot(pts, { x: sx, y: sy, r: 3.5, fill: split ? "rv_plus" : "#2a78d6", fillOpacity: st.q ? 0.15 : split ? 0.75 : 0.55 }),
-            st.q ? Plot.dot(hits, { x: sx, y: sy, r: 6, fill: "#eb6834", stroke: "#fff", strokeWidth: 1.5 }) : null,
-            st.q ? Plot.text(hits.slice(0, 8), { x: sx, y: sy, text: "name", dy: -12, fontWeight: 600 }) : null,
-            Plot.tip(pts, Plot.pointer({ x: sx, y: sy, title: d => `${d.name} (${d.team}, ${d.role})\nStuff+ ${f.num(d.stuff_plus,0)} · Location+ ${f.num(d.loc_plus,0)} · Pitching+ ${f.num(d.pitching_plus,0)}\nRV+ ${f.num(d.rv_plus,0)} · ${f.int(d.pitches)} pitches · ${d.games} G, ${d.starts} GS` }))] })
+            Plot.dot(pts.filter(d => !d._off), { x: "_x", y: "_y", r: 3.5, fill: split ? "rv_plus" : "#2a78d6", fillOpacity: st.q ? 0.15 : split ? 0.75 : 0.55 }),
+            S.offScaleDots(pts),
+            st.q ? Plot.dot(hits, { x: "_x", y: "_y", r: 6, fill: "#eb6834", stroke: "#fff", strokeWidth: 1.5 }) : null,
+            st.q ? Plot.text(hits.slice(0, 8), { x: "_x", y: "_y", text: "name", dy: -12, fontWeight: 600 }) : null,
+            Plot.tip(pts, Plot.pointer({ x: "_x", y: "_y", title: d => `${d.name} (${d.team}, ${d.role})\nStuff+ ${f.num(d.stuff_plus,0)} · Location+ ${f.num(d.loc_plus,0)} · Pitching+ ${f.num(d.pitching_plus,0)}\nRV+ ${f.num(d.rv_plus,0)} · ${f.int(d.pitches)} pitches · ${d.games} G, ${d.starts} GS` }))] })
       : Plot.plot({ ...S.plotDefaults(w), height: 340, grid: true, clip: true,
           x: { label: "Horizontal break, arm side + (in) →", domain: [-24, 24] }, y: { label: "↑ Induced vertical break (in)", domain: [-24, 24] },
           color: { type: "diverging", domain: [70, 130], pivot: 100, range: ["#2a78d6", "#d9d8d3", "#eb6834"], legend: true, label: G },

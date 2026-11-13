@@ -79,6 +79,19 @@ Every {{< meta baseball.season >}} Triple-A hitter and pitcher, ranked against t
   let tbl, side;
   const MLB_TIP = "Translated to MLB: the typical major-league value for a Triple-A line like this one (blank under the translation's minimum)";
   const host = document.getElementById("scatter");
+  // One axis range per side x window x view, pooled over every snapshot date's qualified players
+  // (S.stableDomain), so moving the slider moves the dots, not the axes.
+  const domCache = {};
+  function domains(snap, pitch, tr, X, Y) {
+    const key = [st.side, st.window, st.view].join("|");
+    if (domCache[key]) return domCache[key];
+    const xs = [], ys = [];
+    snap.dates.forEach((_, k) => {
+      for (const r of S.snapRows(snap, st.window, k, pitch ? "pitches" : "pa").map(tr))
+        if (r.qualified && r[X] != null && r[Y] != null) { xs.push(r[X]); ys.push(r[Y]); }
+    });
+    return (domCache[key] = [S.stableDomain(xs), S.stableDomain(ys)]);
+  }
   async function draw() {
     const pitch = st.side === "pitchers", i = idx();
     const snap = await files[st.side](st.window), std = await files[st.side]();
@@ -120,14 +133,17 @@ Every {{< meta baseball.season >}} Triple-A hitter and pitcher, ranked against t
     const hi = st.team ? rows.filter(d => d.team === st.team) : (st.q ? shown : []);
     const base = all.filter(d => d.qualified && roleOk(d));
     const X = pitch ? "bb_pct" : "chase_pct", Y = pitch ? "k_pct" : "xwoba";
-    S.plot(host, w => Plot.plot({ ...S.plotDefaults(w), height: 320, grid: true,
-      x: { label: (pitch ? "Walk rate" : "Chase rate") + (mlb ? ", translated to MLB" : "") + " →", tickFormat: "%" },
-      y: { label: (pitch ? "↑ Strikeout rate" : "↑ xwOBA") + (mlb ? ", translated" : ""), tickFormat: pitch ? "%" : ".3f" },
+    const [xd, yd] = domains(snap, pitch, tr, X, Y);
+    const bs = S.onScale(base, X, Y, xd, yd), hs = S.onScale(hi, X, Y, xd, yd);
+    S.plot(host, w => Plot.plot({ ...S.plotDefaults(w), height: 320, grid: true, clip: true,
+      x: { label: (pitch ? "Walk rate" : "Chase rate") + (mlb ? ", translated to MLB" : "") + " →", tickFormat: "%", domain: xd },
+      y: { label: (pitch ? "↑ Strikeout rate" : "↑ xwOBA") + (mlb ? ", translated" : ""), tickFormat: pitch ? "%" : ".3f", domain: yd },
       marks: [
-        Plot.dot(base, { x: X, y: Y, r: 3, fill: "#c9c7c0", fillOpacity: 0.7 }),
-        Plot.dot(hi, { x: X, y: Y, r: 5.5, fill: "#eb6834", stroke: "#fff", strokeWidth: 1.2 }),
-        hi.length <= 30 ? Plot.text(hi, { x: X, y: Y, text: d => d.name.split(" ").filter(w => !/^(Jr\.?|Sr\.?|II|III|IV)$/.test(w)).slice(-1)[0], dy: -10, fontSize: 10.5 }) : null,
-        Plot.tip(base.concat(hi), Plot.pointer({ x: X, y: Y, title: d => `${d.name} (${d.team}${pitch ? `, ${d.role}` : ""})\n${pitch ? `K ${f.pct(d.k_pct)} · BB ${f.pct(d.bb_pct)}` : `Chase ${f.pct(d.chase_pct)} · xwOBA ${f.woba(d.xwoba)}`}` }))] }));
+        Plot.dot(bs.filter(d => !d._off), { x: "_x", y: "_y", r: 3, fill: "#c9c7c0", fillOpacity: 0.7 }),
+        S.offScaleDots(bs),
+        Plot.dot(hs, { x: "_x", y: "_y", r: 5.5, fill: "#eb6834", stroke: "#fff", strokeWidth: 1.2 }),
+        hs.length <= 30 ? Plot.text(hs, { x: "_x", y: "_y", text: d => d.name.split(" ").filter(w => !/^(Jr\.?|Sr\.?|II|III|IV)$/.test(w)).slice(-1)[0], dy: -10, fontSize: 10.5 }) : null,
+        Plot.tip(bs.concat(hs), Plot.pointer({ x: "_x", y: "_y", title: d => `${d.name} (${d.team}${pitch ? `, ${d.role}` : ""})\n${pitch ? `K ${f.pct(d.k_pct)} · BB ${f.pct(d.bb_pct)}` : `Chase ${f.pct(d.chase_pct)} · xwOBA ${f.woba(d.xwoba)}`}` }))] }));
     const when = `Through ${S.dateLabel(dates[i])}${st.window === "last30" ? ", last 30 days" : ""}`;
     const who = pitch && st.role !== "all" ? S.ROLES[st.role].toLowerCase() : "pitchers";
     const r = base.length > 2 ? S.corr(base, X, Y) : NaN;
