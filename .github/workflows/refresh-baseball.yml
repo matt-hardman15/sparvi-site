@@ -43,7 +43,7 @@ jobs:
       # Push with the repo's deploy key, not GITHUB_TOKEN: main requires PRs with passing checks,
       # and on a personal repo the only actor that can be exempted for an unattended push is a
       # deploy key. The private key lives only in the SPARVI_DEPLOY_KEY secret.
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           ssh-key: ${{ secrets.SPARVI_DEPLOY_KEY }}
 
@@ -53,7 +53,7 @@ jobs:
 
       - run: uv sync --frozen
 
-      - uses: quarto-dev/quarto-actions/setup@v2
+      - uses: quarto-dev/quarto-actions/setup@8a96df13519ee81fd526f2dfca5962811136661b  # v2.2.0
         with:
           version: ${{ env.QUARTO_VERSION }}
 
@@ -75,13 +75,13 @@ jobs:
       # committed or published (rule 1).
       - name: Restore past-season raw data
         id: raw_cache
-        uses: actions/cache/restore@v6
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: ${{ steps.cfg.outputs.paths }}
           key: ${{ steps.cfg.outputs.key }}
 
       - name: Restore current-season raw data
-        uses: actions/cache/restore@v6
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: data/raw/*_${{ steps.cfg.outputs.season }}.parquet
           key: baseball-raw-cur-${{ steps.cfg.outputs.season }}-${{ github.run_id }}
@@ -104,13 +104,13 @@ jobs:
       # StaleProse check) shouldn't throw away an hour of downloading.
       - name: Save past-season raw data
         if: steps.raw_cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v6
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: ${{ steps.cfg.outputs.paths }}
           key: ${{ steps.cfg.outputs.key }}
 
       - name: Save current-season raw data
-        uses: actions/cache/save@v6
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: data/raw/*_${{ steps.cfg.outputs.season }}.parquet
           key: baseball-raw-cur-${{ steps.cfg.outputs.season }}-${{ github.run_id }}
@@ -219,7 +219,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       - name: Cache key from sparvi.toml
         id: cfg
         run: |
@@ -233,12 +233,12 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
       # Restoring counts as use, which resets the 7-day eviction clock.
-      - uses: actions/cache/restore@v6
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: ${{ steps.cfg.outputs.paths }}
           key: ${{ steps.cfg.outputs.key }}
       - name: Touch the current-season cache too
-        uses: actions/cache/restore@v6
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: data/raw/*_${{ steps.cfg.outputs.season }}.parquet
           key: baseball-raw-cur-${{ steps.cfg.outputs.season }}-keepalive
