@@ -1,10 +1,10 @@
 {
-  "run_id": "5c930e83ad01",
+  "run_id": "7a510ef1fa4f",
   "model": "stuff_plus",
   "version": "1.0.1",
   "kind": "full",
-  "ran_at": "2026-11-13T21:21:34Z",
-  "code_sha": "f05e152704517cf51eb3cb548921c0d9062777c9",
+  "ran_at": "2026-11-13T21:44:01Z",
+  "code_sha": "7ee2b2163db3ad1811e1d7ad7616d2ef69bee1c1",
   "lockfile": "e6f7c7528ac332cf",
   "preregistered_at": "2026-11-13",
   "spec": {
@@ -48,15 +48,15 @@
   "evaluation": {
     "metric": "pearson_r",
     "n": 324,
-    "point": 0.3013816525165655,
+    "point": 0.2970318049352052,
     "baselines": {
       "last_season": {
         "value": 0.19259585980517263,
         "paired": {
-          "est": 0.10878579271139288,
+          "est": 0.10443594513003257,
           "ci90": [
-            -0.0017191858290599785,
-            0.2156145333693237
+            -0.00823326867628959,
+            0.21246371403324749
           ],
           "n": 324,
           "blocks": 324,
@@ -73,7 +73,7 @@
       "ci_excludes_zero": false
     },
     "passed": false,
-    "gap": 0.10878579271139288
+    "gap": 0.10443594513003257
   },
   "leakage": {
     "timestamp": {
@@ -96,16 +96,16 @@
     },
     "label_permutation": {
       "passed": true,
-      "r": -0.002317383400857541,
+      "r": -0.060499935393312936,
       "ci90": [
-        -0.10530817902303095,
-        0.10009938401692411
+        -0.14868154374947212,
+        0.03904185943421974
       ],
       "n": 324
     },
     "too_good": {
       "passed": true,
-      "r": 0.3013816525165655,
+      "r": 0.2970318049352052,
       "ceiling": 0.9
     },
     "entity_overlap": {
@@ -123,7 +123,7 @@
   "passed": false,
   "primary": {
     "metric": "pearson_r",
-    "point": 0.3013816525165655,
+    "point": 0.2970318049352052,
     "last_season": 0.19259585980517263
   },
   "revision_safe": false,
