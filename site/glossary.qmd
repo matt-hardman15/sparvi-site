@@ -88,3 +88,18 @@ description: "What every number on Sparvi means and how it's calculated: pitch g
 [**Opponent-adjusted**]{#nfl-adjusted}: A team's own EPA/play with the strength of its opponents removed. Every play's EPA is fit on the offense, the defense, and home field together (ridge regression, as of each week), and each team is corrected by the average strength of the defenses (or offenses) it faced. The strength estimates use a penalty (λ = {{< meta nfl.adj_lambda >}} plays) chosen by how well they predict the next week's game margins. NFL schedules are balanced enough that the correction is usually small. [Details](/nfl/tools/team-efficiency.html).
 
 **Season to date / last {{< meta nfl.trailing_weeks >}} weeks**: The week slider shows every number as of the end of each week. "Season to date" counts weeks 1 through that week; the trailing window only the last {{< meta nfl.trailing_weeks >}} weeks. The final week's season-to-date numbers match the season totals exactly.
+
+## College football {#cfb}
+
+[**EPA per play (college)**]{#cfb-epa}: Expected points added per play, from CollegeFootballData.com's EPA model (it calls it PPA). Same idea as the NFL version: how much each play changed the offense's expected points. Passes include sacks; runs include fumbles, because the data doesn't say which kind of play fumbled.
+
+[**Success rate (college)**]{#cfb-success}: A play gains at least 50% of the yards to go on 1st down, 70% on 2nd, or all of them on 3rd and 4th. (The NFL pages use a different definition: positive EPA.)
+
+[**Garbage time (college)**]{#cfb-garbage}: Plays when the score margin is more than {{< meta cfb.garbage_q2 >}} points in the 2nd quarter, {{< meta cfb.garbage_q3 >}} in the 3rd, or {{< meta cfb.garbage_q4 >}} in the 4th. Removed by default.
+
+[**Power rating**]{#cfb-power}: How many points better than an average FBS team a team should be on a neutral field. It combines opponent-adjusted EPA per play with CFBD's Elo rating, weighted by how well each predicted game margins ({{< meta cfb.bt_first_season >}}–{{< meta cfb.bt_last_season >}}). See the [team ratings tool](/cfb/tools/team-ratings.html).
+
+[**Elo**]{#cfb-elo}: A rating that moves after every game according to the result and the opponent's rating, carried from season to season. Sparvi uses CollegeFootballData.com's version.
+
+[**AP vs. power**]{#cfb-gap}: Where the power rating ranks a team relative to its AP poll rank. "12 spots lower" means the numbers rate the team well below where voters have it.
+

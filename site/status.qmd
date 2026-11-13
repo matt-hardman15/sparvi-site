@@ -15,8 +15,9 @@ site keeps showing the last data that passed. This page shows the most recent re
 (async () => {
   const S = Sparvi;
   const sports = [["baseball", "Baseball", "Baseball Savant (Statcast) and the MLB Stats API"],
-                  ["nfl", "NFL", "nflverse play-by-play, schedules, and team stats"]];
-  const through = (k, d) => k === "nfl"
+                  ["nfl", "NFL", "nflverse play-by-play, schedules, and team stats"],
+                  ["cfb", "College football", "CollegeFootballData.com play-by-play, games, polls, and lines"]];
+  const through = (k, d) => k === "nfl" || k === "cfb"
     ? (d.week ? `${d.season} season through week ${d.week} (last game ${d.last_game})` : "no games yet")
     : Object.entries(d).map(([lvl, day]) => `${lvl === "mlb" ? "MLB" : "Triple-A"} through ${day}`).join(" · ");
   const cards = await Promise.all(sports.map(async ([key, label, source]) => {
@@ -36,6 +37,8 @@ site keeps showing the last data that passed. This page shows the most recent re
         S.el("div", { class: "table-wrap" }, S.el("table", { class: "s-table status-table" },
           S.el("thead", {}, S.el("tr", {}, S.el("th", {}, ""), S.el("th", {}, "Check"), S.el("th", {}, "Result"))),
           S.el("tbody", {}, rows)))),
+      (st.score_gaps || []).length ? S.el("details", {}, S.el("summary", {}, `Games whose play-by-play final score is off by 9+ points (${st.score_gaps.length}; kept in the ratings)`),
+        S.el("ul", {}, st.score_gaps.map(g => S.el("li", {}, `${g.season}: ${g.away} at ${g.home}, result ${g.result}, play-by-play ${g.pbp}`)))) : "",
       S.el("p", { class: "note" }, `Source: ${source}.`));
   }));
   document.getElementById("status").replaceChildren(...cards);

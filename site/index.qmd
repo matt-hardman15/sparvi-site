@@ -6,7 +6,7 @@ page-layout: full
 title-block-style: none
 listing:
   id: latest
-  contents: "baseball/*/index.qmd"
+  contents: ["baseball/*/index.qmd", "cfb/*/index.qmd"]
   sort: "date desc"
   type: grid
   grid-columns: 3
@@ -20,7 +20,7 @@ listing:
 Sparvi publishes analysis meant to change a decision, not just describe a game. Every finding comes with the data behind it, in an explorer you can filter and search, so you can check it yourself or come to a different conclusion.
 
 ```{=html}
-<div class="sport-strip"><span class="live">Baseball</span><span>Basketball · planned</span><span>Football · planned</span><span>Soccer · planned</span></div>
+<div class="sport-strip"><span class="live">Baseball</span><span>Basketball · planned</span><span class="live">Football</span><span>Soccer · planned</span></div>
 ```
 :::
 
@@ -37,6 +37,7 @@ Sparvi publishes analysis meant to change a decision, not just describe a game. 
 <a class="card-link" href="/baseball/tools/triple-a.html"><span class="kicker">Baseball · Tool</span><h3>Triple-A explorer</h3><p>Swing decisions, contact quality, and pitching profiles for every Triple-A player, with league percentiles and recent changes.</p></a>
 <a class="card-link" href="/baseball/tools/rule-5.html"><span class="kicker">Baseball · Tool</span><h3>Rule 5 board</h3><p>Triple-A players likely eligible for the Rule 5 Draft and left off 40-man rosters, ranked on stuff, swing decisions, and contact quality.</p></a>
 <a class="card-link" href="/baseball/farm-systems/#x2"><span class="kicker">Baseball · Tool</span><h3>Farm-system scores</h3><p>Every org's in-season Triple-A improvement on six measures, {{< meta baseball.farm_y0 >}} and {{< meta baseball.farm_y1 >}}, with intervals, sample sizes, and each org's players.</p></a>
+<a class="card-link" href="/cfb/tools/team-ratings.html"><span class="kicker">College Football · Tool</span><h3>Team ratings</h3><p>Every FBS team's power rating and opponent-adjusted offense and defense, week by week, next to its AP and CFP rank.</p></a>
 <a class="card-link" href="/nfl/tools/team-efficiency.html"><span class="kicker">NFL · Tool</span><h3>Team efficiency</h3><p>Every NFL offense and defense in EPA per play, opponent-adjusted or raw, week by week since {{< meta nfl.first_season >}}.</p></a>
 <a class="card-link" href="/glossary.html"><span class="kicker">Reference</span><h3>Glossary</h3><p>What every number on the site means and how it's calculated.</p></a>
 </div>

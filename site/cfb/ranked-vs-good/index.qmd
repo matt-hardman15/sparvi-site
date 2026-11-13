@@ -1,0 +1,92 @@
+---
+title: "Ranked vs. actually good"
+pagetitle: "College football: ranked vs. actually good"
+description: "When the AP poll and an efficiency-based power rating disagree about a game, the power rating has been right more often. Which ranked teams it doubts now."
+date: 2026-11-13
+categories: [college football, ratings]
+image: thumb.png
+---
+
+::: {.finding}
+Since {{< meta cfb.pl_first_season >}}, the power rating picked the winner in {{< meta cfb.pl_power_right >}} of {{< meta cfb.pl_n_games >}} games involving an AP-ranked team, against {{< meta cfb.pl_ap_right >}} for the poll. When the two disagreed ({{< meta cfb.pl_n_disagree >}} games), the power rating was right {{< meta cfb.pl_disagree_right >}} of the time (90% interval {{< meta cfb.pl_disagree_ci >}}): a real edge, but a modest one.
+:::
+
+::: {.so-what}
+- **Treat a ranking far above the power rating with suspicion.** Through week {{< meta cfb.gap_week >}} of {{< meta cfb.season >}}, the numbers rate these ranked teams well below their poll spot: {{< meta cfb.gap_over >}}.
+- **And the reverse:** {{< meta cfb.gap_under >}} play better than their ranking says.
+- **Neither is a lock.** The power rating misses about one game in four, and the betting market predicts margins better than any rating here ([method](/cfb/tools/team-ratings.html)).
+:::
+
+## The poll and the numbers, week by week
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c"></div>
+  <div class="controls" id="c2"></div>
+  <div id="scatter" class="plot-host"></div>
+  <p class="caption" id="scap"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt, U = S.urlState;
+  const meta = await S.load("/data/cfb/meta.json");
+  const SEASONS = meta.seasons.map(String);
+  const DEF = { season: String(meta.season) };
+  const st = { season: SEASONS.includes(U.get("season")) ? U.get("season") : DEF.season, week: U.get("week") == null ? null : +U.get("week") };
+  const file = s => S.load(`/data/cfb/team_week_${s}.json`);
+  const weeks = () => meta.weeks[st.season].filter(w => w >= meta.min_week);
+  const wi = () => { const w = weeks(), k = st.week == null ? w.length - 1 : w.indexOf(st.week); return k < 0 ? w.length - 1 : k; };
+  const lastWeek = () => Math.max(...meta.weeks[st.season]);
+  const weekLabel = w => (w === lastWeek() && +st.season < meta.season ? "the bowls" : `week ${w}`);
+  const c = document.getElementById("c"), c2 = document.getElementById("c2"), host = document.getElementById("scatter");
+  const MAXR = 80;   // power ranks beyond this sit at the top edge (fixed axis for the whole season)
+
+  function controls() {
+    c.replaceChildren(S.select("Season", SEASONS.slice().reverse().map(s => [s, s]), st.season, v => { st.season = v; st.week = null; controls(); draw(); }));
+    c2.replaceChildren(S.dateSlider(weeks(), wi(), k => { st.week = weeks()[k]; draw(); }, { label: k => `Through ${weekLabel(weeks()[k])}`, aria: "Week" }).el);
+  }
+  async function draw() {
+    const F = await file(st.season), w = weeks()[wi()], k = F.weeks.indexOf(w);
+    const rows = F.teams.map(t => ({ id: t.id, conf: t.conf, ap: t.series.no_gt.ap[k], rank: t.series.no_gt.rank[k], power: t.series.no_gt.power[k] }))
+      .filter(r => r.ap != null && r.rank != null).map(r => ({ ...r, y: Math.min(r.rank, MAXR), gap: r.rank - r.ap }));
+    const big = rows.filter(r => Math.abs(r.gap) >= 10);
+    S.plot(host, wd => Plot.plot({ ...S.plotDefaults(wd), height: Math.min(520, Math.max(360, wd * 0.6)), grid: true, clip: true,
+      x: { label: "AP rank →", domain: [0.5, 25.5], ticks: [1, 5, 10, 15, 20, 25] },
+      y: { label: "↑ Power rating rank (FBS)", domain: [MAXR + 1, 0], ticks: [1, 10, 20, 30, 40, 50, 60, 70, 80] },
+      marks: [
+        Plot.line([[0.5, 0.5], [25.5, 25.5]], { stroke: "#8a8b8f", strokeDasharray: "3,3" }),
+        Plot.dot(rows, { x: "ap", y: "y", r: 6, fill: d => d.gap >= 10 ? "#2a78d6" : d.gap <= -10 ? "#eb6834" : "#c9c7c0", stroke: "#fff" }),
+        Plot.text(big.length <= 12 ? big : big.slice(0, 12), { x: "ap", y: "y", text: "id", dy: -11, fontSize: 10.5, fontWeight: 600 }),
+        Plot.tip(rows, Plot.pointer({ x: "ap", y: "y", title: d => `${d.id} (${d.conf})\nAP ${d.ap} · power rating #${d.rank} (${f.signed(d.power, 1)} points vs. an average FBS team)` }))
+      ] }));
+    U.set({ season: st.season, week: wi() === weeks().length - 1 ? null : w }, DEF);
+    const over = rows.filter(r => r.gap >= 10).length, under = rows.filter(r => r.gap <= -10).length;
+    document.getElementById("scap").textContent = `${st.season}, AP poll after ${weekLabel(w)}. Each dot is a ranked team; on the dashed line the poll and the power rating agree. `
+      + `Below the line (blue), the numbers rate a team 10 or more spots lower than the poll (${over} teams); above it (orange), 10 or more spots higher (${under}).`;
+  }
+  controls(); draw();
+})();
+</script>
+```
+
+## What the power rating is
+
+The [team ratings tool](/cfb/tools/team-ratings.html) has the details. In short: every play's expected points added (EPA), adjusted for the strength of each opponent a team actually faced, combined with CFBD's Elo rating, which remembers past seasons. The result is in points: how much better than an average FBS team a team should be on a neutral field. Neither half is new on its own; together they predicted margins better than either ({{< meta cfb.bt_mae_power >}} points of average miss, against {{< meta cfb.bt_mae_elo >}} for Elo).
+
+Polls are a different kind of thing. Voters rank résumés: who a team beat and whether it has lost. A team that wins close games against weak opponents can climb the poll while playing like a middling team, and a strong team with two early losses can sit low for weeks. The power rating doesn't care about record, only how well a team has played, adjusted for whom it played.
+
+## How often each is right
+
+Both were asked the same question before every game from week {{< meta cfb.pl_min_week >}} on, {{< meta cfb.pl_first_season >}}–{{< meta cfb.pl_last_season >}}: which team wins? For the poll, the better-ranked team (unranked counts as below everyone); for the power rating, the higher-rated team, as of the week before. Across {{< meta cfb.pl_n_games >}} games with at least one ranked team, the power rating was right {{< meta cfb.pl_power_right >}} of the time and the poll {{< meta cfb.pl_ap_right >}}. Most of the time they agree. In the {{< meta cfb.pl_n_disagree >}} games where they didn't, the power rating won {{< meta cfb.pl_disagree_right >}} of the time; the 90% interval, {{< meta cfb.pl_disagree_ci >}}, stays above a coin flip, but not by much.
+
+<details class="method">
+<summary>Method, data, and limits</summary>
+
+**Data.** Play-by-play, games, polls, and pre-game Elo from [CollegeFootballData.com](https://collegefootballdata.com) for FBS seasons {{< meta cfb.first_season >}}–{{< meta cfb.season >}}. Games between FBS teams only; bowls count as the week after the last regular-season week.
+
+**The comparison.** Each game's pick uses information from before it: the AP poll released for that week, and the power rating through the previous week. Ties in AP rank (two unranked teams) are left out. The power rating's two weights (efficiency vs. Elo) were fit on these seasons' games; its separate backtest, which predicts each season from the others, is in the [tool's method note](/cfb/tools/team-ratings.html).
+
+**What it can't tell you.** Picking winners is a coarse test: it ignores how confident each side was. The sample of disagreements is small ({{< meta cfb.pl_n_disagree >}} games), so the edge could be smaller than it looks. Injuries and quarterback changes reach the poll faster than the numbers. And the betting market, which isn't a rating at all, beats both ({{< meta cfb.bt_mae_line_close >}} points of average miss for the closing line).
+
+Code: [`cfb/`](https://github.com/matt-hardman15/sparvi-site/tree/main/cfb) · Data provided by CollegeFootballData.com. Sparvi is not affiliated with the NCAA, the AP, the College Football Playoff, any conference, or any school.
+</details>

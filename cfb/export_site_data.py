@@ -59,6 +59,7 @@ games = con.sql("select * from cfb_team_games order by season, team, week, side,
 adj = pd.read_csv(AR / "adjusted_team_week.csv")
 power = pd.read_csv(AR / "power_team_week.csv")
 M = json.loads((AR / "metrics.json").read_text(encoding="utf-8"))
+PL = json.loads((AR / "polls.json").read_text(encoding="utf-8"))
 
 # Poll rank as of the end of each week: the poll released for week w+1 (CFBD labels polls by the week
 # they apply to); the final postseason poll counts after the bowls (the last week).
@@ -70,6 +71,7 @@ weeks_by_season: dict[int, list[int]] = {}
 for season in CFG.seasons:
     fbs = pd.read_parquet(RAW / "cfb" / f"teams_{season}.parquet")
     ids = sorted(fbs["school"])
+    conf_of = dict(zip(fbs["school"], fbs["conference"], strict=True))
     teams_all.append(fbs.assign(season=season))
     w = week[(week["season"] == season) & week["team"].isin(ids)]
     weeks = sorted(int(x) for x in w["week"].unique())
@@ -109,7 +111,7 @@ for season in CFG.seasons:
                 if missing:
                     raise SchemaError(f"team_week_{season}: missing fields {missing}")
                 series[gt] = s
-            out_teams.append({"id": t, "series": series})
+            out_teams.append({"id": t, "conf": conf_of.get(t), "series": series})
         suffix = "" if win == "std" else "_last4"
         write_json(OUT / f"team_week_{season}{suffix}.json",
                    {"season": season, "window": win, "weeks": weeks, "fields": fields, "teams": out_teams})
@@ -134,7 +136,8 @@ for season in CFG.seasons:
 
 ta = pd.concat(teams_all).sort_values("season").drop_duplicates("school", keep="last")
 info = [{"id": r["school"], "slug": slug(r["school"]), "name": r["school"], "nick": r.get("mascot"),
-         "conf": r["conference"], "color": r.get("color")} for _, r in ta.sort_values("school").iterrows()]
+         "abbr": r.get("abbreviation") or r["school"][:4].upper(), "conf": r["conference"], "color": r.get("color")}
+        for _, r in ta.sort_values("school").iterrows()]
 if len({t["slug"] for t in info}) != len(info):
     raise SchemaError("two CFB teams share a URL slug")
 write_json(OUT / "teams.json", info)
@@ -151,6 +154,17 @@ meta = {
              "garbage_margin": {str(k): v for k, v in CFB_GARBAGE_MARGIN.items()}},
     "power_model": {k: pm[k] for k in ("home_points", "points_per_net_epa", "points_per_elo")},
 }
+# The current gaps between the AP poll and the power rating, for the article (as of the latest week).
+cur = power[power["season"] == CFG.season]
+gap_rows = []
+if len(cur):
+    lw = int(cur["week"].max())
+    pr = cur[cur["week"] == lw].set_index("team")["rank"]
+    apc = ranks[(ranks["season"] == CFG.season) & (ranks["poll"] == "AP Top 25") & (ranks["seasonType"] == "regular")]
+    apc = apc[apc["week"] == apc["week"].max()].set_index("school")["rank"]
+    gap_rows = sorted(({"team": t, "ap": int(a), "power": int(pr[t]), "gap": int(pr[t] - a)} for t, a in apc.items() if t in pr.index),
+                      key=lambda r: -r["gap"])
+    meta["poll_gaps"] = {"week": lw, "rows": gap_rows}
 write_json(OUT / "meta.json", meta, indent=1)
 
 # ---- prose numbers (site/_generated/cfb.yml) --------------------------------------------------
@@ -176,7 +190,19 @@ N = {
     "wt_ours_vs_wepa": f2(-wt["ours_minus_wepa_mae"]),
     "wt_ours_vs_wepa_ci": f"{-wt['ours_minus_wepa_mae_ci90'][1]:.2f} to {-wt['ours_minus_wepa_mae_ci90'][0]:.2f}",
     "pm_home": f"{pm['home_points']:.1f}",
+    "pl_n_games": f"{PL['n_games']:,}", "pl_ap_right": f"{100 * PL['ap_right']:.1f}%", "pl_power_right": f"{100 * PL['power_right']:.1f}%",
+    "pl_n_disagree": f"{PL['n_disagree']:,}", "pl_disagree_right": f"{100 * PL['power_right_when_disagree']:.0f}%",
+    "pl_disagree_ci": f"{100 * PL['power_right_when_disagree_ci90'][0]:.0f}% to {100 * PL['power_right_when_disagree_ci90'][1]:.0f}%",
+    "pl_first_season": str(PL["seasons"][0]), "pl_last_season": str(PL["seasons"][1]), "pl_min_week": str(PL["min_week"]),
 }
+if gap_rows:
+    fmt = lambda r: f"{r['team']} (AP {r['ap']}, power rating {r['power']})"  # noqa: E731
+    over = [r for r in gap_rows if r["gap"] >= 10][:3]
+    under = sorted((r for r in gap_rows if r["gap"] <= -3), key=lambda r: r["gap"])[:3]
+    N["gap_week"] = str(meta["poll_gaps"]["week"])
+    N["gap_over"] = "; ".join(map(fmt, over)) if over else "none by 10 or more spots"
+    N["gap_under"] = "; ".join(map(fmt, under)) if under else "none by 3 or more spots"
+    N["gap_n_over10"] = str(sum(r["gap"] >= 10 for r in gap_rows))
 # Claims the CFB pages make about the validation. If one stops holding, rewrite the sentence.
 if not (bt["power_minus_elo_mae"] < 0 and bt["power_minus_elo_mae_ci90"][1] < 0):
     raise StaleProse("CFB: 'the power rating predicts better than Elo' (interval excluding zero) no longer holds.")
@@ -190,4 +216,7 @@ if not (wt["ours_minus_wepa_mae"] < 0 and wt["ours_minus_wepa_mae_ci90"][1] < 0)
     raise StaleProse("CFB: 'our end-of-season rating beats WEPA on next season's games' no longer holds.")
 if not wt["elo_pregame"]["mae"] < wt["ours"]["mae"] and wt["sp_plus"]["mae"] < wt["ours"]["mae"]:
     raise StaleProse("CFB: 'preseason Elo and SP+ beat both end-of-season efficiency ratings' no longer holds.")
+if not (PL["power_right"] > PL["ap_right"] and PL["power_right_when_disagree_ci90"][0] > 0.5):
+    raise StaleProse("CFB article: 'the power rating picks winners more often than the AP poll, and is right more "
+                     "often when they disagree (interval above 50%)' no longer holds.")
 write_numbers("cfb", N, "cfb/export_site_data.py")

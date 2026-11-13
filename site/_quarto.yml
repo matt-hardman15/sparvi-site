@@ -14,6 +14,7 @@ project:
 metadata-files:
   - _generated/baseball.yml
   - _generated/nfl.yml
+  - _generated/cfb.yml
 
 website:
   title: "Sparvi"
@@ -31,6 +32,8 @@ website:
         href: baseball/index.qmd
       - text: NFL
         href: nfl/index.qmd
+      - text: College Football
+        href: cfb/index.qmd
       - text: Tools
         menu:
           - text: Baseball
@@ -46,12 +49,16 @@ website:
           - text: NFL
           - text: Team efficiency
             href: nfl/tools/team-efficiency.qmd
+          - text: "---"
+          - text: College Football
+          - text: Team ratings
+            href: cfb/tools/team-ratings.qmd
       - text: Glossary
         href: glossary.qmd
       - text: About
         href: about.qmd
   page-footer:
-    left: "Sparvi · Free and independent. Baseball data: Baseball Savant and the MLB Stats API. NFL data: nflverse (CC-BY 4.0). Sparvi is not affiliated with MLB, the NFL, or any club."
+    left: "Sparvi · Free and independent. Baseball data: Baseball Savant and the MLB Stats API. NFL data: nflverse (CC-BY 4.0). College football data provided by CollegeFootballData.com. Sparvi is not affiliated with MLB, the NFL, the NCAA, or any club or school."
     right: "[Data status](/status.html) · [About](/about.html)"
 
 format:
