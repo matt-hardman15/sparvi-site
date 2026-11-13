@@ -42,3 +42,4 @@ published_in:
 - site/data/nfl/*.json
 - nfl/tools/team-efficiency
 - nfl/teams
+experimental: validated before the backtest harness existed; its harness port is pending

@@ -83,7 +83,9 @@ jobs:
       - name: Restore current-season raw data
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
-          path: data/raw/*_${{ steps.cfg.outputs.season }}.parquet
+          path: |
+            data/raw/*_${{ steps.cfg.outputs.season }}.parquet
+            data/raw/batter_heights.parquet
           key: baseball-raw-cur-${{ steps.cfg.outputs.season }}-${{ github.run_id }}
           restore-keys: baseball-raw-cur-${{ steps.cfg.outputs.season }}-
 
@@ -112,7 +114,9 @@ jobs:
       - name: Save current-season raw data
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
-          path: data/raw/*_${{ steps.cfg.outputs.season }}.parquet
+          path: |
+            data/raw/*_${{ steps.cfg.outputs.season }}.parquet
+            data/raw/batter_heights.parquet
           key: baseball-raw-cur-${{ steps.cfg.outputs.season }}-${{ github.run_id }}
 
       # Data checks (ingest/baseball/checks.py, contracts/baseball_ingest.yml) run before anything is

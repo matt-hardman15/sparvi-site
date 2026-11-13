@@ -93,5 +93,5 @@ Both were asked the same question before every game from week {{< meta cfb.pl_mi
 
 Code: [`cfb/`](https://github.com/matt-hardman15/sparvi-site/tree/main/cfb) · Data provided by CollegeFootballData.com. Sparvi is not affiliated with the NCAA, the AP, the College Football Playoff, any conference, or any school.
 
-**Model version.** [{{< meta models.cfb_power_rating >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/cfb/power_rating/card.yml).
+**Model version.** [{{< meta models.cfb_power_rating >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/cfb/power_rating/card.yml) ({{< meta models.cfb_power_rating_status >}}).
 </details>

@@ -124,5 +124,5 @@ Every {{< meta baseball.season >}} grade, at both levels and by individual pitch
 
 Code: [`baseball/pitch_quality/`](https://github.com/matt-hardman15/sparvi-site/tree/main/baseball/pitch_quality)
 
-**Model version.** [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/baseball/stuff_plus/card.yml). Versions, what changed, and why: [model changes](https://github.com/matt-hardman15/sparvi-site/blob/main/review/model-changes.md).
+**Model version.** [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/baseball/stuff_plus/card.yml) ({{< meta models.stuff_plus_status >}}). Versions, what changed, and why: [model changes](https://github.com/matt-hardman15/sparvi-site/blob/main/review/model-changes.md). {{< meta models.stuff_plus_backtest >}}.
 </details>

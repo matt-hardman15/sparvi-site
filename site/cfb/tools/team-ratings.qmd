@@ -172,7 +172,7 @@ Every FBS team, week by week. The **power rating** is how many points better tha
 
 **What it can't tell you.** Ratings early in the season rest on a handful of games. Games against FCS teams count for the opponent adjustment but aren't shown. Injuries, quarterback changes, and motivation aren't in the data. CFBD's play-by-play has gaps in about 3% of games ([data status](/status.html)).
 
-**Model version.** [{{< meta models.cfb_power_rating >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/cfb/power_rating/card.yml).
+**Model version.** [{{< meta models.cfb_power_rating >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/cfb/power_rating/card.yml) ({{< meta models.cfb_power_rating_status >}}).
 
 Data provided by [CollegeFootballData.com](https://collegefootballdata.com). Sparvi is not affiliated with the NCAA, any conference, or any school.
 :::

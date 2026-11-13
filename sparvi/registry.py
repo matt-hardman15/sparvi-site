@@ -216,11 +216,31 @@ def log_change(root: Path, day: date, title: str, body: str) -> None:
 # ---- what the site shows --------------------------------------------------------------------------------
 def site_numbers(root: Path = ROOT) -> dict[str, str]:
     """Prose numbers for models.yml: '<name>' -> 'Stuff+ v1.0.0', '<name>_version' -> '1.0.0'."""
+    from backtest.gate import status
     out = {}
     for m in models(root):
         if m.card["status"] == "champion":
             out[m.name] = f"{m.card['title']} v{m.version}"
             out[f"{m.name}_version"] = m.version
+            st = status(m.name, root if root != ROOT else None)
+            bt = m.dir / "backtest" / f"{m.version}.json"
+            if bt.exists():
+                r = json.loads(bt.read_text(encoding="utf-8"))
+                ev = r["evaluation"]
+                b, v = next(iter(ev["baselines"].items()))
+                vault = m.card.get("backtest", {}).get("vault", {})
+                out[f"{m.name}_backtest"] = (
+                    f"Backtest ({r['ran_at'][:10]}, folds {', '.join(map(str, r['folds']))}, n {ev['n']}): "
+                    f"{ev['metric'].replace('pearson_r', 'r')} {ev['point']:.3f} vs. {v['value']:.3f} for {b.replace('_', ' ')}; "
+                    f"edge {v['paired']['est']:+.3f} (90% interval {v['paired']['ci90'][0]:+.3f} to {v['paired']['ci90'][1]:+.3f}); "
+                    f"gate {'passed' if r['gate']['passed'] else 'not passed'}; leakage tests "
+                    f"{'all passed' if all(x['passed'] for x in r['leakage'].values()) else 'FAILED'}; "
+                    f"revision-safe: {'yes' if r['revision_safe'] else 'no (data from before snapshots began)'}; "
+                    f"vault: {'none yet' if not vault.get('seasons') else ', '.join(map(str, vault['seasons']))} "
+                    f"({vault.get('accesses', 0)} accesses)")
+            out[f"{m.name}_status"] = ("validated in the backtest harness" if st["state"] == "validated"
+                                       else f"experimental: {st['reason']}" if st["state"] == "experimental"
+                                       else "not yet backtested")
     return out
 
 
@@ -231,7 +251,8 @@ def site_registry(root: Path = ROOT) -> list[dict]:
         rows.append({"model": m.name, "title": m.card["title"], "sport": m.card["sport"], "status": m.card["status"],
                      "version": m.version, "registered": rec["registered"], "primary": rec["eval"]["primary"],
                      "primary_value": rec["metrics"][rec["eval"]["primary"]],
-                     "challengers": [c["version"] for c in m.card.get("challengers", [])]})
+                     "challengers": [c["version"] for c in m.card.get("challengers", [])],
+                     "experimental": m.card.get("experimental")})
     return rows
 
 

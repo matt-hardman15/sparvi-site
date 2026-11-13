@@ -16,7 +16,7 @@ from sparvi.config import ROOT
 
 sys.path.insert(0, str(ROOT / "baseball" / "pitch_quality"))
 from features import build_features  # noqa: E402
-from train import MIN_PITCHES, SEED, fit_kinds, pitcher_season, predict_all  # noqa: E402
+from train import MIN_PITCHES, SEED, fit_kinds, pitcher_season, predict_all  # noqa: E402, F401  (MIN_PITCHES: query strings)
 
 KINDS = ["stuff"]
 
@@ -30,8 +30,10 @@ def _pitches(loader, season: int, as_of) -> pd.DataFrame:
     return build_features(loader.load(f"statcast_mlb_{season}", as_of), _heights(loader, as_of))
 
 
-def fit(loader, fold) -> dict:
+def fit(loader, fold, permute_seed: int | None = None) -> dict:
     tr = pd.concat([_pitches(loader, s, fold.train_until) for s in fold.train_seasons], ignore_index=True)
+    if permute_seed is not None:   # label-permutation leakage test: the target shuffled across pitches
+        tr["rv_x"] = np.random.default_rng(permute_seed).permutation(tr["rv_x"].to_numpy())
     rng = np.random.default_rng(SEED)            # same seeded 15% pitcher split for early stopping as train.py
     val_p = set(rng.choice(tr["pitcher"].unique(), size=int(0.15 * tr["pitcher"].nunique()), replace=False))
     return {"models": fit_kinds(tr, tr["pitcher"].isin(val_p), kinds=KINDS)}

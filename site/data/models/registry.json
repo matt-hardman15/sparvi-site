@@ -8,7 +8,8 @@
   "registered": "2026-11-13",
   "primary": "hitter_cv_r2",
   "primary_value": 0.04577929394708559,
-  "challengers": []
+  "challengers": [],
+  "experimental": "validated before the backtest harness existed; its harness port is pending"
  },
  {
   "model": "location_plus",
@@ -19,7 +20,8 @@
   "registered": "2026-11-13",
   "primary": "r_next_rv",
   "primary_value": 0.01155765028114719,
-  "challengers": []
+  "challengers": [],
+  "experimental": "validated before the backtest harness existed; its harness port is pending"
  },
  {
   "model": "pitching_plus",
@@ -30,7 +32,8 @@
   "registered": "2026-11-13",
   "primary": "r_next_rv",
   "primary_value": 0.31825205418222746,
-  "challengers": []
+  "challengers": [],
+  "experimental": "validated before the backtest harness existed; its harness port is pending"
  },
  {
   "model": "stuff_plus",
@@ -41,7 +44,8 @@
   "registered": "2026-11-13",
   "primary": "r_next_rv",
   "primary_value": 0.2970318049352052,
-  "challengers": []
+  "challengers": [],
+  "experimental": "in the backtest, its edge over last season's results has a 90% interval that includes zero, so it doesn't clear the strict gate"
  },
  {
   "model": "cfb_power_rating",
@@ -52,7 +56,8 @@
   "registered": "2026-11-13",
   "primary": "mae_power",
   "primary_value": 12.547612901854764,
-  "challengers": []
+  "challengers": [],
+  "experimental": "validated before the backtest harness existed; its harness port is pending"
  },
  {
   "model": "nfl_team_efficiency",
@@ -63,6 +68,7 @@
   "registered": "2026-11-13",
   "primary": "mae_ridge",
   "primary_value": 10.385527421259454,
-  "challengers": []
+  "challengers": [],
+  "experimental": "validated before the backtest harness existed; its harness port is pending"
  }
 ]

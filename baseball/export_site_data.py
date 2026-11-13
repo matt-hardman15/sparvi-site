@@ -20,11 +20,15 @@ import duckdb
 import pandas as pd
 import yaml
 
+from backtest.gate import require_passing
 from sparvi.config import ROOT, baseball, section
 from sparvi.io import write_json, write_numbers, write_records
 
 CFG = baseball()
 SEASON, PREV = CFG.season, CFG.prev
+# Publish gate (PLAN-backtest §6): each model's output ships only with a passing backtest for this
+# exact version, or with its card's `experimental` flag (the pages then say so next to the version).
+MODEL_STATUS = {m: require_passing(m) for m in ("stuff_plus", "location_plus", "pitching_plus", "aaa_translation")}
 HERE = Path(__file__).resolve().parent
 OUT = ROOT / "site" / "data" / "baseball"
 PQ = HERE / "pitch_quality" / "output"

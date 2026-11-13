@@ -143,5 +143,5 @@ The models grade Triple-A pitchers on the MLB scale. The average qualified Tripl
 
 Code: [`baseball/pitch_quality/`](https://github.com/matt-hardman15/sparvi-site/tree/main/baseball/pitch_quality)
 
-**Model versions.** [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/baseball/stuff_plus/card.yml), [{{< meta models.location_plus >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/baseball/location_plus/card.yml), [{{< meta models.pitching_plus >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/baseball/pitching_plus/card.yml).
+**Model versions.** [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/baseball/stuff_plus/card.yml) ({{< meta models.stuff_plus_status >}}), [{{< meta models.location_plus >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/baseball/location_plus/card.yml) ({{< meta models.location_plus_status >}}), [{{< meta models.pitching_plus >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/baseball/pitching_plus/card.yml) ({{< meta models.pitching_plus_status >}}).
 </details>

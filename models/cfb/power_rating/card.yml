@@ -51,3 +51,4 @@ published_in:
 - site/data/cfb/*.json
 - cfb/tools/team-ratings
 - cfb/ranked-vs-good
+experimental: validated before the backtest harness existed; its harness port is pending

@@ -48,3 +48,4 @@ published_in:
 - baseball/tools/stuff-leaderboard
 - baseball/player
 - baseball/tools/rule-5
+experimental: validated before the backtest harness existed; its harness port is pending
