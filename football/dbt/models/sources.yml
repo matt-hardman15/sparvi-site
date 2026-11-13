@@ -18,3 +18,17 @@ sources:
         identifier: schedules
       - name: teams
         identifier: teams
+
+  - name: cfbd
+    description: College football from CollegeFootballData.com (ingest/cfb/pull.py), FBS 2014 on
+    meta:
+      external_location: "{{ env_var('SPARVI_RAW_DIR', '../../data/raw') }}/cfb/{identifier}.parquet"
+    tables:
+      - name: plays
+        identifier: "plays_*"
+      - name: games
+        identifier: "games_*"
+      - name: teams
+        identifier: "teams_*"
+      - name: rankings
+        identifier: "rankings_*"
