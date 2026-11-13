@@ -1,0 +1,108 @@
+# Ingest contract for nfl (PLAN-scout A0): the raw files the downstream stages read, the
+# columns and types they rely on, and the rules ingest/nfl/checks.py enforces before any build.
+# A source changing a column's type or dropping one fails the checks, and that sport's refresh
+# stops (the site keeps the last good data). To accept a change, update this file in the same PR
+# as the downstream code that handles it.
+# max_null: largest allowed share of missing values. Row counts may not drop more than 1% below the
+# last accepted pull (ingest/common/checks.py).
+tables:
+  pbp:
+    description: nflverse play-by-play, one file per season (ingest/nfl/pull.py keeps PBP_COLS)
+    files: "nfl/pbp_{season}.parquet"
+    key: [game_id, play_id]
+    max_null:
+      game_id: 0
+      play_id: 0
+      season: 0
+      week: 0
+      wp: 0.05
+    columns:
+      play_id: DOUBLE
+      game_id: VARCHAR
+      season: INTEGER
+      week: INTEGER
+      season_type: VARCHAR
+      game_date: VARCHAR
+      home_team: VARCHAR
+      away_team: VARCHAR
+      posteam: VARCHAR
+      defteam: VARCHAR
+      posteam_type: VARCHAR
+      qtr: DOUBLE
+      down: DOUBLE
+      ydstogo: DOUBLE
+      yardline_100: DOUBLE
+      play_type: VARCHAR
+      pass: DOUBLE
+      rush: DOUBLE
+      qb_dropback: DOUBLE
+      sack: DOUBLE
+      qb_scramble: DOUBLE
+      qb_kneel: DOUBLE
+      qb_spike: DOUBLE
+      pass_attempt: DOUBLE
+      rush_attempt: DOUBLE
+      complete_pass: DOUBLE
+      interception: DOUBLE
+      fumble_lost: DOUBLE
+      two_point_attempt: DOUBLE
+      penalty: DOUBLE
+      yards_gained: DOUBLE
+      air_yards: DOUBLE
+      epa: DOUBLE
+      qb_epa: DOUBLE
+      success: DOUBLE
+      wp: DOUBLE
+      vegas_wp: DOUBLE
+      cpoe: DOUBLE
+      xpass: DOUBLE
+      pass_oe: DOUBLE
+      posteam_score: DOUBLE
+      defteam_score: DOUBLE
+      home_score: INTEGER
+      away_score: INTEGER
+      result: INTEGER
+  team_stats:
+    description: nflverse regular-season team stats (reconciliation only)
+    files: "nfl/team_stats_{season}.parquet"
+    key: [season, team, season_type]
+    columns:
+      season: INTEGER
+      team: VARCHAR
+      season_type: VARCHAR
+      passing_epa: DOUBLE
+      rushing_epa: DOUBLE
+  schedules:
+    description: Every game in the window, with final scores
+    files: "nfl/schedules.parquet"
+    key: [game_id]
+    max_null:
+      game_id: 0
+      season: 0
+      week: 0
+      home_team: 0
+      away_team: 0
+    columns:
+      game_id: VARCHAR
+      season: INTEGER
+      game_type: VARCHAR
+      week: INTEGER
+      gameday: VARCHAR
+      home_team: VARCHAR
+      away_team: VARCHAR
+      home_score: DOUBLE
+      away_score: DOUBLE
+      result: DOUBLE
+      overtime: DOUBLE
+      location: VARCHAR
+  teams:
+    description: The 32 current franchises
+    files: "nfl/teams.parquet"
+    key: [team_abbr]
+    columns:
+      team_abbr: VARCHAR
+      team_name: VARCHAR
+      team_nick: VARCHAR
+      team_conf: VARCHAR
+      team_division: VARCHAR
+      team_color: VARCHAR

@@ -434,6 +434,14 @@ def act_nfl_index(p):
     assert p.locator(".team-div h4").count() == 8
 
 
+def act_status(p):
+    for sport in ("baseball", "nfl"):
+        card = p.locator(f"#status-{sport}")
+        assert card.count() == 1 and "checks" in card.text_content()
+        card.locator("summary").click(); wait(p, 200)
+        assert card.locator("tbody tr").count() >= 10
+
+
 PAGES = [
     ("home", "/", None),
     ("baseball", "/baseball/", None),
@@ -456,6 +464,7 @@ PAGES = [
     ("nfl-team", "/nfl/teams/kc/", act_nfl_team),
     ("glossary", "/glossary.html", None),
     ("about", "/about.html", None),
+    ("status", "/status.html", act_status),
 ]
 
 

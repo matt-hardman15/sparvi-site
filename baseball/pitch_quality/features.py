@@ -26,7 +26,7 @@ ZONE_TOP, ZONE_BOT = 0.535, 0.27
 
 @cache
 def batter_heights() -> pd.Series:
-    """Listed height in feet by batter id (scripts/pull_data.py writes batter_heights.parquet)."""
+    """Listed height in feet by batter id (ingest/baseball/pull.py writes batter_heights.parquet)."""
     h = pd.read_parquet(RAW / "batter_heights.parquet")
     return (h.set_index("batter")["height_in"] / 12).astype(float)
 

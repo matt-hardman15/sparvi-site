@@ -1,7 +1,7 @@
 """Synthetic nflverse files for testing the football dbt project in CI.
 
 Real play-by-play isn't committed, so CI builds the project against this: the same columns
-scripts/pull_nfl.py keeps, plausible values, a bye week (to test that standings carry forward),
+ingest/nfl/pull.py keeps, plausible values, a bye week (to test that standings carry forward),
 two-point tries, kneel-downs, and spikes (which the efficiency rates must leave out), and team stats
 computed with nflverse's own definitions (so the reconciliation test means something).
 
@@ -15,6 +15,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from fixture_contract import write_conformed
 
 TEAMS = ["AAA", "BBB", "CCC", "DDD", "EEE", "FFF", "GGG", "HHH"]
 WEEKS = 7          # weeks 1-6 full; in week 7 two teams have a bye
@@ -105,9 +106,10 @@ def write_nfl_fixture(out: Path, season: int, seed: int = 0) -> None:
                              for g, a, h in zip(sch["game_id"], sch["away_team"], sch["home_team"], strict=True)]
         sch["result"] = sch["home_score"] - sch["away_score"]
         sch["overtime"] = 0
-        p.to_parquet(d / f"pbp_{s}.parquet", index=False)
-        _team_stats(p).to_parquet(d / f"team_stats_{s}.parquet", index=False)
+        write_conformed(p, d / f"pbp_{s}.parquet", "nfl", "pbp")
+        write_conformed(_team_stats(p), d / f"team_stats_{s}.parquet", "nfl", "team_stats")
         scheds.append(sch)
-    pd.concat(scheds).to_parquet(d / "schedules.parquet", index=False)
-    pd.DataFrame({"team_abbr": TEAMS, "team_name": [f"Team {t}" for t in TEAMS], "team_nick": TEAMS,
-                  "team_conf": "AFC", "team_division": "AFC Test", "team_color": "#000000"}).to_parquet(d / "teams.parquet", index=False)
+    write_conformed(pd.concat(scheds), d / "schedules.parquet", "nfl", "schedules")
+    write_conformed(pd.DataFrame({"team_abbr": TEAMS, "team_name": [f"Team {t}" for t in TEAMS], "team_nick": TEAMS,
+                                  "team_conf": "AFC", "team_division": "AFC Test", "team_color": "#000000"}),
+                    d / "teams.parquet", "nfl", "teams")

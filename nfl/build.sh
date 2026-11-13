@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # NFL rebuild: dbt (football project) -> opponent adjustment -> exported JSON -> static team pages.
-# Assumes data/raw/nfl/ is populated (python scripts/pull_nfl.py) and the venv is active (or this
+# Assumes data/raw/nfl/ is populated (python ingest/nfl/pull.py) and the venv is active (or this
 # runs under `uv run nfl/build.sh`). Seasons come from sparvi.toml [nfl]. Rendering is separate:
 # the root build.sh (or the workflow) runs `quarto render` once for every sport.
 set -euo pipefail

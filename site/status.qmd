@@ -1,0 +1,50 @@
+---
+title: "Data status"
+pagetitle: "Data status: the checks behind every refresh"
+description: "Each data refresh is checked before anything is rebuilt: columns and types, row counts, duplicates, missing values, and freshness, sport by sport."
+---
+
+Before any page is rebuilt, each sport's new data goes through a set of checks: the columns and types
+the models rely on, row counts (a pull may not lose more than 1% of the rows it had), duplicates,
+missing values, and whether the data is current. If a check fails, that sport's update stops and the
+site keeps showing the last data that passed. This page shows the most recent result for each sport.
+
+```{=html}
+<div id="status"><div class="loading">Loading…</div></div>
+<script>
+(async () => {
+  const S = Sparvi;
+  const sports = [["baseball", "Baseball", "Baseball Savant (Statcast) and the MLB Stats API"],
+                  ["nfl", "NFL", "nflverse play-by-play, schedules, and team stats"]];
+  const through = (k, d) => k === "nfl"
+    ? (d.week ? `${d.season} season through week ${d.week} (last game ${d.last_game})` : "no games yet")
+    : Object.entries(d).map(([lvl, day]) => `${lvl === "mlb" ? "MLB" : "Triple-A"} through ${day}`).join(" · ");
+  const cards = await Promise.all(sports.map(async ([key, label, source]) => {
+    let st;
+    try { st = await S.load(`/data/status/${key}.json`); } catch (e) { return S.el("section", { class: "status-card" }, S.el("h2", {}, label), S.el("p", {}, "No status yet.")); }
+    const failed = st.checks.filter(c => !c.ok);
+    const rows = st.checks.map(c => S.el("tr", { class: c.ok ? "" : "status-fail" },
+      S.el("td", {}, c.ok ? "✓" : "✗"), S.el("td", {}, c.name), S.el("td", {}, c.detail)));
+    return S.el("section", { class: "status-card", id: `status-${key}` },
+      S.el("h2", {}, label),
+      S.el("p", { class: "status-line" },
+        S.el("span", { class: st.ok ? "status-badge ok" : "status-badge fail" }, st.ok ? "All checks passed" : `${st.n_failed} of ${st.n_checks} checks failed`),
+        " ", st.ok ? `${st.n_checks} checks. ` : "The site is showing the last data that passed. ",
+        through(key, st.data_through || {}), "."),
+      failed.length ? S.el("ul", { class: "status-failures" }, failed.map(c => S.el("li", {}, `${c.name}: ${c.detail}`))) : "",
+      S.el("details", {}, S.el("summary", {}, `Every check (${st.n_checks})`),
+        S.el("div", { class: "table-wrap" }, S.el("table", { class: "s-table status-table" },
+          S.el("thead", {}, S.el("tr", {}, S.el("th", {}, ""), S.el("th", {}, "Check"), S.el("th", {}, "Result"))),
+          S.el("tbody", {}, rows)))),
+      S.el("p", { class: "note" }, `Source: ${source}.`));
+  }));
+  document.getElementById("status").replaceChildren(...cards);
+})();
+</script>
+```
+
+::: {.note}
+The checks are defined in [`ingest/`](https://github.com/matt-hardman15/sparvi-site/tree/main/ingest), and
+the columns and rules each sport's data must meet are in
+[`contracts/`](https://github.com/matt-hardman15/sparvi-site/tree/main/contracts).
+:::

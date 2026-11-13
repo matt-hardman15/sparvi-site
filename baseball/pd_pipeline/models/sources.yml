@@ -5,7 +5,7 @@ version: 2
 # the pipeline at a synthetic fixture instead of real (uncommitted) Statcast data.
 sources:
   - name: savant
-    description: Pitch-level Statcast pulled by scripts/pull_data.py
+    description: Pitch-level Statcast pulled by ingest/baseball/pull.py
     meta:
       external_location: "{{ env_var('SPARVI_RAW_DIR', '../../data/raw') }}/{identifier}.parquet"
     tables:
@@ -21,7 +21,7 @@ sources:
       - name: statcast_mlb_cur
         identifier: "statcast_mlb_{{ var('season') }}"
       - name: batter_heights
-        description: Listed height (inches) per batter, from the MLB Stats API (scripts/pull_data.py)
+        description: Listed height (inches) per batter, from the MLB Stats API (ingest/baseball/pull.py)
         identifier: batter_heights
       - name: milb_players_cur
         identifier: "milb_players_{{ var('season') }}"

@@ -1,0 +1,122 @@
+# Ingest contract for baseball (PLAN-scout A0): the raw files the downstream stages read, the
+# columns and types they rely on, and the rules ingest/baseball/checks.py enforces before any build.
+# A source changing a column's type or dropping one fails the checks, and that sport's refresh
+# stops (the site keeps the last good data). To accept a change, update this file in the same PR
+# as the downstream code that handles it.
+# max_null: largest allowed share of missing values. Row counts may not drop more than 1% below the
+# last accepted pull (ingest/common/checks.py).
+tables:
+  statcast:
+    description: Pitch-level Statcast, one file per level and season (ingest/baseball/pull.py)
+    files: "statcast_{level}_{season}.parquet"
+    key: [game_pk, at_bat_number, pitch_number]
+    max_null:
+      game_pk: 0
+      game_date: 0
+      pitcher: 0
+      batter: 0
+      pitch_number: 0
+      pitch_type: 0.02
+      release_speed: 0.02
+      plate_x: 0.02
+      pfx_x: 0.02
+    columns:
+      game_pk: BIGINT
+      game_date: VARCHAR
+      game_year: BIGINT
+      game_type: VARCHAR
+      home_team: VARCHAR
+      away_team: VARCHAR
+      pitcher: BIGINT
+      batter: BIGINT
+      player_name: VARCHAR
+      p_throws: VARCHAR
+      stand: VARCHAR
+      at_bat_number: BIGINT
+      pitch_number: BIGINT
+      inning: BIGINT
+      inning_topbot: VARCHAR
+      balls: BIGINT
+      strikes: BIGINT
+      outs_when_up: BIGINT
+      on_1b: DOUBLE
+      on_2b: DOUBLE
+      on_3b: DOUBLE
+      pitch_type: VARCHAR
+      pitch_name: VARCHAR
+      release_speed: DOUBLE
+      release_spin_rate: DOUBLE
+      spin_axis: DOUBLE
+      release_pos_x: DOUBLE
+      release_pos_y: DOUBLE
+      release_pos_z: DOUBLE
+      release_extension: DOUBLE
+      arm_angle: DOUBLE
+      pfx_x: DOUBLE
+      pfx_z: DOUBLE
+      plate_x: DOUBLE
+      plate_z: DOUBLE
+      sz_top: DOUBLE
+      sz_bot: DOUBLE
+      zone: DOUBLE
+      vx0: DOUBLE
+      vy0: DOUBLE
+      vz0: DOUBLE
+      ax: DOUBLE
+      ay: DOUBLE
+      az: DOUBLE
+      description: VARCHAR
+      type: VARCHAR
+      events: VARCHAR
+      bb_type: VARCHAR
+      launch_speed: DOUBLE
+      launch_angle: DOUBLE
+      hit_distance_sc: DOUBLE
+      bat_speed: DOUBLE
+      swing_length: DOUBLE
+      estimated_woba_using_speedangle: DOUBLE
+      estimated_ba_using_speedangle: DOUBLE
+      woba_value: DOUBLE
+      woba_denom: DOUBLE
+      delta_run_exp: DOUBLE
+      delta_pitcher_run_exp: DOUBLE
+  batter_heights:
+    description: Listed height per batter, MLB Stats API
+    files: "batter_heights.parquet"
+    key: [batter]
+    max_null:
+      batter: 0
+      height_in: 0
+    columns:
+      batter: BIGINT
+      height_in: BIGINT
+  milb_players:
+    description: Triple-A and lower rosters for the current season, MLB Stats API
+    files: "milb_players_{season}.parquet"
+    key: [player_id, level, team_id]
+    max_null:
+      player_id: 0
+    columns:
+      player_id: BIGINT
+      name: VARCHAR
+      birth_date: VARCHAR
+      position: VARCHAR
+      bats: VARCHAR
+      throws: VARCHAR
+      level: VARCHAR
+      team_id: BIGINT
+      parent_org_id: BIGINT
+  aaa_affiliates:
+    description: Triple-A club -> parent org, one file per season, MLB Stats API
+    files: "aaa_affiliates_{season}.parquet"
+    key: [team_id]
+    max_null:
+      team_id: 0
+      org_id: 0
+    columns:
+      season: BIGINT
+      team_id: BIGINT
+      team: VARCHAR
+      team_name: VARCHAR
+      org_id: BIGINT
+      org: VARCHAR

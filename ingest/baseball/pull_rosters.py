@@ -1,7 +1,7 @@
 """Pull the inputs for the Rule 5 board from the MLB Stats API into data/raw/ (gitignored).
 
-    uv run python scripts/pull_rosters.py                 # snapshot dated today
-    uv run python scripts/pull_rosters.py --ids 123 456   # also fetch these people (validation list)
+    uv run python ingest/baseball/pull_rosters.py                 # snapshot dated today
+    uv run python ingest/baseball/pull_rosters.py --ids 123 456   # also fetch these people (validation list)
 
 Writes, for snapshot date D:
   data/raw/rosters_40man_D.parquet       every club's 40-man roster as of D
