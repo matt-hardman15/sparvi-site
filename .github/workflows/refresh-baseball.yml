@@ -15,6 +15,10 @@ on:
         description: "Re-pull the whole current season instead of only new games"
         type: boolean
         default: false
+      rebuild:
+        description: "Rebuild even if the raw data and code haven't changed since the last refresh"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -111,13 +115,28 @@ jobs:
           path: data/raw/*_${{ steps.cfg.outputs.season }}.parquet
           key: baseball-raw-cur-${{ steps.cfg.outputs.season }}-${{ github.run_id }}
 
+      # Training is repeatable on one machine but not bit-for-bit across CPU models, so rebuilding
+      # unchanged data on a different runner can move published numbers in the last digits. Skip the
+      # rebuild when the raw data and code match what the last refresh built from.
+      - name: Did the inputs change?
+        id: inputs
+        run: |
+          if [ "${{ inputs.rebuild }}" != "true" ] && uv run python scripts/build_fingerprint.py --check; then
+            echo "Raw data and code are unchanged since the last refresh; nothing to rebuild."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Rebuild models, pipeline, and site
+        if: steps.inputs.outputs.changed == 'true'
         run: uv run ./build.sh
 
       # Same data must give the same model. Retrain the out-of-sample test (one season, ~2 min) and
       # require byte-identical outputs; a failure here means training stopped being repeatable and
       # published numbers would drift between refreshes on unchanged data.
       - name: Check training is repeatable
+        if: steps.inputs.outputs.changed == 'true'
         run: |
           echo "CPU: $(nproc) cores, $(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2)"
           o=baseball/pitch_quality/output
@@ -126,11 +145,14 @@ jobs:
           sha256sum -c /tmp/first.sha
 
       - name: Commit refreshed data
+        if: steps.inputs.outputs.changed == 'true'
         run: |
           git config user.name "sparvi-bot"
           git config user.email "sparvi-bot@users.noreply.github.com"
+          uv run python scripts/build_fingerprint.py --write   # what this build was made from
           # Everything the build regenerates: data, prose numbers, model outputs, listing thumbnails.
-          git add site/data/baseball site/_generated/baseball.yml baseball/*/output site/baseball/*/thumb.png
+          git add site/data/baseball site/_generated/baseball.yml baseball/*/output site/baseball/*/thumb.png \
+            baseball/build_inputs.sha256
           if git diff --cached --quiet; then echo "No data changes."; exit 0; fi
           git commit -m "Baseball data refresh $(date -u +%Y-%m-%d)"
           git status --short  # anything left unstaged is listed here; --autostash keeps it from blocking the rebase
