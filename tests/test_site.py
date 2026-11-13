@@ -22,7 +22,7 @@ DATA = ROOT / "site" / "data"
 # What a visitor downloads (GitHub Pages serves gzip) and what each page loads, not raw bytes on disk.
 # Gzipped size of each sport's site/data folder (each sport has its own budget so adding a sport can't
 # quietly squeeze another; the site-wide hosting limit is checked by SEO-2's budget check).
-GZ_BUDGET_MB = {"baseball": 15, "nfl": 3, "cfb": 6, "status": 0.5}
+GZ_BUDGET_MB = {"baseball": 15, "nfl": 3, "cfb": 6, "status": 0.5, "models": 0.1}
 LEAGUE_FILE_GZ_MB = 2      # each snapshot league file (plan target for the date slider)
 PLAYER_FILE_KB = 100       # each per-player file, raw
 

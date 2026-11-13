@@ -1,0 +1,42 @@
+{
+  "model": "stuff_plus",
+  "version": "1.0.0",
+  "status": "champion",
+  "registered": "2026-11-13",
+  "note": "Initial registration (A2): the model as published on Nov 13, 2026.",
+  "code_hash": "d6f97e176465b3121c9d0649d65d7ae4acd3586119c39a22d1fbc9f27beb367e",
+  "code_files": {
+    "baseball/pitch_quality/train.py": "eb13ce66f434daeb7ca15001fb88e14638d4111252bb91147ffafe7e08ad9ff9",
+    "baseball/pitch_quality/features.py": "871f6013c7e84b9329ddffc0959db0312ded5c40e2445feb5ab460eec957f8b8"
+  },
+  "training_data": {
+    "data/raw/statcast_mlb_2024.parquet": "c5676654e7f48e22834e8a769256354ba890560b6862502a4e8b5722c960ddb4",
+    "data/raw/statcast_mlb_2025.parquet": "ae3d141a26a1ac8f6d4ab8c8a1cd93d2e791ee976fc58a3920c9c0bf00b59d0a",
+    "data/raw/statcast_mlb_2026.parquet": "d94f4ad13ed089e60b901c5e101aca511519a80d72e559e30c4d77b101751cab",
+    "data/raw/batter_heights.parquet": "8ef788c005dc68e9038b11d9091eb654d68a871d81b294a0f4b9892639326383"
+  },
+  "artifacts": {
+    "baseball/pitch_quality/output/model_fastball.txt": "6963ef76d5647ad49f6ade602d5bc305d0e1717e3519094e1adac614e801ac71",
+    "baseball/pitch_quality/output/model_breaking.txt": "1f375c31650813f4175ce8430ea3b4216745a2f86c5271b2eef043203f0d5a0d",
+    "baseball/pitch_quality/output/model_offspeed.txt": "c2a7e4c3625e2478e1151388caa03b3ce19251b5f3645ff8aa59094731095868",
+    "baseball/pitch_quality/output/scale_reference.json": "0aa1659bb92b7fe3134af8e6fd41e36fb8c17a053086f5a7466c8181d8ec44c5"
+  },
+  "eval": {
+    "set": "Out-of-sample year over year: models refit on the earliest season only, grade the next season, and correlate with the season after's run value (MLB pitchers with enough pitches both years). Same split as the published Stuff+ validation.",
+    "set_keys": {
+      "train_season": 2024,
+      "predictor_season": 2025,
+      "outcome_season": 2026,
+      "min_pitches": 500
+    },
+    "primary": "r_next_rv",
+    "higher_is_better": true
+  },
+  "metrics": {
+    "r_next_rv": 0.2970318049352052,
+    "r_self": 0.8708523966123474,
+    "split_half": 0.9931561048115138,
+    "aaa_to_mlb": 0.14736816093582603,
+    "holdout_pitch_r2": 0.0005518103080475179
+  }
+}

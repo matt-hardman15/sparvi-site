@@ -1,0 +1,44 @@
+# Model card (PLAN-scout A2). Change `code` files only with a new version: python -m sparvi.registry --help
+name: nfl_team_efficiency
+title: NFL opponent adjustment
+sport: nfl
+status: champion
+version: 1.0.0
+owner: Matt
+spec: Ridge regression of play EPA on offense, defense, and home field; a team's adjusted EPA/play is its own minus
+  the ridge strength of the opponents it faced. Lambda chosen on next-week margin MAE.
+target: Next week's home margin (for choosing lambda and validating)
+method: Ridge on (offense, defense, home) cells; leave-one-season-out linear fit for margins
+code:
+- nfl/team_efficiency/adjusted.py
+- football/common/adjust.py
+- football/dbt/models/staging/stg_nfl_plays.sql
+training_data:
+- data/raw/nfl/pbp_*.parquet
+- data/raw/nfl/schedules.parquet
+artifacts:
+- nfl/team_efficiency/output/adjustment.json
+validation:
+  file: nfl/team_efficiency/output/adjustment.json
+  metrics:
+    mae_ridge: mae_ridge
+    mae_adjusted: mae_adjusted
+    mae_raw: mae_raw
+    mae_home_only: mae_home_only
+    lambda: lambda
+    n_games: n_games
+eval:
+  set: Every regular-season game from week 3 on, complete seasons in the window, predicted from ratings through
+    the prior week (leave-one-season-out).
+  set_keys:
+    seasons: seasons
+    min_week: min_week
+  primary: mae_ridge
+  higher_is_better: false
+live_window:
+  unit: weeks in season
+  min: 3
+published_in:
+- site/data/nfl/*.json
+- nfl/tools/team-efficiency
+- nfl/teams

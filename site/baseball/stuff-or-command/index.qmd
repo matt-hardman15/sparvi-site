@@ -142,4 +142,6 @@ The models grade Triple-A pitchers on the MLB scale. The average qualified Tripl
 **What this can't tell you.** Location+ is not command. It sees where the pitch ended up, not where it was aimed, so a pitcher who misses his spot into a good location gets credit. It also doesn't account for catcher framing, the umpire, sequencing, or the hitter's plan. Correlations here are between seasons for the same pitchers; they don't say that improving location wouldn't help a pitcher, only that last season's location grade didn't predict this season's results.
 
 Code: [`baseball/pitch_quality/`](https://github.com/matt-hardman15/sparvi-site/tree/main/baseball/pitch_quality)
+
+**Model versions.** [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/baseball/stuff_plus/card.yml), [{{< meta models.location_plus >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/baseball/location_plus/card.yml), [{{< meta models.pitching_plus >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/baseball/pitching_plus/card.yml).
 </details>

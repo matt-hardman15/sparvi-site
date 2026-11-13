@@ -92,4 +92,6 @@ Both were asked the same question before every game from week {{< meta cfb.pl_mi
 **What it can't tell you.** Picking winners is a coarse test: it ignores how confident each side was. The sample of disagreements is small ({{< meta cfb.pl_n_disagree >}} games), so the edge could be smaller than it looks. Injuries and quarterback changes reach the poll faster than the numbers. And the betting market, which isn't a rating at all, beats both ({{< meta cfb.bt_mae_line_close >}} points of average miss for the closing line).
 
 Code: [`cfb/`](https://github.com/matt-hardman15/sparvi-site/tree/main/cfb) · Data provided by CollegeFootballData.com. Sparvi is not affiliated with the NCAA, the AP, the College Football Playoff, any conference, or any school.
+
+**Model version.** [{{< meta models.cfb_power_rating >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/cfb/power_rating/card.yml).
 </details>
