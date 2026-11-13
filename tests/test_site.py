@@ -241,6 +241,34 @@ def act_stuff_or_command(p):
     assert p.locator("#p2 svg").count() >= 1
 
 
+def act_translation(p):
+    assert p.locator("#p1 svg circle").count() == 10 and "bootstrap" in p.text_content("#cap1")
+    assert rows(p, "#t1") == 10
+    seg(p, "#c1", "Predicts MLB production"); assert "MLB xwOBA" in p.text_content("#cap1")
+    seg(p, "#c1", "Within a season"); assert p.locator("#p1 svg circle").count() == 10
+    seg(p, "#c1", "Pitchers"); seg(p, "#c1", "Both cohorts")
+    assert p.locator("#p1 svg circle").count() == 9 and "RV+" in p.text_content("#cap1")
+    seg(p, "#c1", "Starters"); assert "starters" in p.text_content("#cap1") and p.locator("#p1 svg circle").count() == 9
+    assert "r = " in p.text_content("#cap2")
+    select(p, "#c2", "Number", "ev90"); assert query(p).get("tm") == "ev90"
+    seg(p, "#c2", "Pitchers"); seg(p, "#c2", "Same season"); seg(p, "#c2", "Relievers")
+    assert query(p).get("tside") == "pitcher" and query(p).get("trole") == "RP" and query(p).get("tcohort") == "within"
+    p.reload(wait_until="networkidle"); wait(p, 900)
+    assert p.locator("#c2 .seg button.on", has_text="Relievers").count() == 1 and "relievers in MLB" in p.text_content("#cap2")
+    search(p, "#c2", "a"); assert p.locator("#p2 svg").count() >= 1
+    p.set_viewport_size({"width": 390, "height": 900}); wait(p, 600)
+    assert p.locator("#p1 svg").count() == 1 and p.locator("#p2 svg").count() >= 1
+
+
+def act_triple_a_mlb(p):
+    # ?view=mlb: the stat columns carry the translation marker and the caption explains it.
+    assert "▲" in p.locator("#t thead").text_content() and "translated to MLB" in p.text_content("#scap")
+    seg(p, "#c", "Pitchers")
+    assert "▲" in p.locator("#t thead").text_content() and "batters faced" in p.text_content("#scap")
+    seg(p, "#c2", "Triple-A")
+    assert "▲" not in p.locator("#t thead").text_content() and "view" not in query(p)
+
+
 def act_triple_a(p):
     assert rows(p, "#t") == 25
     assert "r = " in p.text_content("#scap")
@@ -315,6 +343,9 @@ def act_player(*sections, role_tag=False):
         h2 = p.locator("#root h2").all_text_contents()
         for s in sections:
             assert s in h2, f"missing section {s!r}: {h2}"
+        # Triple-A players (these have 300+ PA or BF) get the MLB translation table.
+        assert "Translated to MLB" in p.locator("#root h3").all_text_contents()
+        assert "range" in p.text_content("#root") and "How the translation works" in p.text_content("#root")
         tiles = p.locator("#root .stat-row").first.text_content()
         p.locator(".date-slider input[type=range]").focus(); p.keyboard.press("Home"); wait(p, 700)
         rows_now = p.locator("#root .stat-row")
@@ -392,6 +423,8 @@ PAGES = [
     ("two-week", "/baseball/two-week-signal/", act_two_week),
     ("stuff-leaderboard", "/baseball/tools/stuff-leaderboard.html", act_leaderboard),
     ("triple-a", "/baseball/tools/triple-a.html", act_triple_a),
+    ("triple-a-mlb", "/baseball/tools/triple-a.html?view=mlb", act_triple_a_mlb),
+    ("aaa-translation", "/baseball/aaa-translation/", act_translation),
     ("rule-5-board", "/baseball/tools/rule-5.html", act_rule5),
     ("rule-5-article", "/baseball/rule-5/", act_rule5_article),
     ("player-hitter", lambda: f"/baseball/player.html?id={player_hitter()}", act_player("Hitting · Triple-A")),

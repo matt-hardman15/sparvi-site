@@ -10,6 +10,8 @@ page-layout: article
   const S = Sparvi, f = S.fmt, U = S.urlState, root = document.getElementById("root");
   const id = +S.params().id;
   // Check the index first: fetching an unknown id would 404, which browsers log as an error.
+  // Translation lines (small) load in parallel with everything else; only Triple-A sections use them.
+  const fitsP = S.load("/data/baseball/translation_fits.json");
   const [meta, indexList] = await Promise.all([S.load("/data/baseball/meta.json"), S.load("/data/baseball/players_index.json")]);
   const index = new Set(indexList);
   const data = index.has(id) ? await S.load(`/data/baseball/players/${id}.json`) : null;
@@ -19,6 +21,8 @@ page-layout: article
   document.querySelector("h1.title") && (document.querySelector("h1.title").textContent = name);
   const stuffAt = (lvl) => data.stuff.find(d => d.level === lvl);
   const mlbS = stuffAt("MLB");
+  // Triple-A -> MLB translation lines (the translation article); only Triple-A players need them.
+  const FITS = (h || p) ? await fitsP : null;
 
   // One slider for the page over every snapshot date at either level; each level uses its own
   // latest snapshot on or before the chosen date.
@@ -77,14 +81,34 @@ page-layout: article
   }
   const empty = (lvl, what) => S.el("p", { class: "note" }, `No ${lv(lvl)} ${what} through ${S.dateLabel(iso())}.`);
 
+  // "Translated to MLB": each Triple-A number on screen through its fitted line, with the band that
+  // held most of the players who moved up. Rows: [label, metric key, formatter].
+  const transBox = (host, side, rowsDef, val, n, unit, extra = "") => {
+    const F = FITS[side], band = FITS.band_pct[1] - FITS.band_pct[0];
+    if (n == null || n < FITS.min_aaa) {
+      host.replaceChildren(S.el("h3", {}, "Translated to MLB"), S.el("p", { class: "note" },
+        `Translations need ${FITS.min_aaa}+ ${unit} in the selected line${n == null ? "" : ` (this one has ${n})`}.`));
+      return;
+    }
+    const rows = rowsDef.filter(([, k]) => F[k] && val(k) != null).map(([m, k, fm]) => {
+      const t = F[k].intercept + F[k].slope * val(k);
+      return { m, aaa: fm(val(k)), t: fm(t), range: `${fm(t + F[k].band[0])} to ${fm(t + F[k].band[1])}` };
+    });
+    const t = S.el("div");
+    S.table(t, [{ key: "m", label: "", align: "l" }, { key: "aaa", label: "Triple-A" }, { key: "t", label: "MLB translation" },
+      { key: "range", label: `${band}% range`, title: `${band}% of players who moved up landed inside this range` }], { sortKey: null, pageSize: 12 }).update(rows);
+    host.replaceChildren(S.el("h3", {}, "Translated to MLB"), t, S.el("p", { class: "note", html:
+      `What these numbers have typically become in the majors, from players who moved up from Triple-A. Not a forecast of his results: run value and contact allowed don't carry, so they aren't translated. ${extra}<a href="/baseball/aaa-translation/">How the translation works</a>.` }));
+  };
+
   // ---- Hitting · Triple-A -----------------------------------------------------------
   if (h && h.pa >= 25 && tl.AAA?.hitter) {
     out.push(S.el("h2", {}, "Hitting · Triple-A"));
-    const tiles = box(), pb = box(), note = S.el("p", { class: "note" }), finalBox = box();
+    const tiles = box(), pb = box(), note = S.el("p", { class: "note" }), finalBox = box(), trBox = box();
     const ser = () => tl.AAA.hitter[st.window];
     const tline = timelineSection("AAA", [["chase_pct", "Chase rate", F.pct], ["zone_contact_pct", "Zone contact", F.pct],
       ["ev90", "EV90 (mph)", F.num], ["hard_hit_pct", "Hard-hit rate", F.pct], ["xwoba", "xwOBA", F.woba]].map(c => [...c, tl.AAA.hitter.std]));
-    out.push(tiles, pb, note, finalBox, ...tline.el);
+    out.push(tiles, pb, note, trBox, finalBox, ...tline.el);
     sections.push(() => {
       const i = idx("AAA"), s = ser(), pa = at(s, "pa", i);
       if (pa == null) { tiles.replaceChildren(empty("AAA", "plate appearances")); pb.replaceChildren(); note.textContent = ""; }
@@ -97,6 +121,9 @@ page-layout: article
         const q = Math.max(25, Math.round(meta.min_pa_qualified * S.prorate(meta, "AAA", i, st.window)));
         note.textContent = `Percentile vs Triple-A hitters with ${q}+ PA ${st.window === "std" ? "through" : "in the 30 days to"} ${S.dateLabel(tl.AAA.dates[i])} (${meta.min_pa_qualified} over a full season, prorated); higher is always better (chase, whiff, and strikeout rate are inverted).`;
       }
+      transBox(trBox, "hitter", [["Chase rate", "chase_pct", f.pct], ["Whiff rate", "whiff_pct", f.pct], ["Zone contact", "zone_contact_pct", f.pct],
+        ["Strikeout rate", "k_pct", f.pct], ["Walk rate", "bb_pct", f.pct], ["EV90", "ev90", v => f.num(v) + " mph"], ["Hard-hit rate", "hard_hit_pct", f.pct],
+        ["xwOBA", "xwoba", f.woba]], k => at(s, k, i), pa, "PA");
       if (isFinal()) {
         const t = box();
         S.table(t, [{ key: "m", label: "", align: "l" }, { key: "s", label: "Season" }, { key: "r", label: "Final 14" }, { key: "d", label: "Change" }], { sortKey: null, pageSize: 10 })
@@ -116,7 +143,7 @@ page-layout: article
     const T = tl[lvl], seasonRow = lvl === "AAA" ? p : mlbS;
     out.push(S.el("h2", {}, `Pitching · ${lv(lvl)}`));
     const tag = S.el("p", { class: "role-tag", title: "Role as of the selected date, from starts share; see the glossary" });
-    const tiles = box(), pb = box(), note = S.el("p", { class: "note" }), arsHost = box(), arsNote = S.el("p", { class: "note" });
+    const tiles = box(), pb = box(), note = S.el("p", { class: "note" }), arsHost = box(), arsNote = S.el("p", { class: "note" }), trBox = box();
     // auto-fill: a lone chart (MLB has no per-game velocity) keeps half width instead of stretching.
     const charts = S.el("div", { style: "display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem" });
     const mv = S.el("div", { class: "plot-host" }), vl = S.el("div", { class: "plot-host" });
@@ -131,7 +158,7 @@ page-layout: article
       plCtl.replaceChildren(S.el("label", {}, "By pitch", S.seg(Object.entries(PG), st.pgrade, v => { st.pgrade = v; render(); })));
       linesOf();
     };
-    out.push(tag, tiles, pb, note, S.el("h3", {}, "Arsenal"), arsHost, arsNote, charts, ...tline.el);
+    out.push(tag, tiles, pb, note, ...(lvl === "AAA" ? [trBox] : []), S.el("h3", {}, "Arsenal"), arsHost, arsNote, charts, ...tline.el);
     const final14 = new Map((lvl === "AAA" ? data.arsenal_aaa : []).map(d => [d.pitch_type, d]));
     let arsTable;
     sections.push(() => {
@@ -152,6 +179,10 @@ page-layout: article
           note.textContent = `Percentile vs Triple-A pitchers with ${q}+ batters faced ${st.window === "std" ? "through" : "in the 30 days to"} ${S.dateLabel(T.dates[i])} (${meta.min_bf_qualified} over a full season, prorated); higher is always better.`;
         } else { pb.replaceChildren(); note.textContent = ""; }
       }
+      // Stuff+, Location+, and Pitching+ are already on the MLB scale; their cohort shift is mostly selection
+      // and a season of development (see the article), so they aren't translated here.
+      if (lvl === "AAA") transBox(trBox, "pitcher", [["Strikeout rate", "k_pct", f.pct], ["Walk rate", "bb_pct", f.pct], ["Whiff rate", "whiff_pct", f.pct],
+        ["CSW rate", "csw_pct", f.pct]], k => at(s, k, i), at(s, "bf", i), "batters faced", "Stuff+, Location+, and Pitching+ are already on the MLB scale, so they aren't translated. ");
       // Arsenal: pitch-type grades are season to date at the selected date.
       const ars = (T.pitch_types || []).map(pt => ({ pitch_type: pt.pt, ...Object.fromEntries(Object.keys(pt.series).map(k => [k, pt.series[k][i]])) }))
         .filter(d => d.pitches != null).map(d => ({ ...d, ...(isFinal() && final14.get(d.pitch_type) ? {

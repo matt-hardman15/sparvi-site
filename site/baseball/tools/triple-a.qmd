@@ -4,7 +4,7 @@ description: "Swing decisions, contact quality, and pitching profiles for every 
 page-layout: full
 ---
 
-Every {{< meta baseball.season >}} Triple-A hitter and pitcher, ranked against the qualified league pool ({{< meta baseball.min_pa_qualified >}}+ PA or batters faced over a full season, prorated to games played earlier in the year). Percentiles are oriented so **higher is always better**: a low chase rate or a low walk rate shows as a high percentile. Move the date slider to see the league as it stood any week, or switch to the last 30 days. Click a column to sort and a name for the full player page. Why the flags lean on swing decisions and velocity: [Two weeks of swing decisions tells you something. Two weeks of results doesn't.](/baseball/two-week-signal/)
+Every {{< meta baseball.season >}} Triple-A hitter and pitcher, ranked against the qualified league pool ({{< meta baseball.min_pa_qualified >}}+ PA or batters faced over a full season, prorated to games played earlier in the year). Percentiles are oriented so **higher is always better**: a low chase rate or a low walk rate shows as a high percentile. Move the date slider to see the league as it stood any week, or switch to the last 30 days. Click a column to sort and a name for the full player page. Switch **Numbers** to *Translated to MLB* to see each line run through the [Triple-A → MLB translation](/baseball/aaa-translation/): what the same numbers have typically become in the majors. Why the flags lean on swing decisions and velocity: [Two weeks of swing decisions tells you something. Two weeks of results doesn't.](/baseball/two-week-signal/)
 
 ```{=html}
 <div class="explorer">
@@ -25,11 +25,16 @@ Every {{< meta baseball.season >}} Triple-A hitter and pitcher, ranked against t
   const meta = await S.load("/data/baseball/meta.json");
   const flagsP = () => S.load("/data/baseball/aaa_flags.json");  // only needed for a team at the final date
   const Q = meta.qualifiers, HIT_MIN = 100, dates = meta.snapshots.AAA.dates, LAST = dates.length - 1;
-  const DEF = { side: "hitters", team: "", role: "all", window: "std" };
+  const DEF = { side: "hitters", team: "", role: "all", window: "std", view: "aaa" };
   const st = { side: U.get("side", DEF.side), team: U.get("team", DEF.team), role: U.get("role", DEF.role),
-               window: U.get("window", DEF.window), asof: U.get("asof"), q: "",
+               window: U.get("window", DEF.window), asof: U.get("asof"), q: "", view: U.get("view") === "mlb" ? "mlb" : "aaa",
                min: U.get("min") == null ? null : +U.get("min") };  // null = default (100 PA; pitch minimum by role)
   const idx = () => { const k = st.asof ? S.snapIndex(dates, st.asof) : LAST; return k < 0 ? 0 : k; };
+  // Triple-A -> MLB translation: each number's fitted line from the translation article, applied to
+  // whatever line is on screen (any date or window). Lines under the cohort minimum aren't translated.
+  let fitsP = null;
+  const fits = () => (fitsP ||= S.load("/data/baseball/translation_fits.json"));
+  if (st.view === "mlb") fits();
   const teams = [...new Set((await files[st.side]()).players.map(p => p.series.std.team.filter(Boolean).slice(-1)[0]).filter(Boolean))].sort();
   const c = document.getElementById("c"), c2 = document.getElementById("c2");
   const roleHost = S.el("span", { class: "role-host" });
@@ -43,7 +48,9 @@ Every {{< meta baseball.season >}} Triple-A hitter and pitcher, ranked against t
             : S.number("Min. PA", st.min, 25, v => { st.min = v; draw(); }, String(HIT_MIN)),
       S.search("Find a player", "Name", v => { st.q = v; draw(); }, st.q)].filter(Boolean));
     c2.replaceChildren(S.dateSlider(dates, idx(), k => { st.asof = dates[k]; draw(); }).el,
-      S.el("label", {}, "Window", S.seg(Object.entries(S.WINDOWS), st.window, v => { st.window = v; draw(); })));
+      S.el("label", {}, "Window", S.seg(Object.entries(S.WINDOWS), st.window, v => { st.window = v; draw(); })),
+      S.el("label", { title: "Translated to MLB: each number run through its Triple-A → MLB line (see the translation article)" }, "Numbers",
+        S.seg([["aaa", "Triple-A"], ["mlb", "Translated to MLB"]], st.view, v => { st.view = v; draw(); })));
   }
   const final = () => idx() === LAST && st.window === "std";
   // Table minimum for hitters: 100 PA over a season, prorated, at least 1. (The percentile pool has its
@@ -69,6 +76,7 @@ Every {{< meta baseball.season >}} Triple-A hitter and pitcher, ranked against t
     { key: "fb_velo_delta", label: "Velo Δ14", fmt: v => f.signed(v), title: "Final 14 days vs season, mph (shown at the season's final date only)" },
   ];
   let tbl, side;
+  const MLB_TIP = "Translated to MLB: the typical major-league value for a Triple-A line like this one (blank under the translation's minimum)";
   const host = document.getElementById("scatter");
   async function draw() {
     const pitch = st.side === "pitchers", i = idx();
@@ -76,19 +84,28 @@ Every {{< meta baseball.season >}} Triple-A hitter and pitcher, ranked against t
     const fac = S.prorate(meta, "AAA", i, st.window);
     const atI = pitch ? new Map(S.snapRows(std, "std", i, "pitches").map(r => [r.id, r])) : null;
     const isFinal = final();
-    const all = S.snapRows(snap, st.window, i, pitch ? "pitches" : "pa").map(r => ({ ...r,
+    const mlb = st.view === "mlb", F = mlb ? await fits() : null, fit = F ? F[pitch ? "pitcher" : "hitter"] : null;
+    const tr = r => { if (!fit) return r; const big = (pitch ? r.bf : r.pa) >= F.min_aaa, o = { ...r };
+      for (const [k, v] of Object.entries(fit)) if (k in o) o[k] = big && o[k] != null ? v.intercept + v.slope * o[k] : null;
+      if (pitch) o.hard_hit_pct = null;  // no translation fitted for contact allowed
+      return o; };
+    const all = S.snapRows(snap, st.window, i, pitch ? "pitches" : "pa").map(r => tr({ ...r,
       role: pitch ? atI.get(r.id)?.role ?? r.role : undefined,
       chase_delta: isFinal ? r.chase_delta : null, fb_velo_delta: isFinal ? r.fb_velo_delta : null }));
     const roleOk = d => !pitch || st.role === "all" || d.role === st.role;
     const pre = all.filter(d => (!st.team || d.team === st.team)
-      && (pitch ? S.qualifies(Q, "AAA", st.min, d.pitches, d.role, fac) : d.pa >= (st.min ?? hitMin(fac))));
+      && (pitch ? S.qualifies(Q, "AAA", st.min, d.pitches, d.role, fac) : d.pa >= (st.min ?? hitMin(fac)))
+      && (!mlb || (pitch ? d.bf : d.pa) >= F.min_aaa));  // translated view: only lines the translation covers
     if (pitch) roleHost.replaceChildren(S.roleFilter(st.role, v => { st.role = v; st.min = null; controls(); draw(); },
       { swing: pre.filter(d => d.role === "Swing").length }));
     const rows = pre.filter(roleOk);
     const shown = st.q ? rows.filter(d => (d.name || "").toLowerCase().includes(st.q)) : rows;
-    if (side !== st.side) { tbl = S.table(document.getElementById("t"), pitch ? pCols : hCols, { sortKey: pitch ? "k_pct" : "xwoba" }); side = st.side; }
+    if (side !== st.side + st.view) {
+      const cols = (pitch ? pCols : hCols).map(c => mlb && c.heat ? { ...c, label: c.label + " ▲", title: MLB_TIP } : c);
+      tbl = S.table(document.getElementById("t"), cols, { sortKey: pitch ? "k_pct" : "xwoba" }); side = st.side + st.view;
+    }
     tbl.update(shown);
-    U.set({ side: st.side, team: st.team, role: pitch ? st.role : "all", min: st.min, window: st.window, asof: i === LAST ? null : dates[i] }, DEF);
+    U.set({ side: st.side, team: st.team, role: pitch ? st.role : "all", min: st.min, window: st.window, asof: i === LAST ? null : dates[i], view: st.view }, DEF);
     const fh = document.getElementById("flags");
     if (st.team && isFinal) {
       const flags = await flagsP();
@@ -103,8 +120,8 @@ Every {{< meta baseball.season >}} Triple-A hitter and pitcher, ranked against t
     const base = all.filter(d => d.qualified && roleOk(d));
     const X = pitch ? "bb_pct" : "chase_pct", Y = pitch ? "k_pct" : "xwoba";
     S.plot(host, w => Plot.plot({ ...S.plotDefaults(w), height: 320, grid: true,
-      x: { label: pitch ? "Walk rate →" : "Chase rate →", tickFormat: "%" },
-      y: { label: pitch ? "↑ Strikeout rate" : "↑ xwOBA", tickFormat: pitch ? "%" : ".3f" },
+      x: { label: (pitch ? "Walk rate" : "Chase rate") + (mlb ? ", translated to MLB" : "") + " →", tickFormat: "%" },
+      y: { label: (pitch ? "↑ Strikeout rate" : "↑ xwOBA") + (mlb ? ", translated" : ""), tickFormat: pitch ? "%" : ".3f" },
       marks: [
         Plot.dot(base, { x: X, y: Y, r: 3, fill: "#c9c7c0", fillOpacity: 0.7 }),
         Plot.dot(hi, { x: X, y: Y, r: 5.5, fill: "#eb6834", stroke: "#fff", strokeWidth: 1.2 }),
@@ -118,7 +135,8 @@ Every {{< meta baseball.season >}} Triple-A hitter and pitcher, ranked against t
       : `Gray: every qualified Triple-A hitter. Lower chase rates go with ${isNaN(r) ? "—" : r < 0 ? "better" : "no better"} xwOBA here (r = ${isNaN(r) ? "—" : r.toFixed(2).replace("-", "−")}), but the spread at any chase rate is wide. Table: ${st.min ?? hitMin(fac)}+ PA.`)
       + (hi.length ? ` Orange: ${st.team || "search matches"}.` : " Pick a team or search a name to highlight players.")
       + (rows.length === 0 && (pitch && st.role) === "SP" ? ` No pitcher has ${meta.role_rules.role_sp_min_starts}+ starts yet, the minimum for the starter role; early-season starters show as Swing.` : "")
-      + (isFinal ? "" : " Δ14 columns and change flags describe the season's final two weeks, so they show only at the final date with the season-to-date window.");
+      + (isFinal ? "" : " Δ14 columns and change flags describe the season's final two weeks, so they show only at the final date with the season-to-date window.")
+      + (mlb ? ` ▲ columns are translated to MLB: the typical major-league value for this Triple-A line, from players who moved up. The table lists only lines with ${F.min_aaa}+ ${pitch ? "batters faced" : "PA"}, the translation's minimum, and each translation carries a wide range (see the article).` : "");
   }
   controls(); draw();
 })();

@@ -19,12 +19,14 @@ python baseball/pitch_quality/robustness.py
 python baseball/shape_stability/analysis.py
 (cd baseball/pd_pipeline && DBT_PROFILES_DIR=. dbt build --vars "{season: $SEASON, as_of_date: '$AS_OF', as_of_date_mlb: '$AS_OF_MLB'}")
 python baseball/two_week_signal/analysis.py
+python baseball/aaa_translation/analysis.py
 # Rule 5 eligibility needs a roster snapshot (scripts/pull_rosters.py, run by hand each November).
 # Without one (e.g. the daily in-season refresh), the committed baseball/rule5/output is used as-is.
 if compgen -G "data/raw/rosters_40man_*.parquet" > /dev/null; then python baseball/rule5/analysis.py; fi
 python baseball/export_site_data.py
 python baseball/rule5/thumb.py
 python baseball/pitch_quality/thumb.py
+python baseball/aaa_translation/thumb.py
 # NFL: rebuilt when its raw data is here (python scripts/pull_nfl.py); otherwise the committed
 # site/data/nfl is rendered as-is.
 if [ -d data/raw/nfl ]; then ./nfl/build.sh; fi
