@@ -447,6 +447,28 @@ def act_status(p):
         assert card.locator("tbody tr").count() >= 10
 
 
+def act_cfb_ratings(p):
+    assert rows(p, "#t") == 25 and "#" in p.text_content("#t thead")
+    assert p.locator("#scatter svg circle").count() >= 100
+    select(p, "#c", "Conference", "power"); wait(p, 400)
+    assert query(p)["conf"] == "power" and "power conferences" in p.text_content("#scap")
+    select(p, "#c", "Conference", "all")
+    seg(p, "#c", "Raw"); assert query(p)["adj"] == "raw"
+    seg(p, "#c", "Opponent-adjusted")
+    seg(p, "#c2", "Last 4 weeks"); assert "raw numbers" in p.text_content("#c2")
+    seg(p, "#c2", "Season to date")
+    select(p, "#c", "Season", "2019"); assert query(p)["season"] == "2019" and "bowls" in p.text_content("#scap")
+    p.locator(".date-slider input[type=range]").first.focus(); p.keyboard.press("Home"); wait(p, 500)
+    assert "faded" in p.text_content("#scap")
+
+
+def act_cfb_article(p):
+    assert "of the time" in p.text_content(".finding")
+    assert p.locator("#scatter svg circle").count() >= 20
+    select(p, "#c", "Season", "2024"); wait(p, 500)
+    assert "the bowls" in p.text_content("#scap")
+
+
 PAGES = [
     ("home", "/", None),
     ("baseball", "/baseball/", None),
@@ -467,6 +489,9 @@ PAGES = [
     ("nfl", "/nfl/", act_nfl_index),
     ("nfl-team-efficiency", "/nfl/tools/team-efficiency.html", act_nfl_efficiency),
     ("nfl-team", "/nfl/teams/kc/", act_nfl_team),
+    ("cfb", "/cfb/", lambda p: p.locator(".card-link").count() >= 1),
+    ("cfb-team-ratings", "/cfb/tools/team-ratings.html", act_cfb_ratings),
+    ("cfb-ranked-vs-good", "/cfb/ranked-vs-good/", act_cfb_article),
     ("glossary", "/glossary.html", None),
     ("about", "/about.html", None),
     ("status", "/status.html", act_status),
@@ -501,6 +526,8 @@ SLIDER_SCATTERS = [
     ("triple-a-pitchers", "/baseball/tools/triple-a.html?side=pitchers"),
     ("triple-a-hitters", "/baseball/tools/triple-a.html"),
     ("nfl-efficiency", "/nfl/tools/team-efficiency.html"),
+    ("cfb-ratings", "/cfb/tools/team-ratings.html"),
+    ("cfb-article", "/cfb/ranked-vs-good/"),
 ]
 
 

@@ -56,12 +56,15 @@ Since {{< meta cfb.pl_first_season >}}, the power rating picked the winner in {{
       marks: [
         Plot.line([[0.5, 0.5], [25.5, 25.5]], { stroke: "#8a8b8f", strokeDasharray: "3,3" }),
         Plot.dot(rows, { x: "ap", y: "y", r: 6, fill: d => d.gap >= 10 ? "#2a78d6" : d.gap <= -10 ? "#eb6834" : "#c9c7c0", stroke: "#fff" }),
-        Plot.text(big.length <= 12 ? big : big.slice(0, 12), { x: "ap", y: "y", text: "id", dy: -11, fontSize: 10.5, fontWeight: 600 }),
+        Plot.text(big.length <= 12 ? big : big.slice(0, 12), { x: "ap", y: "y", text: "id", dy: -11, fontSize: 10.5, fontWeight: 600,
+                                                              textAnchor: d => d.ap >= 20 ? "end" : d.ap <= 3 ? "start" : "middle" }),
         Plot.tip(rows, Plot.pointer({ x: "ap", y: "y", title: d => `${d.id} (${d.conf})\nAP ${d.ap} · power rating #${d.rank} (${f.signed(d.power, 1)} points vs. an average FBS team)` }))
       ] }));
     U.set({ season: st.season, week: wi() === weeks().length - 1 ? null : w }, DEF);
     const over = rows.filter(r => r.gap >= 10).length, under = rows.filter(r => r.gap <= -10).length;
-    document.getElementById("scap").textContent = `${st.season}, AP poll after ${weekLabel(w)}. Each dot is a ranked team; on the dashed line the poll and the power rating agree. `
+    const pw = meta.poll_week[st.season].ap[k], carried = pw !== w;
+    document.getElementById("scap").textContent = `${st.season}, power rating through ${weekLabel(w)}; `
+      + (carried ? `latest AP poll (after week ${pw}; the next one isn't out yet). ` : `AP poll after ${weekLabel(w)}. `) + `Each dot is a ranked team; on the dashed line the poll and the power rating agree. `
       + `Below the line (blue), the numbers rate a team 10 or more spots lower than the poll (${over} teams); above it (orange), 10 or more spots higher (${under}).`;
   }
   controls(); draw();

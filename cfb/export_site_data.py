@@ -68,6 +68,7 @@ last_reg = week.groupby("season")["week"].max()     # bowls are the last week in
 
 teams_all = []
 weeks_by_season: dict[int, list[int]] = {}
+poll_week: dict[str, dict[str, list[int]]] = {}   # per season and poll: the week whose poll each slider week shows
 for season in CFG.seasons:
     fbs = pd.read_parquet(RAW / "cfb" / f"teams_{season}.parquet")
     ids = sorted(fbs["school"])
@@ -112,6 +113,20 @@ for season in CFG.seasons:
                     raise SchemaError(f"team_week_{season}: missing fields {missing}")
                 series[gt] = s
             out_teams.append({"id": t, "conf": conf_of.get(t), "series": series})
+        if win == "std":
+            # The newest week usually has no poll yet (it comes out a day or two after the games):
+            # carry the latest poll forward into those trailing weeks, and record which poll week shows.
+            for key in POLLS:
+                has = [any(t["series"]["no_gt"][key][i] is not None for t in out_teams) for i in range(len(weeks))]
+                src = list(range(len(weeks)))
+                if any(has):
+                    last_i = max(i for i, h in enumerate(has) if h)
+                    for i in range(last_i + 1, len(weeks)):
+                        src[i] = last_i
+                        for t in out_teams:
+                            for gt in ("all", "no_gt"):
+                                t["series"][gt][key][i] = t["series"][gt][key][last_i]
+                poll_week.setdefault(str(season), {})[key] = [weeks[j] for j in src]
         suffix = "" if win == "std" else "_last4"
         write_json(OUT / f"team_week_{season}{suffix}.json",
                    {"season": season, "window": win, "weeks": weeks, "fields": fields, "teams": out_teams})
@@ -153,6 +168,7 @@ meta = {
     "defs": {"explosive_pass_yds": DBT_VARS["explosive_pass_yds"], "explosive_run_yds": DBT_VARS["explosive_run_yds"],
              "garbage_margin": {str(k): v for k, v in CFB_GARBAGE_MARGIN.items()}},
     "power_model": {k: pm[k] for k in ("home_points", "points_per_net_epa", "points_per_elo")},
+    "poll_week": poll_week,
 }
 # The current gaps between the AP poll and the power rating, for the article (as of the latest week).
 cur = power[power["season"] == CFG.season]
