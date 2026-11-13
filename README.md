@@ -9,7 +9,7 @@ behind them in explorers readers can filter and check. Live at **https://sparvi.
 |---|---|
 | `sparvi.toml` | The current season and season windows: the only place a season is set |
 | `sparvi/` | Shared Python package: config, site-data writers with schema checks, provenance, plot style |
-| `scripts/pull_data.py` | Pulls pitch-level Statcast (MLB, Triple-A), MLB Stats API rosters, and batter heights (for the Location+ strike zone) into `data/raw/` (not committed) |
+| `scripts/pull_data.py` | Pulls pitch-level Statcast (MLB, Triple-A), MLB Stats API rosters, Triple-A affiliates per season (for farm-system rankings), and batter heights (for the strike zone) into `data/raw/` (not committed) |
 | `baseball/pitch_quality/` | Stuff+, Location+, and Pitching+ models (LightGBM): `train.py`, `robustness.py` (out-of-sample validation), `thumb.py` |
 | `baseball/shape_stability/` | Do midseason pitch shape changes persist into next season? |
 | `baseball/pd_pipeline/` | dbt + DuckDB pipeline over MLB and Triple-A pitches: pitcher appearances and roles (SP/RP/Swing), Triple-A windows, percentiles, change flags, and weekly snapshots (season to date and last 30 days) behind the date slider |
@@ -17,6 +17,7 @@ behind them in explorers readers can filter and check. Live at **https://sparvi.
 | `scripts/pull_rosters.py` | 40-man rosters, Triple-A affiliates, and player signing history from the MLB Stats API (run by hand after the protection deadline) |
 | `scripts/check_roles.py` | Spot-checks pitcher games and starts against MLB's official stats |
 | `baseball/two_week_signal/` | Which two-week Triple-A numbers carry into the next two weeks |
+| `baseball/farm_systems/` | Farm-system rankings: each org's in-season Triple-A improvement, shrunk with intervals, and whether it repeats year to year (`analysis.py`, `thumb.py`) |
 | `baseball/export_site_data.py` | Writes aggregated JSON for the site and the numbers quoted in article prose (no pitch-level data is published) |
 | `site/` | Quarto site. Player pages load one `data/baseball/players/{id}.json` each; the tools load columnar weekly snapshot files. Interactive charts use Observable Plot and d3, self-hosted in `site/assets/js/`. Article numbers come from `site/_generated/<sport>.yml` |
 | `tests/` | Config, the dbt pipeline on synthetic data, and a browser test of every page |

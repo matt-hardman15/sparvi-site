@@ -1,0 +1,295 @@
+---
+title: "Which farm systems make players better?"
+description: "How much each organization's Triple-A pitchers and hitters improved during the season, and whether the same orgs came out on top the next year."
+date: 2026-12-05
+categories: [player development, Triple-A, organizations]
+image: thumb.png
+---
+
+::: {.finding}
+[The finding]{.label}
+Across {{< meta baseball.farm_n_orgs >}} organizations, how much an org's Triple-A players improved from the first half of the season to the second in {{< meta baseball.farm_y0 >}} said little about the same org in {{< meta baseball.farm_y1 >}}. {{< meta baseball.farm_finding_sentence >}}
+:::
+
+::: {.so-what}
+[So what]{.label}
+
+- {{< meta baseball.farm_stuff_sowhat >}}
+- {{< meta baseball.farm_velo_sowhat >}}
+- **Judge development player by player, with the sample size in view.** A typical org had {{< meta baseball.farm_med_n_p_2026 >}} qualifying pitchers and {{< meta baseball.farm_med_n_h_2026 >}} qualifying hitters in {{< meta baseball.farm_y1 >}}, too few to separate a system's effect from who happened to be on the roster. The drill-down below and the [player pages](/baseball/tools/triple-a.html) show each player's own change.
+:::
+
+## Does an org's improvement repeat?
+
+Each dot is one organization: its players' average change in {{< meta baseball.farm_y0 >}} (across) and in {{< meta baseball.farm_y1 >}} (up), after removing the league-wide change each season. If farm systems had a lasting effect, the dots would run from lower left to upper right.
+
+```{=html}
+<div class="explorer" id="x1">
+  <div class="controls" id="c1"></div>
+  <div class="plot-host" id="p1"></div>
+  <p class="caption" id="cap1"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi;
+  const [res, orgs] = await Promise.all([S.load("/data/baseball/farm_results.json"), S.load("/data/baseball/farm_orgs.json")]);
+  const [y0, y1] = [res.seasons[0], res.seasons[res.seasons.length - 1]];
+  const M = {
+    stuff_plus: "Stuff+", pitching_plus: "Pitching+", fb_velo: "Fastball velocity",
+    chase_pct: "Chase rate", zone_contact_pct: "Zone contact", ev90: "EV90" };
+  const UNIT = { stuff_plus: "Stuff+ points", pitching_plus: "Pitching+ points", fb_velo: "mph",
+    chase_pct: "percentage points (a drop in chase counts as a gain)", zone_contact_pct: "percentage points", ev90: "mph" };
+  const st = { m: S.urlState.get("m", "stuff_plus") };
+  if (!M[st.m]) st.m = "stuff_plus";
+  document.getElementById("c1").replaceChildren(
+    S.select("Measure", [["stuff_plus", "Pitchers · Stuff+"], ["pitching_plus", "Pitchers · Pitching+"], ["fb_velo", "Pitchers · Fastball velocity"],
+      ["chase_pct", "Hitters · Chase rate"], ["zone_contact_pct", "Hitters · Zone contact"], ["ev90", "Hitters · EV90"]], st.m,
+      v => { st.m = v; S.urlState.set({ m: v }, { m: "stuff_plus" }); draw(); }));
+  function draw() {
+    const by = d3.group(orgs.filter(o => o.metric === st.m), o => o.org);
+    const d = [...by].map(([org, rs]) => {
+      const a = rs.find(r => r.season === y0), b = rs.find(r => r.season === y1);
+      return a && b ? { org, x: a.raw, y: b.raw, na: a.n, nb: b.n } : null;
+    }).filter(Boolean);
+    const ext = d3.max(d, o => Math.max(Math.abs(o.x), Math.abs(o.y))) * 1.12;
+    const c = res.metrics[st.m].consistency;
+    S.plot(document.getElementById("p1"), w => Plot.plot({ ...S.plotDefaults(w), height: Math.min(460, Math.max(320, w * 0.7)), grid: true, clip: true,
+      x: { domain: [-ext, ext], label: `${y0}: average change vs. league →` },
+      y: { domain: [-ext, ext], label: `↑ ${y1}: average change vs. league` },
+      marks: [Plot.ruleX([0], { stroke: "#8a8b8f" }), Plot.ruleY([0], { stroke: "#8a8b8f" }),
+        Plot.linearRegressionY(d, { x: "x", y: "y", stroke: "#0f5257", strokeWidth: 2, ci: 0 }),
+        Plot.dot(d, { x: "x", y: "y", r: 4.5, fill: "#0f5257", fillOpacity: 0.75, stroke: "white" }),
+        Plot.text(d, { x: "x", y: "y", text: "org", dy: -9, fontSize: 10, fill: "#4d4f55" }),
+        Plot.tip(d, Plot.pointer({ x: "x", y: "y", title: o => `${o.org}\n${y0}: ${S.fmt.signed(o.x, 2)} (n = ${o.na})\n${y1}: ${S.fmt.signed(o.y, 2)} (n = ${o.nb})` }))] }));
+    document.getElementById("cap1").textContent = `${M[st.m]}, in ${UNIT[st.m]}. ${d.length} orgs. Year-to-year r = ${c.r.toFixed(2)} ` +
+      `(90% interval ${c.ci90[0].toFixed(2)} to ${c.ci90[1].toFixed(2)}). An interval that includes zero means the ${y0} order told you nothing reliable about ${y1}. Hover a dot for its sample sizes.`;
+  }
+  draw();
+})();
+</script>
+```
+
+## The org scores, with their uncertainty
+
+Every org's score is shrunk toward the league average in proportion to how noisy it is, and comes with a 90% interval and the number of players behind it. In {{< meta baseball.farm_y1 >}} Stuff+, the top org was {{< meta baseball.farm_top_stuff >}} and the bottom was {{< meta baseball.farm_bot_stuff >}}. {{< meta baseball.farm_top_bot_overlap >}} In {{< meta baseball.farm_y0 >}}, {{< meta baseball.farm_top_stuff_org >}} had ranked {{< meta baseball.farm_top_stuff_prev_rank >}} of {{< meta baseball.farm_n_orgs >}} on the unshrunk average and {{< meta baseball.farm_bot_stuff_org >}} {{< meta baseball.farm_bot_stuff_prev_rank >}}. Pick an org to see its players.
+
+```{=html}
+<div class="explorer" id="x2">
+  <div class="controls" id="c2"></div>
+  <div class="plot-host" id="p2"></div>
+  <p class="caption" id="cap2"></p>
+  <div id="t2"></div>
+</div>
+<script>
+(async () => {
+  const S = Sparvi;
+  const [res, orgs] = await Promise.all([S.load("/data/baseball/farm_results.json"), S.load("/data/baseball/farm_orgs.json")]);
+  const [y0, y1] = [res.seasons[0], res.seasons[res.seasons.length - 1]];
+  const OPTS = [["stuff_plus", "Pitchers · Stuff+"], ["pitching_plus", "Pitchers · Pitching+"], ["fb_velo", "Pitchers · Fastball velocity"],
+    ["chase_pct", "Hitters · Chase rate"], ["zone_contact_pct", "Hitters · Zone contact"], ["ev90", "Hitters · EV90"]];
+  const st = { m: S.urlState.get("om", "stuff_plus"), y: +S.urlState.get("oy", y1) };
+  if (!OPTS.some(o => o[0] === st.m)) st.m = "stuff_plus";
+  if (!res.seasons.includes(st.y)) st.y = y1;
+  const tbl = S.table(document.getElementById("t2"), [
+    { key: "org", label: "Org", align: "l", html: r => `<a href="#drill" class="org-pick" data-org="${r.org}">${r.org}</a> <span class="muted">${r.club}</span>` },
+    { key: "s0", label: `${y0} score`, fmt: v => S.fmt.signed(v, 2) },
+    { key: "i0", label: "90% interval", sortVal: r => r.s0, html: r => r.s0 == null ? "—" : `${S.fmt.signed(r.lo0, 2)} to ${S.fmt.signed(r.hi0, 2)}` },
+    { key: "n0", label: "n", title: "Players behind the score" },
+    { key: "s1", label: `${y1} score`, fmt: v => S.fmt.signed(v, 2) },
+    { key: "i1", label: "90% interval", sortVal: r => r.s1, html: r => r.s1 == null ? "—" : `${S.fmt.signed(r.lo1, 2)} to ${S.fmt.signed(r.hi1, 2)}` },
+    { key: "n1", label: "n", title: "Players behind the score" },
+    { key: "p", label: "Promoted", title: `Players who qualified in the first half, then moved up to MLB (${y0} + ${y1}); not in the score` },
+  ], { sortKey: "s1", pageSize: 30 });
+  document.getElementById("t2").addEventListener("click", e => {
+    const a = e.target.closest(".org-pick"); if (!a) return;
+    e.preventDefault(); window.dispatchEvent(new CustomEvent("farm-org", { detail: { org: a.dataset.org, m: st.m } }));
+  });
+  function controls() {
+    document.getElementById("c2").replaceChildren(
+      S.select("Measure", OPTS, st.m, v => { st.m = v; save(); draw(); }),
+      S.el("label", {}, "Chart", S.seg(res.seasons.map(y => [y, String(y)]), st.y, v => { st.y = v; save(); draw(); })));
+  }
+  const save = () => S.urlState.set({ om: st.m, oy: st.y }, { om: "stuff_plus", oy: y1 });
+  function draw() {
+    const rs = orgs.filter(o => o.metric === st.m);
+    const rows = [...d3.group(rs, o => o.org)].map(([org, g]) => {
+      const a = g.find(r => r.season === y0) || {}, b = g.find(r => r.season === y1) || {};
+      return { org, club: (b.club || a.club), s0: a.score, lo0: a.lo, hi0: a.hi, n0: a.n, s1: b.score, lo1: b.lo, hi1: b.hi, n1: b.n,
+               p: (a.promoted || 0) + (b.promoted || 0) };
+    });
+    tbl.update(rows);
+    const d = rs.filter(o => o.season === st.y).sort((a, b) => d3.descending(a.score, b.score));
+    const col = o => o.lo > 0 ? "#eb6834" : o.hi < 0 ? "#2a78d6" : "#9a9890";
+    S.plot(document.getElementById("p2"), w => Plot.plot({ ...S.plotDefaults(w), height: 560, marginLeft: 56, marginRight: 40,
+      x: { label: `${st.y} org score (shrunk), change vs. league →`, grid: true },
+      y: { domain: d.map(o => o.org), label: null },
+      marks: [Plot.ruleX([0], { stroke: "#8a8b8f" }),
+        Plot.ruleY(d, { y: "org", x1: "lo", x2: "hi", stroke: col, strokeWidth: 2 }),
+        Plot.dot(d, { y: "org", x: "score", r: 4, fill: col }),
+        Plot.text(d, { y: "org", x: "hi", text: o => `n=${o.n}`, dx: 18, fontSize: 10, fill: "#6b6d73" }),
+        Plot.tip(d, Plot.pointerY({ y: "org", x: "score", title: o => `${o.org} (${o.club_name})\nscore ${S.fmt.signed(o.score, 2)}, 90% interval ${S.fmt.signed(o.lo, 2)} to ${S.fmt.signed(o.hi, 2)}\nraw average ${S.fmt.signed(o.raw, 2)}, n = ${o.n}, promoted ${o.promoted}` }))] }));
+    const sep = d.filter(o => o.lo > 0 || o.hi < 0).length;
+    document.getElementById("cap2").textContent = `${OPTS.find(o => o[0] === st.m)[1]}, ${st.y}. Dot: shrunk score. Line: 90% interval. ` +
+      `${sep} of ${d.length} orgs have an interval clear of zero (orange above, blue below); gray ones can't be told apart from average. ` +
+      `Positive always means improvement. Click an org in the table for its players.`;
+  }
+  controls(); draw();
+})();
+</script>
+```
+
+## Inside one organization {#drill}
+
+How each player in the org changed between halves. For {{< meta baseball.farm_y1 >}} pitchers, the date slider steps through the season week by week, with each pitcher's last-30-days grade against the org average and the average of every pitcher in the sample.
+
+```{=html}
+<div class="explorer" id="x3">
+  <div class="controls" id="c3"></div>
+  <div class="plot-host" id="p3"></div>
+  <p class="caption" id="cap3"></p>
+  <div id="slider3"></div>
+  <div class="plot-host" id="p3b"></div>
+  <p class="caption" id="cap3b"></p>
+  <div id="t3"></div>
+</div>
+<script>
+(async () => {
+  const S = Sparvi;
+  const [res, players, orgs] = await Promise.all([S.load("/data/baseball/farm_results.json"), S.load("/data/baseball/farm_players.json"), S.load("/data/baseball/farm_orgs.json")]);
+  const [y0, y1] = [res.seasons[0], res.seasons[res.seasons.length - 1]];
+  const MET = {
+    pitchers: [["stuff_plus", "Stuff+"], ["pitching_plus", "Pitching+"], ["fb_velo", "FB velo"]],
+    hitters: [["chase_pct", "Chase"], ["zone_contact_pct", "Zone contact"], ["ev90", "EV90"]] };
+  const pctM = new Set(["chase_pct", "zone_contact_pct"]);
+  const val = (m, v) => v == null ? "—" : pctM.has(m) ? S.fmt.pct(v) : S.fmt.num(v, 1);
+  const clubs = new Map(orgs.filter(o => o.season === y1).map(o => [o.org, o.club_name]));
+  const orgList = [...new Set(players.map(p => p.org))].sort();
+  const side0 = S.urlState.get("side", "pitchers");
+  const st = { org: S.urlState.get("org", orgList[0]), y: +S.urlState.get("dy", y1), side: side0 === "hitters" ? "hitters" : "pitchers",
+               role: S.urlState.get("role", "all"), m: null, i: null };
+  if (!orgList.includes(st.org)) st.org = orgList[0];
+  if (!res.seasons.includes(st.y)) st.y = y1;
+  st.m = MET[st.side].some(x => x[0] === S.urlState.get("dm")) ? S.urlState.get("dm") : MET[st.side][0][0];
+  let staff = null, slider = null;
+  const tbl = S.table(document.getElementById("t3"), [
+    { key: "name", label: "Player", align: "l", html: r => S.playerLink(r.player_id, r.name) + (r.promoted ? ' <span class="muted">(MLB 2nd half)</span>' : "") },
+    { key: "role", label: "Role", align: "l", fmt: v => v ?? "—" },
+    { key: "n1", label: "1st half", title: "Pitches (pitchers) or PA (hitters)", fmt: S.fmt.int },
+    { key: "n2", label: "2nd half", fmt: S.fmt.int },
+    { key: "h1", label: "1st", fmt: (v, r) => val(st.m, v) },
+    { key: "h2", label: "2nd", fmt: (v, r) => val(st.m, v) },
+    { key: "adj", label: "Change vs. league", fmt: v => S.fmt.signed(v, 1), heat: "plus", heatVal: r => r.adj == null ? null : 100 + r.adj * (st.m === "fb_velo" || st.m === "ev90" ? 5 : 2) },
+    { key: "now", label: "Last 30 days", title: "As of the date slider (current-season pitchers)", fmt: (v) => v == null ? "—" : S.fmt.num(v, 1) },
+  ], { sortKey: "adj", pageSize: 40 });
+  window.addEventListener("farm-org", e => {
+    st.org = e.detail.org;
+    const side = MET.pitchers.some(x => x[0] === e.detail.m) ? "pitchers" : "hitters";
+    if (side !== st.side) { st.side = side; }
+    st.m = e.detail.m; save(); controls(); draw();
+    document.getElementById("x3").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  const save = () => S.urlState.set({ org: st.org, dy: st.y, side: st.side, role: st.role, dm: st.m },
+    { dy: y1, side: "pitchers", role: "all", dm: MET[st.side][0][0] });
+  function controls() {
+    const kids = [
+      S.select("Org", orgList.map(o => [o, `${o}${clubs.get(o) ? " · " + clubs.get(o) : ""}`]), st.org, v => { st.org = v; save(); draw(); }),
+      S.el("label", {}, "Season", S.seg(res.seasons.map(y => [y, String(y)]), st.y, v => { st.y = v; save(); draw(); })),
+      S.el("label", {}, "Players", S.seg([["pitchers", "Pitchers"], ["hitters", "Hitters"]], st.side,
+        v => { st.side = v; st.m = MET[v][0][0]; save(); controls(); draw(); })),
+      S.el("label", {}, "Measure", S.seg(MET[st.side], st.m, v => { st.m = v; save(); draw(); }))];
+    if (st.side === "pitchers") kids.push(S.roleFilter(st.role, v => { st.role = v; save(); draw(); }));
+    document.getElementById("c3").replaceChildren(...kids);
+  }
+  function rowsNow() {
+    return players.filter(p => p.org === st.org && p.season === st.y && p.side === st.side &&
+      (st.side === "hitters" || st.role === "all" || p.role === st.role))
+      .map(p => ({ ...p, h1: p[st.m + "1"], h2: p[st.m + "2"], adj: p[st.m + "_adj"] }));
+  }
+  async function draw() {
+    const d = rowsNow();
+    // Slope chart: first half to second half, one line per player, colored by direction vs. league.
+    const flip = st.m === "chase_pct" ? -1 : 1;
+    const pts = d.filter(r => r.h1 != null && r.h2 != null).flatMap(r => [
+      { k: r.player_id, name: r.name, half: "1st half", v: r.h1, adj: r.adj }, { k: r.player_id, name: r.name, half: "2nd half", v: r.h2, adj: r.adj }]);
+    const col = r => r.adj > 0 ? "#eb6834" : r.adj < 0 ? "#2a78d6" : "#9a9890";
+    const label = MET[st.side].find(x => x[0] === st.m)[1];
+    S.plot(document.getElementById("p3"), w => Plot.plot({ ...S.plotDefaults(w), height: 340, marginRight: 30,
+      x: { domain: ["1st half", "2nd half"], label: null, padding: 0.3 },
+      y: { label: `↑ ${label}${st.m === "chase_pct" ? " (lower is better)" : ""}`, grid: true, tickFormat: pctM.has(st.m) ? "%" : null, reverse: flip < 0 },
+      marks: [Plot.line(pts, { x: "half", y: "v", z: "k", stroke: col, strokeOpacity: 0.7, strokeWidth: 1.5 }),
+        Plot.dot(pts, { x: "half", y: "v", fill: col, r: 3 }),
+        Plot.tip(pts, Plot.pointer({ x: "half", y: "v", title: r => `${r.name}\n${r.half}: ${val(st.m, r.v)}\nchange vs. league ${S.fmt.signed(r.adj, 1)}` }))] }));
+    const better = d.filter(r => r.adj > 0).length;
+    document.getElementById("cap3").textContent = `${st.org}, ${st.y}: ${d.length} ${st.side}${st.side === "pitchers" && st.role !== "all" ? ` (${S.ROLES[st.role].toLowerCase()})` : ""}. ` +
+      `Orange lines improved more than the league did between halves, blue less. ${better} of ${d.length} improved more than the league.` +
+      (st.side === "pitchers" ? " Pitchers marked \"MLB 2nd half\" were promoted; their second half is from the majors and they aren't in the org score." : "");
+    // Weekly last-30-days grades with the date slider: current-season pitchers only.
+    const weekly = st.side === "pitchers" && st.y === y1;
+    document.getElementById("slider3").hidden = !weekly;
+    if (!weekly) {
+      document.getElementById("p3b").replaceChildren();
+      document.getElementById("cap3b").textContent = st.side === "pitchers"
+        ? `Week-by-week grades are kept for the current season (${y1}) only.` : "";
+      tbl.update(d); return;
+    }
+    staff = staff || await S.load("/data/baseball/farm_staff.json");
+    const dates = staff.dates;
+    if (st.i == null) { const q = S.urlState.get("asof"); st.i = q ? Math.max(0, S.snapIndex(dates, q)) : dates.length - 1; }
+    if (!slider) {
+      slider = S.dateSlider(dates, st.i, i => { st.i = i; S.urlState.set({ asof: i === dates.length - 1 ? null : dates[i] }); draw(); });
+      document.getElementById("slider3").replaceChildren(slider.el);
+    }
+    const ids = new Set(d.map(r => r.player_id));
+    const byId = new Map(staff.players.map(p => [p.id, p.s[st.m]]));
+    const series = [], org = [], all = [];
+    dates.forEach((dt, k) => {
+      const t = new Date(dt + "T12:00:00");
+      const vs = [], av = [];
+      staff.players.forEach(p => { const v = p.s[st.m][k]; if (v == null) return; av.push(v); if (ids.has(p.id)) vs.push(v); });
+      if (vs.length) org.push({ t, v: d3.mean(vs) });
+      if (av.length) all.push({ t, v: d3.mean(av) });
+    });
+    d.forEach(r => { const s = byId.get(r.player_id); r.now = s ? s[st.i] : null;
+      if (s) s.forEach((v, k) => v != null && series.push({ k: r.player_id, name: r.name, t: new Date(dates[k] + "T12:00:00"), v })); });
+    S.plot(document.getElementById("p3b"), w => Plot.plot({ ...S.plotDefaults(w), height: 300,
+      x: { type: "time", label: null }, y: { label: `↑ ${label}, last 30 days`, grid: true },
+      marks: [Plot.line(series, { x: "t", y: "v", z: "k", stroke: "#c9c7c0", strokeWidth: 1 }),
+        Plot.line(all, { x: "t", y: "v", stroke: "#8a8b8f", strokeDasharray: "4,3", strokeWidth: 1.5 }),
+        Plot.line(org, { x: "t", y: "v", stroke: "#0f5257", strokeWidth: 2.5 }),
+        S.asOfMark(dates[st.i]),
+        Plot.tip(series, Plot.pointer({ x: "t", y: "v", title: r => `${r.name}\n${S.dateLabel(r.t.toISOString().slice(0, 10))}: ${S.fmt.num(r.v, 1)}` }))] }));
+    const om = org.find(o => +o.t === +new Date(dates[st.i] + "T12:00:00")), lm = all.find(o => +o.t === +new Date(dates[st.i] + "T12:00:00"));
+    document.getElementById("cap3b").textContent = `Teal: ${st.org} average. Dashed: average of all ${staff.players.length} pitchers in the ${y1} sample. Gray: each ${st.org} pitcher. ` +
+      `Through ${S.dateLabel(dates[st.i])}: ${st.org} ${om ? S.fmt.num(om.v, 1) : "—"}, sample ${lm ? S.fmt.num(lm.v, 1) : "—"}. Grades are last-30-days, so early weeks rest on few pitches.`;
+    tbl.update(d);
+  }
+  controls(); draw();
+})();
+</script>
+```
+
+## Why one season isn't enough
+
+An org's score averages over a small group of players ({{< meta baseball.farm_med_n_p_2026 >}} pitchers for the typical org in {{< meta baseball.farm_y1 >}}), and each player's half-season change is noisy on its own: a pitch-mix change, a minor injury, or a few hundred pitches of sampling error all move it. Within a single season, the share of the spread between org scores that reflects real differences between orgs, rather than sampling noise, ranged from {{< meta baseball.farm_rel_min >}} to {{< meta baseball.farm_rel_max >}} across the six measures and two seasons. The year-to-year test asks the harder question: whether the orgs that did well once did well again. For Stuff+, the answer was r = {{< meta baseball.farm_r_stuff >}} ({{< meta baseball.farm_r_stuff_ci >}}); for Pitching+, {{< meta baseball.farm_r_pitching >}} ({{< meta baseball.farm_r_pitching_ci >}}); for chase rate, {{< meta baseball.farm_r_chase >}} ({{< meta baseball.farm_r_chase_ci >}}); for zone contact, {{< meta baseball.farm_r_zcon >}} ({{< meta baseball.farm_r_zcon_ci >}}); and for EV90, {{< meta baseball.farm_r_ev90 >}} ({{< meta baseball.farm_r_ev90_ci >}}).
+
+That doesn't prove farm systems don't matter. Two seasons and {{< meta baseball.farm_n_orgs >}} orgs is a small test, an org can change its coaches and methods between years, and development that shows up as a player's whole-season level rather than a first-to-second-half change isn't measured here. What it does show is that a one-season ranking of farm systems by in-season improvement isn't evidence of much on its own.
+
+<details class="method" id="method">
+<summary>Method and caveats</summary>
+
+**Data.** Pitch-level Statcast for Triple-A, {{< meta baseball.farm_y0 >}} and {{< meta baseball.farm_y1 >}}, plus MLB for the same seasons (to find promotions and big leaguers on assignment). Each season is split at its median Triple-A pitch date ({{< meta baseball.farm_split_y0 >}} in {{< meta baseball.farm_y0 >}}, {{< meta baseball.farm_split_y1 >}} in {{< meta baseball.farm_y1 >}}), so the halves hold about the same number of pitches. Each player is credited to the MLB organization his Triple-A club was affiliated with that season (MLB Stats API).
+
+**Who's included.** Pitchers with {{< meta baseball.farm_min_pitches >}}+ Triple-A pitches in each half ({{< meta baseball.farm_n_p_2025 >}} in {{< meta baseball.farm_y0 >}}, {{< meta baseball.farm_n_p_2026 >}} in {{< meta baseball.farm_y1 >}}) and hitters with {{< meta baseball.farm_min_pa >}}+ PA in each half ({{< meta baseball.farm_n_h_2025 >}} and {{< meta baseball.farm_n_h_2026 >}}). Excluded across both seasons: players who played for more than one Triple-A club in the season, which means they changed orgs midseason ({{< meta baseball.farm_ex_multi_p >}} pitchers, {{< meta baseball.farm_ex_multi_h >}} hitters), and players with meaningful MLB time that season before their first Triple-A game, mostly rehab assignments and optioned big leaguers ({{< meta baseball.farm_rehab_pitches >}}+ MLB pitches or {{< meta baseball.farm_rehab_pa >}}+ MLB PA; {{< meta baseball.farm_ex_mlb_p >}} pitchers, {{< meta baseball.farm_ex_mlb_h >}} hitters).
+
+**Measures.** Pitchers: [Stuff+](/baseball/stuff-plus/), [Pitching+](/baseball/stuff-or-command/), and primary-fastball velocity (the more-thrown of his four-seamer and sinker). Hitters: chase rate, zone contact, and EV90 (90th-percentile exit velocity), with the [strike zone](/glossary.html#strike-zone) set from each batter's height. Change = second half minus first half, oriented so positive is always better (for chase, a drop counts as a gain), in Stuff+ points, mph, or percentage points. Each change has the league-wide average change for that season subtracted: the average included pitcher's Stuff+ moved {{< meta baseball.farm_league_stuff_2025 >}} in {{< meta baseball.farm_y0 >}} and {{< meta baseball.farm_league_stuff_2026 >}} in {{< meta baseball.farm_y1 >}}, and fastball velocity {{< meta baseball.farm_league_velo_2025 >}} and {{< meta baseball.farm_league_velo_2026 >}} mph.
+
+**[Org score](/glossary.html#org-score).** The average adjusted change of the org's players, [shrunk](/glossary.html#shrinkage) toward the league average by empirical Bayes: the spread between orgs that's larger than sampling noise alone would produce is estimated from all {{< meta baseball.farm_n_orgs >}} orgs, and each org's average is pulled toward the mean by how much of its deviation is likely noise (more for small or noisy orgs, none when the between-org spread is no bigger than noise). The 90% interval comes from {{< meta baseball.farm_boot >}} bootstrap resamples of the org's players, with the shrinkage factor held fixed.
+
+**Consistency test.** The correlation between each org's {{< meta baseball.farm_y0 >}} and {{< meta baseball.farm_y1 >}} average adjusted change (unshrunk, so shrinkage can't manufacture or hide agreement), with a 90% interval from {{< meta baseball.farm_boot >}} bootstrap resamples of the orgs.
+
+**Survivorship.** Players who earn a promotion leave the second-half Triple-A sample, and an org that promotes its improvers would look worse for it. Pitchers who qualified in the first half and threw {{< meta baseball.farm_min_pitches >}}+ MLB pitches in the second instead: {{< meta baseball.farm_prom_p_2025 >}} in {{< meta baseball.farm_y0 >}} and {{< meta baseball.farm_prom_p_2026 >}} in {{< meta baseball.farm_y1 >}}; hitters: {{< meta baseball.farm_prom_h_2025 >}} and {{< meta baseball.farm_prom_h_2026 >}}. Each org's count is in the table. Adding the promoted pitchers back, using their MLB second half (the grades are on the same scale at both levels), gives year-to-year correlations of {{< meta baseball.farm_sens_stuff >}} for Stuff+, {{< meta baseball.farm_sens_pitching >}} for Pitching+, and {{< meta baseball.farm_sens_velo >}} for velocity. Promoted hitters aren't added back, because MLB swing and contact rates aren't comparable to Triple-A ones without a translation.
+
+**What this can't tell you.** Whether an org's methods work for any one player; development that changes a player's level before he reaches Triple-A or across a whole season rather than between halves; anything about the lower minors. Correlation across orgs isn't causation in either direction: an org's roster construction, park, and promotion habits all feed its score.
+
+Code: [`baseball/farm_systems/`](https://github.com/matt-hardman15/sparvi-site/tree/main/baseball/farm_systems)
+</details>
