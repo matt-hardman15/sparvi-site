@@ -79,12 +79,12 @@
   {
    "name": "games_2014: columns and types",
    "ok": true,
-   "detail": "20 contract columns"
+   "detail": "22 contract columns"
   },
   {
    "name": "games_2014: row count",
    "ok": true,
-   "detail": "868 rows"
+   "detail": "868 rows (last accepted 868)"
   },
   {
    "name": "games_2014: one row per id",
@@ -124,7 +124,7 @@
   {
    "name": "plays_2014: row count",
    "ok": true,
-   "detail": "158,315 rows"
+   "detail": "158,315 rows (last accepted 158,315)"
   },
   {
    "name": "plays_2014: one row per id",
@@ -159,7 +159,7 @@
   {
    "name": "teams_2014: row count",
    "ok": true,
-   "detail": "128 rows"
+   "detail": "128 rows (last accepted 128)"
   },
   {
    "name": "teams_2014: one row per id",
@@ -184,7 +184,7 @@
   {
    "name": "rankings_2014: row count",
    "ok": true,
-   "detail": "1,050 rows"
+   "detail": "1,050 rows (last accepted 1,050)"
   },
   {
    "name": "rankings_2014: one row per season + seasonType + week + poll + school",
@@ -209,7 +209,7 @@
   {
    "name": "lines_2014: row count",
    "ok": true,
-   "detail": "2,303 rows"
+   "detail": "2,303 rows (last accepted 2,303)"
   },
   {
    "name": "lines_2014: one row per game_id + provider",
@@ -234,12 +234,12 @@
   {
    "name": "games_2015: columns and types",
    "ok": true,
-   "detail": "20 contract columns"
+   "detail": "22 contract columns"
   },
   {
    "name": "games_2015: row count",
    "ok": true,
-   "detail": "870 rows"
+   "detail": "870 rows (last accepted 870)"
   },
   {
    "name": "games_2015: one row per id",
@@ -279,7 +279,7 @@
   {
    "name": "plays_2015: row count",
    "ok": true,
-   "detail": "160,127 rows"
+   "detail": "160,127 rows (last accepted 160,127)"
   },
   {
    "name": "plays_2015: one row per id",
@@ -314,7 +314,7 @@
   {
    "name": "teams_2015: row count",
    "ok": true,
-   "detail": "128 rows"
+   "detail": "128 rows (last accepted 128)"
   },
   {
    "name": "teams_2015: one row per id",
@@ -339,7 +339,7 @@
   {
    "name": "rankings_2015: row count",
    "ok": true,
-   "detail": "951 rows"
+   "detail": "951 rows (last accepted 951)"
   },
   {
    "name": "rankings_2015: one row per season + seasonType + week + poll + school",
@@ -364,7 +364,7 @@
   {
    "name": "lines_2015: row count",
    "ok": true,
-   "detail": "2,320 rows"
+   "detail": "2,320 rows (last accepted 2,320)"
   },
   {
    "name": "lines_2015: one row per game_id + provider",
@@ -389,12 +389,12 @@
   {
    "name": "games_2016: columns and types",
    "ok": true,
-   "detail": "20 contract columns"
+   "detail": "22 contract columns"
   },
   {
    "name": "games_2016: row count",
    "ok": true,
-   "detail": "873 rows"
+   "detail": "873 rows (last accepted 873)"
   },
   {
    "name": "games_2016: one row per id",
@@ -434,7 +434,7 @@
   {
    "name": "plays_2016: row count",
    "ok": true,
-   "detail": "158,487 rows"
+   "detail": "158,487 rows (last accepted 158,487)"
   },
   {
    "name": "plays_2016: one row per id",
@@ -469,7 +469,7 @@
   {
    "name": "teams_2016: row count",
    "ok": true,
-   "detail": "128 rows"
+   "detail": "128 rows (last accepted 128)"
   },
   {
    "name": "teams_2016: one row per id",
@@ -494,7 +494,7 @@
   {
    "name": "rankings_2016: row count",
    "ok": true,
-   "detail": "950 rows"
+   "detail": "950 rows (last accepted 950)"
   },
   {
    "name": "rankings_2016: one row per season + seasonType + week + poll + school",
@@ -519,7 +519,7 @@
   {
    "name": "lines_2016: row count",
    "ok": true,
-   "detail": "2,347 rows"
+   "detail": "2,347 rows (last accepted 2,347)"
   },
   {
    "name": "lines_2016: one row per game_id + provider",
@@ -544,12 +544,12 @@
   {
    "name": "games_2017: columns and types",
    "ok": true,
-   "detail": "20 contract columns"
+   "detail": "22 contract columns"
   },
   {
    "name": "games_2017: row count",
    "ok": true,
-   "detail": "874 rows"
+   "detail": "874 rows (last accepted 874)"
   },
   {
    "name": "games_2017: one row per id",
@@ -589,7 +589,7 @@
   {
    "name": "plays_2017: row count",
    "ok": true,
-   "detail": "158,464 rows"
+   "detail": "158,464 rows (last accepted 158,464)"
   },
   {
    "name": "plays_2017: one row per id",
@@ -624,7 +624,7 @@
   {
    "name": "teams_2017: row count",
    "ok": true,
-   "detail": "130 rows"
+   "detail": "130 rows (last accepted 130)"
   },
   {
    "name": "teams_2017: one row per id",
@@ -649,7 +649,7 @@
   {
    "name": "rankings_2017: row count",
    "ok": true,
-   "detail": "950 rows"
+   "detail": "950 rows (last accepted 950)"
   },
   {
    "name": "rankings_2017: one row per season + seasonType + week + poll + school",
@@ -674,7 +674,7 @@
   {
    "name": "lines_2017: row count",
    "ok": true,
-   "detail": "2,400 rows"
+   "detail": "2,400 rows (last accepted 2,400)"
   },
   {
    "name": "lines_2017: one row per game_id + provider",
@@ -699,12 +699,12 @@
   {
    "name": "games_2018: columns and types",
    "ok": true,
-   "detail": "20 contract columns"
+   "detail": "22 contract columns"
   },
   {
    "name": "games_2018: row count",
    "ok": true,
-   "detail": "884 rows"
+   "detail": "884 rows (last accepted 884)"
   },
   {
    "name": "games_2018: one row per id",
@@ -744,7 +744,7 @@
   {
    "name": "plays_2018: row count",
    "ok": true,
-   "detail": "160,503 rows"
+   "detail": "160,503 rows (last accepted 160,503)"
   },
   {
    "name": "plays_2018: one row per id",
@@ -779,7 +779,7 @@
   {
    "name": "teams_2018: row count",
    "ok": true,
-   "detail": "130 rows"
+   "detail": "130 rows (last accepted 130)"
   },
   {
    "name": "teams_2018: one row per id",
@@ -804,7 +804,7 @@
   {
    "name": "rankings_2018: row count",
    "ok": true,
-   "detail": "950 rows"
+   "detail": "950 rows (last accepted 950)"
   },
   {
    "name": "rankings_2018: one row per season + seasonType + week + poll + school",
@@ -829,7 +829,7 @@
   {
    "name": "lines_2018: row count",
    "ok": true,
-   "detail": "3,034 rows"
+   "detail": "3,034 rows (last accepted 3,034)"
   },
   {
    "name": "lines_2018: one row per game_id + provider",
@@ -854,12 +854,12 @@
   {
    "name": "games_2019: columns and types",
    "ok": true,
-   "detail": "20 contract columns"
+   "detail": "22 contract columns"
   },
   {
    "name": "games_2019: row count",
    "ok": true,
-   "detail": "888 rows"
+   "detail": "888 rows (last accepted 888)"
   },
   {
    "name": "games_2019: one row per id",
@@ -899,7 +899,7 @@
   {
    "name": "plays_2019: row count",
    "ok": true,
-   "detail": "159,829 rows"
+   "detail": "159,829 rows (last accepted 159,829)"
   },
   {
    "name": "plays_2019: one row per id",
@@ -934,7 +934,7 @@
   {
    "name": "teams_2019: row count",
    "ok": true,
-   "detail": "130 rows"
+   "detail": "130 rows (last accepted 130)"
   },
   {
    "name": "teams_2019: one row per id",
@@ -959,7 +959,7 @@
   {
    "name": "rankings_2019: row count",
    "ok": true,
-   "detail": "977 rows"
+   "detail": "977 rows (last accepted 977)"
   },
   {
    "name": "rankings_2019: one row per season + seasonType + week + poll + school",
@@ -984,7 +984,7 @@
   {
    "name": "lines_2019: row count",
    "ok": true,
-   "detail": "3,506 rows"
+   "detail": "3,506 rows (last accepted 3,506)"
   },
   {
    "name": "lines_2019: one row per game_id + provider",
@@ -1009,12 +1009,12 @@
   {
    "name": "games_2020: columns and types",
    "ok": true,
-   "detail": "20 contract columns"
+   "detail": "22 contract columns"
   },
   {
    "name": "games_2020: row count",
    "ok": true,
-   "detail": "568 rows"
+   "detail": "568 rows (last accepted 568)"
   },
   {
    "name": "games_2020: one row per id",
@@ -1054,7 +1054,7 @@
   {
    "name": "plays_2020: row count",
    "ok": true,
-   "detail": "102,706 rows"
+   "detail": "102,706 rows (last accepted 102,706)"
   },
   {
    "name": "plays_2020: one row per id",
@@ -1089,7 +1089,7 @@
   {
    "name": "teams_2020: row count",
    "ok": true,
-   "detail": "128 rows"
+   "detail": "128 rows (last accepted 128)"
   },
   {
    "name": "teams_2020: one row per id",
@@ -1114,7 +1114,7 @@
   {
    "name": "rankings_2020: row count",
    "ok": true,
-   "detail": "925 rows"
+   "detail": "925 rows (last accepted 925)"
   },
   {
    "name": "rankings_2020: one row per season + seasonType + week + poll + school",
@@ -1139,7 +1139,7 @@
   {
    "name": "lines_2020: row count",
    "ok": true,
-   "detail": "2,752 rows"
+   "detail": "2,752 rows (last accepted 2,752)"
   },
   {
    "name": "lines_2020: one row per game_id + provider",
@@ -1164,12 +1164,12 @@
   {
    "name": "games_2021: columns and types",
    "ok": true,
-   "detail": "20 contract columns"
+   "detail": "22 contract columns"
   },
   {
    "name": "games_2021: row count",
    "ok": true,
-   "detail": "887 rows"
+   "detail": "887 rows (last accepted 887)"
   },
   {
    "name": "games_2021: one row per id",
@@ -1209,7 +1209,7 @@
   {
    "name": "plays_2021: row count",
    "ok": true,
-   "detail": "157,634 rows"
+   "detail": "157,634 rows (last accepted 157,634)"
   },
   {
    "name": "plays_2021: one row per id",
@@ -1244,7 +1244,7 @@
   {
    "name": "teams_2021: row count",
    "ok": true,
-   "detail": "130 rows"
+   "detail": "130 rows (last accepted 130)"
   },
   {
    "name": "teams_2021: one row per id",
@@ -1269,7 +1269,7 @@
   {
    "name": "rankings_2021: row count",
    "ok": true,
-   "detail": "950 rows"
+   "detail": "950 rows (last accepted 950)"
   },
   {
    "name": "rankings_2021: one row per season + seasonType + week + poll + school",
@@ -1294,7 +1294,7 @@
   {
    "name": "lines_2021: row count",
    "ok": true,
-   "detail": "3,541 rows"
+   "detail": "3,541 rows (last accepted 3,541)"
   },
   {
    "name": "lines_2021: one row per game_id + provider",
@@ -1319,12 +1319,12 @@
   {
    "name": "games_2022: columns and types",
    "ok": true,
-   "detail": "20 contract columns"
+   "detail": "22 contract columns"
   },
   {
    "name": "games_2022: row count",
    "ok": true,
-   "detail": "896 rows"
+   "detail": "896 rows (last accepted 896)"
   },
   {
    "name": "games_2022: one row per id",
@@ -1364,7 +1364,7 @@
   {
    "name": "plays_2022: row count",
    "ok": true,
-   "detail": "249,764 rows"
+   "detail": "249,764 rows (last accepted 249,764)"
   },
   {
    "name": "plays_2022: one row per id",
@@ -1399,7 +1399,7 @@
   {
    "name": "teams_2022: row count",
    "ok": true,
-   "detail": "131 rows"
+   "detail": "131 rows (last accepted 131)"
   },
   {
    "name": "teams_2022: one row per id",
@@ -1424,7 +1424,7 @@
   {
    "name": "rankings_2022: row count",
    "ok": true,
-   "detail": "950 rows"
+   "detail": "950 rows (last accepted 950)"
   },
   {
    "name": "rankings_2022: one row per season + seasonType + week + poll + school",
@@ -1449,7 +1449,7 @@
   {
    "name": "lines_2022: row count",
    "ok": true,
-   "detail": "4,310 rows"
+   "detail": "4,310 rows (last accepted 4,310)"
   },
   {
    "name": "lines_2022: one row per game_id + provider",
@@ -1474,12 +1474,12 @@
   {
    "name": "games_2023: columns and types",
    "ok": true,
-   "detail": "20 contract columns"
+   "detail": "22 contract columns"
   },
   {
    "name": "games_2023: row count",
    "ok": true,
-   "detail": "910 rows"
+   "detail": "910 rows (last accepted 910)"
   },
   {
    "name": "games_2023: one row per id",
@@ -1519,7 +1519,7 @@
   {
    "name": "plays_2023: row count",
    "ok": true,
-   "detail": "250,659 rows"
+   "detail": "250,659 rows (last accepted 250,659)"
   },
   {
    "name": "plays_2023: one row per id",
@@ -1554,7 +1554,7 @@
   {
    "name": "teams_2023: row count",
    "ok": true,
-   "detail": "133 rows"
+   "detail": "133 rows (last accepted 133)"
   },
   {
    "name": "teams_2023: one row per id",
@@ -1579,7 +1579,7 @@
   {
    "name": "rankings_2023: row count",
    "ok": true,
-   "detail": "975 rows"
+   "detail": "975 rows (last accepted 975)"
   },
   {
    "name": "rankings_2023: one row per season + seasonType + week + poll + school",
@@ -1604,7 +1604,7 @@
   {
    "name": "lines_2023: row count",
    "ok": true,
-   "detail": "3,072 rows"
+   "detail": "3,072 rows (last accepted 3,072)"
   },
   {
    "name": "lines_2023: one row per game_id + provider",
@@ -1629,12 +1629,12 @@
   {
    "name": "games_2024: columns and types",
    "ok": true,
-   "detail": "20 contract columns"
+   "detail": "22 contract columns"
   },
   {
    "name": "games_2024: row count",
    "ok": true,
-   "detail": "920 rows"
+   "detail": "920 rows (last accepted 920)"
   },
   {
    "name": "games_2024: one row per id",
@@ -1674,7 +1674,7 @@
   {
    "name": "plays_2024: row count",
    "ok": true,
-   "detail": "276,483 rows"
+   "detail": "276,483 rows (last accepted 276,483)"
   },
   {
    "name": "plays_2024: one row per id",
@@ -1709,7 +1709,7 @@
   {
    "name": "teams_2024: row count",
    "ok": true,
-   "detail": "134 rows"
+   "detail": "134 rows (last accepted 134)"
   },
   {
    "name": "teams_2024: one row per id",
@@ -1734,7 +1734,7 @@
   {
    "name": "rankings_2024: row count",
    "ok": true,
-   "detail": "1,001 rows"
+   "detail": "1,001 rows (last accepted 1,001)"
   },
   {
    "name": "rankings_2024: one row per season + seasonType + week + poll + school",
@@ -1759,7 +1759,7 @@
   {
    "name": "lines_2024: row count",
    "ok": true,
-   "detail": "3,172 rows"
+   "detail": "3,172 rows (last accepted 3,172)"
   },
   {
    "name": "lines_2024: one row per game_id + provider",
@@ -1784,12 +1784,12 @@
   {
    "name": "games_2025: columns and types",
    "ok": true,
-   "detail": "20 contract columns"
+   "detail": "22 contract columns"
   },
   {
    "name": "games_2025: row count",
    "ok": true,
-   "detail": "934 rows"
+   "detail": "934 rows (last accepted 934)"
   },
   {
    "name": "games_2025: one row per id",
@@ -1829,7 +1829,7 @@
   {
    "name": "plays_2025: row count",
    "ok": true,
-   "detail": "291,073 rows"
+   "detail": "291,073 rows (last accepted 291,073)"
   },
   {
    "name": "plays_2025: one row per id",
@@ -1864,7 +1864,7 @@
   {
    "name": "teams_2025: row count",
    "ok": true,
-   "detail": "136 rows"
+   "detail": "136 rows (last accepted 136)"
   },
   {
    "name": "teams_2025: one row per id",
@@ -1889,7 +1889,7 @@
   {
    "name": "rankings_2025: row count",
    "ok": true,
-   "detail": "1,000 rows"
+   "detail": "1,000 rows (last accepted 1,000)"
   },
   {
    "name": "rankings_2025: one row per season + seasonType + week + poll + school",
@@ -1914,7 +1914,7 @@
   {
    "name": "lines_2025: row count",
    "ok": true,
-   "detail": "3,289 rows"
+   "detail": "3,289 rows (last accepted 3,289)"
   },
   {
    "name": "lines_2025: one row per game_id + provider",
@@ -1939,12 +1939,12 @@
   {
    "name": "games_2026: columns and types",
    "ok": true,
-   "detail": "20 contract columns"
+   "detail": "22 contract columns"
   },
   {
    "name": "games_2026: row count",
    "ok": true,
-   "detail": "888 rows"
+   "detail": "888 rows (last accepted 888)"
   },
   {
    "name": "games_2026: one row per id",
@@ -1984,7 +1984,7 @@
   {
    "name": "plays_2026: row count",
    "ok": true,
-   "detail": "228,081 rows"
+   "detail": "228,081 rows (last accepted 228,081)"
   },
   {
    "name": "plays_2026: one row per id",
@@ -2019,7 +2019,7 @@
   {
    "name": "teams_2026: row count",
    "ok": true,
-   "detail": "138 rows"
+   "detail": "138 rows (last accepted 138)"
   },
   {
    "name": "teams_2026: one row per id",
@@ -2044,7 +2044,7 @@
   {
    "name": "rankings_2026: row count",
    "ok": true,
-   "detail": "601 rows"
+   "detail": "601 rows (last accepted 601)"
   },
   {
    "name": "rankings_2026: one row per season + seasonType + week + poll + school",
@@ -2069,7 +2069,7 @@
   {
    "name": "lines_2026: row count",
    "ok": true,
-   "detail": "2,110 rows"
+   "detail": "2,110 rows (last accepted 2,110)"
   },
   {
    "name": "lines_2026: one row per game_id + provider",

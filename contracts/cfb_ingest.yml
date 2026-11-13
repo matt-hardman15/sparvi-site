@@ -67,12 +67,14 @@ tables:
       homeClassification: VARCHAR
       homePoints: DOUBLE
       homePregameElo: DOUBLE
+      homePostgameElo: DOUBLE
       awayId: BIGINT
       awayTeam: VARCHAR
       awayConference: VARCHAR
       awayClassification: VARCHAR
       awayPoints: DOUBLE
       awayPregameElo: DOUBLE
+      awayPostgameElo: DOUBLE
   teams:
     description: FBS teams and conferences
     files: "cfb/teams_{season}.parquet"

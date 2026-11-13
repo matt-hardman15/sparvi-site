@@ -9,7 +9,8 @@ Output (data/raw/cfb/, never committed; raw CFBD data is not redistributed):
     teams_{season}.parquet      FBS teams and conferences
     games_{season}.parquet      every game involving an FBS team, regular season + postseason
     lines_{season}.parquet      one row per game x sportsbook: spread/total, opening and closing
-    rankings_{season}.parquet   one row per poll x week x ranked team
+    rankings_{season}.parquet   one row per poll x week x ranked team (AP, Coaches, CFP)
+    wepa_{season}.parquet, sp_{season}.parquet   CFBD's season-level adjusted EPA (WEPA) and SP+ (benchmarks)
     plays_{season}.parquet      play-by-play with CFBD's EPA (`ppa`)
     cache/, _calls.csv          raw responses and the call log (see client.py)
 
@@ -43,7 +44,11 @@ def season_done(season: int) -> bool:
 def requests_for(season: int, games: pd.DataFrame | None) -> list[tuple[str, dict, bool]]:
     """(endpoint, params, completed) for one season. Play-by-play weeks come from the games."""
     done = season_done(season)
-    r = [("/teams/fbs", {"year": season}, done)]
+    r = [("/teams/fbs", {"year": season}, done),
+         # Season-level benchmarks (Tier 1): CFBD's opponent-adjusted EPA (WEPA) and SP+. Season totals
+         # only, so they're compared on next-season games, never inside a season (no look-ahead).
+         ("/wepa/team/season", {"year": season}, done),
+         ("/ratings/sp", {"year": season}, done)]
     for t in TYPES:
         r += [("/games", {"year": season, "seasonType": t, "classification": "fbs"}, done),
               ("/lines", {"year": season, "seasonType": t}, done),
@@ -60,10 +65,17 @@ def requests_for(season: int, games: pd.DataFrame | None) -> list[tuple[str, dic
 
 # Fixed numeric types: CFBD returns whole numbers as ints, so a season without missing values would
 # otherwise come out BIGINT and one with gaps DOUBLE (the contract checks types).
-FLOATS = {"games": ["homePoints", "awayPoints", "homePregameElo", "awayPregameElo"],
+FLOATS = {"games": ["homePoints", "awayPoints", "homePregameElo", "awayPregameElo", "homePostgameElo", "awayPostgameElo"],
           "rankings": ["points"],
           "lines": ["spread", "spreadOpen", "overUnder", "overUnderOpen", "homeMoneyline", "awayMoneyline"],
           "plays": ["ppa", "offenseScore", "defenseScore", "down", "distance", "yardline", "yardsToGoal", "yardsGained"]}
+
+
+def _floats_cols(df: pd.DataFrame, cols: list[str]) -> pd.DataFrame:
+    for c in cols:
+        if c in df.columns:
+            df[c] = pd.to_numeric(df[c], errors="coerce").astype("float64")
+    return df
 
 
 def _floats(df: pd.DataFrame, kind: str) -> pd.DataFrame:
@@ -75,8 +87,8 @@ def _floats(df: pd.DataFrame, kind: str) -> pd.DataFrame:
 
 def _games_frame(raw: list[dict]) -> pd.DataFrame:
     keep = ["id", "season", "week", "seasonType", "startDate", "completed", "neutralSite", "conferenceGame",
-            "homeId", "homeTeam", "homeConference", "homeClassification", "homePoints", "homePregameElo",
-            "awayId", "awayTeam", "awayConference", "awayClassification", "awayPoints", "awayPregameElo"]
+            "homeId", "homeTeam", "homeConference", "homeClassification", "homePoints", "homePregameElo", "homePostgameElo",
+            "awayId", "awayTeam", "awayConference", "awayClassification", "awayPoints", "awayPregameElo", "awayPostgameElo"]
     df = pd.DataFrame(raw)
     return df[[c for c in keep if c in df.columns]]
 
@@ -110,6 +122,13 @@ def pull_season(c: Client, season: int) -> None:
     get = lambda ep, prm, done: c.get(ep, prm, done)   # noqa: E731
     reqs = requests_for(season, None)
     teams = pd.DataFrame(get(*reqs[0]))
+    wepa = pd.DataFrame([{"season": w["year"], "team": w["team"], "conference": w.get("conference"),
+                          "epa": w["epa"]["total"], "epa_pass": w["epa"]["passing"], "epa_rush": w["epa"]["rushing"],
+                          "epa_allowed": w["epaAllowed"]["total"], "epa_allowed_pass": w["epaAllowed"]["passing"],
+                          "epa_allowed_rush": w["epaAllowed"]["rushing"]} for w in get(*reqs[1])])
+    sp = pd.DataFrame([{"season": x["year"], "team": x["team"], "conference": x.get("conference"), "rating": x.get("rating"),
+                        "offense": (x.get("offense") or {}).get("rating"), "defense": (x.get("defense") or {}).get("rating")}
+                       for x in get(*reqs[2]) if x.get("team") != "nationalAverages"])
     games = pd.concat([_games_frame(get(ep, prm, done)) for ep, prm, done in reqs if ep == "/games"], ignore_index=True)
     lines = pd.concat([_lines_frame(get(ep, prm, done)) for ep, prm, done in reqs if ep == "/lines"], ignore_index=True)
     ranks = pd.concat([_rankings_frame(get(ep, prm, done)) for ep, prm, done in reqs if ep == "/rankings"], ignore_index=True)
@@ -129,6 +148,10 @@ def pull_season(c: Client, season: int) -> None:
     teams[keep_teams].to_parquet(OUT / f"teams_{season}.parquet", index=False)
     games, lines, ranks = _floats(games, "games"), _floats(lines, "lines"), _floats(ranks, "rankings")
     games.sort_values(["seasonType", "week", "id"]).to_parquet(OUT / f"games_{season}.parquet", index=False)
+    if len(wepa):
+        wepa.sort_values("team").to_parquet(OUT / f"wepa_{season}.parquet", index=False)
+    if len(sp):
+        _floats_cols(sp, ["rating", "offense", "defense"]).sort_values("team").to_parquet(OUT / f"sp_{season}.parquet", index=False)
     lines.sort_values(["game_id", "provider"]).to_parquet(OUT / f"lines_{season}.parquet", index=False)
     ranks.sort_values(["seasonType", "week", "poll", "rank", "school"]).to_parquet(OUT / f"rankings_{season}.parquet", index=False)
     if plays:

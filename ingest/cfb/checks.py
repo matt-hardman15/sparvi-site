@@ -12,11 +12,14 @@ contracts/cfb_ingest.yml, plus coverage and the score check agreed for F2 (Nov 1
 """
 from __future__ import annotations
 
+import json
 import sys
 from datetime import date, timedelta
 
+import ingest.common.checks as common
 from ingest.common.checks import Checks
 from sparvi.config import RAW, cfb
+from sparvi.io import write_json
 
 MIN_SCORE_AGREEMENT = 0.90
 MAX_MISSING_PLAYS = 0.02
@@ -72,12 +75,9 @@ def run(today: date | None = None) -> bool:
             through = {"season": s, "week": wk, "last_game": str(last) if last else None}
     ok = c.finish(through)
     # Listed for /status/: games whose play-by-play is far from the official score (kept in the ratings).
-    import json
-    from ingest.common.checks import STATUS
-    st = json.loads((STATUS / "cfb.json").read_text(encoding="utf-8"))
+    st = json.loads((common.STATUS / "cfb.json").read_text(encoding="utf-8"))
     st["score_gaps"] = big_gaps
-    from sparvi.io import write_json
-    write_json(STATUS / "cfb.json", st, indent=1)
+    write_json(common.STATUS / "cfb.json", st, indent=1)
     return ok
 
 
