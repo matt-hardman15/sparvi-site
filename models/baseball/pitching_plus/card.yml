@@ -1,0 +1,50 @@
+# Model card (PLAN-scout A2). Change `code` files only with a new version: python -m sparvi.registry --help
+name: pitching_plus
+title: Pitching+
+sport: baseball
+status: champion
+version: 1.0.0
+owner: Matt
+spec: Stuff and location features together, in the count.
+target: Pitcher run value of the pitch (rv, denoised on balls in play), scaled to 100 = prior-season MLB average
+method: LightGBM regressor per pitch group (fastball, breaking, offspeed), seed 7, deterministic
+code:
+- baseball/pitch_quality/train.py
+- baseball/pitch_quality/features.py
+training_data:
+- data/raw/statcast_mlb_*.parquet
+- data/raw/batter_heights.parquet
+artifacts:
+- baseball/pitch_quality/output/model_pitching_fastball.txt
+- baseball/pitch_quality/output/model_pitching_breaking.txt
+- baseball/pitch_quality/output/model_pitching_offspeed.txt
+- baseball/pitch_quality/output/scale_reference.json
+validation:
+  file: baseball/pitch_quality/output/metrics_location.json
+  metrics:
+    r_next_rv: yoy.r_next_rv.pitching.r
+    r_self: yoy.r_self.pitching
+    split_half: split_half.pitching
+    aaa_to_mlb: aaa_to_mlb.pitching
+    holdout_pitch_r2: holdout_pitch_r2.pitching
+eval:
+  set: 'Out-of-sample year over year: models refit on the earliest season only, grade the next season, and correlate
+    with the season after''s run value (MLB pitchers with enough pitches both years). Same split as the published
+    Stuff+ validation.'
+  set_keys:
+    train_season: seasons.train
+    predictor_season: seasons.predictor
+    outcome_season: seasons.outcome
+    min_pitches: min_pitches
+  primary: r_next_rv
+  higher_is_better: true
+live_window:
+  unit: weeks in season
+  min: 4
+published_in:
+- site/data/baseball/*.json
+- baseball/stuff-plus
+- baseball/stuff-or-command
+- baseball/tools/stuff-leaderboard
+- baseball/player
+- baseball/tools/rule-5

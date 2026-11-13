@@ -1,0 +1,53 @@
+# Model card (PLAN-scout A2). Change `code` files only with a new version: python -m sparvi.registry --help
+name: cfb_power_rating
+title: CFB power rating
+sport: cfb
+status: champion
+version: 1.0.0
+owner: Matt
+spec: 'Opponent-adjusted efficiency (ridge on play EPA, lambda chosen on next-week margins) combined with CFBD''s
+  Elo: points vs. an average FBS team on a neutral field. Chosen by Matt (Nov 13, 2026) because efficiency alone
+  trailed Elo.'
+target: Next week's home margin between FBS teams
+method: Ridge on (offense, defense, home) cells; linear combination with Elo fit on complete seasons; validated
+  leave-one-season-out
+code:
+- cfb/adjusted_ratings/adjusted.py
+- football/common/adjust.py
+- football/dbt/models/staging/stg_cfb_plays.sql
+training_data:
+- data/raw/cfb/plays_*.parquet
+- data/raw/cfb/games_*.parquet
+- data/raw/cfb/lines_*.parquet
+- data/raw/cfb/wepa_*.parquet
+- data/raw/cfb/sp_*.parquet
+artifacts:
+- cfb/adjusted_ratings/output/metrics.json
+validation:
+  file: cfb/adjusted_ratings/output/metrics.json
+  metrics:
+    mae_power: backtest.power.mae
+    mae_elo: backtest.elo.mae
+    mae_efficiency: backtest.ours.mae
+    power_minus_elo: backtest.power_minus_elo_mae
+    mae_line_close: backtest.line_close.mae
+    wepa_test_ours: wepa_test.ours.mae
+    wepa_test_wepa: wepa_test.wepa.mae
+    lambda: lambda
+    n_games: backtest.n_games
+eval:
+  set: FBS vs. FBS games from week 5 through the bowls, complete seasons, with Elo and both lines available, predicted
+    from ratings through the prior week (leave-one-season-out).
+  set_keys:
+    seasons: seasons
+    min_week: min_week
+    n_games: backtest.n_games
+  primary: mae_power
+  higher_is_better: false
+live_window:
+  unit: weeks in season
+  min: 3
+published_in:
+- site/data/cfb/*.json
+- cfb/tools/team-ratings
+- cfb/ranked-vs-good

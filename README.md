@@ -32,7 +32,8 @@ behind them in explorers readers can filter and check. Live at **https://sparvi.
 | `cfb/` | `adjusted_ratings/adjusted.py`: opponent-adjusted ratings, the backtest against Elo, WEPA, SP+, and betting lines, and the power rating (efficiency + Elo); `polls.py`: AP poll vs. power rating; `export_site_data.py`; `build.sh` |
 | `site/` | Quarto site. Player pages load one `data/baseball/players/{id}.json` each; the tools load columnar weekly snapshot files. Interactive charts use Observable Plot and d3, self-hosted in `site/assets/js/`. Article numbers come from `site/_generated/<sport>.yml` |
 | `site/build/` | `seo.py` runs after every render: canonical URLs, sitemap `lastmod` from each page's last commit, `sitemap-index.xml`, `robots.txt`, and a check that fails the build on missing or duplicate titles/descriptions; `og_default.py` draws the default social image |
-| `models/`, `forecasts/`, `scoring/`, `review/` | Later stages (model registry, forecast ledger, scoring, review log); placeholders with a README each until A2, L1, L2. `review/model-changes.md` logs model changes |
+| `models/` | Model registry (A2): a `card.yml` per model behind a published number (Stuff+, Location+, Pitching+, the Triple-A translation, the NFL adjustment, the CFB power rating) and a record per version. `python -m sparvi.registry check` fails if model code changes without a new version; `promote` moves a challenger to champion only if it beats the champion on the same frozen evaluation set. Pages cite versions from `site/_generated/models.yml` |
+| `forecasts/`, `scoring/`, `review/` | Later stages (ledger, scoring) and the review log; `review/model-changes.md` records every model version change |
 | `tests/` | Config, the dbt pipeline on synthetic data, and a browser test of every page |
 
 ## Build locally

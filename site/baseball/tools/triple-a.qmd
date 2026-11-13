@@ -7,6 +7,10 @@ page-layout: full
 
 Every {{< meta baseball.season >}} Triple-A hitter and pitcher, ranked against the qualified league pool ({{< meta baseball.min_pa_qualified >}}+ PA or batters faced over a full season, prorated to games played earlier in the year). Percentiles are oriented so **higher is always better**: a low chase rate or a low walk rate shows as a high percentile. Move the date slider to see the league as it stood any week, or switch to the last 30 days. Click a column to sort and a name for the full player page. Switch **Numbers** to *Translated to MLB* to see each line run through the [Triple-A → MLB translation](/baseball/aaa-translation/): what the same numbers have typically become in the majors. Why the flags lean on swing decisions and velocity: [Two weeks of swing decisions tells you something. Two weeks of results doesn't.](/baseball/two-week-signal/)
 
+::: {.note}
+Model versions: [{{< meta models.aaa_translation >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/baseball/aaa_translation/card.yml).
+:::
+
 ```{=html}
 <div class="explorer">
   <div class="controls" id="c"></div>

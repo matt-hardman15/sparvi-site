@@ -1,0 +1,45 @@
+# Model card (PLAN-scout A2). Change `code` files only with a new version: python -m sparvi.registry --help
+name: aaa_translation
+title: Triple-A → MLB translation
+sport: baseball
+status: champion
+version: 1.0.0
+owner: Matt
+spec: Per-metric linear lines from a player's Triple-A line to his MLB line (players observed at both levels, across
+  and within seasons), with bands from out-of-sample error; a cross-validated ridge combination is reported as a
+  check.
+target: 'The same metric in MLB (chase, contact, EV90, K%, BB%, xwOBA; pitchers: Stuff+, K%, BB%, CSW%, ...)'
+method: Weighted least squares per metric; ridge (5-fold x 20 repeats) for the combined model
+code:
+- baseball/aaa_translation/analysis.py
+- baseball/pd_pipeline/models/intermediate/int_mlb_debuts.sql
+- baseball/pd_pipeline/models/marts/fct_translation_lines.sql
+training_data:
+- data/raw/statcast_aaa_*.parquet
+- data/raw/statcast_mlb_*.parquet
+artifacts:
+- baseball/aaa_translation/output/results.json
+validation:
+  file: baseball/aaa_translation/output/results.json
+  metrics:
+    hitter_cv_r2: hitter.model.all.r2
+    pitcher_cv_r2: pitcher.model.all.r2
+    hitter_pairs: hitter.model.all.n
+    pitcher_pairs: pitcher.model.all.n
+eval:
+  set: 'Players with 150+ PA/BF in Triple-A and 100+ in MLB: Triple-A season → next MLB season, plus Triple-A before
+    → MLB after a first call-up within a season.'
+  set_keys:
+    aaa_across: seasons.aaa_across
+    mlb_across: seasons.mlb_across
+    within: seasons.within
+  primary: hitter_cv_r2
+  higher_is_better: true
+live_window:
+  unit: weeks in season
+  min: 4
+published_in:
+- site/data/baseball/translation_*.json
+- baseball/aaa-translation
+- baseball/tools/triple-a
+- baseball/player

@@ -1,0 +1,42 @@
+{
+  "model": "aaa_translation",
+  "version": "1.0.0",
+  "status": "champion",
+  "registered": "2026-11-13",
+  "note": "Initial registration (A2): the model as published on Nov 13, 2026.",
+  "code_hash": "ddb48186e5a30e1ab38d3a29a7443c8c3710d3ca5cb6881e84ccdb8b3db58045",
+  "code_files": {
+    "baseball/aaa_translation/analysis.py": "f583f9b9a855b0d192f617117e3db544dfe1e11d868038b32c6400e17a866b6e",
+    "baseball/pd_pipeline/models/intermediate/int_mlb_debuts.sql": "7c9b4080d011355932e739d45e184a871494fd381e6f7ad80060492d1b7584b8",
+    "baseball/pd_pipeline/models/marts/fct_translation_lines.sql": "2e25007616d87b5201e78f214f92705b05bdf95d06a3e5456fd8409808d035a5"
+  },
+  "training_data": {
+    "data/raw/statcast_aaa_2025.parquet": "6ef27b849c44b60f56402f9f38937917027a5ccbbec0d1e9ecf6d3112e0ba73b",
+    "data/raw/statcast_aaa_2026.parquet": "45b39277a0d9ee23dc3fdd50816fb0759dbbb6eddc9a128254af1450204959ea",
+    "data/raw/statcast_mlb_2024.parquet": "c5676654e7f48e22834e8a769256354ba890560b6862502a4e8b5722c960ddb4",
+    "data/raw/statcast_mlb_2025.parquet": "ae3d141a26a1ac8f6d4ab8c8a1cd93d2e791ee976fc58a3920c9c0bf00b59d0a",
+    "data/raw/statcast_mlb_2026.parquet": "d94f4ad13ed089e60b901c5e101aca511519a80d72e559e30c4d77b101751cab"
+  },
+  "artifacts": {
+    "baseball/aaa_translation/output/results.json": "cf80cac2f93632eac18ab839336f99cc0432c16a9e69a9851c96b585de2adbca"
+  },
+  "eval": {
+    "set": "Players with 150+ PA/BF in Triple-A and 100+ in MLB: Triple-A season \u2192 next MLB season, plus Triple-A before \u2192 MLB after a first call-up within a season.",
+    "set_keys": {
+      "aaa_across": 2025,
+      "mlb_across": 2026,
+      "within": [
+        2025,
+        2026
+      ]
+    },
+    "primary": "hitter_cv_r2",
+    "higher_is_better": true
+  },
+  "metrics": {
+    "hitter_cv_r2": 0.04577929394708559,
+    "pitcher_cv_r2": -0.04346283025473874,
+    "hitter_pairs": 188,
+    "pitcher_pairs": 144
+  }
+}

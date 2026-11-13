@@ -1,0 +1,58 @@
+{
+  "model": "nfl_team_efficiency",
+  "version": "1.0.0",
+  "status": "champion",
+  "registered": "2026-11-13",
+  "note": "Initial registration (A2): the model as published on Nov 13, 2026.",
+  "code_hash": "aec9941c2cbb74ee9a0d01b9fed95b3decd88f1880a2c6fadcb1ebb1cdff5cc1",
+  "code_files": {
+    "nfl/team_efficiency/adjusted.py": "643985790057c3941841f6365f587b24d7ad0c971657ac2a49b782f91585c15b",
+    "football/common/adjust.py": "a7f59a55f3d49b4b183dd5200be76e77c4d2bfaf847a8310a66ef1e4794326f2",
+    "football/dbt/models/staging/stg_nfl_plays.sql": "c60831f4df6ca09e3ee594fecada871f564d2f0945c19fe003cede3a9730292a"
+  },
+  "training_data": {
+    "data/raw/nfl/pbp_2016.parquet": "42dc8d1e1ac5ec89e0a39d5f2ded940a49933b2caf0df2d66851c663005424d3",
+    "data/raw/nfl/pbp_2017.parquet": "e1a2885f2143aa9a677b36bf4c2c1c0aedc37781c0697857c91b9a1e955378dd",
+    "data/raw/nfl/pbp_2018.parquet": "22eb919de638cb66423f331fce54ea4ccd71f85eec3bac6b1d4c5fbba045e602",
+    "data/raw/nfl/pbp_2019.parquet": "f69ff5e392afd9d46342458786e89a13ec3f3fa6a89ded8639b3f06fbbb220ea",
+    "data/raw/nfl/pbp_2020.parquet": "44e1b074ef9dba08eb55ecca45b6cd61b32fc29241492cf5088b17136d73305b",
+    "data/raw/nfl/pbp_2021.parquet": "01a0fb63a800c830a92017698b7e8ab1c781c972e01b59a14101b76104abdaa4",
+    "data/raw/nfl/pbp_2022.parquet": "524ecf9f3bf509b84425e2d8e4fb1052a917f15f3674f96bbfc24e5d49172ae5",
+    "data/raw/nfl/pbp_2023.parquet": "c4c43ed38701254de70953e7f1aaf219230f4e539372fd2310d60e6c1534affc",
+    "data/raw/nfl/pbp_2024.parquet": "7a92ac669017b21679a1f0f3179859aa5bd2d10e9d2442fc2c5779d804263284",
+    "data/raw/nfl/pbp_2025.parquet": "0cc3c531f03ee0a52b3a03622f8f3c03750bc67e496762b7b98d54754a359467",
+    "data/raw/nfl/pbp_2026.parquet": "085105c08fd16dde98b45aca4d046dce21127f55a0cbbd3d6158c259592b1811",
+    "data/raw/nfl/schedules.parquet": "39e5e372800c8be9bc5999fc64025ab97d9837c45749dae49f757f7922dd1394"
+  },
+  "artifacts": {
+    "nfl/team_efficiency/output/adjustment.json": "e68935549d271fea55773dc110b1523014dad1de2a7c3597f31f824cc32e3f54"
+  },
+  "eval": {
+    "set": "Every regular-season game from week 3 on, complete seasons in the window, predicted from ratings through the prior week (leave-one-season-out).",
+    "set_keys": {
+      "seasons": [
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "min_week": 3
+    },
+    "primary": "mae_ridge",
+    "higher_is_better": false
+  },
+  "metrics": {
+    "mae_ridge": 10.385527421259454,
+    "mae_adjusted": 10.473218897769756,
+    "mae_raw": 10.475241999311283,
+    "mae_home_only": 11.104256894732336,
+    "lambda": 1600,
+    "n_games": 2160
+  }
+}

@@ -15,6 +15,7 @@ metadata-files:
   - _generated/baseball.yml
   - _generated/nfl.yml
   - _generated/cfb.yml
+  - _generated/models.yml
 
 website:
   title: "Sparvi"

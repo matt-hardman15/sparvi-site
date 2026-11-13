@@ -13,6 +13,8 @@ last_game() { python -c "import duckdb; print(duckdb.sql(\"select max(game_date)
 AS_OF=$(last_game aaa)
 AS_OF_MLB=$(last_game mlb)
 echo "season = $SEASON, as_of_date = $AS_OF (Triple-A), $AS_OF_MLB (MLB)"
+# Model registry (A2): model code changed without a new version stops the build before anything is published.
+python -m sparvi.registry check
 
 python baseball/pitch_quality/train.py
 python baseball/pitch_quality/robustness.py

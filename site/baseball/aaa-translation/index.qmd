@@ -192,4 +192,6 @@ Every Triple-A player with {{< meta baseball.tr_min_aaa >}}+ plate appearances o
 **What this can't tell you.** Only promoted players are observed, and promotion depends on things this data doesn't see: scouting reports, injuries, roster needs, and often the very Triple-A numbers being tested. Players who struggled in a short MLB stint and went back down are in the data; players who were never called up aren't. The samples are small, especially within a season, so read the broad pattern rather than the second decimal. The shifts mix the level with a season of development (next-season cohort) and with in-season change, and they don't adjust for park or for the Triple-A league environment (the Pacific Coast League plays as a hitters' league).
 
 Code: [`baseball/aaa_translation/`](https://github.com/matt-hardman15/sparvi-site/tree/main/baseball/aaa_translation) and [`fct_translation_lines`](https://github.com/matt-hardman15/sparvi-site/tree/main/baseball/pd_pipeline/models/marts/fct_translation_lines.sql)
+
+**Model version.** [{{< meta models.aaa_translation >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/baseball/aaa_translation/card.yml).
 </details>
