@@ -29,6 +29,7 @@ OUT = ROOT / "site" / "data" / "baseball"
 PQ = HERE / "pitch_quality" / "output"
 SS = HERE / "shape_stability" / "output"
 TW = HERE / "two_week_signal" / "output"
+FS = HERE / "farm_systems" / "output"
 DB = HERE / "pd_pipeline" / "pd.duckdb"
 
 
@@ -358,6 +359,48 @@ for side, keys in [("hitter", ["chase_pct", "whiff_pct", "hard_hit_pct", "xwoba"
     keep = [c for k in keys for c in (k, f"{k}_next")]
     write_records(OUT / f"two_week_{side}_pairs.json", d[keep], required=keep, min_rows=500, digits={c: 4 for c in keep})
 
+# ---- Farm systems (farm_systems/analysis.py) -----------------------------------
+# Org scores (shrunk, with intervals and n), each included player's half-season change, and the
+# current season's weekly last-30-days grades for those pitchers (the drill-down's date slider).
+farm = read_json(FS / "results.json")
+FARM_METRICS = list(farm["metrics"])
+write_json(OUT / "farm_results.json", strip(farm))
+fo = pd.read_csv(FS / "org_scores.csv")
+cols = ["metric", "season", "org", "club", "club_name", "n", "raw", "score", "lo", "hi", "promoted"]
+write_records(OUT / "farm_orgs.json", fo[cols], required=cols, not_null=cols, min_rows=300,
+              digits={"raw": 3, "score": 3, "lo": 3, "hi": 3})
+fp = pd.read_csv(FS / "player_changes.csv")
+fp["name"] = fp["name"].fillna(fp["player_id"].astype(str))
+fcols = ["season", "side", "player_id", "name", "org", "role", "promoted", "n1", "n2"] + [
+    f"{m}{s}" for m in FARM_METRICS for s in ("1", "2", "_adj")]
+write_records(OUT / "farm_players.json", fp[fcols], required=fcols, not_null=["season", "side", "player_id", "org"],
+              min_rows=500, digits={c: 4 if c.startswith(("chase", "zone")) and c[-1] in "12" else 2
+                                    for c in fcols if c[-1] in "12" or c.endswith("_adj")})
+staff_ids = fp[(fp["side"] == "pitchers") & (fp["season"] == SEASON)]["player_id"].astype(int).tolist()
+STAFF_FIELDS = ["stuff_plus", "pitching_plus", "fb_velo"]
+ss = con.sql(f"""
+    select pitcher_id, snapshot_date, {", ".join(STAFF_FIELDS)} from fct_pitcher_snapshots
+    where level = 'AAA' and season = {SEASON} and window_name = 'last30'
+      and pitcher_id in ({",".join(map(str, staff_ids))})
+    order by pitcher_id, snapshot_date
+""").df()
+staff_dates = sorted(ss["snapshot_date"].unique())
+ss["i"] = ss["snapshot_date"].map({d: k for k, d in enumerate(staff_dates)})
+staff = []
+for pid, g in ss.groupby("pitcher_id"):
+    s = {}
+    for f in STAFF_FIELDS:
+        v = [None] * len(staff_dates)
+        for k, x in zip(g["i"], g[f], strict=True):
+            v[k] = None if pd.isna(x) else round(float(x), 1)
+        s[f] = v
+    staff.append({"id": int(pid), "s": s})
+if len(staff) < 0.9 * len(staff_ids):
+    raise SystemExit(f"farm_staff: weekly grades for only {len(staff)} of {len(staff_ids)} pitchers")
+write_json(OUT / "farm_staff.json", {"season": SEASON, "window": "last30", "fields": STAFF_FIELDS,
+                                     "dates": [pd.Timestamp(d).strftime("%Y-%m-%d") for d in staff_dates],
+                                     "players": staff})
+
 # ---- Prose numbers ----------------------------------------------------------
 # Every number an article states comes from here, formatted the way the prose prints it.
 # Never hand-type a number into an article; add it here instead.
@@ -679,5 +722,98 @@ N |= {
 aaa_cal = meta["snapshots"]["AAA"]
 N |= {"aaa_final_team_games": f"{aaa_cal['team_games'][-1]:.0f}", "aaa_full_season_games": aaa_cal["full_season_games"],
       "aaa_final_qual": f"{max(DBT_VARS['min_qualified_floor'], round(meta['min_bf_qualified'] * min(1, aaa_cal['team_games'][-1] / aaa_cal['full_season_games']))):.0f}"}
+
+# Farm-systems article. The headline is the year-to-year consistency of org scores, worded from the
+# intervals so a refresh can't strand a sentence.
+FM, FSD = farm["metrics"], farm["sides"]
+y0, y1 = (str(y) for y in (farm["seasons"][0], farm["seasons"][-1]))
+FKEY = {"stuff_plus": "stuff", "pitching_plus": "pitching", "fb_velo": "velo",
+        "chase_pct": "chase", "zone_contact_pct": "zcon", "ev90": "ev90"}
+FWORD = {"stuff_plus": "Stuff+", "pitching_plus": "Pitching+", "fb_velo": "fastball velocity",
+         "chase_pct": "chase rate", "zone_contact_pct": "zone contact", "ev90": "EV90"}
+N |= {"farm_y0": y0, "farm_y1": y1, "farm_min_pitches": farm["min_pitches"], "farm_min_pa": farm["min_pa"],
+      "farm_rehab_pitches": farm["rehab_mlb_pitches"], "farm_rehab_pa": farm["rehab_mlb_pa"],
+      "farm_boot": f"{farm['bootstrap_samples']:,}",
+      "farm_n_orgs": FM["stuff_plus"]["consistency"]["n_orgs"],
+      "farm_split_y0": nice(date.fromisoformat(farm["split_dates"][y0])),
+      "farm_split_y1": nice(date.fromisoformat(farm["split_dates"][y1]))}
+for side, s in (("p", "pitchers"), ("h", "hitters")):
+    for y in (y0, y1):
+        v = FSD[s][y]
+        N |= {f"farm_n_{side}_{y}": f"{v['included']:,}", f"farm_prom_{side}_{y}": f"{v['promoted']:,}",
+              f"farm_q1_{side}_{y}": f"{v['first_half_qualified']:,}"}
+    N |= {f"farm_ex_multi_{side}": f"{sum(FSD[s][y]['excluded_multi_club'] for y in (y0, y1)):,}",
+          f"farm_ex_mlb_{side}": f"{sum(FSD[s][y]['excluded_mlb_first'] for y in (y0, y1)):,}"}
+for m, k in FKEY.items():
+    c = FM[m]["consistency"]
+    N |= {f"farm_r_{k}": r2(c["r"]), f"farm_r_{k}_ci": ci_words(*c["ci90"])}
+    for y in (y0, y1):
+        N[f"farm_rel_{k}_{y}"] = f"{100 * FM[m]['by_season'][y]['reliability']:.0f}%"
+    if "consistency_with_promoted" in FM[m]:
+        N[f"farm_sens_{k}"] = r2(FM[m]["consistency_with_promoted"]["r"])
+lm = FSD["pitchers"]["league_mean_change"]
+N |= {f"farm_league_velo_{y}": f"{lm['fb_velo'][y]:+.2f}".replace("-", MINUS) for y in (y0, y1)}
+N |= {f"farm_league_stuff_{y}": f"{lm['stuff_plus'][y]:+.1f}".replace("-", MINUS) for y in (y0, y1)}
+
+confirmed = [m for m in FKEY if FM[m]["consistency"]["ci90"][0] > 0]
+best = max(FKEY, key=lambda m: FM[m]["consistency"]["r"])
+bc = FM[best]["consistency"]
+if not confirmed:
+    N["farm_finding_sentence"] = (
+        f"None of the six measures showed an org effect that repeated from {y0} to {y1} by more than chance: "
+        f"every interval for the year-to-year correlation includes zero. {FWORD[best].capitalize()} came closest "
+        f"(r = {r2(bc['r'])}, interval {ci_words(*bc['ci90'])}).")
+else:
+    N["farm_finding_sentence"] = (
+        f"Of six measures, only {' and '.join(FWORD[m] for m in confirmed)} showed an org effect that repeated from "
+        f"{y0} to {y1} by more than chance (" + "; ".join(
+            f"{FWORD[m]} r = {r2(FM[m]['consistency']['r'])}, interval {ci_words(*FM[m]['consistency']['ci90'])}"
+            for m in confirmed) + ").")
+sc = FM["stuff_plus"]["consistency"]
+N["farm_stuff_sowhat"] = (
+    f"**Don't credit or blame a farm system for one season of Stuff+ gains.** An org's {y0} figure said "
+    f"{'almost nothing' if abs(sc['r']) < 0.2 else 'little'} about its {y1} figure (r = {r2(sc['r'])}, "
+    f"interval {ci_words(*sc['ci90'])})." if sc["ci90"][0] <= 0 else
+    f"**One season of Stuff+ gains says something about a farm system.** An org's {y0} figure carried into {y1} "
+    f"(r = {r2(sc['r'])}, interval {ci_words(*sc['ci90'])}), though the signal is modest.")
+vc = FM["fb_velo"]["consistency"]
+if best != "fb_velo":
+    raise StaleProse("Farm-systems article says fastball velocity is the measure most consistent by org.")
+N["farm_velo_sowhat"] = (
+    f"**Velocity is the closest thing to an org trait, and it's still unconfirmed.** Org velocity gains repeated at "
+    f"r = {r2(vc['r'])}, but the interval ({ci_words(*vc['ci90'])}) reaches zero. Worth a look at what the top orgs "
+    "do, not a ranking to act on." if vc["ci90"][0] <= 0 else
+    f"**Velocity is the one org trait that showed up.** Org velocity gains repeated at r = {r2(vc['r'])} "
+    f"(interval {ci_words(*vc['ci90'])}), so how an org trains velocity is worth studying.")
+
+# The concrete example: the top and bottom orgs on Stuff+ change in the current season, and where the
+# top org ranked the year before.
+fs = fo[(fo["metric"] == "stuff_plus")]
+cur, prev = fs[fs["season"] == int(y1)].sort_values("score", ascending=False), fs[fs["season"] == int(y0)]
+prev_rank = prev.sort_values("raw", ascending=False).reset_index(drop=True)
+top, bot = cur.iloc[0], cur.iloc[-1]
+rank_of = lambda org: int(prev_rank.index[prev_rank["org"] == org][0]) + 1  # noqa: E731
+
+
+def ordinal(n: int) -> str:
+    return f"{n}{'th' if 10 <= n % 100 <= 20 else {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')}"
+
+
+sgn = lambda x: f"{x:+.1f}".replace("-", MINUS)  # noqa: E731
+N |= {"farm_top_stuff": f"{top['org']} ({sgn(top['score'])}, interval {sgn(top['lo'])} to {sgn(top['hi'])}, "
+                        f"n = {top['n']})",
+      "farm_bot_stuff": f"{bot['org']} ({sgn(bot['score'])}, interval {sgn(bot['lo'])} to {sgn(bot['hi'])}, "
+                        f"n = {bot['n']})",
+      "farm_top_stuff_org": top["org"], "farm_top_stuff_prev_rank": ordinal(rank_of(top["org"])),
+      "farm_bot_stuff_org": bot["org"], "farm_bot_stuff_prev_rank": ordinal(rank_of(bot["org"])),
+      "farm_top_bot_overlap": ("Even those two intervals overlap." if top["lo"] <= bot["hi"] else
+                               f"Those two intervals don't overlap, so within {y1} the gap between them is more "
+                               "than sampling noise.")}
+N |= {f"farm_med_n_{s[0]}_{y}": f"{FM[m]['by_season'][y]['median_org_n']:.0f}"
+      for s, m in (("pitchers", "stuff_plus"), ("hitters", "chase_pct")) for y in (y0, y1)}
+rel = [FM[m]["by_season"][y]["reliability"] for m in FKEY for y in (y0, y1)]
+N |= {"farm_rel_min": f"{100 * min(rel):.0f}%", "farm_rel_max": f"{100 * max(rel):.0f}%"}
+if not max(rel) < 0.6:
+    raise StaleProse("Farm-systems article says one season's org scores are mostly noise (signal share under 60%).")
 
 write_numbers("baseball", N, source="baseball/export_site_data.py")
