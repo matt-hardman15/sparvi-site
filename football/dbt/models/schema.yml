@@ -140,10 +140,15 @@ models:
             columns: [game_id, team, side, gt]
 
   - name: cfb_reconcile_scores
-    description: Play-by-play final scores vs CFBD game results (every completed game must match).
+    description: >
+      Play-by-play final scores vs CFBD's official game results. CFBD's play-by-play has gaps and bad
+      score fields in about 3% of games, so the bar (agreed with Matt, Nov 13 2026) is: every completed
+      game has an official result, and at least 90% of each season's games agree; games off by 9+
+      points are listed on /status/ (ingest/cfb/checks.py).
+    tests:
+      - cfb_completed_games_have_results
     columns:
       - name: matches
         tests:
-          - accepted_values:
-              arguments:
-                values: [true]
+          - min_share_true:
+              arguments: {min_share: 0.90, group_by: season}

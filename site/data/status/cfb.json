@@ -1,0 +1,2761 @@
+{
+ "sport": "cfb",
+ "ok": true,
+ "data_through": {
+  "season": 2026,
+  "week": 11,
+  "last_game": "2026-11-13"
+ },
+ "n_checks": 443,
+ "n_failed": 0,
+ "rows": {
+  "games_2014": 868,
+  "games_2015": 870,
+  "games_2016": 873,
+  "games_2017": 874,
+  "games_2018": 884,
+  "games_2019": 888,
+  "games_2020": 568,
+  "games_2021": 887,
+  "games_2022": 896,
+  "games_2023": 910,
+  "games_2024": 920,
+  "games_2025": 934,
+  "games_2026": 888,
+  "lines_2014": 2303,
+  "lines_2015": 2320,
+  "lines_2016": 2347,
+  "lines_2017": 2400,
+  "lines_2018": 3034,
+  "lines_2019": 3506,
+  "lines_2020": 2752,
+  "lines_2021": 3541,
+  "lines_2022": 4310,
+  "lines_2023": 3072,
+  "lines_2024": 3172,
+  "lines_2025": 3289,
+  "lines_2026": 2110,
+  "plays_2014": 158315,
+  "plays_2015": 160127,
+  "plays_2016": 158487,
+  "plays_2017": 158464,
+  "plays_2018": 160503,
+  "plays_2019": 159829,
+  "plays_2020": 102706,
+  "plays_2021": 157634,
+  "plays_2022": 249764,
+  "plays_2023": 250659,
+  "plays_2024": 276483,
+  "plays_2025": 291073,
+  "plays_2026": 228081,
+  "rankings_2014": 1050,
+  "rankings_2015": 951,
+  "rankings_2016": 950,
+  "rankings_2017": 950,
+  "rankings_2018": 950,
+  "rankings_2019": 977,
+  "rankings_2020": 925,
+  "rankings_2021": 950,
+  "rankings_2022": 950,
+  "rankings_2023": 975,
+  "rankings_2024": 1001,
+  "rankings_2025": 1000,
+  "rankings_2026": 601,
+  "teams_2014": 128,
+  "teams_2015": 128,
+  "teams_2016": 128,
+  "teams_2017": 130,
+  "teams_2018": 130,
+  "teams_2019": 130,
+  "teams_2020": 128,
+  "teams_2021": 130,
+  "teams_2022": 131,
+  "teams_2023": 133,
+  "teams_2024": 134,
+  "teams_2025": 136,
+  "teams_2026": 138
+ },
+ "checks": [
+  {
+   "name": "games_2014: columns and types",
+   "ok": true,
+   "detail": "20 contract columns"
+  },
+  {
+   "name": "games_2014: row count",
+   "ok": true,
+   "detail": "868 rows"
+  },
+  {
+   "name": "games_2014: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "games_2014: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2014: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2014: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2014: homeTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2014: awayTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2014: columns and types",
+   "ok": true,
+   "detail": "25 contract columns"
+  },
+  {
+   "name": "plays_2014: row count",
+   "ok": true,
+   "detail": "158,315 rows"
+  },
+  {
+   "name": "plays_2014: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "plays_2014: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2014: gameId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2014: playType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2014: period missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2014: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "teams_2014: row count",
+   "ok": true,
+   "detail": "128 rows"
+  },
+  {
+   "name": "teams_2014: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "teams_2014: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2014: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2014: columns and types",
+   "ok": true,
+   "detail": "8 contract columns"
+  },
+  {
+   "name": "rankings_2014: row count",
+   "ok": true,
+   "detail": "1,050 rows"
+  },
+  {
+   "name": "rankings_2014: one row per season + seasonType + week + poll + school",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "rankings_2014: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2014: rank missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2014: columns and types",
+   "ok": true,
+   "detail": "13 contract columns"
+  },
+  {
+   "name": "lines_2014: row count",
+   "ok": true,
+   "detail": "2,303 rows"
+  },
+  {
+   "name": "lines_2014: one row per game_id + provider",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "lines_2014: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2014: provider missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2014: FBS team count",
+   "ok": true,
+   "detail": "128 teams"
+  },
+  {
+   "name": "games_2015: columns and types",
+   "ok": true,
+   "detail": "20 contract columns"
+  },
+  {
+   "name": "games_2015: row count",
+   "ok": true,
+   "detail": "870 rows"
+  },
+  {
+   "name": "games_2015: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "games_2015: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2015: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2015: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2015: homeTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2015: awayTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2015: columns and types",
+   "ok": true,
+   "detail": "25 contract columns"
+  },
+  {
+   "name": "plays_2015: row count",
+   "ok": true,
+   "detail": "160,127 rows"
+  },
+  {
+   "name": "plays_2015: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "plays_2015: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2015: gameId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2015: playType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2015: period missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2015: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "teams_2015: row count",
+   "ok": true,
+   "detail": "128 rows"
+  },
+  {
+   "name": "teams_2015: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "teams_2015: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2015: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2015: columns and types",
+   "ok": true,
+   "detail": "8 contract columns"
+  },
+  {
+   "name": "rankings_2015: row count",
+   "ok": true,
+   "detail": "951 rows"
+  },
+  {
+   "name": "rankings_2015: one row per season + seasonType + week + poll + school",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "rankings_2015: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2015: rank missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2015: columns and types",
+   "ok": true,
+   "detail": "13 contract columns"
+  },
+  {
+   "name": "lines_2015: row count",
+   "ok": true,
+   "detail": "2,320 rows"
+  },
+  {
+   "name": "lines_2015: one row per game_id + provider",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "lines_2015: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2015: provider missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2015: FBS team count",
+   "ok": true,
+   "detail": "128 teams"
+  },
+  {
+   "name": "games_2016: columns and types",
+   "ok": true,
+   "detail": "20 contract columns"
+  },
+  {
+   "name": "games_2016: row count",
+   "ok": true,
+   "detail": "873 rows"
+  },
+  {
+   "name": "games_2016: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "games_2016: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2016: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2016: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2016: homeTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2016: awayTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2016: columns and types",
+   "ok": true,
+   "detail": "25 contract columns"
+  },
+  {
+   "name": "plays_2016: row count",
+   "ok": true,
+   "detail": "158,487 rows"
+  },
+  {
+   "name": "plays_2016: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "plays_2016: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2016: gameId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2016: playType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2016: period missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2016: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "teams_2016: row count",
+   "ok": true,
+   "detail": "128 rows"
+  },
+  {
+   "name": "teams_2016: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "teams_2016: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2016: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2016: columns and types",
+   "ok": true,
+   "detail": "8 contract columns"
+  },
+  {
+   "name": "rankings_2016: row count",
+   "ok": true,
+   "detail": "950 rows"
+  },
+  {
+   "name": "rankings_2016: one row per season + seasonType + week + poll + school",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "rankings_2016: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2016: rank missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2016: columns and types",
+   "ok": true,
+   "detail": "13 contract columns"
+  },
+  {
+   "name": "lines_2016: row count",
+   "ok": true,
+   "detail": "2,347 rows"
+  },
+  {
+   "name": "lines_2016: one row per game_id + provider",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "lines_2016: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2016: provider missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2016: FBS team count",
+   "ok": true,
+   "detail": "128 teams"
+  },
+  {
+   "name": "games_2017: columns and types",
+   "ok": true,
+   "detail": "20 contract columns"
+  },
+  {
+   "name": "games_2017: row count",
+   "ok": true,
+   "detail": "874 rows"
+  },
+  {
+   "name": "games_2017: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "games_2017: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2017: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2017: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2017: homeTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2017: awayTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2017: columns and types",
+   "ok": true,
+   "detail": "25 contract columns"
+  },
+  {
+   "name": "plays_2017: row count",
+   "ok": true,
+   "detail": "158,464 rows"
+  },
+  {
+   "name": "plays_2017: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "plays_2017: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2017: gameId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2017: playType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2017: period missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2017: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "teams_2017: row count",
+   "ok": true,
+   "detail": "130 rows"
+  },
+  {
+   "name": "teams_2017: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "teams_2017: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2017: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2017: columns and types",
+   "ok": true,
+   "detail": "8 contract columns"
+  },
+  {
+   "name": "rankings_2017: row count",
+   "ok": true,
+   "detail": "950 rows"
+  },
+  {
+   "name": "rankings_2017: one row per season + seasonType + week + poll + school",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "rankings_2017: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2017: rank missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2017: columns and types",
+   "ok": true,
+   "detail": "13 contract columns"
+  },
+  {
+   "name": "lines_2017: row count",
+   "ok": true,
+   "detail": "2,400 rows"
+  },
+  {
+   "name": "lines_2017: one row per game_id + provider",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "lines_2017: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2017: provider missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2017: FBS team count",
+   "ok": true,
+   "detail": "130 teams"
+  },
+  {
+   "name": "games_2018: columns and types",
+   "ok": true,
+   "detail": "20 contract columns"
+  },
+  {
+   "name": "games_2018: row count",
+   "ok": true,
+   "detail": "884 rows"
+  },
+  {
+   "name": "games_2018: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "games_2018: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2018: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2018: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2018: homeTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2018: awayTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2018: columns and types",
+   "ok": true,
+   "detail": "25 contract columns"
+  },
+  {
+   "name": "plays_2018: row count",
+   "ok": true,
+   "detail": "160,503 rows"
+  },
+  {
+   "name": "plays_2018: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "plays_2018: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2018: gameId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2018: playType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2018: period missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2018: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "teams_2018: row count",
+   "ok": true,
+   "detail": "130 rows"
+  },
+  {
+   "name": "teams_2018: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "teams_2018: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2018: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2018: columns and types",
+   "ok": true,
+   "detail": "8 contract columns"
+  },
+  {
+   "name": "rankings_2018: row count",
+   "ok": true,
+   "detail": "950 rows"
+  },
+  {
+   "name": "rankings_2018: one row per season + seasonType + week + poll + school",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "rankings_2018: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2018: rank missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2018: columns and types",
+   "ok": true,
+   "detail": "13 contract columns"
+  },
+  {
+   "name": "lines_2018: row count",
+   "ok": true,
+   "detail": "3,034 rows"
+  },
+  {
+   "name": "lines_2018: one row per game_id + provider",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "lines_2018: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2018: provider missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2018: FBS team count",
+   "ok": true,
+   "detail": "130 teams"
+  },
+  {
+   "name": "games_2019: columns and types",
+   "ok": true,
+   "detail": "20 contract columns"
+  },
+  {
+   "name": "games_2019: row count",
+   "ok": true,
+   "detail": "888 rows"
+  },
+  {
+   "name": "games_2019: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "games_2019: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2019: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2019: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2019: homeTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2019: awayTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2019: columns and types",
+   "ok": true,
+   "detail": "25 contract columns"
+  },
+  {
+   "name": "plays_2019: row count",
+   "ok": true,
+   "detail": "159,829 rows"
+  },
+  {
+   "name": "plays_2019: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "plays_2019: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2019: gameId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2019: playType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2019: period missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2019: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "teams_2019: row count",
+   "ok": true,
+   "detail": "130 rows"
+  },
+  {
+   "name": "teams_2019: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "teams_2019: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2019: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2019: columns and types",
+   "ok": true,
+   "detail": "8 contract columns"
+  },
+  {
+   "name": "rankings_2019: row count",
+   "ok": true,
+   "detail": "977 rows"
+  },
+  {
+   "name": "rankings_2019: one row per season + seasonType + week + poll + school",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "rankings_2019: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2019: rank missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2019: columns and types",
+   "ok": true,
+   "detail": "13 contract columns"
+  },
+  {
+   "name": "lines_2019: row count",
+   "ok": true,
+   "detail": "3,506 rows"
+  },
+  {
+   "name": "lines_2019: one row per game_id + provider",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "lines_2019: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2019: provider missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2019: FBS team count",
+   "ok": true,
+   "detail": "130 teams"
+  },
+  {
+   "name": "games_2020: columns and types",
+   "ok": true,
+   "detail": "20 contract columns"
+  },
+  {
+   "name": "games_2020: row count",
+   "ok": true,
+   "detail": "568 rows"
+  },
+  {
+   "name": "games_2020: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "games_2020: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2020: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2020: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2020: homeTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2020: awayTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2020: columns and types",
+   "ok": true,
+   "detail": "25 contract columns"
+  },
+  {
+   "name": "plays_2020: row count",
+   "ok": true,
+   "detail": "102,706 rows"
+  },
+  {
+   "name": "plays_2020: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "plays_2020: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2020: gameId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2020: playType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2020: period missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2020: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "teams_2020: row count",
+   "ok": true,
+   "detail": "128 rows"
+  },
+  {
+   "name": "teams_2020: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "teams_2020: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2020: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2020: columns and types",
+   "ok": true,
+   "detail": "8 contract columns"
+  },
+  {
+   "name": "rankings_2020: row count",
+   "ok": true,
+   "detail": "925 rows"
+  },
+  {
+   "name": "rankings_2020: one row per season + seasonType + week + poll + school",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "rankings_2020: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2020: rank missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2020: columns and types",
+   "ok": true,
+   "detail": "13 contract columns"
+  },
+  {
+   "name": "lines_2020: row count",
+   "ok": true,
+   "detail": "2,752 rows"
+  },
+  {
+   "name": "lines_2020: one row per game_id + provider",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "lines_2020: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2020: provider missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2020: FBS team count",
+   "ok": true,
+   "detail": "128 teams"
+  },
+  {
+   "name": "games_2021: columns and types",
+   "ok": true,
+   "detail": "20 contract columns"
+  },
+  {
+   "name": "games_2021: row count",
+   "ok": true,
+   "detail": "887 rows"
+  },
+  {
+   "name": "games_2021: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "games_2021: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2021: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2021: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2021: homeTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2021: awayTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2021: columns and types",
+   "ok": true,
+   "detail": "25 contract columns"
+  },
+  {
+   "name": "plays_2021: row count",
+   "ok": true,
+   "detail": "157,634 rows"
+  },
+  {
+   "name": "plays_2021: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "plays_2021: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2021: gameId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2021: playType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2021: period missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2021: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "teams_2021: row count",
+   "ok": true,
+   "detail": "130 rows"
+  },
+  {
+   "name": "teams_2021: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "teams_2021: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2021: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2021: columns and types",
+   "ok": true,
+   "detail": "8 contract columns"
+  },
+  {
+   "name": "rankings_2021: row count",
+   "ok": true,
+   "detail": "950 rows"
+  },
+  {
+   "name": "rankings_2021: one row per season + seasonType + week + poll + school",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "rankings_2021: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2021: rank missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2021: columns and types",
+   "ok": true,
+   "detail": "13 contract columns"
+  },
+  {
+   "name": "lines_2021: row count",
+   "ok": true,
+   "detail": "3,541 rows"
+  },
+  {
+   "name": "lines_2021: one row per game_id + provider",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "lines_2021: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2021: provider missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2021: FBS team count",
+   "ok": true,
+   "detail": "130 teams"
+  },
+  {
+   "name": "games_2022: columns and types",
+   "ok": true,
+   "detail": "20 contract columns"
+  },
+  {
+   "name": "games_2022: row count",
+   "ok": true,
+   "detail": "896 rows"
+  },
+  {
+   "name": "games_2022: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "games_2022: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2022: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2022: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2022: homeTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2022: awayTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2022: columns and types",
+   "ok": true,
+   "detail": "25 contract columns"
+  },
+  {
+   "name": "plays_2022: row count",
+   "ok": true,
+   "detail": "249,764 rows"
+  },
+  {
+   "name": "plays_2022: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "plays_2022: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2022: gameId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2022: playType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2022: period missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2022: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "teams_2022: row count",
+   "ok": true,
+   "detail": "131 rows"
+  },
+  {
+   "name": "teams_2022: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "teams_2022: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2022: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2022: columns and types",
+   "ok": true,
+   "detail": "8 contract columns"
+  },
+  {
+   "name": "rankings_2022: row count",
+   "ok": true,
+   "detail": "950 rows"
+  },
+  {
+   "name": "rankings_2022: one row per season + seasonType + week + poll + school",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "rankings_2022: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2022: rank missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2022: columns and types",
+   "ok": true,
+   "detail": "13 contract columns"
+  },
+  {
+   "name": "lines_2022: row count",
+   "ok": true,
+   "detail": "4,310 rows"
+  },
+  {
+   "name": "lines_2022: one row per game_id + provider",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "lines_2022: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2022: provider missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2022: FBS team count",
+   "ok": true,
+   "detail": "131 teams"
+  },
+  {
+   "name": "games_2023: columns and types",
+   "ok": true,
+   "detail": "20 contract columns"
+  },
+  {
+   "name": "games_2023: row count",
+   "ok": true,
+   "detail": "910 rows"
+  },
+  {
+   "name": "games_2023: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "games_2023: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2023: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2023: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2023: homeTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2023: awayTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2023: columns and types",
+   "ok": true,
+   "detail": "25 contract columns"
+  },
+  {
+   "name": "plays_2023: row count",
+   "ok": true,
+   "detail": "250,659 rows"
+  },
+  {
+   "name": "plays_2023: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "plays_2023: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2023: gameId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2023: playType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2023: period missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2023: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "teams_2023: row count",
+   "ok": true,
+   "detail": "133 rows"
+  },
+  {
+   "name": "teams_2023: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "teams_2023: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2023: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2023: columns and types",
+   "ok": true,
+   "detail": "8 contract columns"
+  },
+  {
+   "name": "rankings_2023: row count",
+   "ok": true,
+   "detail": "975 rows"
+  },
+  {
+   "name": "rankings_2023: one row per season + seasonType + week + poll + school",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "rankings_2023: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2023: rank missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2023: columns and types",
+   "ok": true,
+   "detail": "13 contract columns"
+  },
+  {
+   "name": "lines_2023: row count",
+   "ok": true,
+   "detail": "3,072 rows"
+  },
+  {
+   "name": "lines_2023: one row per game_id + provider",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "lines_2023: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2023: provider missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2023: FBS team count",
+   "ok": true,
+   "detail": "133 teams"
+  },
+  {
+   "name": "games_2024: columns and types",
+   "ok": true,
+   "detail": "20 contract columns"
+  },
+  {
+   "name": "games_2024: row count",
+   "ok": true,
+   "detail": "920 rows"
+  },
+  {
+   "name": "games_2024: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "games_2024: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2024: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2024: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2024: homeTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2024: awayTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2024: columns and types",
+   "ok": true,
+   "detail": "25 contract columns"
+  },
+  {
+   "name": "plays_2024: row count",
+   "ok": true,
+   "detail": "276,483 rows"
+  },
+  {
+   "name": "plays_2024: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "plays_2024: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2024: gameId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2024: playType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2024: period missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2024: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "teams_2024: row count",
+   "ok": true,
+   "detail": "134 rows"
+  },
+  {
+   "name": "teams_2024: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "teams_2024: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2024: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2024: columns and types",
+   "ok": true,
+   "detail": "8 contract columns"
+  },
+  {
+   "name": "rankings_2024: row count",
+   "ok": true,
+   "detail": "1,001 rows"
+  },
+  {
+   "name": "rankings_2024: one row per season + seasonType + week + poll + school",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "rankings_2024: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2024: rank missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2024: columns and types",
+   "ok": true,
+   "detail": "13 contract columns"
+  },
+  {
+   "name": "lines_2024: row count",
+   "ok": true,
+   "detail": "3,172 rows"
+  },
+  {
+   "name": "lines_2024: one row per game_id + provider",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "lines_2024: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2024: provider missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2024: FBS team count",
+   "ok": true,
+   "detail": "134 teams"
+  },
+  {
+   "name": "games_2025: columns and types",
+   "ok": true,
+   "detail": "20 contract columns"
+  },
+  {
+   "name": "games_2025: row count",
+   "ok": true,
+   "detail": "934 rows"
+  },
+  {
+   "name": "games_2025: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "games_2025: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2025: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2025: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2025: homeTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2025: awayTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2025: columns and types",
+   "ok": true,
+   "detail": "25 contract columns"
+  },
+  {
+   "name": "plays_2025: row count",
+   "ok": true,
+   "detail": "291,073 rows"
+  },
+  {
+   "name": "plays_2025: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "plays_2025: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2025: gameId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2025: playType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2025: period missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2025: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "teams_2025: row count",
+   "ok": true,
+   "detail": "136 rows"
+  },
+  {
+   "name": "teams_2025: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "teams_2025: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2025: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2025: columns and types",
+   "ok": true,
+   "detail": "8 contract columns"
+  },
+  {
+   "name": "rankings_2025: row count",
+   "ok": true,
+   "detail": "1,000 rows"
+  },
+  {
+   "name": "rankings_2025: one row per season + seasonType + week + poll + school",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "rankings_2025: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2025: rank missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2025: columns and types",
+   "ok": true,
+   "detail": "13 contract columns"
+  },
+  {
+   "name": "lines_2025: row count",
+   "ok": true,
+   "detail": "3,289 rows"
+  },
+  {
+   "name": "lines_2025: one row per game_id + provider",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "lines_2025: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2025: provider missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2025: FBS team count",
+   "ok": true,
+   "detail": "136 teams"
+  },
+  {
+   "name": "games_2026: columns and types",
+   "ok": true,
+   "detail": "20 contract columns"
+  },
+  {
+   "name": "games_2026: row count",
+   "ok": true,
+   "detail": "888 rows"
+  },
+  {
+   "name": "games_2026: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "games_2026: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2026: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2026: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2026: homeTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2026: awayTeam missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2026: columns and types",
+   "ok": true,
+   "detail": "25 contract columns"
+  },
+  {
+   "name": "plays_2026: row count",
+   "ok": true,
+   "detail": "228,081 rows"
+  },
+  {
+   "name": "plays_2026: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "plays_2026: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2026: gameId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2026: playType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "plays_2026: period missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2026: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "teams_2026: row count",
+   "ok": true,
+   "detail": "138 rows"
+  },
+  {
+   "name": "teams_2026: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "teams_2026: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2026: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2026: columns and types",
+   "ok": true,
+   "detail": "8 contract columns"
+  },
+  {
+   "name": "rankings_2026: row count",
+   "ok": true,
+   "detail": "601 rows"
+  },
+  {
+   "name": "rankings_2026: one row per season + seasonType + week + poll + school",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "rankings_2026: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2026: rank missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2026: columns and types",
+   "ok": true,
+   "detail": "13 contract columns"
+  },
+  {
+   "name": "lines_2026: row count",
+   "ok": true,
+   "detail": "2,110 rows"
+  },
+  {
+   "name": "lines_2026: one row per game_id + provider",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "lines_2026: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2026: provider missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2026: FBS team count",
+   "ok": true,
+   "detail": "138 teams"
+  },
+  {
+   "name": "games_2014: completed games have results",
+   "ok": true,
+   "detail": "868 completed games"
+  },
+  {
+   "name": "plays_2014: completed games have play-by-play",
+   "ok": true,
+   "detail": "17 of 868 games without plays (2.0%; limit 2%)"
+  },
+  {
+   "name": "plays_2014: final scores agree with results",
+   "ok": true,
+   "detail": "847 of 851 games (99.5%; bar 90%); 0 off by 9+ points"
+  },
+  {
+   "name": "games_2015: completed games have results",
+   "ok": true,
+   "detail": "870 completed games"
+  },
+  {
+   "name": "plays_2015: completed games have play-by-play",
+   "ok": true,
+   "detail": "7 of 870 games without plays (0.8%; limit 2%)"
+  },
+  {
+   "name": "plays_2015: final scores agree with results",
+   "ok": true,
+   "detail": "854 of 863 games (99.0%; bar 90%); 3 off by 9+ points"
+  },
+  {
+   "name": "games_2016: completed games have results",
+   "ok": true,
+   "detail": "873 completed games"
+  },
+  {
+   "name": "plays_2016: completed games have play-by-play",
+   "ok": true,
+   "detail": "16 of 873 games without plays (1.8%; limit 2%)"
+  },
+  {
+   "name": "plays_2016: final scores agree with results",
+   "ok": true,
+   "detail": "850 of 857 games (99.2%; bar 90%); 2 off by 9+ points"
+  },
+  {
+   "name": "games_2017: completed games have results",
+   "ok": true,
+   "detail": "874 completed games"
+  },
+  {
+   "name": "plays_2017: completed games have play-by-play",
+   "ok": true,
+   "detail": "5 of 874 games without plays (0.6%; limit 2%)"
+  },
+  {
+   "name": "plays_2017: final scores agree with results",
+   "ok": true,
+   "detail": "863 of 869 games (99.3%; bar 90%); 2 off by 9+ points"
+  },
+  {
+   "name": "games_2018: completed games have results",
+   "ok": true,
+   "detail": "884 completed games"
+  },
+  {
+   "name": "plays_2018: completed games have play-by-play",
+   "ok": true,
+   "detail": "3 of 884 games without plays (0.3%; limit 2%)"
+  },
+  {
+   "name": "plays_2018: final scores agree with results",
+   "ok": true,
+   "detail": "864 of 881 games (98.1%; bar 90%); 0 off by 9+ points"
+  },
+  {
+   "name": "games_2019: completed games have results",
+   "ok": true,
+   "detail": "888 completed games"
+  },
+  {
+   "name": "plays_2019: completed games have play-by-play",
+   "ok": true,
+   "detail": "1 of 888 games without plays (0.1%; limit 2%)"
+  },
+  {
+   "name": "plays_2019: final scores agree with results",
+   "ok": true,
+   "detail": "880 of 887 games (99.2%; bar 90%); 0 off by 9+ points"
+  },
+  {
+   "name": "games_2020: completed games have results",
+   "ok": true,
+   "detail": "568 completed games"
+  },
+  {
+   "name": "plays_2020: completed games have play-by-play",
+   "ok": true,
+   "detail": "0 of 568 games without plays (0.0%; limit 2%)"
+  },
+  {
+   "name": "plays_2020: final scores agree with results",
+   "ok": true,
+   "detail": "555 of 568 games (97.7%; bar 90%); 3 off by 9+ points"
+  },
+  {
+   "name": "games_2021: completed games have results",
+   "ok": true,
+   "detail": "887 completed games"
+  },
+  {
+   "name": "plays_2021: completed games have play-by-play",
+   "ok": true,
+   "detail": "0 of 887 games without plays (0.0%; limit 2%)"
+  },
+  {
+   "name": "plays_2021: final scores agree with results",
+   "ok": true,
+   "detail": "819 of 887 games (92.3%; bar 90%); 15 off by 9+ points"
+  },
+  {
+   "name": "games_2022: completed games have results",
+   "ok": true,
+   "detail": "896 completed games"
+  },
+  {
+   "name": "plays_2022: completed games have play-by-play",
+   "ok": true,
+   "detail": "0 of 896 games without plays (0.0%; limit 2%)"
+  },
+  {
+   "name": "plays_2022: final scores agree with results",
+   "ok": true,
+   "detail": "847 of 896 games (94.5%; bar 90%); 13 off by 9+ points"
+  },
+  {
+   "name": "games_2023: completed games have results",
+   "ok": true,
+   "detail": "910 completed games"
+  },
+  {
+   "name": "plays_2023: completed games have play-by-play",
+   "ok": true,
+   "detail": "0 of 910 games without plays (0.0%; limit 2%)"
+  },
+  {
+   "name": "plays_2023: final scores agree with results",
+   "ok": true,
+   "detail": "877 of 910 games (96.4%; bar 90%); 9 off by 9+ points"
+  },
+  {
+   "name": "games_2024: completed games have results",
+   "ok": true,
+   "detail": "919 completed games"
+  },
+  {
+   "name": "plays_2024: completed games have play-by-play",
+   "ok": true,
+   "detail": "0 of 919 games without plays (0.0%; limit 2%)"
+  },
+  {
+   "name": "plays_2024: final scores agree with results",
+   "ok": true,
+   "detail": "883 of 919 games (96.1%; bar 90%); 6 off by 9+ points"
+  },
+  {
+   "name": "games_2025: completed games have results",
+   "ok": true,
+   "detail": "934 completed games"
+  },
+  {
+   "name": "plays_2025: completed games have play-by-play",
+   "ok": true,
+   "detail": "0 of 934 games without plays (0.0%; limit 2%)"
+  },
+  {
+   "name": "plays_2025: final scores agree with results",
+   "ok": true,
+   "detail": "886 of 934 games (94.9%; bar 90%); 4 off by 9+ points"
+  },
+  {
+   "name": "games_2026: completed games have results",
+   "ok": true,
+   "detail": "693 completed games"
+  },
+  {
+   "name": "plays_2026: completed games have play-by-play",
+   "ok": true,
+   "detail": "0 of 693 games without plays (0.0%; limit 2%)"
+  },
+  {
+   "name": "plays_2026: final scores agree with results",
+   "ok": true,
+   "detail": "676 of 693 games (97.5%; bar 90%); 1 off by 9+ points"
+  },
+  {
+   "name": "games_2026: results are current",
+   "ok": true,
+   "detail": ""
+  }
+ ],
+ "score_gaps": [
+  {
+   "season": 2015,
+   "id": 400763645,
+   "home": "Middle Tennessee",
+   "away": "Marshall",
+   "result": "27-24",
+   "pbp": "58-45"
+  },
+  {
+   "season": 2015,
+   "id": 400787277,
+   "home": "UNLV",
+   "away": "Hawai'i",
+   "result": "41-21",
+   "pbp": "55-43"
+  },
+  {
+   "season": 2015,
+   "id": 400787302,
+   "home": "Idaho",
+   "away": "Ohio",
+   "result": "28-45",
+   "pbp": "51-57"
+  },
+  {
+   "season": 2016,
+   "id": 400869307,
+   "home": "Northern Illinois",
+   "away": "Central Michigan",
+   "result": "28-34",
+   "pbp": "21-21"
+  },
+  {
+   "season": 2016,
+   "id": 400869428,
+   "home": "Virginia Tech",
+   "away": "Liberty",
+   "result": "36-13",
+   "pbp": "53-27"
+  },
+  {
+   "season": 2017,
+   "id": 400938665,
+   "home": "Western Kentucky",
+   "away": "Middle Tennessee",
+   "result": "41-38",
+   "pbp": "100-80"
+  },
+  {
+   "season": 2017,
+   "id": 400945298,
+   "home": "Nevada",
+   "away": "San José State",
+   "result": "59-14",
+   "pbp": "98-15"
+  },
+  {
+   "season": 2020,
+   "id": 401249003,
+   "home": "New Mexico",
+   "away": "San José State",
+   "result": "21-38",
+   "pbp": "38-21"
+  },
+  {
+   "season": 2020,
+   "id": 401249033,
+   "home": "San José State",
+   "away": "Hawai'i",
+   "result": "35-24",
+   "pbp": "24-35"
+  },
+  {
+   "season": 2020,
+   "id": 401269376,
+   "home": "UCLA",
+   "away": "Stanford",
+   "result": "47-48",
+   "pbp": "41-34"
+  },
+  {
+   "season": 2021,
+   "id": 401282093,
+   "home": "Missouri",
+   "away": "Tennessee",
+   "result": "24-62",
+   "pbp": "34-94"
+  },
+  {
+   "season": 2021,
+   "id": 401282143,
+   "home": "Tennessee",
+   "away": "South Alabama",
+   "result": "60-14",
+   "pbp": "71-15"
+  },
+  {
+   "season": 2021,
+   "id": 401282177,
+   "home": "South Alabama",
+   "away": "Southern Miss",
+   "result": "31-7",
+   "pbp": "32-21"
+  },
+  {
+   "season": 2021,
+   "id": 401282218,
+   "home": "Rice",
+   "away": "Southern Miss",
+   "result": "24-19",
+   "pbp": "49-32"
+  },
+  {
+   "season": 2021,
+   "id": 401282272,
+   "home": "Marshall",
+   "away": "Western Kentucky",
+   "result": "21-53",
+   "pbp": "43-87"
+  },
+  {
+   "season": 2021,
+   "id": 401282612,
+   "home": "Pittsburgh",
+   "away": "Massachusetts",
+   "result": "51-7",
+   "pbp": "37-0"
+  },
+  {
+   "season": 2021,
+   "id": 401282678,
+   "home": "Duke",
+   "away": "Pittsburgh",
+   "result": "29-54",
+   "pbp": "39-54"
+  },
+  {
+   "season": 2021,
+   "id": 401287899,
+   "home": "Oklahoma State",
+   "away": "Tulsa",
+   "result": "28-23",
+   "pbp": "43-35"
+  },
+  {
+   "season": 2021,
+   "id": 401287907,
+   "home": "Baylor",
+   "away": "Iowa State",
+   "result": "31-29",
+   "pbp": "57-33"
+  },
+  {
+   "season": 2021,
+   "id": 401300999,
+   "home": "Akron",
+   "away": "Temple",
+   "result": "24-45",
+   "pbp": "24-69"
+  },
+  {
+   "season": 2021,
+   "id": 401309570,
+   "home": "Northern Illinois",
+   "away": "Bowling Green",
+   "result": "34-26",
+   "pbp": "46-27"
+  },
+  {
+   "season": 2021,
+   "id": 401309584,
+   "home": "Western Michigan",
+   "away": "Akron",
+   "result": "45-40",
+   "pbp": "62-40"
+  },
+  {
+   "season": 2021,
+   "id": 401309849,
+   "home": "California",
+   "away": "Sacramento State",
+   "result": "42-30",
+   "pbp": "57-30"
+  },
+  {
+   "season": 2021,
+   "id": 401309906,
+   "home": "Utah",
+   "away": "Colorado",
+   "result": "28-13",
+   "pbp": "29-27"
+  },
+  {
+   "season": 2021,
+   "id": 401310747,
+   "home": "Nevada",
+   "away": "Air Force",
+   "result": "39-41",
+   "pbp": "24-24"
+  },
+  {
+   "season": 2022,
+   "id": 401403859,
+   "home": "Kentucky",
+   "away": "Miami (OH)",
+   "result": "37-13",
+   "pbp": "62-32"
+  },
+  {
+   "season": 2022,
+   "id": 401403880,
+   "home": "Alabama",
+   "away": "UL Monroe",
+   "result": "63-7",
+   "pbp": "113-15"
+  },
+  {
+   "season": 2022,
+   "id": 401404065,
+   "home": "West Virginia",
+   "away": "Kansas",
+   "result": "42-55",
+   "pbp": "51-62"
+  },
+  {
+   "season": 2022,
+   "id": 401411095,
+   "home": "App State",
+   "away": "North Carolina",
+   "result": "61-63",
+   "pbp": "111-127"
+  },
+  {
+   "season": 2022,
+   "id": 401411108,
+   "home": "Virginia Tech",
+   "away": "Boston College",
+   "result": "27-10",
+   "pbp": "41-20"
+  },
+  {
+   "season": 2022,
+   "id": 401415225,
+   "home": "San José State",
+   "away": "Western Michigan",
+   "result": "34-6",
+   "pbp": "49-13"
+  },
+  {
+   "season": 2022,
+   "id": 401416594,
+   "home": "Ball State",
+   "away": "Western Michigan",
+   "result": "30-37",
+   "pbp": "61-59"
+  },
+  {
+   "season": 2022,
+   "id": 401416595,
+   "home": "Bowling Green",
+   "away": "Eastern Kentucky",
+   "result": "57-59",
+   "pbp": "38-38"
+  },
+  {
+   "season": 2022,
+   "id": 401423439,
+   "home": "Troy",
+   "away": "Alabama A&M",
+   "result": "38-17",
+   "pbp": "35-3"
+  },
+  {
+   "season": 2022,
+   "id": 401426340,
+   "home": "Arkansas State",
+   "away": "UL Monroe",
+   "result": "45-28",
+   "pbp": "77-43"
+  },
+  {
+   "season": 2022,
+   "id": 401426542,
+   "home": "UTSA",
+   "away": "Houston",
+   "result": "35-37",
+   "pbp": "30-24"
+  },
+  {
+   "season": 2022,
+   "id": 401426594,
+   "home": "Florida International",
+   "away": "Louisiana Tech",
+   "result": "42-34",
+   "pbp": "27-27"
+  },
+  {
+   "season": 2022,
+   "id": 401426602,
+   "home": "UAB",
+   "away": "UTSA",
+   "result": "38-44",
+   "pbp": "31-31"
+  },
+  {
+   "season": 2023,
+   "id": 401520167,
+   "home": "North Carolina",
+   "away": "South Carolina",
+   "result": "31-17",
+   "pbp": "17-31"
+  },
+  {
+   "season": 2023,
+   "id": 401520331,
+   "home": "Sam Houston",
+   "away": "Florida International",
+   "result": "27-33",
+   "pbp": "20-20"
+  },
+  {
+   "season": 2023,
+   "id": 401525549,
+   "home": "North Carolina",
+   "away": "Duke",
+   "result": "47-45",
+   "pbp": "36-36"
+  },
+  {
+   "season": 2023,
+   "id": 401532436,
+   "home": "Akron",
+   "away": "Kent State",
+   "result": "31-27",
+   "pbp": "31-53"
+  },
+  {
+   "season": 2023,
+   "id": 401532445,
+   "home": "Eastern Michigan",
+   "away": "Akron",
+   "result": "30-27",
+   "pbp": "17-17"
+  },
+  {
+   "season": 2023,
+   "id": 401532572,
+   "home": "UNLV",
+   "away": "Bryant",
+   "result": "44-14",
+   "pbp": "74-14"
+  },
+  {
+   "season": 2023,
+   "id": 401532612,
+   "home": "San Diego State",
+   "away": "Utah State",
+   "result": "24-32",
+   "pbp": "17-17"
+  },
+  {
+   "season": 2023,
+   "id": 401551755,
+   "home": "Eastern Michigan",
+   "away": "South Alabama",
+   "result": "10-59",
+   "pbp": "59-10"
+  },
+  {
+   "season": 2023,
+   "id": 401551767,
+   "home": "Iowa State",
+   "away": "Memphis",
+   "result": "26-36",
+   "pbp": "36-36"
+  },
+  {
+   "season": 2024,
+   "id": 401634301,
+   "home": "California",
+   "away": "UC Davis",
+   "result": "31-13",
+   "pbp": "14-13"
+  },
+  {
+   "season": 2024,
+   "id": 401635554,
+   "home": "Louisville",
+   "away": "Georgia Tech",
+   "result": "31-19",
+   "pbp": "45-19"
+  },
+  {
+   "season": 2024,
+   "id": 401636865,
+   "home": "Miami (OH)",
+   "away": "Cincinnati",
+   "result": "16-27",
+   "pbp": "17-38"
+  },
+  {
+   "season": 2024,
+   "id": 401641021,
+   "home": "UTEP",
+   "away": "Kennesaw State",
+   "result": "43-35",
+   "pbp": "53-35"
+  },
+  {
+   "season": 2024,
+   "id": 401643737,
+   "home": "Utah State",
+   "away": "New Mexico",
+   "result": "45-50",
+   "pbp": "14-0"
+  },
+  {
+   "season": 2024,
+   "id": 401677085,
+   "home": "UTSA",
+   "away": "Coastal Carolina",
+   "result": "44-15",
+   "pbp": "15-44"
+  },
+  {
+   "season": 2025,
+   "id": 401752749,
+   "home": "Mississippi State",
+   "away": "Texas",
+   "result": "38-45",
+   "pbp": "62-59"
+  },
+  {
+   "season": 2025,
+   "id": 401752937,
+   "home": "Oregon State",
+   "away": "Fresno State",
+   "result": "27-36",
+   "pbp": "27-26"
+  },
+  {
+   "season": 2025,
+   "id": 401754542,
+   "home": "Georgia Tech",
+   "away": "Temple",
+   "result": "45-24",
+   "pbp": "38-14"
+  },
+  {
+   "season": 2025,
+   "id": 401757301,
+   "home": "Florida International",
+   "away": "Liberty",
+   "result": "34-27",
+   "pbp": "54-47"
+  },
+  {
+   "season": 2026,
+   "id": 401860899,
+   "home": "Colorado State",
+   "away": "Oregon State",
+   "result": "26-56",
+   "pbp": "32-68"
+  }
+ ]
+}

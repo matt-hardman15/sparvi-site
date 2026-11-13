@@ -58,6 +58,21 @@ def requests_for(season: int, games: pd.DataFrame | None) -> list[tuple[str, dic
     return r
 
 
+# Fixed numeric types: CFBD returns whole numbers as ints, so a season without missing values would
+# otherwise come out BIGINT and one with gaps DOUBLE (the contract checks types).
+FLOATS = {"games": ["homePoints", "awayPoints", "homePregameElo", "awayPregameElo"],
+          "rankings": ["points"],
+          "lines": ["spread", "spreadOpen", "overUnder", "overUnderOpen", "homeMoneyline", "awayMoneyline"],
+          "plays": ["ppa", "offenseScore", "defenseScore", "down", "distance", "yardline", "yardsToGoal", "yardsGained"]}
+
+
+def _floats(df: pd.DataFrame, kind: str) -> pd.DataFrame:
+    for c in FLOATS[kind]:
+        if c in df.columns:
+            df[c] = pd.to_numeric(df[c], errors="coerce").astype("float64")
+    return df
+
+
 def _games_frame(raw: list[dict]) -> pd.DataFrame:
     keep = ["id", "season", "week", "seasonType", "startDate", "completed", "neutralSite", "conferenceGame",
             "homeId", "homeTeam", "homeConference", "homeClassification", "homePoints", "homePregameElo",
@@ -74,11 +89,16 @@ def _lines_frame(raw: list[dict]) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+# The FBS polls (CFBD also returns FCS and Division II polls, which aren't used).
+FBS_POLLS = ("AP Top 25", "Coaches Poll", "Playoff Committee Rankings")
+
+
 def _rankings_frame(raw: list[dict]) -> pd.DataFrame:
     rows = [{"season": w["season"], "seasonType": w["seasonType"], "week": w["week"], "poll": p["poll"],
              "rank": r["rank"], "school": r["school"], "teamId": r.get("teamId"), "points": r.get("points")}
             for w in raw for p in w.get("polls", []) for r in p.get("ranks", [])]
-    return pd.DataFrame(rows)
+    df = pd.DataFrame(rows)
+    return df[df["poll"].isin(FBS_POLLS)].drop_duplicates(["season", "seasonType", "week", "poll", "school"]) if len(df) else df
 
 
 PLAY_COLS = ["id", "gameId", "driveId", "driveNumber", "playNumber", "offense", "offenseConference", "defense",
@@ -107,11 +127,12 @@ def pull_season(c: Client, season: int) -> None:
     keep_teams = [c for c in ("id", "school", "mascot", "abbreviation", "conference", "division", "classification",
                               "color", "alternateColor") if c in teams.columns]
     teams[keep_teams].to_parquet(OUT / f"teams_{season}.parquet", index=False)
+    games, lines, ranks = _floats(games, "games"), _floats(lines, "lines"), _floats(ranks, "rankings")
     games.sort_values(["seasonType", "week", "id"]).to_parquet(OUT / f"games_{season}.parquet", index=False)
     lines.sort_values(["game_id", "provider"]).to_parquet(OUT / f"lines_{season}.parquet", index=False)
     ranks.sort_values(["seasonType", "week", "poll", "rank", "school"]).to_parquet(OUT / f"rankings_{season}.parquet", index=False)
     if plays:
-        p = pd.concat(plays, ignore_index=True).drop_duplicates("id").sort_values(["gameId", "driveNumber", "playNumber", "id"])
+        p = _floats(pd.concat(plays, ignore_index=True).drop_duplicates("id"), "plays").sort_values(["gameId", "driveNumber", "playNumber", "id"])
         p.to_parquet(OUT / f"plays_{season}.parquet", index=False)
     print(f"{season}: {len(teams)} FBS teams, {len(games):,} games, {len(lines):,} lines, {len(ranks):,} ranks, "
           f"{sum(map(len, plays)):,} plays (calls so far {c.calls}, left {c.remaining})")

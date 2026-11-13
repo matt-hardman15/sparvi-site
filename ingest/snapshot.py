@@ -15,7 +15,7 @@ import sys
 import pandas as pd
 
 from ingest.common.snapshots import LocalStore, Table, day_after, now_utc, snapshot, store_from_env
-from sparvi.config import RAW, baseball, nfl
+from sparvi.config import RAW, baseball, cfb, nfl
 
 
 def baseball_tables() -> list[Table]:
@@ -50,7 +50,38 @@ def nfl_tables() -> list[Table]:
     return t
 
 
-TABLES = {"baseball": baseball_tables, "nfl": nfl_tables}
+def _game_available(df: pd.DataFrame, ingested: pd.Timestamp) -> pd.Series:
+    """A finished game's result is known the day after; an unplayed game when first seen."""
+    after = pd.to_datetime(df["startDate"], utc=True).dt.tz_localize(None).dt.normalize() + pd.Timedelta(days=1)
+    first_seen = pd.Series(ingested.tz_localize(None).normalize(), index=df.index)
+    return after.where(df["completed"].fillna(False).astype(bool), first_seen)
+
+
+def _plays_available(games_path):
+    """Plays carry no date; take the day after their game's start (from that season's games file)."""
+    def f(df: pd.DataFrame, ingested: pd.Timestamp) -> pd.Series:
+        g = pd.read_parquet(games_path, columns=["id", "startDate"])
+        start = pd.to_datetime(g["startDate"], utc=True).dt.tz_localize(None).dt.normalize() + pd.Timedelta(days=1)
+        out = df["gameId"].map(dict(zip(g["id"], start, strict=True)))
+        return out.fillna(ingested.tz_localize(None).normalize())
+    return f
+
+
+def cfb_tables() -> list[Table]:
+    cfg = cfb()
+    d = RAW / "cfb"
+    t = []
+    for s in cfg.seasons:
+        t += [Table(f"plays_{s}", d / f"plays_{s}.parquet", ("id",), _plays_available(d / f"games_{s}.parquet")),
+              Table(f"games_{s}", d / f"games_{s}.parquet", ("id",), _game_available),
+              Table(f"teams_{s}", d / f"teams_{s}.parquet", ("id",)),
+              Table(f"rankings_{s}", d / f"rankings_{s}.parquet", ("season", "seasonType", "week", "poll", "school")),
+              # Lines move until kickoff; each version is recorded when first seen. Benchmark only.
+              Table(f"lines_{s}", d / f"lines_{s}.parquet", ("game_id", "provider"))]
+    return t
+
+
+TABLES = {"baseball": baseball_tables, "nfl": nfl_tables, "cfb": cfb_tables}
 
 
 def main() -> int:
