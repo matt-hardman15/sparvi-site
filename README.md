@@ -81,7 +81,7 @@ GitHub Actions deploys to GitHub Pages:
   `cfb_*` models, ratings, power rating, and export, commits the CFB data, and deploys.
 - **`backtest`**: on pull requests touching models or the harness, a fast backtest with a comment (fails on a
   leak, a regression, or an unflagged gate failure); on pushes to `main` and every Monday, full backtests whose
-  reports and run log are committed. Raw data comes from `refresh-baseball`'s caches.
+  reports and run log are committed. Raw Statcast comes from `refresh-baseball`'s caches; batter heights from its own.
 - **`check`**: every pull request runs lint, both dbt projects on synthetic data, and a browser test of
   every page. `main` only accepts pull requests that pass. Dependabot opens weekly upgrade PRs.
 

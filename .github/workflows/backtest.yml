@@ -7,7 +7,8 @@ name: backtest
 #     isn't flagged experimental (make this check required in the "Protect main" ruleset to block merges)
 #   push to main touching the same paths, and every Monday -> full backtests; reports and the run log
 #     are committed (every run is logged, passing or not)
-# Raw Statcast comes from refresh-baseball's caches (never committed, never published).
+# Raw Statcast comes from refresh-baseball's caches; batter heights from this workflow's own cache
+# (never committed, never published).
 
 on:
   pull_request:
@@ -64,19 +65,33 @@ jobs:
           key: ${{ steps.cfg.outputs.key }}
           fail-on-cache-miss: true
 
+      # Same path list as refresh-baseball's (a cache entry only matches its exact paths).
       - name: Restore current-season raw data
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
-          path: |
-            data/raw/*_${{ steps.cfg.outputs.season }}.parquet
-            data/raw/batter_heights.parquet
+          path: data/raw/*_${{ steps.cfg.outputs.season }}.parquet
           key: baseball-raw-cur-${{ steps.cfg.outputs.season }}-none
           restore-keys: baseball-raw-cur-${{ steps.cfg.outputs.season }}-
           fail-on-cache-miss: true
 
-      - name: Batter heights (if the cache predates them)
-        run: |
-          if [ ! -f data/raw/batter_heights.parquet ]; then uv run python -c "from ingest.baseball.pull import pull_heights; pull_heights()"; fi
+      # Batter heights (Location+'s zone) aren't in refresh-baseball's caches: this workflow keeps its own.
+      - name: Restore batter heights
+        id: heights
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: data/raw/batter_heights.parquet
+          key: baseball-heights-${{ github.run_id }}
+          restore-keys: baseball-heights-
+
+      - name: Pull missing batter heights (MLB Stats API)
+        run: uv run python -c "from ingest.baseball.pull import pull_heights; pull_heights()"
+
+      - name: Save batter heights
+        if: steps.heights.outputs.cache-matched-key == ''
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: data/raw/batter_heights.parquet
+          key: baseball-heights-${{ github.run_id }}
 
       - name: Fast backtest (pull request)
         id: fast
