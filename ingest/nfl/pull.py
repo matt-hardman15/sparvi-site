@@ -11,7 +11,8 @@ Usage:
 Output (data/raw/nfl/, never committed):
     pbp_{season}.parquet          regular-season and postseason plays, the columns the pipeline reads
     team_stats_{season}.parquet   nflverse regular-season team stats (for the reconciliation check)
-    schedules.parquet             every game in the window, with scores
+    schedules.parquet             every game in the window, with scores (team codes normalized)
+    source/schedules.parquet, source/teams.parquet   as nflverse sent them: every column, original codes (snapshots)
     teams.parquet                 abbreviations, names, divisions, colors
 """
 import argparse
@@ -66,11 +67,17 @@ def main() -> None:
         pull_season(s)
 
     sched = nfl.load_schedules(CFG.seasons).to_pandas()
+    teams = nfl.load_teams().to_pandas()
+    # As the source sent them (every column, original team codes): what the snapshots record (A5a).
+    # The schedules' betting lines are kept there for the future market benchmark (L3), never published.
+    (OUT / "source").mkdir(exist_ok=True)
+    save(sched, OUT / "source" / "schedules.parquet")
+    save(teams, OUT / "source" / "teams.parquet")
+
     keep = ["game_id", "season", "game_type", "week", "gameday", "home_team", "away_team",
             "home_score", "away_score", "result", "overtime", "location"]
     sched = sched[keep].replace({"home_team": NFL_ALIASES, "away_team": NFL_ALIASES})
     save(sched, OUT / "schedules.parquet")
-    teams = nfl.load_teams().to_pandas()
     save(teams[~teams["team_abbr"].isin(list(NFL_ALIASES))], OUT / "teams.parquet")  # the 32 current codes
 
 

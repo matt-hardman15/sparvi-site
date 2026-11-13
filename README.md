@@ -10,6 +10,7 @@ behind them in explorers readers can filter and check. Live at **https://sparvi.
 | `sparvi.toml` | Each sport's current season and windows: the only place a season is set |
 | `sparvi/` | Shared Python package: config, site-data writers with schema checks, provenance, plot style |
 | `ingest/` | Stage 1 (PLAN-scout A0): each sport's pulls and the **data checks** that run before any build (`ingest/<sport>/checks.py`, shared code in `ingest/common/`). Results go to `site/data/status/<sport>.json` and the `/status/` page |
+| `ingest/snapshot.py` | After the checks pass, an append-only snapshot of every raw table goes to a private Cloudflare R2 bucket: only new, changed, and deleted rows, each with `_ingested_at` and `_available_at`. `ingest/common/asof.py` reads a table as it stood on any date (for revision-safe backtests). The working files in `data/raw/` are unchanged |
 | `contracts/` | What each sport's raw files must look like for the stages after ingest: columns and types, keys, allowed missing values. The checks enforce them, and the synthetic test fixtures are shaped by them |
 | `ingest/baseball/pull.py` | Pulls pitch-level Statcast (MLB, Triple-A), MLB Stats API rosters, Triple-A affiliates per season (for farm-system rankings), and batter heights (for the strike zone) into `data/raw/` (not committed) |
 | `baseball/pitch_quality/` | Stuff+, Location+, and Pitching+ models (LightGBM): `train.py`, `robustness.py` (out-of-sample validation), `thumb.py` |
@@ -39,6 +40,7 @@ uv sync                                    # Python 3.12 + exact locked versions
 uv run python ingest/baseball/pull.py         # first run ~30-60 min
 uv run python ingest/nfl/pull.py          # NFL, ~30 seconds (optional: without it the committed NFL data is used)
 uv run python -m ingest.baseball.checks    # data checks (and -m ingest.nfl.checks); writes site/data/status/
+uv run python -m ingest.snapshot baseball    # snapshot to R2 (needs the R2_* values in .env; --local DIR for a dry run)
 uv run ./build.sh                          # models -> dbt -> JSON -> docs/ (runs nfl/build.sh too when NFL data is present)
 uv run pytest && uv run ruff check .       # browser tests need `uv run playwright install chromium` once
 SPARVI_PERF=1 uv run pytest tests/test_perf.py -s   # opt-in: pages interactive in < 2 s on throttled "Fast 4G"
@@ -66,6 +68,10 @@ GitHub Actions deploys to GitHub Pages:
   is rebuilt, the site keeps the last data that passed, the failure shows on `/status/`, and the run
   ends red. A source changing a column or type fails the checks until `contracts/` and the code
   that reads it are updated together.
+- **Snapshots**: after the checks, both refreshes record what the pull returned in a private R2 bucket
+  (secrets `R2_ENDPOINT`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`; locally the same
+  names in `.env`). Snapshots are never overwritten or deleted. A failed snapshot still updates the
+  site but turns the run red, so a missed day gets noticed and rerun.
 - **`check`**: every pull request runs lint, both dbt projects on synthetic data, and a browser test of
   every page. `main` only accepts pull requests that pass. Dependabot opens weekly upgrade PRs.
 
@@ -99,5 +105,6 @@ Baseball (each spring):
    in `baseball/pd_pipeline/dbt_project.yml` (it prorates the qualified pools).
 
 Each fall, update `[baseball.rule5]` in `sparvi.toml` (protection deadline, draft date, CBA expiry), run
-`uv run python ingest/baseball/pull_rosters.py` the day after the deadline, rebuild, and refresh
+`uv run python ingest/baseball/pull_rosters.py` the day after the deadline, then
+`uv run python -m ingest.snapshot baseball` (records the roster snapshot), rebuild, and refresh
 `baseball/rule5/validation_list.csv` with that year's published eligibility lists.
