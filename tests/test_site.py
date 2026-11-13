@@ -437,6 +437,7 @@ def act_nfl_team(p):
 def act_nfl_index(p):
     assert p.locator("#team-grid li a").count() == 32
     assert p.locator(".team-div h4").count() == 8
+    assert p.locator(".card-link").count() >= 1
 
 
 def act_status(p):
@@ -469,6 +470,15 @@ def act_cfb_article(p):
     assert "the bowls" in p.text_content("#scap")
 
 
+def act_nfl_jax(p):
+    assert "Jacksonville" in p.text_content(".finding") and "%" in p.text_content(".finding")
+    assert p.locator("#lines svg text", has_text="JAX").count() >= 1
+    assert "Jacksonville Jaguars" in p.text_content("#cap")
+    select(p, "#c", "Highlight", "KC"); wait(p, 300)
+    assert "Kansas City Chiefs" in p.text_content("#cap")
+    assert rows(p, "#hist") >= 10
+
+
 def act_home(p):
     """Latest: newest first, a sport label and a filled-in key number on every card."""
     import datetime as dt
@@ -498,6 +508,7 @@ PAGES = [
     ("player-pitcher", lambda: f"/baseball/player.html?id={player_pitcher()}", act_player("Pitching · Triple-A", role_tag=True)),
     ("player-missing", "/baseball/player.html?id=1", lambda p: "No " in p.text_content("#root")),
     ("nfl", "/nfl/", act_nfl_index),
+    ("nfl-jax-article", "/nfl/is-jacksonville-the-best/", act_nfl_jax),
     ("nfl-team-efficiency", "/nfl/tools/team-efficiency.html", act_nfl_efficiency),
     ("nfl-team", "/nfl/teams/kc/", act_nfl_team),
     ("cfb", "/cfb/", lambda p: p.locator(".card-link").count() >= 1),
