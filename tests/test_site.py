@@ -20,7 +20,9 @@ from sparvi.config import ROOT
 DOCS = ROOT / "docs"
 DATA = ROOT / "site" / "data"
 # What a visitor downloads (GitHub Pages serves gzip) and what each page loads, not raw bytes on disk.
-GZ_BUDGET_MB = 15          # all of site/data, gzipped
+# Gzipped size of each sport's site/data folder (each sport has its own budget so adding a sport can't
+# quietly squeeze another; the site-wide hosting limit is checked by SEO-2's budget check).
+GZ_BUDGET_MB = {"baseball": 15, "nfl": 3, "cfb": 6, "status": 0.5}
 LEAGUE_FILE_GZ_MB = 2      # each snapshot league file (plan target for the date slider)
 PLAYER_FILE_KB = 100       # each per-player file, raw
 
@@ -42,8 +44,11 @@ def test_site_data_within_budget():
     import gzip
     files = [p for p in DATA.rglob("*.json")]
     gz = {p: len(gzip.compress(p.read_bytes(), 6)) for p in files}
-    total = sum(gz.values()) / 1e6
-    assert total < GZ_BUDGET_MB, f"site/data is {total:.1f} MB gzipped (budget {GZ_BUDGET_MB} MB)"
+    sports = {p.relative_to(DATA).parts[0] for p in files}
+    assert sports <= set(GZ_BUDGET_MB), f"no data budget for {sorted(sports - set(GZ_BUDGET_MB))}"
+    for sport, budget in GZ_BUDGET_MB.items():
+        total = sum(v for p, v in gz.items() if p.relative_to(DATA).parts[0] == sport) / 1e6
+        assert total < budget, f"site/data/{sport} is {total:.1f} MB gzipped (budget {budget} MB)"
     for p in DATA.glob("baseball/snapshots_*.json"):
         assert gz[p] / 1e6 < LEAGUE_FILE_GZ_MB, f"{p.name}: {gz[p] / 1e6:.2f} MB gzipped"
     big = [p.name for p in DATA.glob("baseball/players/*.json") if p.stat().st_size > PLAYER_FILE_KB * 1024]
