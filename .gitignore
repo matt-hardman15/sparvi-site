@@ -28,3 +28,6 @@ football/dbt/football.duckdb*
 football/dbt/target/
 football/dbt/logs/
 football/dbt/.user.yml
+
+# Local secrets (CFBD_API_KEY): never committed
+.env
