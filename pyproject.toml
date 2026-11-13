@@ -18,6 +18,7 @@ dependencies = [
     "dbt-duckdb>=1.9",
     "pyyaml>=6",
     "nflreadpy>=0.1.5",
+    "boto3>=1.35",
 ]
 
 [dependency-groups]

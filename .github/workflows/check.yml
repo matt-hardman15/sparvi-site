@@ -39,8 +39,8 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --frozen
-      - name: Config, dbt pipelines on synthetic data (baseball, football), incremental pull, Rule 5 logic, published snapshots, training repeatability, refresh fingerprint, ingest data checks
-        run: uv run pytest -q tests/test_config.py tests/test_fingerprint.py tests/test_ingest_checks.py tests/test_seo.py tests/test_pipeline.py tests/test_pull_incremental.py tests/test_rule5.py tests/test_snapshots.py tests/test_training.py tests/test_football.py
+      - name: Config, dbt pipelines on synthetic data (baseball, football), incremental pull, Rule 5 logic, published snapshots, training repeatability, refresh fingerprint, ingest data checks, raw snapshots
+        run: uv run pytest -q tests/test_config.py tests/test_fingerprint.py tests/test_ingest_checks.py tests/test_raw_snapshots.py tests/test_seo.py tests/test_pipeline.py tests/test_pull_incremental.py tests/test_rule5.py tests/test_snapshots.py tests/test_training.py tests/test_football.py
 
   site:
     runs-on: ubuntu-24.04
