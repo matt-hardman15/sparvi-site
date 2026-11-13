@@ -3,8 +3,12 @@ title: "The Rule 5 board: unprotected Triple-A players whose numbers travel"
 pagetitle: "The Rule 5 board, explained"
 description: "Which Triple-A players clubs left exposed to the Rule 5 Draft, ranked on what carries to the majors: stuff for pitchers, swing decisions for hitters."
 date: 2026-11-11
-categories: [pitching, hitting, Triple-A, roster rules]
+categories: [Baseball, pitching, hitting, Triple-A, roster rules]
 image: thumb.png
+card-key: baseball.r5_n_qual_pitchers
+card-prefix: ""
+card-suffix: ""
+card-label: "unprotected Triple-A pitchers graded"
 ---
 
 {{< meta baseball.r5_prelim_note >}}

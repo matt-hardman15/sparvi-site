@@ -469,8 +469,19 @@ def act_cfb_article(p):
     assert "the bowls" in p.text_content("#scap")
 
 
+def act_home(p):
+    """Latest: newest first, a sport label and a filled-in key number on every card."""
+    import datetime as dt
+    dates = [dt.datetime.strptime(t.strip(), "%b %d, %Y") for t in p.locator(".article-cards .card-date").all_text_contents()]
+    assert len(dates) >= 5 and dates == sorted(dates, reverse=True)
+    assert all(t.strip() for t in p.locator(".article-cards .card-sport").all_text_contents())
+    stats = p.locator(".article-cards .card-stat-v").all_text_contents()
+    assert stats and not any("…" in t for t in stats)
+    assert p.locator('a[href="https://x.com/SparviAnalytics"]').count() >= 1
+
+
 PAGES = [
-    ("home", "/", None),
+    ("home", "/", act_home),
     ("baseball", "/baseball/", None),
     ("stuff-plus", "/baseball/stuff-plus/", act_stuff_plus),
     ("stuff-or-command", "/baseball/stuff-or-command/", act_stuff_or_command),

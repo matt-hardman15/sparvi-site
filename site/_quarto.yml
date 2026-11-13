@@ -58,9 +58,15 @@ website:
         href: glossary.qmd
       - text: About
         href: about.qmd
+    right:
+      # Plain link with the site's own icon font (Bootstrap Icons, self-hosted by Quarto): no scripts, no embeds.
+      - icon: twitter-x
+        href: https://x.com/SparviAnalytics
+        aria-label: Sparvi on X
   page-footer:
     left: "Sparvi · Free and independent. Baseball data: Baseball Savant and the MLB Stats API. NFL data: nflverse (CC-BY 4.0). College football data provided by CollegeFootballData.com. Sparvi is not affiliated with MLB, the NFL, the NCAA, or any club or school."
-    right: "[Data status](/status.html) · [About](/about.html)"
+    # TODO(newsletter): add "Get new findings by email" here, linking to the signup page, once Matt sets one up. No form on the site.
+    right: "[Data status](/status.html) · [About](/about.html) · [X](https://x.com/SparviAnalytics) · [contact@sparvi.io](mailto:contact@sparvi.io)"
 
 format:
   html:

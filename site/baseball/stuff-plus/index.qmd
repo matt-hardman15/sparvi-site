@@ -3,8 +3,12 @@ title: "Stuff predicts next season at least as well as results do"
 pagetitle: "Stuff+: a pitch model that predicts next season"
 description: "A pitch model built only on velocity, movement, and release predicts next season at least as well as run value, settles sooner, and carries from Triple-A."
 date: 2026-10-21
-categories: [pitching, models]
+categories: [Baseball, pitching, models]
 image: thumb.png
+card-key: baseball.stuff_yoy_r_stuff
+card-prefix: "r = "
+card-suffix: ""
+card-label: "Stuff+ vs. next season's run value"
 ---
 
 ::: {.finding}

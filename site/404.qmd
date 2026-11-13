@@ -1,0 +1,16 @@
+---
+title: "Page not found"
+pagetitle: "Page not found"
+description: "This page doesn't exist on Sparvi. Try the home page, the tools, or the glossary; every article and tool is listed on the home page."
+no-chart-libs: true
+search: false
+sitemap: false
+---
+
+There's nothing at this address. It may have moved, or it may not exist yet.
+
+- [Home](/): the latest articles and every tool
+- [Baseball](/baseball/) · [NFL](/nfl/) · [College football](/cfb/)
+- [Glossary](/glossary.html) · [Data status](/status.html) · [About](/about.html)
+
+If a link on Sparvi brought you here, please email [contact@sparvi.io](mailto:contact@sparvi.io) or open an issue on [GitHub](https://github.com/matt-hardman15/sparvi-site/issues).

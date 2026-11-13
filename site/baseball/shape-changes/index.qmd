@@ -3,8 +3,12 @@ title: "Midseason pitch changes mostly stick. Lost fastball velocity mostly does
 pagetitle: "Do midseason pitch shape changes stick?"
 description: "When a pitch's velocity or movement changes midseason, how much is still there next spring? Movement changes hold; lost fastball velocity mostly returns."
 date: 2026-10-31
-categories: [pitching, player development]
+categories: [Baseball, pitching, player development]
 image: thumb.png
+card-key: baseball.shape_fb_loss
+card-prefix: ""
+card-suffix: "%"
+card-label: "of a lost fastball velocity was still lost the next spring"
 ---
 
 ::: {.finding}
