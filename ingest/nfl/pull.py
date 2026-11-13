@@ -5,8 +5,8 @@ Seasons come from sparvi.toml [nfl] (see sparvi.config). nflverse data is CC-BY 
 "nflverse" on every page that uses it.
 
 Usage:
-    python scripts/pull_nfl.py              # every season in the config window (skips past seasons on file)
-    python scripts/pull_nfl.py --current    # re-pull only the current season (+ schedules, teams)
+    python ingest/nfl/pull.py              # every season in the config window (skips past seasons on file)
+    python ingest/nfl/pull.py --current    # re-pull only the current season (+ schedules, teams)
 
 Output (data/raw/nfl/, never committed):
     pbp_{season}.parquet          regular-season and postseason plays, the columns the pipeline reads

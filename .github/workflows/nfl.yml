@@ -43,29 +43,55 @@ jobs:
 
       # nflverse data is CC-BY 4.0. Raw play-by-play is never committed or published.
       - name: Pull nflverse data
-        run: uv run python scripts/pull_nfl.py
+        run: uv run python ingest/nfl/pull.py
+
+      # Data checks (ingest/nfl/checks.py, contracts/nfl_ingest.yml) before anything is built. On a
+      # failure nothing is rebuilt: the site keeps the last good data, the failure is committed to
+      # site/data/status/nfl.json (shown on /status/), and the run ends red.
+      - name: Data checks
+        id: checks
+        run: |
+          if uv run python -m ingest.nfl.checks; then echo "ok=true" >> "$GITHUB_OUTPUT"
+          else echo "ok=false" >> "$GITHUB_OUTPUT"; fi
 
       - name: Rebuild football pipeline, adjustment, export, team pages
+        id: build
+        if: steps.checks.outputs.ok == 'true'
         run: uv run nfl/build.sh
 
       - name: Render (fails on unresolved prose numbers)
+        id: render
+        if: steps.checks.outputs.ok == 'true'
         run: |
           cd site && quarto render && cd ..
           if grep -rl "?meta:" docs --include=*.html; then echo "unresolved prose numbers"; exit 1; fi
 
+      # The data-check status every run; the rebuilt data only when the build and render passed.
       - name: Commit refreshed data
+        if: ${{ !cancelled() && steps.checks.outcome == 'success' && steps.build.outcome != 'failure' && steps.render.outcome != 'failure' }}
         run: |
           git config user.name "sparvi-bot"
           git config user.email "sparvi-bot@users.noreply.github.com"
-          git add site/data/nfl site/_generated/nfl.yml nfl/*/output site/nfl/teams
+          git add site/data/status/nfl.json
+          if [ "${{ steps.checks.outputs.ok }}" = "true" ]; then
+            git add site/data/nfl site/_generated/nfl.yml nfl/*/output site/nfl/teams
+          fi
           if git diff --cached --quiet; then echo "No data changes."; exit 0; fi
           git commit -m "NFL data refresh $(date -u +%Y-%m-%d)"
           git status --short
           git pull --rebase --autostash origin main
           git push origin HEAD:main
 
+      - name: Fail the run if a data check failed
+        if: steps.checks.outputs.ok == 'false'
+        run: |
+          echo "::error::NFL data checks failed; the site still serves the last good data. See /status/."
+          exit 1
+
+  # Deploys after a failed data check too, so /status/ shows the failure (the data is unchanged).
   deploy:
     needs: refresh
+    if: ${{ !cancelled() }}
     uses: ./.github/workflows/deploy.yml
     permissions:
       contents: read

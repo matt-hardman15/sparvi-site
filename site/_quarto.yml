@@ -52,7 +52,7 @@ website:
         href: about.qmd
   page-footer:
     left: "Sparvi · Free and independent. Baseball data: Baseball Savant and the MLB Stats API. NFL data: nflverse (CC-BY 4.0). Sparvi is not affiliated with MLB, the NFL, or any club."
-    right: "[About](/about.html)"
+    right: "[Data status](/status.html) · [About](/about.html)"
 
 format:
   html:

@@ -19,6 +19,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from fixture_contract import write_conformed
 
 TEAMS = ["AAA", "BBB", "CCC", "DDD", "EEE", "FFF", "GGG", "HHH"]
 PER_TEAM = 12  # hitters and pitchers per team
@@ -119,7 +120,7 @@ def write_fixture(out: Path, season: int, seed: int = 0) -> None:
             df = _season(s, rng, pk_offset=off)
             if lvl == "mlb":  # call-ups: every seventh hitter reaches MLB on June 1 (the translation's pre-debut lines)
                 df = df[~(df["batter"].mod(CALLUP_EVERY).eq(0) & (df["game_date"] < pd.Timestamp(f"{s}-{CALLUP_DATE}")))]
-            df.to_parquet(out / f"statcast_{lvl}_{s}.parquet", index=False)
+            write_conformed(df, out / f"statcast_{lvl}_{s}.parquet", "baseball", "statcast")
             if s >= season - 1:  # Stuff+/Location+/Pitching+ predictions (current and last season), as train.py writes them
                 pred = df[["game_pk", "game_date", "at_bat_number", "pitch_number", "pitcher", "pitch_type"]].copy()
                 pred["group"] = pred["pitch_type"].map(groups)
@@ -137,13 +138,18 @@ def write_fixture(out: Path, season: int, seed: int = 0) -> None:
     pl = _players()
     # Listed heights for every hitter but one, so in_zone's fallback to Statcast's zone is exercised.
     hitters = pl.loc[pl["role"].eq("H"), "player_id"].to_numpy()
-    pd.DataFrame({"batter": hitters[1:], "height_in": 70 + np.arange(len(hitters) - 1) % 8}).to_parquet(
-        out / "batter_heights.parquet", index=False)
+    write_conformed(pd.DataFrame({"batter": hitters[1:], "height_in": 70 + np.arange(len(hitters) - 1) % 8}),
+                    out / "batter_heights.parquet", "baseball", "batter_heights")
     pl["birth_date"] = [f"{season - 22 - i % 10}-05-01" for i in range(len(pl))]
     pl["position"] = np.where(pl["role"].eq("P"), "P", "CF")
     pl["bats"], pl["throws"], pl["level"] = "R", "R", "AAA"
     pl["team_id"], pl["parent_org_id"] = 1, 1
-    pl.drop(columns=["team", "role"]).to_parquet(out / f"milb_players_{season}.parquet", index=False)
+    write_conformed(pl.drop(columns=["team", "role"]), out / f"milb_players_{season}.parquet", "baseball", "milb_players")
+    for s in (season - 1, season):  # one Triple-A club per (fixture) org
+        write_conformed(pd.DataFrame({"season": s, "team_id": range(1, len(TEAMS) + 1), "team": TEAMS,
+                                      "team_name": [f"Club {t}" for t in TEAMS], "org_id": range(101, 101 + len(TEAMS)),
+                                      "org": [f"O{t}" for t in TEAMS]}),
+                        out / f"aaa_affiliates_{s}.parquet", "baseball", "aaa_affiliates")
 
     pitchers = pl.loc[pl["position"].eq("P"), "player_id"]
     sq = pd.DataFrame([(pid, pt) for pid in pitchers for pt in PITCH_TYPES], columns=["pitcher", "pitch_type"])

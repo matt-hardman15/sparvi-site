@@ -5,10 +5,10 @@ Seasons and date windows come from sparvi.toml (see sparvi.config).
 
 Usage:
     uv sync
-    python scripts/pull_data.py                    # every season in the config window
-    python scripts/pull_data.py --current --refresh  # re-pull the current season
-    python scripts/pull_data.py --current --incremental  # just the new games (+ a 3-day overlap)
-    python scripts/pull_data.py --seasons 2025     # just one season
+    python ingest/baseball/pull.py                    # every season in the config window
+    python ingest/baseball/pull.py --current --refresh  # re-pull the current season
+    python ingest/baseball/pull.py --current --incremental  # just the new games (+ a 3-day overlap)
+    python ingest/baseball/pull.py --seasons 2025     # just one season
 
 Output: data/raw/statcast_{level}_{season}.parquet
 Re-running skips any season/level file that already exists.
@@ -183,7 +183,7 @@ def pull_affiliates(season: int) -> None:
     """Triple-A club -> parent MLB org for one season (data/raw/aaa_affiliates_SEASON.parquet).
 
     Farm-system rankings attribute each Triple-A player-season to an org through this. Same schema as
-    scripts/pull_rosters.py writes for the current season; skipped if the file exists.
+    ingest/baseball/pull_rosters.py writes for the current season; skipped if the file exists.
     """
     out = RAW / f"aaa_affiliates_{season}.parquet"
     if out.exists():

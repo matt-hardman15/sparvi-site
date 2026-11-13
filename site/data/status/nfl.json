@@ -1,0 +1,724 @@
+{
+ "sport": "nfl",
+ "ok": true,
+ "data_through": {
+  "season": 2026,
+  "week": 10,
+  "last_game": "2026-11-12"
+ },
+ "n_checks": 137,
+ "n_failed": 0,
+ "rows": {
+  "pbp_2016": 47651,
+  "pbp_2017": 47245,
+  "pbp_2018": 47109,
+  "pbp_2019": 47260,
+  "pbp_2020": 47705,
+  "pbp_2021": 49922,
+  "pbp_2022": 49434,
+  "pbp_2023": 49665,
+  "pbp_2024": 49492,
+  "pbp_2025": 48771,
+  "pbp_2026": 24002,
+  "schedules": 3033,
+  "team_stats_2016": 32,
+  "team_stats_2017": 32,
+  "team_stats_2018": 32,
+  "team_stats_2019": 32,
+  "team_stats_2020": 32,
+  "team_stats_2021": 32,
+  "team_stats_2022": 32,
+  "team_stats_2023": 32,
+  "team_stats_2024": 32,
+  "team_stats_2025": 32,
+  "team_stats_2026": 32,
+  "teams": 32
+ },
+ "checks": [
+  {
+   "name": "pbp_2016: columns and types",
+   "ok": true,
+   "detail": "45 contract columns"
+  },
+  {
+   "name": "pbp_2016: row count",
+   "ok": true,
+   "detail": "47,651 rows (last accepted 47,651)"
+  },
+  {
+   "name": "pbp_2016: one row per game_id + play_id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "pbp_2016: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2016: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2016: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2016: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2016: wp missing",
+   "ok": true,
+   "detail": "0.58% (limit 5%)"
+  },
+  {
+   "name": "team_stats_2016: columns and types",
+   "ok": true,
+   "detail": "5 contract columns"
+  },
+  {
+   "name": "team_stats_2016: row count",
+   "ok": true,
+   "detail": "32 rows (last accepted 32)"
+  },
+  {
+   "name": "team_stats_2016: one row per season + team + season_type",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "pbp_2017: columns and types",
+   "ok": true,
+   "detail": "45 contract columns"
+  },
+  {
+   "name": "pbp_2017: row count",
+   "ok": true,
+   "detail": "47,245 rows (last accepted 47,245)"
+  },
+  {
+   "name": "pbp_2017: one row per game_id + play_id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "pbp_2017: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2017: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2017: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2017: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2017: wp missing",
+   "ok": true,
+   "detail": "0.58% (limit 5%)"
+  },
+  {
+   "name": "team_stats_2017: columns and types",
+   "ok": true,
+   "detail": "5 contract columns"
+  },
+  {
+   "name": "team_stats_2017: row count",
+   "ok": true,
+   "detail": "32 rows (last accepted 32)"
+  },
+  {
+   "name": "team_stats_2017: one row per season + team + season_type",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "pbp_2018: columns and types",
+   "ok": true,
+   "detail": "45 contract columns"
+  },
+  {
+   "name": "pbp_2018: row count",
+   "ok": true,
+   "detail": "47,109 rows (last accepted 47,109)"
+  },
+  {
+   "name": "pbp_2018: one row per game_id + play_id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "pbp_2018: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2018: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2018: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2018: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2018: wp missing",
+   "ok": true,
+   "detail": "0.58% (limit 5%)"
+  },
+  {
+   "name": "team_stats_2018: columns and types",
+   "ok": true,
+   "detail": "5 contract columns"
+  },
+  {
+   "name": "team_stats_2018: row count",
+   "ok": true,
+   "detail": "32 rows (last accepted 32)"
+  },
+  {
+   "name": "team_stats_2018: one row per season + team + season_type",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "pbp_2019: columns and types",
+   "ok": true,
+   "detail": "45 contract columns"
+  },
+  {
+   "name": "pbp_2019: row count",
+   "ok": true,
+   "detail": "47,260 rows (last accepted 47,260)"
+  },
+  {
+   "name": "pbp_2019: one row per game_id + play_id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "pbp_2019: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2019: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2019: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2019: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2019: wp missing",
+   "ok": true,
+   "detail": "0.58% (limit 5%)"
+  },
+  {
+   "name": "team_stats_2019: columns and types",
+   "ok": true,
+   "detail": "5 contract columns"
+  },
+  {
+   "name": "team_stats_2019: row count",
+   "ok": true,
+   "detail": "32 rows (last accepted 32)"
+  },
+  {
+   "name": "team_stats_2019: one row per season + team + season_type",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "pbp_2020: columns and types",
+   "ok": true,
+   "detail": "45 contract columns"
+  },
+  {
+   "name": "pbp_2020: row count",
+   "ok": true,
+   "detail": "47,705 rows (last accepted 47,705)"
+  },
+  {
+   "name": "pbp_2020: one row per game_id + play_id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "pbp_2020: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2020: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2020: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2020: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2020: wp missing",
+   "ok": true,
+   "detail": "0.56% (limit 5%)"
+  },
+  {
+   "name": "team_stats_2020: columns and types",
+   "ok": true,
+   "detail": "5 contract columns"
+  },
+  {
+   "name": "team_stats_2020: row count",
+   "ok": true,
+   "detail": "32 rows (last accepted 32)"
+  },
+  {
+   "name": "team_stats_2020: one row per season + team + season_type",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "pbp_2021: columns and types",
+   "ok": true,
+   "detail": "45 contract columns"
+  },
+  {
+   "name": "pbp_2021: row count",
+   "ok": true,
+   "detail": "49,922 rows (last accepted 49,922)"
+  },
+  {
+   "name": "pbp_2021: one row per game_id + play_id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "pbp_2021: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2021: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2021: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2021: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2021: wp missing",
+   "ok": true,
+   "detail": "0.57% (limit 5%)"
+  },
+  {
+   "name": "team_stats_2021: columns and types",
+   "ok": true,
+   "detail": "5 contract columns"
+  },
+  {
+   "name": "team_stats_2021: row count",
+   "ok": true,
+   "detail": "32 rows (last accepted 32)"
+  },
+  {
+   "name": "team_stats_2021: one row per season + team + season_type",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "pbp_2022: columns and types",
+   "ok": true,
+   "detail": "45 contract columns"
+  },
+  {
+   "name": "pbp_2022: row count",
+   "ok": true,
+   "detail": "49,434 rows (last accepted 49,434)"
+  },
+  {
+   "name": "pbp_2022: one row per game_id + play_id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "pbp_2022: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2022: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2022: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2022: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2022: wp missing",
+   "ok": true,
+   "detail": "0.57% (limit 5%)"
+  },
+  {
+   "name": "team_stats_2022: columns and types",
+   "ok": true,
+   "detail": "5 contract columns"
+  },
+  {
+   "name": "team_stats_2022: row count",
+   "ok": true,
+   "detail": "32 rows (last accepted 32)"
+  },
+  {
+   "name": "team_stats_2022: one row per season + team + season_type",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "pbp_2023: columns and types",
+   "ok": true,
+   "detail": "45 contract columns"
+  },
+  {
+   "name": "pbp_2023: row count",
+   "ok": true,
+   "detail": "49,665 rows (last accepted 49,665)"
+  },
+  {
+   "name": "pbp_2023: one row per game_id + play_id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "pbp_2023: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2023: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2023: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2023: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2023: wp missing",
+   "ok": true,
+   "detail": "0.57% (limit 5%)"
+  },
+  {
+   "name": "team_stats_2023: columns and types",
+   "ok": true,
+   "detail": "5 contract columns"
+  },
+  {
+   "name": "team_stats_2023: row count",
+   "ok": true,
+   "detail": "32 rows (last accepted 32)"
+  },
+  {
+   "name": "team_stats_2023: one row per season + team + season_type",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "pbp_2024: columns and types",
+   "ok": true,
+   "detail": "45 contract columns"
+  },
+  {
+   "name": "pbp_2024: row count",
+   "ok": true,
+   "detail": "49,492 rows (last accepted 49,492)"
+  },
+  {
+   "name": "pbp_2024: one row per game_id + play_id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "pbp_2024: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2024: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2024: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2024: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2024: wp missing",
+   "ok": true,
+   "detail": "0.58% (limit 5%)"
+  },
+  {
+   "name": "team_stats_2024: columns and types",
+   "ok": true,
+   "detail": "5 contract columns"
+  },
+  {
+   "name": "team_stats_2024: row count",
+   "ok": true,
+   "detail": "32 rows (last accepted 32)"
+  },
+  {
+   "name": "team_stats_2024: one row per season + team + season_type",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "pbp_2025: columns and types",
+   "ok": true,
+   "detail": "45 contract columns"
+  },
+  {
+   "name": "pbp_2025: row count",
+   "ok": true,
+   "detail": "48,771 rows (last accepted 48,771)"
+  },
+  {
+   "name": "pbp_2025: one row per game_id + play_id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "pbp_2025: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2025: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2025: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2025: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2025: wp missing",
+   "ok": true,
+   "detail": "0.58% (limit 5%)"
+  },
+  {
+   "name": "team_stats_2025: columns and types",
+   "ok": true,
+   "detail": "5 contract columns"
+  },
+  {
+   "name": "team_stats_2025: row count",
+   "ok": true,
+   "detail": "32 rows (last accepted 32)"
+  },
+  {
+   "name": "team_stats_2025: one row per season + team + season_type",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "pbp_2026: columns and types",
+   "ok": true,
+   "detail": "45 contract columns"
+  },
+  {
+   "name": "pbp_2026: row count",
+   "ok": true,
+   "detail": "24,002 rows (last accepted 24,002)"
+  },
+  {
+   "name": "pbp_2026: one row per game_id + play_id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "pbp_2026: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2026: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2026: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2026: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "pbp_2026: wp missing",
+   "ok": true,
+   "detail": "0.57% (limit 5%)"
+  },
+  {
+   "name": "team_stats_2026: columns and types",
+   "ok": true,
+   "detail": "5 contract columns"
+  },
+  {
+   "name": "team_stats_2026: row count",
+   "ok": true,
+   "detail": "32 rows (last accepted 32)"
+  },
+  {
+   "name": "team_stats_2026: one row per season + team + season_type",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "schedules: columns and types",
+   "ok": true,
+   "detail": "12 contract columns"
+  },
+  {
+   "name": "schedules: row count",
+   "ok": true,
+   "detail": "3,033 rows (last accepted 3,033)"
+  },
+  {
+   "name": "schedules: one row per game_id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "schedules: game_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "schedules: season missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "schedules: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "schedules: home_team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "schedules: away_team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "every completed game has play-by-play",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "every game with plays is on the schedule",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "schedule results are current",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "every team that played has plays in its week",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "teams: columns and types",
+   "ok": true,
+   "detail": "6 contract columns"
+  },
+  {
+   "name": "teams: row count",
+   "ok": true,
+   "detail": "32 rows (last accepted 32)"
+  },
+  {
+   "name": "teams: one row per team_abbr",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "teams: one row per franchise",
+   "ok": true,
+   "detail": "32 (want 32)"
+  }
+ ]
+}

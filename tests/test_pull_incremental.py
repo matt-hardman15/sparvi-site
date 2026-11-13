@@ -1,4 +1,4 @@
-"""Incremental Statcast pulls (scripts/pull_data.py --incremental), with Savant faked out."""
+"""Incremental Statcast pulls (ingest/baseball/pull.py --incremental), with Savant faked out."""
 import importlib.util
 from datetime import date, timedelta
 
@@ -7,7 +7,7 @@ import pytest
 
 from sparvi.config import ROOT
 
-spec = importlib.util.spec_from_file_location("pull_data", ROOT / "scripts" / "pull_data.py")
+spec = importlib.util.spec_from_file_location("pull_data", ROOT / "ingest" / "baseball" / "pull.py")
 pdm = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(pdm)
 

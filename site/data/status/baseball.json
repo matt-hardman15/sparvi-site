@@ -1,0 +1,463 @@
+{
+ "sport": "baseball",
+ "ok": true,
+ "data_through": {
+  "aaa": "2026-09-20",
+  "mlb": "2026-09-27"
+ },
+ "n_checks": 88,
+ "n_failed": 0,
+ "rows": {
+  "aaa_affiliates_2025": 30,
+  "aaa_affiliates_2026": 30,
+  "batter_heights": 1463,
+  "milb_players_2026": 9740,
+  "statcast_aaa_2025": 671257,
+  "statcast_aaa_2026": 671556,
+  "statcast_mlb_2024": 711899,
+  "statcast_mlb_2025": 712528,
+  "statcast_mlb_2026": 716792
+ },
+ "checks": [
+  {
+   "name": "statcast_aaa_2025: columns and types",
+   "ok": true,
+   "detail": "59 contract columns"
+  },
+  {
+   "name": "statcast_aaa_2025: row count",
+   "ok": true,
+   "detail": "671,257 rows (last accepted 671,257)"
+  },
+  {
+   "name": "statcast_aaa_2025: one row per game_pk + at_bat_number + pitch_number",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "statcast_aaa_2025: game_pk missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_aaa_2025: game_date missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_aaa_2025: pitcher missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_aaa_2025: batter missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_aaa_2025: pitch_number missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_aaa_2025: pitch_type missing",
+   "ok": true,
+   "detail": "0.72% (limit 2%)"
+  },
+  {
+   "name": "statcast_aaa_2025: release_speed missing",
+   "ok": true,
+   "detail": "0.30% (limit 2%)"
+  },
+  {
+   "name": "statcast_aaa_2025: plate_x missing",
+   "ok": true,
+   "detail": "0.72% (limit 2%)"
+  },
+  {
+   "name": "statcast_aaa_2025: pfx_x missing",
+   "ok": true,
+   "detail": "0.30% (limit 2%)"
+  },
+  {
+   "name": "statcast_aaa_2025: dates in the season window",
+   "ok": true,
+   "detail": "2025-03-28 to 2025-09-21"
+  },
+  {
+   "name": "statcast_aaa_2026: columns and types",
+   "ok": true,
+   "detail": "59 contract columns"
+  },
+  {
+   "name": "statcast_aaa_2026: row count",
+   "ok": true,
+   "detail": "671,556 rows (last accepted 671,556)"
+  },
+  {
+   "name": "statcast_aaa_2026: one row per game_pk + at_bat_number + pitch_number",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "statcast_aaa_2026: game_pk missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_aaa_2026: game_date missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_aaa_2026: pitcher missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_aaa_2026: batter missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_aaa_2026: pitch_number missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_aaa_2026: pitch_type missing",
+   "ok": true,
+   "detail": "0.35% (limit 2%)"
+  },
+  {
+   "name": "statcast_aaa_2026: release_speed missing",
+   "ok": true,
+   "detail": "0.34% (limit 2%)"
+  },
+  {
+   "name": "statcast_aaa_2026: plate_x missing",
+   "ok": true,
+   "detail": "0.35% (limit 2%)"
+  },
+  {
+   "name": "statcast_aaa_2026: pfx_x missing",
+   "ok": true,
+   "detail": "0.35% (limit 2%)"
+  },
+  {
+   "name": "statcast_aaa_2026: dates in the season window",
+   "ok": true,
+   "detail": "2026-03-27 to 2026-09-20"
+  },
+  {
+   "name": "statcast_aaa_2026: fresh",
+   "ok": true,
+   "detail": "newest game 2026-09-20 (off-season)"
+  },
+  {
+   "name": "statcast_mlb_2024: columns and types",
+   "ok": true,
+   "detail": "59 contract columns"
+  },
+  {
+   "name": "statcast_mlb_2024: row count",
+   "ok": true,
+   "detail": "711,899 rows (last accepted 711,899)"
+  },
+  {
+   "name": "statcast_mlb_2024: one row per game_pk + at_bat_number + pitch_number",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "statcast_mlb_2024: game_pk missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_mlb_2024: game_date missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_mlb_2024: pitcher missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_mlb_2024: batter missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_mlb_2024: pitch_number missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_mlb_2024: pitch_type missing",
+   "ok": true,
+   "detail": "0.38% (limit 2%)"
+  },
+  {
+   "name": "statcast_mlb_2024: release_speed missing",
+   "ok": true,
+   "detail": "0.36% (limit 2%)"
+  },
+  {
+   "name": "statcast_mlb_2024: plate_x missing",
+   "ok": true,
+   "detail": "0.38% (limit 2%)"
+  },
+  {
+   "name": "statcast_mlb_2024: pfx_x missing",
+   "ok": true,
+   "detail": "0.36% (limit 2%)"
+  },
+  {
+   "name": "statcast_mlb_2024: dates in the season window",
+   "ok": true,
+   "detail": "2024-03-20 to 2024-09-30"
+  },
+  {
+   "name": "statcast_mlb_2025: columns and types",
+   "ok": true,
+   "detail": "59 contract columns"
+  },
+  {
+   "name": "statcast_mlb_2025: row count",
+   "ok": true,
+   "detail": "712,528 rows (last accepted 712,528)"
+  },
+  {
+   "name": "statcast_mlb_2025: one row per game_pk + at_bat_number + pitch_number",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "statcast_mlb_2025: game_pk missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_mlb_2025: game_date missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_mlb_2025: pitcher missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_mlb_2025: batter missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_mlb_2025: pitch_number missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_mlb_2025: pitch_type missing",
+   "ok": true,
+   "detail": "0.37% (limit 2%)"
+  },
+  {
+   "name": "statcast_mlb_2025: release_speed missing",
+   "ok": true,
+   "detail": "0.36% (limit 2%)"
+  },
+  {
+   "name": "statcast_mlb_2025: plate_x missing",
+   "ok": true,
+   "detail": "0.37% (limit 2%)"
+  },
+  {
+   "name": "statcast_mlb_2025: pfx_x missing",
+   "ok": true,
+   "detail": "0.38% (limit 2%)"
+  },
+  {
+   "name": "statcast_mlb_2025: dates in the season window",
+   "ok": true,
+   "detail": "2025-03-18 to 2025-09-28"
+  },
+  {
+   "name": "statcast_mlb_2026: columns and types",
+   "ok": true,
+   "detail": "59 contract columns"
+  },
+  {
+   "name": "statcast_mlb_2026: row count",
+   "ok": true,
+   "detail": "716,792 rows (last accepted 716,792)"
+  },
+  {
+   "name": "statcast_mlb_2026: one row per game_pk + at_bat_number + pitch_number",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "statcast_mlb_2026: game_pk missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_mlb_2026: game_date missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_mlb_2026: pitcher missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_mlb_2026: batter missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_mlb_2026: pitch_number missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "statcast_mlb_2026: pitch_type missing",
+   "ok": true,
+   "detail": "0.37% (limit 2%)"
+  },
+  {
+   "name": "statcast_mlb_2026: release_speed missing",
+   "ok": true,
+   "detail": "0.37% (limit 2%)"
+  },
+  {
+   "name": "statcast_mlb_2026: plate_x missing",
+   "ok": true,
+   "detail": "0.37% (limit 2%)"
+  },
+  {
+   "name": "statcast_mlb_2026: pfx_x missing",
+   "ok": true,
+   "detail": "0.37% (limit 2%)"
+  },
+  {
+   "name": "statcast_mlb_2026: dates in the season window",
+   "ok": true,
+   "detail": "2026-03-25 to 2026-09-27"
+  },
+  {
+   "name": "statcast_mlb_2026: fresh",
+   "ok": true,
+   "detail": "newest game 2026-09-27 (off-season)"
+  },
+  {
+   "name": "batter_heights: columns and types",
+   "ok": true,
+   "detail": "2 contract columns"
+  },
+  {
+   "name": "batter_heights: row count",
+   "ok": true,
+   "detail": "1,463 rows (last accepted 1,463)"
+  },
+  {
+   "name": "batter_heights: one row per batter",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "batter_heights: batter missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "batter_heights: height_in missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "milb_players_2026: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "milb_players_2026: row count",
+   "ok": true,
+   "detail": "9,740 rows (last accepted 9,740)"
+  },
+  {
+   "name": "milb_players_2026: one row per player_id + level + team_id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "milb_players_2026: player_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "aaa_affiliates_2025: columns and types",
+   "ok": true,
+   "detail": "6 contract columns"
+  },
+  {
+   "name": "aaa_affiliates_2025: row count",
+   "ok": true,
+   "detail": "30 rows (last accepted 30)"
+  },
+  {
+   "name": "aaa_affiliates_2025: one row per team_id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "aaa_affiliates_2025: team_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "aaa_affiliates_2025: org_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "aaa_affiliates_2025: one affiliate per org",
+   "ok": true,
+   "detail": "30 clubs (want 30)"
+  },
+  {
+   "name": "aaa_affiliates_2026: columns and types",
+   "ok": true,
+   "detail": "6 contract columns"
+  },
+  {
+   "name": "aaa_affiliates_2026: row count",
+   "ok": true,
+   "detail": "30 rows (last accepted 30)"
+  },
+  {
+   "name": "aaa_affiliates_2026: one row per team_id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "aaa_affiliates_2026: team_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "aaa_affiliates_2026: org_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "aaa_affiliates_2026: one affiliate per org",
+   "ok": true,
+   "detail": "30 clubs (want 30)"
+  }
+ ]
+}

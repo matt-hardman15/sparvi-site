@@ -8,7 +8,7 @@ not on a 40-man roster, under contract (minor league free agents can't be drafte
 window. This is an estimate: transactions can be missing, and edge cases (voided contracts,
 players signed out of foreign leagues) aren't modeled.
 
-Inputs (data/raw, from scripts/pull_rosters.py; newest snapshot wins):
+Inputs (data/raw, from ingest/baseball/pull_rosters.py; newest snapshot wins):
   rosters_40man_D.parquet, people_rule5_D.json, milb_season_end.json, aaa_affiliates_SEASON.parquet
 Outputs (baseball/rule5/output, committed; no birth dates):
   eligibility.csv   one row per player: status, reason, org, estimate inputs
@@ -38,7 +38,7 @@ EXIT = {"DFA": "Free agent", "REL": "Released", "RET": "Retired"}             # 
 def newest(pattern: str) -> Path:
     files = sorted(RAW.glob(pattern))
     if not files:
-        sys.exit(f"no {pattern} in {RAW}; run scripts/pull_rosters.py")
+        sys.exit(f"no {pattern} in {RAW}; run ingest/baseball/pull_rosters.py")
     return files[-1]
 
 

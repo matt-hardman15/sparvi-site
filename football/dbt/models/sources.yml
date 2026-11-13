@@ -1,6 +1,6 @@
 version: 2
 
-# nflverse files written by scripts/pull_nfl.py. The env var lets tests point the project at a
+# nflverse files written by ingest/nfl/pull.py. The env var lets tests point the project at a
 # synthetic fixture instead of real (uncommitted) data.
 sources:
   - name: nflverse

@@ -104,5 +104,5 @@ The rankings lean on the measures that hold up across levels and samples. For pi
 
 **What this can't tell you.** Only Triple-A players are on the board, so eligible prospects at Double-A and below are missing. There's no injury, scouting, or makeup information, and nothing about a club's roster needs, which drive most picks. Edge cases in the rule (voided contracts, players signed out of foreign leagues, time on restricted lists) aren't modeled. The MLB phase of the draft only happens if a labor agreement is in place; the minor league phase is expected to go ahead either way.
 
-Code: [`baseball/rule5/`](https://github.com/matt-hardman15/sparvi-site/tree/main/baseball/rule5) · [`scripts/pull_rosters.py`](https://github.com/matt-hardman15/sparvi-site/blob/main/scripts/pull_rosters.py)
+Code: [`baseball/rule5/`](https://github.com/matt-hardman15/sparvi-site/tree/main/baseball/rule5) · [`ingest/baseball/pull_rosters.py`](https://github.com/matt-hardman15/sparvi-site/blob/main/ingest/baseball/pull_rosters.py)
 </details>
