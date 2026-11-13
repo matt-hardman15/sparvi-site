@@ -1,9 +1,13 @@
 ---
 title: "Which farm systems make players better?"
 description: "How much each organization's Triple-A pitchers and hitters improved during the season, and whether the same orgs came out on top the next year."
-date: 2026-11-13
-categories: [player development, Triple-A, organizations]
+date: 2026-11-13T15:06:35Z
+categories: [Baseball, player development, Triple-A, organizations]
 image: thumb.png
+card-key: baseball.farm_r_stuff
+card-prefix: "r = "
+card-suffix: ""
+card-label: "an org's Stuff+ gains, one year to the next"
 ---
 
 ::: {.finding}

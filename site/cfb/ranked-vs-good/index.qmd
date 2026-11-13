@@ -2,9 +2,13 @@
 title: "Ranked vs. actually good"
 pagetitle: "College football: ranked vs. actually good"
 description: "When the AP poll and an efficiency-based power rating disagree about a game, the power rating has been right more often. Which ranked teams it doubts now."
-date: 2026-11-13
-categories: [college football, ratings]
+date: 2026-11-13T20:16:38Z
+categories: [College football, ratings]
 image: thumb.png
+card-key: cfb.pl_power_right
+card-prefix: ""
+card-suffix: ""
+card-label: "of games picked right by the power rating"
 ---
 
 ::: {.finding}
