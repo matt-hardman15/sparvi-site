@@ -16,6 +16,6 @@ models:
   pitching_plus_status: "experimental: validated before the backtest harness existed; its harness port is pending"
   pitching_plus_version: "1.0.1"
   stuff_plus: "Stuff+ v1.0.1"
-  stuff_plus_backtest: "Backtest (2026-11-13, folds 2026, n 324): r 0.294 vs. 0.193 for last season; edge +0.101 (90% interval -0.010 to +0.208); gate not passed; leakage tests all passed; revision-safe: no (data from before snapshots began); vault: none yet (0 accesses)"
+  stuff_plus_backtest: "Backtest (2026-11-13, folds 2026, n 324): r 0.297 vs. 0.193 for last season; edge +0.104 (90% interval -0.008 to +0.212); gate not passed; leakage tests all passed; revision-safe: no (data from before snapshots began); vault: none yet (0 accesses)"
   stuff_plus_status: "experimental: in the backtest, its edge over last season's results has a 90% interval that includes zero, so it doesn't clear the strict gate"
   stuff_plus_version: "1.0.1"
