@@ -9,7 +9,7 @@ fill the qualified percentile pools and the trailing window, and nothing real in
                                         milb_players_{season}.parquet,
                                         batter_heights.parquet,
                                         pitch_type_aaa_{season}.csv,
-                                        pitch_predictions_{mlb,aaa}_{season}.parquet,
+                                        pitch_predictions_{mlb,aaa}_{season-1,season}.parquet,
                                         scale_reference.csv
 """
 from __future__ import annotations
@@ -24,6 +24,7 @@ TEAMS = ["AAA", "BBB", "CCC", "DDD", "EEE", "FFF", "GGG", "HHH"]
 PER_TEAM = 12  # hitters and pitchers per team
 PA_PER_HALF = 36
 PITCH_TYPES = np.array(["FF", "SI", "SL", "CH", "CU"])
+CALLUP_EVERY, CALLUP_DATE = 7, "06-01"  # hitters with id % 7 == 0 debut in MLB on June 1 each season
 
 
 def _players() -> pd.DataFrame:
@@ -116,8 +117,10 @@ def write_fixture(out: Path, season: int, seed: int = 0) -> None:
     for lvl, seasons, off in [("aaa", (season - 1, season), 0), ("mlb", (season - 2, season - 1, season), 5000)]:
         for s in seasons:
             df = _season(s, rng, pk_offset=off)
+            if lvl == "mlb":  # call-ups: every seventh hitter reaches MLB on June 1 (the translation's pre-debut lines)
+                df = df[~(df["batter"].mod(CALLUP_EVERY).eq(0) & (df["game_date"] < pd.Timestamp(f"{s}-{CALLUP_DATE}")))]
             df.to_parquet(out / f"statcast_{lvl}_{s}.parquet", index=False)
-            if s == season:  # Stuff+/Location+/Pitching+ predictions for the current season, as train.py writes them
+            if s >= season - 1:  # Stuff+/Location+/Pitching+ predictions (current and last season), as train.py writes them
                 pred = df[["game_pk", "game_date", "at_bat_number", "pitch_number", "pitcher", "pitch_type"]].copy()
                 pred["group"] = pred["pitch_type"].map(groups)
                 pred["xrv_stuff"] = rng.normal(0.0, 0.02, len(pred))

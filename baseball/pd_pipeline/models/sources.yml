@@ -46,3 +46,8 @@ sources:
         identifier: "pitch_predictions_mlb_{{ var('season') }}"
       - name: pred_aaa_cur
         identifier: "pitch_predictions_aaa_{{ var('season') }}"
+      # Last season, both levels: the Triple-A -> MLB translation (fct_translation_lines) spans two seasons.
+      - name: pred_mlb_prev
+        identifier: "pitch_predictions_mlb_{{ var('season') - 1 }}"
+      - name: pred_aaa_prev
+        identifier: "pitch_predictions_aaa_{{ var('season') - 1 }}"
