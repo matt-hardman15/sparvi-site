@@ -1,0 +1,142 @@
+---
+title: "Did the committee pick the best 12?"
+pagetitle: "Did the CFP committee pick the best 12 teams?"
+description: "The College Football Playoff field against a power rating: who the numbers would have picked instead, how sure that is, and whether it matters."
+date: 2026-11-14T00:00:00Z
+categories: [College football, ratings]
+image: thumb.png
+card-key: cfb.cfp_overlap_of
+card-prefix: ""
+card-suffix: ""
+card-label: "at-large picks the power rating agrees with"
+---
+
+::: {.finding}
+Of the committee's {{< meta cfb.cfp_spots >}} at-large picks for the {{< meta cfb.cfp_season >}} playoff, the [power rating](/cfb/tools/team-ratings.html) agrees with {{< meta cfb.cfp_overlap >}}. It would have taken {{< meta cfb.cfp_left_out >}} instead of {{< meta cfb.cfp_instead >}}. In {{< meta cfb.cfp_p_best_out >}} of {{< meta cfb.cfp_boot >}} resamples of the season, {{< meta cfb.cfp_best_out >}} rates above {{< meta cfb.cfp_worst_pick >}}.
+:::
+
+::: {.so-what}
+- **Read the seeds as a résumé ranking, not a strength ranking.** In the playoff games of {{< meta cfb.cfp_g_first >}}–{{< meta cfb.cfp_g_last >}}, the higher-rated team won {{< meta cfb.cfp_g_power >}} of {{< meta cfb.cfp_g_n >}}; the team the committee ranked higher won {{< meta cfb.cfp_g_committee >}}.
+- **When the seed and the rating disagree about a game, lean on the rating.** It was right in {{< meta cfb.cfp_g_dis_power >}} of those {{< meta cfb.cfp_g_dis >}} games (90% interval {{< meta cfb.cfp_g_dis_ci >}}). That's a small sample, so treat it as a lean, not a lock.
+- **Don't expect the left-out teams to be long shots.** Every champion since {{< meta cfb.cfp_hist_first >}} was in the power rating's top {{< meta cfb.cfp_champ_power_worst >}} at selection, whatever its seed.
+:::
+
+## The field and the numbers
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c"></div>
+  <div id="field" class="plot-host"></div>
+  <p class="caption" id="cap"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt, U = S.urlState;
+  const D = await S.load("/data/cfb/cfp_selection.json");
+  const all = [...D.history, D.current], bySeason = new Map(all.map(v => [String(v.season), v]));
+  const SEASONS = all.map(v => String(v.season)).reverse();
+  const DEF = { season: SEASONS[0] };
+  const st = { season: bySeason.has(U.get("season")) ? U.get("season") : DEF.season };
+  const bub = new Map(D.bubble.map(b => [b.team, b]));
+  // One x scale for every season, so seasons compare at a glance.
+  const xd = S.stableDomain(all.flatMap(v => v.top.map(t => t.power)), { q: [0, 1] });
+  const c = document.getElementById("c"), host = document.getElementById("field");
+  function kind(v, t) {
+    if (v.left_out.some(x => x.team === t.team)) return "out";
+    if (v.chosen_instead.some(x => x.team === t.team)) return "instead";
+    return t.in_field ? "in" : "no";
+  }
+  const FILL = { in: "#0f5257", out: "#eb6834", instead: "#2a78d6", no: "#c9c7c0" };
+  function draw() {
+    const v = bySeason.get(st.season), cur = +st.season === D.season;
+    const auto = new Set(v.rows.filter(r => r.bid === "auto").map(r => r.team));
+    const rows = v.top.map(t => ({ ...t, k: kind(v, t), auto: auto.has(t.team),
+      label: `${t.team}${t.committee_rank ? ` (${t.committee_rank})` : ""}`, b: cur ? bub.get(t.team) : null }));
+    const ivals = rows.filter(r => r.b);
+    S.plot(host, w => Plot.plot({ ...S.plotDefaults(w), height: 24 * rows.length + 60, marginLeft: w < 520 ? 118 : 160, marginBottom: 40, clip: true, style: { fontSize: w < 520 ? "10.5px" : "12px" },
+      x: { label: w < 520 ? "Power rating (points) →" : "Power rating at selection (points vs. an average FBS team) →", domain: xd, grid: true, ticks: w < 520 ? 4 : 8, labelAnchor: "center", labelOffset: 34 },
+      y: { label: null, domain: rows.map(r => r.label), tickSize: 0 },
+      marks: [
+        Plot.ruleY(ivals, { y: "label", x1: d => d.b.lo90, x2: d => d.b.hi90, stroke: "#8a8b8f", strokeWidth: 1.5 }),
+        Plot.dot(rows, { x: "power", y: "label", r: 6, fill: d => d.auto ? "#fff" : FILL[d.k], stroke: d => FILL[d.k], strokeWidth: d => d.auto ? 2.5 : 1 }),
+        Plot.tip(rows, Plot.pointer({ x: "power", y: "label", title: d => `${d.team}: power rating #${d.power_rank} (${f.signed(d.power, 1)})`
+          + `\n${d.committee_rank ? `Committee #${d.committee_rank}` : "Unranked by the committee"}`
+          + `\n${d.k === "out" ? "Left out; the rating would pick it" : d.k === "instead" ? "At-large pick the rating would leave out" : d.in_field ? (d.auto ? "In the field (automatic bid)" : "In the field (at-large)") : "Not in the field"}`
+          + (d.b ? `\n90% range ${f.signed(d.b.lo90, 1)} to ${f.signed(d.b.hi90, 1)}` : "") }))
+      ] }));
+    U.set({ season: st.season }, DEF);
+    document.getElementById("cap").textContent = `${v.season}, ${v.field_size}-team field (committee rank in parentheses), ${cur && !D.final ? "the committee's latest ranking read as if the season ended now" : "as selected"}. `
+      + `Teal: in the field (hollow: automatic bid for a conference champion${v.field_size === 4 ? ", none before 2024" : ""}). Orange: left out, though the power rating would take it; blue: the at-large picks it would leave out. `
+      + `The rating agrees with ${v.overlap} of ${v.at_large_spots} at-large picks.` + (cur ? " Gray bars: the middle 90% of the resampled ratings." : "");
+  }
+  c.replaceChildren(S.select("Season", SEASONS.map(s => [s, s]), st.season, v => { st.season = v; draw(); }));
+  draw();
+})();
+</script>
+```
+
+## How sure is "left out"?
+
+A power rating is an estimate from about a dozen games. To see how much the {{< meta cfb.cfp_season >}} order could move, the season's games were resampled with replacement {{< meta cfb.cfp_boot >}} times and the efficiency half of the rating refit each time. {{< meta cfb.cfp_best_out >}} came out ahead of {{< meta cfb.cfp_worst_pick >}} (the lowest-rated at-large pick, #{{< meta cfb.cfp_worst_pick_rank >}} in the power rating) in {{< meta cfb.cfp_p_best_out >}} of them. Averaged over the resamples, {{< meta cfb.cfp_exp_overlap >}} of the committee's {{< meta cfb.cfp_spots >}} at-large picks rate among the best {{< meta cfb.cfp_spots >}} teams without an automatic bid.
+
+```{=html}
+<div id="bubble"><div class="loading">Loading…</div></div>
+<p class="caption" id="bcap"></p>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt, D = await S.load("/data/cfb/cfp_selection.json");
+  const share = v => v > 0.99 ? ">99%" : v < 0.01 ? "<1%" : f.pct(v, 0);   // never round to a certainty
+  const t = S.table(document.getElementById("bubble"), [
+    { key: "team", label: "Team", align: "l" }, { key: "in_field", label: "Selected", fmt: v => v ? "Yes" : "No" },
+    { key: "power", label: "Rating", fmt: v => f.signed(v, 1) },
+    { key: "p_top", label: `In top ${D.current.at_large_spots}`, fmt: share },
+    { key: "p_above_worst_pick", label: `Above ${D.current.worst_pick}`, fmt: v => v == null ? "(that pick)" : share(v) }],
+    { sortKey: "power", desc: true, pageSize: 20 });
+  t.update(D.bubble);
+  document.getElementById("bcap").textContent = `${D.season}: the best-rated teams without an automatic bid, plus every at-large pick. Shares are of ${D.boot.toLocaleString()} resamples of the season's games: how often each team rated among the best ${D.current.at_large_spots} without an automatic bid, and how often it rated above ${D.current.worst_pick}, the lowest-rated at-large pick.`;
+})();
+</script>
+```
+
+## {{< meta cfb.cfp_hist_n >}} seasons of committee picks
+
+The committee doesn't set out to pick the twelve strongest teams. Its protocol weighs conference championships, strength of schedule, head-to-head results, and results against common opponents, and {{< meta cfb.cfp_auto >}} spots go to conference champions by rule. Those automatic bids aren't a judgment call, so the comparison here is the at-large picks only: the committee's against the best-rated teams outside the automatic bids. Across {{< meta cfb.cfp_hist_first >}}–{{< meta cfb.cfp_hist_last >}}, the two agreed on {{< meta cfb.cfp_hist_overlap >}} of {{< meta cfb.cfp_hist_spots >}} picks ({{< meta cfb.cfp_h4_overlap >}} of {{< meta cfb.cfp_h4_spots >}} in the {{< meta cfb.cfp_h4_n >}} four-team seasons, {{< meta cfb.cfp_h12_overlap >}} of {{< meta cfb.cfp_h12_spots >}} in the {{< meta cfb.cfp_h12_n >}} twelve-team seasons), and matched exactly in {{< meta cfb.cfp_hist_exact >}} of {{< meta cfb.cfp_hist_n >}} seasons.
+
+```{=html}
+<div id="hist"><div class="loading">Loading…</div></div>
+<p class="caption">Each season's field as selected, against the power rating at selection (after the conference title games). Ranks in parentheses are the power rating's; for the champion, the committee's seed-day rank and then the power rating's. "Agreed": at-large picks the rating would also make.</p>
+<script>
+(async () => {
+  const S = Sparvi, D = await S.load("/data/cfb/cfp_selection.json");
+  const list = xs => xs.map(x => `${x.team} (${x.power_rank})`).join(", ");
+  const t = S.table(document.getElementById("hist"), [
+    { key: "season", label: "Season" },
+    { key: "overlap", label: "Agreed", fmt: (v, r) => `${v} of ${r.at_large_spots}` },
+    { key: "left_out", label: "Would add", align: "l", fmt: v => list(v) },
+    { key: "chosen_instead", label: "Would drop", align: "l", fmt: v => list(v) },
+    { key: "champion", label: "Champion", align: "l", fmt: (v, r) => v ? `${v} (${r.champion_committee_rank}, ${r.champion_power_rank})` : "" }],
+    { sortKey: "season", desc: true, pageSize: 20 });
+  t.update(D.history);
+})();
+</script>
+```
+
+## Does it matter who's seeded where?
+
+Once the bracket is set, the games decide it. Across the {{< meta cfb.cfp_g_n >}} playoff games of {{< meta cfb.cfp_g_first >}}–{{< meta cfb.cfp_g_last >}}, the team rated higher at selection won {{< meta cfb.cfp_g_power >}} and the team the committee ranked higher won {{< meta cfb.cfp_g_committee >}}. The two disagreed about {{< meta cfb.cfp_g_dis >}} of those games, and the rating's pick won {{< meta cfb.cfp_g_dis_power >}}. Every champion in that span was in the rating's top {{< meta cfb.cfp_champ_power_worst >}} when the field was set; {{< meta cfb.cfp_champ_power_top4 >}} of {{< meta cfb.cfp_hist_n >}} were in its top four.
+
+<details class="method">
+<summary>Method, data, and limits</summary>
+
+**Data.** Games, play-by-play, committee rankings, and pre-game Elo from [CollegeFootballData.com](https://collegefootballdata.com), FBS seasons {{< meta cfb.cfp_hist_first >}}–{{< meta cfb.cfp_season >}}.
+
+**The field.** The committee's final ranking of each season. Through {{< meta cfb.cfp_hist_first >}}–{{< meta cfb.cfp_four_last >}} the field was its top four. From {{< meta cfb.cfp_twelve_first >}} it's the {{< meta cfb.cfp_auto >}} highest-ranked conference champions plus the {{< meta cfb.cfp_at_large12 >}} highest-ranked other teams; that rule reproduces every field that has played, team for team.
+
+**The power rating** is the one on the [team ratings tool](/cfb/tools/team-ratings.html): opponent-adjusted EPA per play combined with CFBD's Elo, in points against an average FBS team, as of the conference title games. Its picks are the best-rated teams outside the automatic bids, as many as there are at-large spots. Model version: [{{< meta models.cfb_power_rating >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/cfb/power_rating/card.yml) ({{< meta models.cfb_power_rating_status >}}).
+
+**The resampling** draws the season's games with replacement ({{< meta cfb.cfp_boot >}} times, fixed seed) and refits the efficiency half of the rating on the drawn plays. Elo is held at its value, so the ranges are somewhat too narrow.
+
+**What it can't tell you.** The committee is asked to weigh résumés, and a rating of how well a team played is a different question; "the rating disagrees" isn't "the committee erred". The rating's two weights were fit on these same seasons' games, which flatters its record in the playoff games a little. Injuries, quarterback changes, and opt-outs aren't in the numbers. And {{< meta cfb.cfp_g_n >}} playoff games is a small sample.
+
+Code: [`cfb/cfp/`](https://github.com/matt-hardman15/sparvi-site/tree/main/cfb/cfp) · Data provided by CollegeFootballData.com. Sparvi is not affiliated with the NCAA, the College Football Playoff, any conference, or any school.
+</details>

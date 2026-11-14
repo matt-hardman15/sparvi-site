@@ -114,3 +114,18 @@ def test_player_checks_catch_unlinked_stats(raw, monkeypatch, tmp_path):
     st = __import__("json").loads((tmp_path / "status" / "cfb.json").read_text(encoding="utf-8"))
     bad = [c["name"] for c in st["checks"] if not c["ok"]]
     assert f"player_stats_{SEASON}: players on the roster" in bad
+
+
+def test_cfp_article_ships_only_with_final_numbers():
+    """The CFP-12 article goes live the day after selection, with numbers frozen at selection: its
+    results must come from the final committee ranking, and its date can't be before selection day."""
+    import json
+    import re
+    from datetime import date
+
+    from sparvi.config import ROOT
+    qmd = ROOT / "site" / "cfb" / "did-the-committee-pick-the-best-12" / "index.qmd"
+    res = json.loads((ROOT / "cfb" / "cfp" / "output" / "results.json").read_text(encoding="utf-8"))
+    assert res["final"], "cfb/cfp/output/results.json is a pre-selection draft; rerun cfb/cfp/selection.py after selection day"
+    day = date.fromisoformat(re.search(r"^date: (\d{4}-\d{2}-\d{2})", qmd.read_text(encoding="utf-8"), re.M).group(1))
+    assert day > date(2026, 12, 6), "date the article the day it goes live, after selection day"
