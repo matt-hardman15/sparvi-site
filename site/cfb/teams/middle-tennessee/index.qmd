@@ -1,0 +1,15 @@
+---
+title: "Middle Tennessee Blue Raiders"
+pagetitle: "Middle Tennessee football: power rating by week"
+description: "Middle Tennessee (Conference USA) power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+Through week 11 of 2026, Middle Tennessee is 5–4. Its power rating, −13.7 points against an average FBS team, ranks 126th of 138; it is unranked in the AP poll.
+
+```{=html}
+<div id="team-root" data-team="Middle Tennessee"></div>
+```
+
+{{< include ../_team.qmd >}}

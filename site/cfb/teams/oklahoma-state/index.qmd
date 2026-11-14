@@ -1,0 +1,15 @@
+---
+title: "Oklahoma State Cowboys"
+pagetitle: "Oklahoma State football: power rating by week"
+description: "Oklahoma State (Big 12) power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+Through week 11 of 2026, Oklahoma State is 6–3. Its power rating, +6.2 points against an average FBS team, ranks 41st of 138; it is unranked in the AP poll.
+
+```{=html}
+<div id="team-root" data-team="Oklahoma State"></div>
+```
+
+{{< include ../_team.qmd >}}

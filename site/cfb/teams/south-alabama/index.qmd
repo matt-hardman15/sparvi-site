@@ -1,0 +1,15 @@
+---
+title: "South Alabama Jaguars"
+pagetitle: "South Alabama football: power rating by week"
+description: "South Alabama (Sun Belt) power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+Through week 11 of 2026, South Alabama is 4–5. Its power rating, −7.0 points against an average FBS team, ranks 100th of 138; it is unranked in the AP poll.
+
+```{=html}
+<div id="team-root" data-team="South Alabama"></div>
+```
+
+{{< include ../_team.qmd >}}

@@ -1,0 +1,15 @@
+---
+title: "Texas Longhorns"
+pagetitle: "Texas football: power rating by week"
+description: "Texas (SEC) college football power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+Through week 11 of 2026, Texas is 7–2. Its power rating, +16.9 points against an average FBS team, ranks 9th of 138; the AP poll has it 8th.
+
+```{=html}
+<div id="team-root" data-team="Texas"></div>
+```
+
+{{< include ../_team.qmd >}}

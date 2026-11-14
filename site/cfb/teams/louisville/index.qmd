@@ -1,0 +1,15 @@
+---
+title: "Louisville Cardinals"
+pagetitle: "Louisville football: power rating by week"
+description: "Louisville (ACC) college football power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+Through week 11 of 2026, Louisville is 6–3. Its power rating, +11.6 points against an average FBS team, ranks 20th of 138; it is unranked in the AP poll.
+
+```{=html}
+<div id="team-root" data-team="Louisville"></div>
+```
+
+{{< include ../_team.qmd >}}
