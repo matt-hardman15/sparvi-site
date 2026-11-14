@@ -240,4 +240,64 @@ if not wt["elo_pregame"]["mae"] < wt["ours"]["mae"] and wt["sp_plus"]["mae"] < w
 if not (PL["power_right"] > PL["ap_right"] and PL["power_right_when_disagree_ci90"][0] > 0.5):
     raise StaleProse("CFB article: 'the power rating picks winners more often than the AP poll, and is right more "
                      "often when they disagree (interval above 50%)' no longer holds.")
+
+# ---- "Did the committee pick the best 12?" (cfb/cfp/selection.py, run by hand; frozen at selection day) ----
+C = json.loads((ROOT / "cfb" / "cfp" / "output" / "results.json").read_text(encoding="utf-8"))
+cs, hist, cg = C["season"], C["history"], C["games"]
+write_json(OUT / "cfp_selection.json", {"season": cs["season"], "final": C["final"], "boot": C["boot"], "current": cs,
+                                        "bubble": C["bubble"], "history": hist})
+
+
+def _team_list(rows):
+    return ", ".join(f"{r['team']} (power rating #{r['power_rank']})" for r in rows) or "none"
+
+
+def _wilson(k, n, z=1.645):
+    p, d = k / n, 1 + z * z / n
+    c, h = (p + z * z / (2 * n)) / d, z * np.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / d
+    return c - h, c + h
+
+
+bub = {b["team"]: b for b in C["bubble"]}
+
+
+def share(x):
+    """A resampled share, never rounded to a certainty it doesn't have."""
+    return "more than 99%" if x > 0.99 else "less than 1%" if x < 0.01 else pct(x)
+
+
+best_out = cs["best_left_out"]
+lo, hi = _wilson(cg["power_right_when_disagree"], cg["n_disagree"])
+h4, h12 = [h for h in hist if h["field_size"] == 4], [h for h in hist if h["field_size"] == 12]
+N.update({
+    "cfp_season": str(cs["season"]), "cfp_spots": str(cs["at_large_spots"]), "cfp_overlap": str(cs["overlap"]),
+    "cfp_n_out": str(len(cs["left_out"])), "cfp_left_out": _team_list(cs["left_out"]), "cfp_instead": _team_list(cs["chosen_instead"]),
+    "cfp_best_out": best_out or "none", "cfp_worst_pick": cs["worst_pick"], "cfp_worst_pick_rank": str(cs["worst_pick_power_rank"]),
+    "cfp_p_best_out": share(bub[best_out]["p_above_worst_pick"]) if best_out else "n/a",
+    "cfp_exp_overlap": f"{C['expected_overlap']:.1f}", "cfp_boot": f"{C['boot']:,}",
+    "cfp_hist_first": str(hist[0]["season"]), "cfp_hist_last": str(hist[-1]["season"]), "cfp_hist_n": str(len(hist)),
+    "cfp_hist_overlap": str(sum(h["overlap"] for h in hist)), "cfp_hist_spots": str(sum(h["at_large_spots"] for h in hist)),
+    "cfp_hist_exact": str(sum(h["overlap"] == h["at_large_spots"] for h in hist)),
+    "cfp_h4_n": str(len(h4)), "cfp_h4_overlap": str(sum(h["overlap"] for h in h4)), "cfp_h4_spots": str(sum(h["at_large_spots"] for h in h4)),
+    "cfp_h12_n": str(len(h12)), "cfp_h12_overlap": str(sum(h["overlap"] for h in h12)), "cfp_h12_spots": str(sum(h["at_large_spots"] for h in h12)),
+    "cfp_champ_power_top4": str(sum(h["champion_power_rank"] <= 4 for h in hist)),
+    "cfp_champ_power_worst": str(max(h["champion_power_rank"] for h in hist)),
+    "cfp_g_n": str(cg["n"]), "cfp_g_committee": str(cg["committee_right"]), "cfp_g_power": str(cg["power_right"]),
+    "cfp_g_dis": str(cg["n_disagree"]), "cfp_g_dis_power": str(cg["power_right_when_disagree"]),
+    "cfp_g_dis_ci": f"{100 * lo:.0f}% to {100 * hi:.0f}%",
+    "cfp_g_first": str(cg["seasons"][0]), "cfp_g_last": str(cg["seasons"][1]),
+    "cfp_overlap_of": f"{cs['overlap']} of {cs['at_large_spots']}",
+    "cfp_four_last": str(C["field_12_from"] - 1), "cfp_twelve_first": str(C["field_12_from"]),
+    "cfp_auto": str(C["auto_bids"]), "cfp_at_large12": str(C["field_12"] - C["auto_bids"]),
+})
+# Claims the CFP article makes. If one stops holding at selection, rewrite the sentence.
+if not cs["left_out"]:
+    raise StaleProse("CFP article: 'the committee left out teams the power rating prefers' no longer holds; rewrite it.")
+if not sum(h["overlap"] == h["at_large_spots"] for h in hist) <= 1:
+    raise StaleProse("CFP article: 'the committee's picks almost never match the power rating's exactly' no longer holds.")
+if not (cg["power_right"] > cg["committee_right"] and lo > 0.5):
+    raise StaleProse("CFP article: 'in playoff games the higher-rated team won more often than the higher-ranked one, "
+                     "with an interval above 50% when they disagreed' no longer holds.")
+if not max(h["champion_power_rank"] for h in hist) <= 5:
+    raise StaleProse("CFP article: 'every champion was in the power rating's top 5 at selection' no longer holds.")
 write_numbers("cfb", N, "cfb/export_site_data.py")

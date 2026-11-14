@@ -75,6 +75,7 @@ tables:
       awayPoints: DOUBLE
       awayPregameElo: DOUBLE
       awayPostgameElo: DOUBLE
+      notes: VARCHAR
   teams:
     description: FBS teams and conferences
     files: "cfb/teams_{season}.parquet"
