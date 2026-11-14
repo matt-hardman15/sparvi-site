@@ -1,0 +1,30 @@
+{
+ "season": 2026,
+ "seeds": [
+  7,
+  8
+ ],
+ "min_pitches": 300,
+ "n": 562,
+ "stuff_plus": {
+  "mean_abs": 0.351,
+  "p95": 1.052,
+  "max": 3.512,
+  "share_over_1": 0.0552,
+  "share_over_2": 0.0053
+ },
+ "loc_plus": {
+  "mean_abs": 0.116,
+  "p95": 0.309,
+  "max": 0.611,
+  "share_over_1": 0.0,
+  "share_over_2": 0.0
+ },
+ "pitching_plus": {
+  "mean_abs": 0.378,
+  "p95": 1.064,
+  "max": 2.701,
+  "share_over_1": 0.0623,
+  "share_over_2": 0.0071
+ }
+}

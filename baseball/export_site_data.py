@@ -1000,4 +1000,13 @@ N |= {"farm_rel_min": f"{100 * min(rel):.0f}%", "farm_rel_max": f"{100 * max(rel
 if not max(rel) < 0.6:
     raise StaleProse("Farm-systems article says one season's org scores are mostly noise (signal share under 60%).")
 
+# Seed sensitivity of the bagged pitch-quality models (pitch_quality/stability.py, v2.0.0), for the method notes.
+STAB = read_json(PQ / "stability.json")
+N.update({"stab_n": str(STAB["n"]), "stab_min_pitches": str(STAB["min_pitches"]),
+          "stab_stuff_mean": f"{STAB['stuff_plus']['mean_abs']:.1f}", "stab_stuff_max": f"{STAB['stuff_plus']['max']:.1f}",
+          "stab_pitching_mean": f"{STAB['pitching_plus']['mean_abs']:.1f}", "stab_pitching_max": f"{STAB['pitching_plus']['max']:.1f}",
+          "stab_loc_mean": f"{STAB['loc_plus']['mean_abs']:.1f}", "stab_loc_max": f"{STAB['loc_plus']['max']:.1f}"})
+if not (STAB["stuff_plus"]["mean_abs"] < 1 and STAB["pitching_plus"]["mean_abs"] < 1):
+    raise StaleProse("Stuff+/Pitching+ method notes: 'retraining with another seed moves a pitcher's grade by well under a point "
+                     "on average' no longer holds.")
 write_numbers("baseball", N, source="baseball/export_site_data.py")

@@ -37,7 +37,7 @@ concurrency:
 jobs:
   backtest:
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 180   # bagged pitch-quality models (v2.0.0) train ~10x longer
     steps:
       - name: Changed paths (pull request)
         id: gate
@@ -45,7 +45,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           if [ "${{ github.event_name }}" != "pull_request" ]; then echo "run=true" >> "$GITHUB_OUTPUT"; exit 0; fi
-          files=$(gh pr diff ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --name-only)
+          # The files API pages up to 3,000 files; `gh pr diff` gives up past 300 (a data rebuild touches ~1,700).
+          files=$(gh api --paginate "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" --jq ".[].filename")
           if echo "$files" | grep -qE '^(models/|backtest/|baseball/pitch_quality/|ingest/|football/common/|nfl/team_efficiency/|cfb/adjusted_ratings/|\.github/workflows/backtest\.yml$)'; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
