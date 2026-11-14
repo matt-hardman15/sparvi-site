@@ -238,6 +238,9 @@ def site_numbers(root: Path = ROOT) -> dict[str, str]:
                     f"revision-safe: {'yes' if r['revision_safe'] else 'no (data from before snapshots began)'}; "
                     f"vault: {'none yet' if not vault.get('seasons') else ', '.join(map(str, vault['seasons']))} "
                     f"({vault.get('accesses', 0)} accesses)")
+            if not bt.exists() and m.card.get("backtest"):
+                out[f"{m.name}_backtest"] = (f"Backtest: not yet run for v{m.version} (the backtest workflow runs it on main); "
+                                             "earlier versions' reports are in the model's backtest folder")
             out[f"{m.name}_status"] = ("validated in the backtest harness" if st["state"] == "validated"
                                        else f"experimental: {st['reason']}" if st["state"] == "experimental"
                                        else "not yet backtested")

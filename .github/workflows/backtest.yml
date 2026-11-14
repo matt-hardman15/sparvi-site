@@ -37,7 +37,7 @@ concurrency:
 jobs:
   backtest:
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 180   # bagged pitch-quality models (v2.0.0) train ~10x longer
     steps:
       - name: Changed paths (pull request)
         id: gate

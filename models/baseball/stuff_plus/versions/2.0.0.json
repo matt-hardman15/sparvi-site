@@ -1,0 +1,69 @@
+{
+  "model": "stuff_plus",
+  "version": "2.0.0",
+  "status": "challenger",
+  "registered": "2026-11-14",
+  "note": "MAJOR: each pitch-group regressor is a bag of 10 models (pitcher folds; each early-stops on its own held-out fold), predictions averaged; Stuff+ learning rate 0.03 -> 0.005. v1's single model early-stopped on one 15% validation slice and per-pitcher grades moved up to 64 points (Stuff+) between seeds. Seed sensitivity now (stability.py, 562 MLB pitchers 300+ pitches): mean |change| 0.351 points, max 3.512.",
+  "code_hash": "80c594f6cf85664075197e5c5850538f2cdad390d9e4a1414848b683dcf724ff",
+  "code_files": {
+    "baseball/pitch_quality/train.py": "31215205c593fc4b50eaa429f8af7499ced64706d34f00e227d70c27cc5b8492",
+    "baseball/pitch_quality/features.py": "f987ab72a067f7d255dbc4b7bae595394a4d37118f82ec3bc4833c6e87ae8e71"
+  },
+  "training_data": {
+    "data/raw/statcast_mlb_2024.parquet": "c5676654e7f48e22834e8a769256354ba890560b6862502a4e8b5722c960ddb4",
+    "data/raw/statcast_mlb_2025.parquet": "ae3d141a26a1ac8f6d4ab8c8a1cd93d2e791ee976fc58a3920c9c0bf00b59d0a",
+    "data/raw/statcast_mlb_2026.parquet": "d94f4ad13ed089e60b901c5e101aca511519a80d72e559e30c4d77b101751cab",
+    "data/raw/batter_heights.parquet": "8ef788c005dc68e9038b11d9091eb654d68a871d81b294a0f4b9892639326383"
+  },
+  "artifacts": {
+    "baseball/pitch_quality/output/models/stuff_breaking_0.txt": "b5d25ec0245d9424e767bda589971bf589267bde934c49b47488b0633349eb8a",
+    "baseball/pitch_quality/output/models/stuff_breaking_1.txt": "dccf110c82671f00114fcd55153498b5e2c4301250a388a4053c3923689efe64",
+    "baseball/pitch_quality/output/models/stuff_breaking_2.txt": "a5453a5ea67f5325ccfd7223d66afc8437c7e924a9b90d442e24f8bc4e1e1068",
+    "baseball/pitch_quality/output/models/stuff_breaking_3.txt": "b4de7427d3c6eab456cc2ea774e8f7a1186b754918c29da88297de200f4d9b6f",
+    "baseball/pitch_quality/output/models/stuff_breaking_4.txt": "02eafcec95220de8c35badfd52d3e471e60d06e181156d3cece0bdc0e6e5fc5c",
+    "baseball/pitch_quality/output/models/stuff_breaking_5.txt": "87144631e78897748893cfac2f378ca10fcc86e245a84eff061153c33c988341",
+    "baseball/pitch_quality/output/models/stuff_breaking_6.txt": "b9fbc540ccc16a07e5f7362115431a8171264e1be05474ccfad79ffa4b52ad45",
+    "baseball/pitch_quality/output/models/stuff_breaking_7.txt": "805f979b4bd37d49ca13164e388d7db372f1c0c580864c024148e48381a2a250",
+    "baseball/pitch_quality/output/models/stuff_breaking_8.txt": "f6552fae511141edee8254158ebe11855871e9d23a3b78017c30d8044f48615c",
+    "baseball/pitch_quality/output/models/stuff_breaking_9.txt": "f1f63db40abd07ce9db3d6fb45e7b54c7bf2fcde141aed9f3d9d5c1b6f7e8751",
+    "baseball/pitch_quality/output/models/stuff_fastball_0.txt": "42d22024c7e50ff63b6ff3960f901a159203b80adea71508ef16a17a5c217c74",
+    "baseball/pitch_quality/output/models/stuff_fastball_1.txt": "593acfff2a3e5d45a6ec5f874977b894baaa25352e0eab35ee85c181b9e8d605",
+    "baseball/pitch_quality/output/models/stuff_fastball_2.txt": "064ff553a1940d76099978abfb0de60e0f9149dbae5cc6cf9b6aab0dbcbd1718",
+    "baseball/pitch_quality/output/models/stuff_fastball_3.txt": "58dbc62f82dfa76634bcc31a365accf17396365df13654f588738a5b8e8051cd",
+    "baseball/pitch_quality/output/models/stuff_fastball_4.txt": "d9376db7bef8eb81706970257202964c0e1d3530632d715314d3be9390ee5b1a",
+    "baseball/pitch_quality/output/models/stuff_fastball_5.txt": "6b52ef53b6450340d56bd9779180a4c9d7a6ac8ce7835db35ff03cd15af5d2c0",
+    "baseball/pitch_quality/output/models/stuff_fastball_6.txt": "5ab68bda98671d4e689fc33494edfd22115c2038fa2606b0a3c61e7670c5cc3b",
+    "baseball/pitch_quality/output/models/stuff_fastball_7.txt": "f06722995afc37422fbbb9f6f847084e39f52e832109074d577489f010b21818",
+    "baseball/pitch_quality/output/models/stuff_fastball_8.txt": "5c1004c9b0d23205ecc69475bd42d0bdeeb0f13acfe40cad7bf189aab152c027",
+    "baseball/pitch_quality/output/models/stuff_fastball_9.txt": "ff7bf8fcc700b9aa9648f9122a360b5832c2be583f1a960d8e85594faf1c2b97",
+    "baseball/pitch_quality/output/models/stuff_offspeed_0.txt": "3350dcb149055d7939add67ba7943617d08628351224b1f3c31d364b12d04c49",
+    "baseball/pitch_quality/output/models/stuff_offspeed_1.txt": "5ea8e1266591be7b5b5a1bb772a3b36aafdf6aa23589a9aa40eee45f2d280faf",
+    "baseball/pitch_quality/output/models/stuff_offspeed_2.txt": "7364bae232136ab72fc382b836d6f289c31ba7a990da9f4a14126f4a2e29d889",
+    "baseball/pitch_quality/output/models/stuff_offspeed_3.txt": "1b8fd43b31eff7fc75f7f9358fb9249d09805b3c65a9b818a9bc5fe3a2fcf8fc",
+    "baseball/pitch_quality/output/models/stuff_offspeed_4.txt": "b43dbf8535a92a7830845d0f80a3d7e0e0a237d9c85f281f17434c46e8bd3f0b",
+    "baseball/pitch_quality/output/models/stuff_offspeed_5.txt": "089c01d97a524068831ffe619ad7efc8e605f776124a17962336df3320cf4fe7",
+    "baseball/pitch_quality/output/models/stuff_offspeed_6.txt": "e5293d103f2a190b2a85a7169fc35137fcf52cc1a76f65e3325c839165acd92b",
+    "baseball/pitch_quality/output/models/stuff_offspeed_7.txt": "75ca837eb3137967ccade7c5b9b61d69ef630e656c55a942a3938b672dd9fe5f",
+    "baseball/pitch_quality/output/models/stuff_offspeed_8.txt": "f5ec67de8260bd755200318b22e6b883545a6a0539060007c9221e58e4978c6b",
+    "baseball/pitch_quality/output/models/stuff_offspeed_9.txt": "6e77b58ecd5b9ca7812470c7aeff10bbec7fb22513a27692ae104736f24dcd93",
+    "baseball/pitch_quality/output/scale_reference.json": "70920938f0f1af91f8b39e14107a724ab86d7f12ce5420db12eb8a1f40f40336"
+  },
+  "eval": {
+    "set": "Out-of-sample year over year: models refit on the earliest season only, grade the next season, and correlate with the season after's run value (MLB pitchers with enough pitches both years). Same split as the published Stuff+ validation.",
+    "set_keys": {
+      "train_season": 2024,
+      "predictor_season": 2025,
+      "outcome_season": 2026,
+      "min_pitches": 500
+    },
+    "primary": "r_next_rv",
+    "higher_is_better": true
+  },
+  "metrics": {
+    "r_next_rv": 0.3045580100995997,
+    "r_self": 0.8877661624198268,
+    "split_half": 0.9939667734216353,
+    "aaa_to_mlb": 0.12700380224780783,
+    "holdout_pitch_r2": 0.0006266879862678598
+  }
+}

@@ -27,9 +27,8 @@ TRAIN = P - 1
 BOOT, BOOT_SEED = 2000, SEED
 
 tr = load("mlb", TRAIN)
+models = fit_kinds(tr)                      # bagged, same settings as train.py
 rng = np.random.default_rng(BOOT_SEED)
-val_p = set(rng.choice(tr["pitcher"].unique(), size=int(0.15 * tr["pitcher"].nunique()), replace=False))
-models = fit_kinds(tr, tr["pitcher"].isin(val_p))
 
 d_prev, d_cur = load("mlb", P), load("mlb", Y)
 predict_all(models, d_prev)
