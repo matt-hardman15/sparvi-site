@@ -516,6 +516,14 @@ def act_cfb_loss_cost(p):
     assert ticks() == before, "both views share one y scale"
 
 
+def act_nfl_offense_defense(p):
+    assert "times as closely" in p.text_content(".finding")
+    assert rows(p, "#games") >= 2 or "No regular-season games" in p.text_content("#games")
+    assert p.locator("#grid svg rect").count() >= 9
+    seg(p, "#c", "Passes"); assert query(p)["split"] == "pass" and "passes" in p.text_content("#gcap")
+    seg(p, "#c2", "Runs"); assert query(p)["gsplit"] == "run" and "runs" in p.text_content("#gridcap")
+
+
 def act_nfl_jax(p):
     assert "Jacksonville" in p.text_content(".finding") and "%" in p.text_content(".finding")
     assert p.locator("#lines svg text", has_text="JAX").count() >= 1
@@ -555,6 +563,7 @@ PAGES = [
     ("player-missing", "/baseball/player.html?id=1", lambda p: "No " in p.text_content("#root")),
     ("nfl", "/nfl/", act_nfl_index),
     ("nfl-jax-article", "/nfl/is-jacksonville-the-best/", act_nfl_jax),
+    ("nfl-offense-or-defense", "/nfl/offense-or-defense/", act_nfl_offense_defense),
     ("nfl-team-efficiency", "/nfl/tools/team-efficiency.html", act_nfl_efficiency),
     ("nfl-team", "/nfl/teams/kc/", act_nfl_team),
     ("cfb", "/cfb/", act_cfb_index),

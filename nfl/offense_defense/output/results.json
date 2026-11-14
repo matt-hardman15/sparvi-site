@@ -1,0 +1,296 @@
+{
+ "seasons": [
+  2016,
+  2025
+ ],
+ "min_week": 6,
+ "boot": 2000,
+ "seed": 5,
+ "splits": {
+  "all": {
+   "n": 3716,
+   "n_games": 1858,
+   "r_off": 0.2946,
+   "r_def": 0.1416,
+   "ratio": 2.0801,
+   "b_off": 0.0669,
+   "b_def": 0.0319,
+   "b_int": 0.0002,
+   "ci90": {
+    "r_off": [
+     0.2683,
+     0.321
+    ],
+    "r_def": [
+     0.1166,
+     0.1663
+    ],
+    "ratio": [
+     1.7011,
+     2.6164
+    ],
+    "b_off": [
+     0.0607,
+     0.073
+    ],
+    "b_def": [
+     0.0262,
+     0.0374
+    ],
+    "b_int": [
+     -0.0056,
+     0.0061
+    ]
+   },
+   "sd_off": 0.1005,
+   "sd_def": 0.0826,
+   "mean_y": 0.0039,
+   "grid": [
+    {
+     "off": "weak",
+     "def": "weak",
+     "epa": -0.038,
+     "n": 404
+    },
+    {
+     "off": "weak",
+     "def": "middle",
+     "epa": -0.054,
+     "n": 427
+    },
+    {
+     "off": "weak",
+     "def": "strong",
+     "epa": -0.107,
+     "n": 408
+    },
+    {
+     "off": "middle",
+     "def": "weak",
+     "epa": 0.034,
+     "n": 429
+    },
+    {
+     "off": "middle",
+     "def": "middle",
+     "epa": -0.005,
+     "n": 402
+    },
+    {
+     "off": "middle",
+     "def": "strong",
+     "epa": -0.024,
+     "n": 407
+    },
+    {
+     "off": "strong",
+     "def": "weak",
+     "epa": 0.108,
+     "n": 406
+    },
+    {
+     "off": "strong",
+     "def": "middle",
+     "epa": 0.09,
+     "n": 409
+    },
+    {
+     "off": "strong",
+     "def": "strong",
+     "epa": 0.033,
+     "n": 424
+    }
+   ]
+  },
+  "pass": {
+   "n": 3716,
+   "n_games": 1858,
+   "r_off": 0.2367,
+   "r_def": 0.1181,
+   "ratio": 2.0047,
+   "b_off": 0.0783,
+   "b_def": 0.0392,
+   "b_int": 0.0021,
+   "ci90": {
+    "r_off": [
+     0.2115,
+     0.2629
+    ],
+    "r_def": [
+     0.0917,
+     0.1453
+    ],
+    "ratio": [
+     1.5834,
+     2.6452
+    ],
+    "b_off": [
+     0.0696,
+     0.0872
+    ],
+    "b_def": [
+     0.0305,
+     0.0481
+    ],
+    "b_int": [
+     -0.0066,
+     0.0107
+    ]
+   },
+   "sd_off": 0.1351,
+   "sd_def": 0.1139,
+   "mean_y": 0.058,
+   "grid": [
+    {
+     "off": "weak",
+     "def": "weak",
+     "epa": 0.008,
+     "n": 429
+    },
+    {
+     "off": "weak",
+     "def": "middle",
+     "epa": -0.032,
+     "n": 407
+    },
+    {
+     "off": "weak",
+     "def": "strong",
+     "epa": -0.073,
+     "n": 403
+    },
+    {
+     "off": "middle",
+     "def": "weak",
+     "epa": 0.082,
+     "n": 408
+    },
+    {
+     "off": "middle",
+     "def": "middle",
+     "epa": 0.073,
+     "n": 433
+    },
+    {
+     "off": "middle",
+     "def": "strong",
+     "epa": 0.024,
+     "n": 397
+    },
+    {
+     "off": "strong",
+     "def": "weak",
+     "epa": 0.195,
+     "n": 402
+    },
+    {
+     "off": "strong",
+     "def": "middle",
+     "epa": 0.147,
+     "n": 398
+    },
+    {
+     "off": "strong",
+     "def": "strong",
+     "epa": 0.099,
+     "n": 439
+    }
+   ]
+  },
+  "run": {
+   "n": 3716,
+   "n_games": 1858,
+   "r_off": 0.1435,
+   "r_def": 0.0923,
+   "ratio": 1.5553,
+   "b_off": 0.0334,
+   "b_def": 0.0203,
+   "b_int": -0.004,
+   "ci90": {
+    "r_off": [
+     0.117,
+     0.1707
+    ],
+    "r_def": [
+     0.0669,
+     0.117
+    ],
+    "ratio": [
+     1.1603,
+     2.2244
+    ],
+    "b_off": [
+     0.0268,
+     0.04
+    ],
+    "b_def": [
+     0.0143,
+     0.0264
+    ],
+    "b_int": [
+     -0.0103,
+     0.0019
+    ]
+   },
+   "sd_off": 0.0895,
+   "sd_def": 0.0847,
+   "mean_y": -0.0912,
+   "grid": [
+    {
+     "off": "weak",
+     "def": "weak",
+     "epa": -0.101,
+     "n": 379
+    },
+    {
+     "off": "weak",
+     "def": "middle",
+     "epa": -0.129,
+     "n": 420
+    },
+    {
+     "off": "weak",
+     "def": "strong",
+     "epa": -0.162,
+     "n": 440
+    },
+    {
+     "off": "middle",
+     "def": "weak",
+     "epa": -0.075,
+     "n": 393
+    },
+    {
+     "off": "middle",
+     "def": "middle",
+     "epa": -0.099,
+     "n": 424
+    },
+    {
+     "off": "middle",
+     "def": "strong",
+     "epa": -0.094,
+     "n": 421
+    },
+    {
+     "off": "strong",
+     "def": "weak",
+     "epa": -0.035,
+     "n": 467
+    },
+    {
+     "off": "strong",
+     "def": "middle",
+     "epa": -0.051,
+     "n": 394
+    },
+    {
+     "off": "strong",
+     "def": "strong",
+     "epa": -0.074,
+     "n": 378
+    }
+   ]
+  }
+ }
+}
