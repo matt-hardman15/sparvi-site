@@ -4,6 +4,7 @@ lines, plus kicks and penalties the efficiency plays must leave out, and running
 each game's result (the score check).
 
     write_cfb_fixture(out_dir, season) -> cfb/{plays,games,teams,rankings,lines}_{season-1,season}.parquet
+                                          + cfb/players/ (roster, stats, usage, ppa, wepa, portal, recruits)
 """
 from __future__ import annotations
 
@@ -78,6 +79,7 @@ def write_cfb_fixture(out: Path, season: int, seed: int = 0) -> None:
     d.mkdir(parents=True, exist_ok=True)
     rng = np.random.default_rng(seed)
     pid = 0
+    write_player_fixture(d, season, np.random.default_rng(seed + 1))
     for k, s in enumerate((season - 1, season)):
         plays, games, pid = _season(s, rng, gid0=10_000 * (k + 1), pid0=pid)
         write_conformed(plays, d / f"plays_{s}.parquet", "cfb", "plays")
@@ -89,3 +91,36 @@ def write_cfb_fixture(out: Path, season: int, seed: int = 0) -> None:
         write_conformed(pd.DataFrame({"game_id": games["id"], "season": s, "week": games["week"], "seasonType": games["seasonType"],
                                       "homeTeam": games["homeTeam"], "awayTeam": games["awayTeam"], "provider": "Book",
                                       "spread": -3.0, "spreadOpen": -2.5}), d / f"lines_{s}.parquet", "cfb", "lines")
+
+
+POSITIONS = ["QB", "RB", "WR", "WR", "TE", "OL", "DL", "LB", "CB", "S", "PK"]
+
+
+def write_player_fixture(d: Path, season: int, rng: np.random.Generator) -> None:
+    """Player files for seasons season-1 and season, portal and recruits through season+1 (contract-shaped)."""
+    p = d / "players"
+    p.mkdir(parents=True, exist_ok=True)
+    for s in (season - 1, season):
+        ros = pd.DataFrame([{"season": s, "id": f"{s}{i:03d}{j:02d}", "firstName": f"P{j}", "lastName": t, "team": t,
+                             "position": POSITIONS[j % len(POSITIONS)], "year": 1 + j % 4, "height": 70 + j % 8, "weight": 190 + 5 * j}
+                            for i, t in enumerate(TEAMS) for j in range(22)])
+        write_conformed(ros, p / f"roster_{s}.parquet", "cfb", "roster")
+        skill = ros[ros["position"].isin(["QB", "RB", "WR", "TE"])]
+        st = pd.DataFrame([{"season": s, "playerId": r.id, "player": f"{r.firstName} {r.lastName}", "position": r.position, "team": r.team,
+                            "conference": CONF[r.team], "category": cat, "statType": typ, "stat": float(rng.integers(0, 900))}
+                           for r in ros.itertuples() for cat, typ in (("defensive", "TOT"), ("rushing", "YDS"))])
+        write_conformed(st, p / f"stats_{s}.parquet", "cfb", "player_stats")
+        base = skill[["season", "id", "position", "team"]].assign(name=skill["firstName"], conference=skill["team"].map(CONF))
+        write_conformed(base.assign(usage_all=rng.uniform(0, .3, len(base))), p / f"usage_{s}.parquet", "cfb", "player_usage")
+        write_conformed(base.assign(ppa_avg_all=rng.normal(.1, .2, len(base))), p / f"ppa_{s}.parquet", "cfb", "player_ppa")
+        qb = base[base["position"] == "QB"]
+        write_conformed(pd.DataFrame({"season": s, "kind": "passing", "athleteId": qb["id"], "team": qb["team"], "value": .05, "n": 300.0}),
+                        p / f"wepa_{s}.parquet", "cfb", "player_wepa")
+    for s in (season - 1, season, season + 1):
+        n = 0 if s > season else 1200
+        write_conformed(pd.DataFrame({"season": [s] * n, "firstName": [f"F{i}" for i in range(n)], "lastName": ["Mover"] * n,
+                                      "position": ["WR"] * n, "origin": [TEAMS[i % len(TEAMS)] for i in range(n)],
+                                      "transferDate": [f"{s - 1}-12-{1 + i % 28:02d}T05:00:00.000Z" for i in range(n)]},
+                                     dtype="object").astype({"season": "int64"}), p / f"portal_{s}.parquet", "cfb", "portal")
+        write_conformed(pd.DataFrame({"season": s, "id": [f"r{s}{i}" for i in range(40)], "name": [f"Recruit {i}" for i in range(40)],
+                                      "year": float(s), "stars": 3.0}), p / f"recruits_{s}.parquet", "cfb", "recruits")

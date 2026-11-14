@@ -95,3 +95,22 @@ def test_snapshot_tables_cover_every_cfb_file():
     names = {t.name for t in cfb_tables()}
     for s in cfb().seasons:
         assert {f"plays_{s}", f"games_{s}", f"teams_{s}", f"rankings_{s}", f"lines_{s}"} <= names
+        assert {f"players_{t}_{s}" for t in ("roster", "stats", "usage", "ppa", "wepa", "recruits")} <= names
+    assert f"players_portal_{cfb().season + 1}" in names and f"players_recruits_{cfb().season + 1}" in names
+
+
+def test_player_checks_catch_unlinked_stats(raw, monkeypatch, tmp_path):
+    """Season stats whose players aren't on the roster fail the link check."""
+    import shutil as sh
+    d = tmp_path / "cfb"
+    sh.copytree(raw / "cfb", d)
+    st = __import__("pandas").read_parquet(d / "players" / f"stats_{SEASON}.parquet")
+    st["playerId"] = "x" + st["playerId"]
+    st.to_parquet(d / "players" / f"stats_{SEASON}.parquet", index=False)
+    monkeypatch.setattr(cchecks, "RAW", tmp_path)
+    monkeypatch.setattr(common, "STATUS", tmp_path / "status")
+    monkeypatch.setattr(cchecks, "cfb", lambda: type(cfb())(season=SEASON, first_season=SEASON - 1, call_reserve=100, approve_over=300))
+    cchecks.run(today=date(SEASON + 1, 3, 1))
+    st = __import__("json").loads((tmp_path / "status" / "cfb.json").read_text(encoding="utf-8"))
+    bad = [c["name"] for c in st["checks"] if not c["ok"]]
+    assert f"player_stats_{SEASON}: players on the roster" in bad

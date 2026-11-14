@@ -67,10 +67,43 @@ def _plays_available(games_path):
     return f
 
 
+def _by(when: pd.Timestamp):
+    """Season-level data: public by `when` (e.g. the end of that season). Rows seen earlier than that
+    (the current season, still changing) are available when first seen."""
+    def f(df: pd.DataFrame, ingested: pd.Timestamp) -> pd.Series:
+        return pd.Series(min(when, ingested.tz_localize(None).normalize()), index=df.index)
+    return f
+
+
+def _portal_available(df: pd.DataFrame, ingested: pd.Timestamp) -> pd.Series:
+    """The day after the entry was filed (transferDate is UTC); entries without a date: when first seen."""
+    d = pd.to_datetime(df["transferDate"], utc=True, errors="coerce").dt.tz_localize(None).dt.normalize() + pd.Timedelta(days=1)
+    return d.fillna(ingested.tz_localize(None).normalize())
+
+
+def cfb_player_tables() -> list[Table]:
+    from ingest.cfb.players import OUT, seasons
+    ss = seasons()
+    t = []
+    for s in ss["season"]:
+        end = _by(pd.Timestamp(s + 1, 1, 31))
+        t += [Table(f"players_roster_{s}", OUT / f"roster_{s}.parquet", ("id", "team"), _by(pd.Timestamp(s, 9, 1))),
+              Table(f"players_stats_{s}", OUT / f"stats_{s}.parquet", ("playerId", "team", "category", "statType"), end),
+              Table(f"players_usage_{s}", OUT / f"usage_{s}.parquet", ("id", "team"), end),
+              Table(f"players_ppa_{s}", OUT / f"ppa_{s}.parquet", ("id", "team"), end),
+              Table(f"players_wepa_{s}", OUT / f"wepa_{s}.parquet", ("kind", "athleteId", "team"), end)]
+    # Portal entries are public the day after they're filed; each pull records new and changed entries
+    # (destination, eligibility), which is the record the January board is graded against.
+    t += [Table(f"players_portal_{s}", OUT / f"portal_{s}.parquet", ("firstName", "lastName", "origin", "transferDate"),
+                _portal_available) for s in ss["portal"]]
+    t += [Table(f"players_recruits_{s}", OUT / f"recruits_{s}.parquet", ("id",), _by(pd.Timestamp(s, 2, 15))) for s in ss["recruits"]]
+    return t
+
+
 def cfb_tables() -> list[Table]:
     cfg = cfb()
     d = RAW / "cfb"
-    t = []
+    t = cfb_player_tables()
     for s in cfg.seasons:
         t += [Table(f"plays_{s}", d / f"plays_{s}.parquet", ("id",), _plays_available(d / f"games_{s}.parquet")),
               Table(f"games_{s}", d / f"games_{s}.parquet", ("id",), _game_available),

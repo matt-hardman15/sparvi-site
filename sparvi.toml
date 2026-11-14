@@ -38,7 +38,7 @@ first_season = 2016
 season = 2026
 # First season pulled (2014 = the College Football Playoff era).
 first_season = 2014
-# CFBD quota (free tier: 1,000 calls/month, shared with basketball). Pulls stop at the reserve,
+# CFBD quota (Tier 1 since Nov 13, 2026: 5,000 calls/month, shared with basketball). Pulls stop at the reserve,
 # and a run that needs more than `approve_over` uncached calls asks before starting (--yes).
 call_reserve = 100
 approve_over = 300

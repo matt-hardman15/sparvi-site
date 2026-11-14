@@ -130,3 +130,159 @@ tables:
       overUnderOpen: DOUBLE
       homeMoneyline: DOUBLE
       awayMoneyline: DOUBLE
+  # --- Player level (CFB-PLAYERS; ingest/cfb/players.py) --------------------------------------------
+  # Inputs for PLAYER-ADJ, the portal board (SC-3a) and the Portal Fit Finder (SC-3). Never published raw.
+  roster:
+    description: Rosters (all divisions CFBD covers), one row per player x team, with height (in) and weight (lb)
+    files: "cfb/players/roster_{season}.parquet"
+    key: [id, team]
+    min_rows: 15000
+    max_null:
+      id: 0
+      team: 0
+    columns:
+      season: BIGINT
+      id: VARCHAR
+      firstName: VARCHAR
+      lastName: VARCHAR
+      team: VARCHAR
+      position: VARCHAR
+      jersey: DOUBLE
+      year: DOUBLE
+      height: DOUBLE
+      weight: DOUBLE
+      homeState: VARCHAR
+      recruitIds: VARCHAR
+  player_stats:
+    description: Season box-score stats, long (player x team x category x statType)
+    files: "cfb/players/stats_{season}.parquet"
+    key: [playerId, team, category, statType]
+    min_rows: 35000
+    max_null:
+      playerId: 0
+      category: 0
+      statType: 0
+    columns:
+      season: BIGINT
+      playerId: VARCHAR
+      player: VARCHAR
+      position: VARCHAR
+      team: VARCHAR
+      conference: VARCHAR
+      category: VARCHAR
+      statType: VARCHAR
+      stat: DOUBLE
+  player_usage:
+    description: Share of the team's plays involving the player (overall, pass, rush, by down)
+    files: "cfb/players/usage_{season}.parquet"
+    key: [id, team]
+    min_rows: 2000
+    max_null:
+      id: 0
+      usage_all: 0.01
+    columns:
+      season: BIGINT
+      id: VARCHAR
+      name: VARCHAR
+      position: VARCHAR
+      team: VARCHAR
+      conference: VARCHAR
+      usage_all: DOUBLE
+      usage_pass: DOUBLE
+      usage_rush: DOUBLE
+      usage_firstDown: DOUBLE
+      usage_secondDown: DOUBLE
+      usage_thirdDown: DOUBLE
+      usage_standardDowns: DOUBLE
+      usage_passingDowns: DOUBLE
+  player_ppa:
+    description: CFBD's EPA per play (avg) and total, overall / pass / rush / by down
+    files: "cfb/players/ppa_{season}.parquet"
+    key: [id, team]
+    min_rows: 2000
+    max_null:
+      id: 0
+    columns:
+      season: BIGINT
+      id: VARCHAR
+      name: VARCHAR
+      position: VARCHAR
+      team: VARCHAR
+      conference: VARCHAR
+      ppa_avg_all: DOUBLE
+      ppa_avg_pass: DOUBLE
+      ppa_avg_rush: DOUBLE
+      ppa_avg_firstDown: DOUBLE
+      ppa_avg_secondDown: DOUBLE
+      ppa_avg_thirdDown: DOUBLE
+      ppa_avg_standardDowns: DOUBLE
+      ppa_avg_passingDowns: DOUBLE
+      ppa_total_all: DOUBLE
+      ppa_total_pass: DOUBLE
+      ppa_total_rush: DOUBLE
+      ppa_total_firstDown: DOUBLE
+      ppa_total_secondDown: DOUBLE
+      ppa_total_thirdDown: DOUBLE
+      ppa_total_standardDowns: DOUBLE
+      ppa_total_passingDowns: DOUBLE
+  player_wepa:
+    description: "CFBD's opponent-adjusted player metrics: passing and rushing WEPA (per play), kicking PAAR. A benchmark for PLAYER-ADJ"
+    files: "cfb/players/wepa_{season}.parquet"
+    key: [kind, athleteId, team]
+    max_null:
+      athleteId: 0
+      kind: 0
+    columns:
+      season: BIGINT
+      kind: VARCHAR
+      athleteId: VARCHAR
+      athleteName: VARCHAR
+      position: VARCHAR
+      team: VARCHAR
+      conference: VARCHAR
+      value: DOUBLE
+      n: DOUBLE
+  portal:
+    description: "Transfer portal entries, by the season the player transfers into (no player id in the source)"
+    files: "cfb/players/portal_{season}.parquet"
+    key: [firstName, lastName, origin, transferDate]
+    min_rows: 0                  # next season's file is empty until the window opens; finished years are checked in checks.py
+    max_null:
+      lastName: 0
+      origin: 0
+      transferDate: 0
+    columns:
+      season: BIGINT
+      firstName: VARCHAR
+      lastName: VARCHAR
+      position: VARCHAR
+      origin: VARCHAR
+      destination: VARCHAR
+      transferDate: VARCHAR
+      rating: DOUBLE
+      stars: DOUBLE
+      eligibility: VARCHAR
+  recruits:
+    description: High-school recruiting class of each year (signed the winter before that season)
+    files: "cfb/players/recruits_{season}.parquet"
+    key: [id]
+    min_rows: 2500
+    max_null:
+      id: 0
+      name: 0
+    columns:
+      season: BIGINT
+      id: VARCHAR
+      athleteId: VARCHAR
+      recruitType: VARCHAR
+      year: DOUBLE
+      ranking: DOUBLE
+      name: VARCHAR
+      school: VARCHAR
+      committedTo: VARCHAR
+      position: VARCHAR
+      height: DOUBLE
+      weight: DOUBLE
+      stars: DOUBLE
+      rating: DOUBLE
+      stateProvince: VARCHAR
