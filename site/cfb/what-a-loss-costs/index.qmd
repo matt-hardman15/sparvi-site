@@ -1,0 +1,131 @@
+---
+title: "The committee punishes the loss, not the margin"
+pagetitle: "What a loss costs in the CFP committee ranking"
+description: "A top-12 team that loses by a field goal drops about as far in the CFP committee's ranking as one that loses by 20. The power rating sees a big difference."
+date: 2026-11-14
+categories: [College football, CFP]
+image: thumb.png
+card-key: cfb.lc_close_drop
+card-prefix: ""
+card-suffix: " spots"
+card-label: "lost by a top-12 team after a close loss"
+---
+
+::: {.finding}
+After a loss by 7 points or fewer, a top-12 team fell {{< meta cfb.lc_close_drop >}} spots on average in the College Football Playoff committee's next ranking; after a loss by 15 or more, {{< meta cfb.lc_big_drop >}}. The [power rating](/cfb/tools/team-ratings.html) moved the same teams {{< meta cfb.lc_close_power >}} and {{< meta cfb.lc_big_power >}} spots. The committee does count the margin, but each point of it moved the power rating about {{< meta cfb.lc_ratio >}} times as much ({{< meta cfb.lc_n >}} losses, {{< meta cfb.lc_first_season >}}–{{< meta cfb.lc_last_season >}}).
+:::
+
+::: {.so-what}
+- **Expect a ranked team that loses a close game this week to drop about {{< meta cfb.lc_close_drop >}} spots on Tuesday**, even if it played well. By the numbers, a close loss to a good team says little about how good a team is.
+- **A lopsided loss costs about the same in both.** The committee and the power rating agree that losing by three touchdowns is bad news.
+- **Losing to an unranked team hurts more** in the committee's eyes ({{< meta cfb.lc_opp_unranked_drop >}} spots, against {{< meta cfb.lc_opp_ranked_drop >}} for a loss to a ranked team).
+:::
+
+## This week's games with ranked teams
+
+```{=html}
+<div class="explorer">
+  <div id="games"><div class="loading">Loading…</div></div>
+  <p class="caption" id="gcap"></p>
+</div>
+```
+
+## Every top-12 loss since {{< meta cfb.lc_first_season >}}
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c"></div>
+  <div id="scatter" class="plot-host"></div>
+  <p class="caption" id="scap"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt, U = S.urlState;
+  const [L, teamList] = await Promise.all([S.load("/data/cfb/loss_cost.json"), S.load("/data/cfb/teams.json")]);
+  const teams = new Map(teamList.map(t => [t.id, t]));
+  const link = (name) => S.cfbTeamLink(teams.get(name), name);
+
+  // This week's games: committee rank, power rank, and what a loss has cost a team ranked there.
+  const host = document.getElementById("games");
+  if (!L.games.length) {
+    host.replaceChildren(S.el("p", { class: "muted" }, "No regular-season games with a ranked team this week."));
+  } else {
+    const side = (x) => x.cfp == null ? `${link(x.team)}` : `<strong>${x.cfp}</strong> ${link(x.team)}`;
+    const cost = (x) => x.cfp == null ? "" : `${x.team} ${f.num(x.loss_drop, 0)}${x.loss_out >= 0.25 ? "+" : ""}`;
+    const rows = L.games.map(g => ({ ...g, matchup: `${side(g.away)} ${g.neutral ? "vs" : "@"} ${side(g.home)}`,
+      ranks: `${g.away.power ?? "—"} @ ${g.home.power ?? "—"}`,
+      cost: [g.away, g.home].map(cost).filter(Boolean).join(" · ") }));
+    S.table(host, [
+      { key: "date", label: "Date", align: "l", fmt: d => new Date(d + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" }) },
+      { key: "matchup", label: "Game", align: "l", html: r => r.matchup, sortVal: r => Math.min(r.home.cfp ?? 99, r.away.cfp ?? 99) },
+      { key: "ranks", label: "Power ranks", align: "l", html: r => r.ranks, sortVal: r => Math.min(r.home.power ?? 999, r.away.power ?? 999), title: "Each team's power rating rank among all FBS teams, in the same order as the game" },
+      { key: "cost", label: "Spots a loss has cost", align: "l", html: r => r.cost, sortVal: r => r.cost, title: "Average fall in the committee's next ranking after a loss, for teams ranked in the same band" },
+    ], { sortKey: "matchup", desc: false, pageSize: 30 }).update(rows);
+    document.getElementById("gcap").textContent = `Week ${L.week} games involving a team in the committee's latest ranking (week ${L.rank_week}), by best-ranked team. `
+      + `Bold numbers are committee ranks; power ranks are among all FBS teams, in the same order as the game. The last column is the average fall in the committee's next ranking after a loss, ${L.seasons[0]}–${L.seasons[1]}, for ranked teams in the same band (1–4, 5–8, 9–12, 13–25). `
+      + `A "+" means many teams in that band fell out of the ranking, so the real fall was larger. Kickoff dates are US Eastern. No predictions here: just what the past says a loss has cost.`;
+  }
+
+  // Every top-12 loss: spots dropped against the margin, committee or power rating.
+  const DEF = { view: "cfp" };
+  const st = { view: U.get("view") === "power" ? "power" : DEF.view };
+  const c = document.getElementById("c"), sc = document.getElementById("scatter");
+  const VIEWS = { cfp: "Committee ranking", power: "Power rating" };
+  const pts = L.points.map(p => ({ ...p, y: p.drop, yp: p.power_drop }));
+  // One y range for both views, so the toggle shows the difference instead of rescaling it away.
+  const yDom = S.stableDomain(pts.flatMap(p => [p.y, p.yp]).concat([0]), { q: [0.01, 0.99] });
+  const pin = v => Math.max(yDom[0], Math.min(yDom[1], v));
+  function controls() {
+    c.replaceChildren(S.el("label", {}, "Spots dropped in", S.seg(Object.entries(VIEWS), st.view, v => { st.view = v; draw(); })));
+  }
+  function draw() {
+    const key = st.view === "cfp" ? "y" : "yp";
+    const data = pts.map(p => ({ ...p, v: pin(p[key]), _off: pin(p[key]) !== p[key] }));
+    const means = L.by_margin.map(b => ({ x: b.hi > 50 ? 27 : (b.lo + b.hi) / 2, v: st.view === "cfp" ? b.drop : b.power_drop, n: b.n, lo: b.lo, hi: b.hi }));
+    S.plot(sc, w => Plot.plot({ ...S.plotDefaults(w), height: Math.min(460, Math.max(340, w * 0.55)), grid: true, clip: true,
+      x: { label: "Lost by (points) →", domain: [0, 45] },
+      y: { label: `↑ Spots dropped in the ${st.view === "cfp" ? "committee's next ranking" : "power rating"}`, domain: yDom },
+      marks: [
+        Plot.ruleY([0], { stroke: "#8a8b8f" }),
+        Plot.dot(data, { x: "lost_by", y: "v", r: 3.5, fill: "#8a8b8f", fillOpacity: 0.45, stroke: d => d._off ? "#16181d" : "none" }),
+        Plot.line(means, { x: "x", y: "v", stroke: "#0f5257", strokeWidth: 2.5 }),
+        Plot.dot(means, { x: "x", y: "v", r: 5, fill: "#0f5257" }),
+        Plot.tip(data, Plot.pointer({ x: "lost_by", y: "v", title: d => `${d.team} (#${d.rank0}) lost to ${d.opp} by ${d.lost_by}, ${d.season} week ${d.week}\n`
+          + `Committee: ${d.rank0} → ${d.rank1 ?? "unranked"} · power rating: ${d.power0} → ${d.power1}` })),
+      ] }));
+    document.getElementById("scap").textContent = `Each dot is a loss by a team ranked in the committee's top ${L.top}, ${L.seasons[0]}–${L.seasons[1]}, `
+      + `placed by the margin and by how many spots the team fell in the ${st.view === "cfp" ? "committee's next ranking" : "power rating (among all FBS teams) over the same week"}. `
+      + `The teal line is the average for losses by 1–3, 4–7, 8–14, 15–21, and 22 or more points. Switch views to compare: the committee's line is nearly flat; the power rating's climbs. Hover a dot for the game.`;
+    U.set({ view: st.view }, DEF);
+  }
+  controls(); draw();
+})();
+</script>
+```
+
+## Two ways of reading the same loss
+
+The committee ranks résumés as much as teams: whom a team beat, whom it lost to, and how many losses it has. The [power rating](/cfb/tools/team-ratings.html) is built from how well a team played, every snap adjusted for the strength of the opponent, plus CFBD's Elo rating. A loss counts in it only as far as the team played badly.
+
+Those two views mostly agree about a blowout. Teams ranked in the top {{< meta cfb.lc_top >}} that lost by {{< meta cfb.lc_m5_lo >}} or more fell {{< meta cfb.lc_m5_drop >}} spots in the committee's next ranking and {{< meta cfb.lc_m5_power >}} in the power rating ({{< meta cfb.lc_m5_n >}} games). They part ways on close losses. A loss by 1 to 3 points still cost {{< meta cfb.lc_m1_drop >}} spots with the committee but only {{< meta cfb.lc_m1_power >}} in the power rating ({{< meta cfb.lc_m1_n >}} games), because a team that loses by a field goal to a good opponent has usually played about as well as its rating already said.
+
+Measured per point of margin, ten extra points of defeat cost about {{< meta cfb.lc_per10_committee >}} spots with the committee (90% interval for the per-point figure: {{< meta cfb.lc_slope_committee_ci >}}) and about {{< meta cfb.lc_per10_power >}} in the power rating ({{< meta cfb.lc_slope_power_ci >}}). So the committee is not blind to the score; it just weighs the result far more than the margin.
+
+## What it means this week
+
+A ranked team that loses a tight game this weekend will probably fall several spots on Tuesday whatever the numbers say. If it played well, the power rating will barely move it, and that gap is one of the places the [poll and the numbers disagree](/cfb/ranked-vs-good/). A win, by contrast, moved a top-12 team up only {{< meta cfb.lc_win_rise >}} spots on average ({{< meta cfb.lc_win_n >}} games): most of a ranking's movement comes from other teams losing.
+
+<details class="method" id="method">
+<summary>Method, data, and limits</summary>
+
+**Data.** The committee's weekly rankings, game results, and play-by-play from [CollegeFootballData.com](https://collegefootballdata.com), regular seasons {{< meta cfb.lc_first_season >}}–{{< meta cfb.lc_last_season >}} (completed seasons only). The power rating is Sparvi's, through each week ([how it's built](/cfb/tools/team-ratings.html)).
+
+**The comparison.** For each pair of consecutive committee rankings ({{< meta cfb.lc_n_pairs >}} team-weeks in all), a ranked team counts if it played exactly one game in between; byes and the rare two-game weeks are left out. The fall in the committee's ranking is the new rank minus the old; the fall in the power rating is its rank among all FBS teams after that game minus its rank before. The main sample is the {{< meta cfb.lc_n >}} losses by teams ranked in the top {{< meta cfb.lc_top >}}, because almost none of them fell out of the 25 and the new rank is always known. Teams ranked 13th to 25th fell out {{< meta cfb.lc_low_fell_out >}} of the time after a loss ({{< meta cfb.lc_low_n >}} losses), so their average fall is a lower bound. Intervals come from 2,000 bootstrap resamples of the losses.
+
+**What it can't tell you.** The two scales differ: the committee ranks 25 teams and the power rating ranks every FBS team, so a spot near the top of each is comparable, but not exactly. A team's fall also depends on what the teams around it did that week. This doesn't say the committee is wrong: ranking résumés is a different job from rating teams, and its published selection guidelines are not modeled here. And {{< meta cfb.lc_close_n >}} close losses and {{< meta cfb.lc_big_n >}} lopsided ones are small samples; the intervals above show how much they could move.
+
+Code: [`cfb/loss_cost/`](https://github.com/matt-hardman15/sparvi-site/tree/main/cfb/loss_cost) · Data provided by CollegeFootballData.com. Sparvi is not affiliated with the NCAA, the College Football Playoff, any conference, or any school.
+
+**Model version.** [{{< meta models.cfb_power_rating >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/cfb/power_rating/card.yml) ({{< meta models.cfb_power_rating_status >}}).
+
+</details>

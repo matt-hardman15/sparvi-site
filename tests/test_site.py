@@ -506,6 +506,16 @@ def act_cfb_former_team(p):
     assert opts[0] == "2017" and "2026" not in opts
 
 
+def act_cfb_loss_cost(p):
+    assert "spots" in p.text_content(".finding")
+    assert p.locator("#scatter svg circle").count() >= 100
+    assert rows(p, "#games") >= 1 or "No regular-season games" in p.text_content("#games")
+    ticks = lambda: p.eval_on_selector_all("#scatter svg [aria-label='y-axis tick label'] text", "e => e.map(t => t.textContent).join('|')")  # noqa: E731
+    before = ticks()
+    seg(p, "#c", "Power rating"); assert query(p)["view"] == "power" and "power rating" in p.text_content("#scap")
+    assert ticks() == before, "both views share one y scale"
+
+
 def act_nfl_jax(p):
     assert "Jacksonville" in p.text_content(".finding") and "%" in p.text_content(".finding")
     assert p.locator("#lines svg text", has_text="JAX").count() >= 1
@@ -552,6 +562,7 @@ PAGES = [
     ("cfb-team-former", "/cfb/teams/idaho/", act_cfb_former_team),
     ("cfb-team-ratings", "/cfb/tools/team-ratings.html", act_cfb_ratings),
     ("cfb-ranked-vs-good", "/cfb/ranked-vs-good/", act_cfb_article),
+    ("cfb-what-a-loss-costs", "/cfb/what-a-loss-costs/", act_cfb_loss_cost),
     ("glossary", "/glossary.html", None),
     ("about", "/about.html", None),
     ("status", "/status.html", act_status),

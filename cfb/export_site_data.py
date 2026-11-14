@@ -5,7 +5,8 @@ never plays and never raw CFBD responses (the API terms rule out redistributing 
 lines appear only as aggregate accuracy numbers in the method text, never per game.
 
 Inputs: the football dbt database (cfb_team_week, cfb_team_games), cfb/adjusted_ratings/output
-(adjusted ratings, the power rating, metrics.json), and data/raw/cfb (FBS teams, polls).
+(adjusted ratings, the power rating, metrics.json), cfb/loss_cost/output, and data/raw/cfb (FBS teams,
+polls, this week's schedule).
 """
 from __future__ import annotations
 
@@ -245,4 +246,64 @@ if not wt["elo_pregame"]["mae"] < wt["ours"]["mae"] and wt["sp_plus"]["mae"] < w
 if not (PL["power_right"] > PL["ap_right"] and PL["power_right_when_disagree_ci90"][0] > 0.5):
     raise StaleProse("CFB article: 'the power rating picks winners more often than the AP poll, and is right more "
                      "often when they disagree (interval above 50%)' no longer holds.")
+# ---- What a loss costs (cfb/loss_cost; article site/cfb/what-a-loss-costs/) --------------------
+LC = json.loads((ROOT / "cfb" / "loss_cost" / "output" / "results.json").read_text(encoding="utf-8"))
+# This week's games involving a team in the latest CFP ranking, with its committee and power ranks: the
+# article's table. Kickoff dates only, no predictions and no lines.
+cur_games = pd.read_parquet(RAW / "cfb" / f"games_{CFG.season}.parquet")
+upcoming = cur_games[~cur_games["completed"].astype(bool) & (cur_games["seasonType"] == "regular")]
+cfp_now = ranks[(ranks["season"] == CFG.season) & (ranks["poll"] == POLLS["cfp"]) & (ranks["seasonType"] == "regular")]
+lc_games, lc_week, lc_rank_week = [], None, None
+if len(upcoming) and len(cfp_now):
+    lc_week = int(upcoming["week"].min())
+    lc_rank_week = int(cfp_now["week"].max())
+    cr = cfp_now[cfp_now["week"] == lc_rank_week].set_index("school")["rank"]
+    pr_now = power[power["season"] == CFG.season]
+    pr_now = pr_now[pr_now["week"] == pr_now["week"].max()].set_index("team")["rank"]
+    band_of = lambda r: next(b for b in LC["by_rank"] if b["lo"] <= r <= b["hi"])  # noqa: E731
+    for g in upcoming[upcoming["week"] == lc_week].sort_values(["startDate", "homeTeam"]).itertuples():
+        side = lambda t: {"team": t, "cfp": None if t not in cr.index else int(cr[t]),  # noqa: E731
+                          "power": None if t not in pr_now.index else int(pr_now[t])}
+        h, a_ = side(g.homeTeam), side(g.awayTeam)
+        if h["cfp"] is None and a_["cfp"] is None:
+            continue
+        for x in (h, a_):
+            if x["cfp"] is not None:
+                b_ = band_of(x["cfp"])
+                x["loss_drop"], x["loss_out"] = b_["drop"], b_["fell_out"]
+        et = pd.Timestamp(g.startDate).tz_convert("America/New_York")      # kickoff date as listed in the US
+        lc_games.append({"date": et.strftime("%Y-%m-%d"), "neutral": bool(g.neutralSite), "home": h, "away": a_})
+write_json(OUT / "loss_cost.json", {**{k: LC[k] for k in ("seasons", "top", "out_rank", "by_margin", "by_rank", "points")},
+                                    "week": lc_week, "rank_week": lc_rank_week, "games": lc_games})
+N.update({
+    "lc_first_season": str(LC["seasons"][0]), "lc_last_season": str(LC["seasons"][1]), "lc_top": str(LC["top"]),
+    "lc_n_pairs": f"{LC['n_pairs']:,}", "lc_n": str(LC["n_top_losses"]),
+    "lc_close_drop": f"{LC['close']['drop']:.1f}", "lc_close_power": f"{LC['close']['power_drop']:.1f}",
+    "lc_big_drop": f"{LC['big']['drop']:.1f}", "lc_big_power": f"{LC['big']['power_drop']:.1f}",
+    "lc_close_n": str(LC["close"]["n"]), "lc_big_n": str(LC["big"]["n"]),
+    "lc_slope_committee": f"{LC['slope_committee']:.2f}", "lc_slope_power": f"{LC['slope_power']:.2f}",
+    "lc_slope_committee_ci": f"{LC['slope_committee_ci90'][0]:.2f} to {LC['slope_committee_ci90'][1]:.2f}",
+    "lc_slope_power_ci": f"{LC['slope_power_ci90'][0]:.2f} to {LC['slope_power_ci90'][1]:.2f}",
+    "lc_per10_committee": f"{10 * LC['slope_committee']:.1f}", "lc_per10_power": f"{10 * LC['slope_power']:.1f}",
+    "lc_ratio": f"{LC['slope_power'] / LC['slope_committee']:.0f}",
+    "lc_opp_ranked_drop": f"{LC['by_opp']['ranked']['drop']:.1f}", "lc_opp_unranked_drop": f"{LC['by_opp']['unranked']['drop']:.1f}",
+    "lc_opp_ranked_n": str(LC["by_opp"]["ranked"]["n"]), "lc_opp_unranked_n": str(LC["by_opp"]["unranked"]["n"]),
+    "lc_win_rise": f"{-LC['win']['drop']:.1f}", "lc_win_n": str(LC["win"]["n"]),
+    "lc_low_fell_out": f"{100 * LC['by_rank'][-1]['fell_out']:.0f}%", "lc_low_n": str(LC["by_rank"][-1]["n"]),
+})
+mlo, mhi = LC["by_margin"][0], LC["by_margin"][-1]
+N.update({"lc_m1_drop": f"{mlo['drop']:.1f}", "lc_m1_power": f"{mlo['power_drop']:.1f}", "lc_m1_n": str(mlo["n"]),
+          "lc_m5_lo": str(mhi["lo"]), "lc_m5_drop": f"{mhi['drop']:.1f}", "lc_m5_power": f"{mhi['power_drop']:.1f}", "lc_m5_n": str(mhi["n"])})
+# Claims the article makes. If one stops holding, rewrite the sentence.
+if not LC["slope_diff_ci90"][0] > 0:
+    raise StaleProse("CFB loss article: 'the power rating weighs the margin more than the committee' (interval above zero) no longer holds.")
+if not LC["slope_committee_ci90"][0] > 0:
+    raise StaleProse("CFB loss article: 'the committee does weigh the margin a little' (interval above zero) no longer holds.")
+if not (LC["close"]["drop"] > 2 * LC["close"]["power_drop"] and abs(LC["big"]["drop"] - LC["big"]["power_drop"]) < 1.5):
+    raise StaleProse("CFB loss article: 'a close loss costs far more in the committee's ranking than in the power rating; "
+                     "a lopsided one costs about the same in both' no longer holds.")
+if not LC["by_opp"]["unranked"]["drop"] > LC["by_opp"]["ranked"]["drop"]:
+    raise StaleProse("CFB loss article: 'losing to an unranked team costs more than losing to a ranked one' no longer holds.")
+if not all(b["fell_out"] < 0.05 for b in LC["by_rank"] if b["hi"] <= LC["top"]):
+    raise StaleProse("CFB loss article: 'a top-12 team almost never falls out of the ranking after one loss' no longer holds.")
 write_numbers("cfb", N, "cfb/export_site_data.py")
