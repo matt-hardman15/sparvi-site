@@ -10,3 +10,6 @@
 *.parquet binary
 *.woff2 binary
 *.duckdb binary
+
+# The ledger is compared byte for byte with earlier commits (sparvi/ledger.py): never convert its line endings.
+forecasts/**/*.jsonl -text
