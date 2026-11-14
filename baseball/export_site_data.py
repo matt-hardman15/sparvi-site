@@ -1000,6 +1000,63 @@ N |= {"farm_rel_min": f"{100 * min(rel):.0f}%", "farm_rel_max": f"{100 * max(rel
 if not max(rel) < 0.6:
     raise StaleProse("Farm-systems article says one season's org scores are mostly noise (signal share under 60%).")
 
+# ---- Free-agent pitchers (baseball/free_agents; article site/baseball/free-agent-pitchers/) -------------
+# Point grades come from the published MLB rows (stuff_pitchers.json, written above), so the article always matches
+# the leaderboard and player pages; the analysis supplies the game-bootstrap interval widths and the history test.
+FA = read_json(ROOT / "baseball" / "free_agents" / "output" / "results.json")
+pub = {r["id"]: r for r in read_json(OUT / "stuff_pitchers.json") if r["level"] == "MLB"}
+fa_rows = []
+for x in FA["pitchers"]:
+    pp = pub.get(x["id"])
+    if pp is None:
+        raise ValueError(f"free agent {x['name']} ({x['id']}) has no published MLB row")
+    row = {k: x[k] for k in ("id", "name", "role", "g", "gs", "from_team", "to_team", "date_signed", "pitches")}
+    for k in ("stuff", "loc", "pitching"):
+        v = pp[f"{k}_plus"]
+        row[f"{k}_plus"] = v
+        row[f"{k}_lo"], row[f"{k}_hi"] = round(v + x[f"{k}_lo"] - x[f"{k}_plus"], 1), round(v + x[f"{k}_hi"] - x[f"{k}_plus"], 1)
+    row["rv_plus"] = pp["rv_plus"]
+    row["gap"] = round(pp["rv_plus"] - pp["pitching_plus"], 1)
+    row["flag"] = "trailed" if row["gap"] <= -FA["history"]["gap"] else "ahead" if row["gap"] >= FA["history"]["gap"] else ""
+    fa_rows.append(row)
+write_json(OUT / "free_agents.json", {"season": FA["season"], "pulled_on": FA["pulled_on"], "min_pitches": FA["min_pitches"],
+                                      "history": FA["history"], "pitchers": fa_rows})
+H = FA["history"]
+link = lambda r: f"[{r['name']}](/baseball/player.html?id={r['id']})"  # noqa: E731
+trailed = sorted((r for r in fa_rows if r["flag"] == "trailed"), key=lambda r: r["gap"])
+ahead = sorted((r for r in fa_rows if r["flag"] == "ahead"), key=lambda r: -r["gap"])
+gapnote = lambda r: f"{link(r)} (Pitching+ {r['pitching_plus']:.0f}, RV+ {r['rv_plus']:.0f})"  # noqa: E731
+by_stuff = sorted(fa_rows, key=lambda r: -r["stuff_plus"])
+sp = sorted((r for r in fa_rows if r["role"] == "SP"), key=lambda r: -r["pitching_plus"])
+sgn = lambda v: f"{v:+.1f}".replace("-", "−")  # noqa: E731
+N.update({
+    "fa_n": str(len(fa_rows)), "fa_min_pitches": str(FA["min_pitches"]), "fa_season": str(FA["season"]),
+    "fa_n_signed": str(sum(1 for r in fa_rows if r["to_team"])), "fa_gap": str(H["gap"]),
+    "fa_n_trailed": str(len(trailed)), "fa_n_ahead": str(len(ahead)),
+    "fa_trailed_names": "; ".join(map(gapnote, trailed[:4])), "fa_ahead_names": "; ".join(map(gapnote, ahead[:4])),
+    "fa_top_stuff": "; ".join(f"{link(r)} ({r['stuff_plus']:.0f}, interval {r['stuff_lo']:.0f} to {r['stuff_hi']:.0f})" for r in by_stuff[:3]),
+    "fa_top_sp": f"{link(sp[0])} (Pitching+ {sp[0]['pitching_plus']:.0f}, interval {sp[0]['pitching_lo']:.0f} to {sp[0]['pitching_hi']:.0f})",
+    "fa_n_sp": str(sum(r["role"] == "SP" for r in fa_rows)), "fa_n_rp": str(sum(r["role"] == "RP" for r in fa_rows)),
+    "fa_h_n": str(H["n"]), "fa_h_prev": str(H["seasons"][0]), "fa_h_cur": str(H["seasons"][1]),
+    "fa_h_trailed_n": str(H["trailed"]["n"]), "fa_h_trailed_change": sgn(H["trailed"]["change"]),
+    "fa_h_trailed_ci": f"{sgn(H['trailed']['ci90'][0])} to {sgn(H['trailed']['ci90'][1])}",
+    "fa_h_ahead_n": str(H["ahead"]["n"]), "fa_h_ahead_change": sgn(H["ahead"]["change"]),
+    "fa_h_ahead_ci": f"{sgn(H['ahead']['ci90'][0])} to {sgn(H['ahead']['ci90'][1])}",
+    "fa_h_close_change": sgn(H["close"]["change"]),
+    "fa_h_coef_pitching": f"{H['coef_pitching']:.2f}", "fa_h_coef_results": f"{H['coef_results']:.2f}",
+})
+fa_day = date.fromisoformat(FA["pulled_on"])
+N["fa_pulled"] = f"{fa_day:%B} {fa_day.day}, {fa_day.year}"
+# Claims the free-agent article makes. If one stops holding, rewrite the sentence.
+if not H["trailed"]["ci90"][0] > 0:
+    raise StaleProse("Free-agent article: 'pitchers whose results trailed Pitching+ improved the next season' (interval above zero) no longer holds.")
+if not H["ahead"]["ci90"][1] < 0:
+    raise StaleProse("Free-agent article: 'pitchers whose results ran ahead of Pitching+ fell back the next season' (interval below zero) no longer holds.")
+if not H["coef_pitching"] > H["coef_results"]:
+    raise StaleProse("Free-agent article: 'last season's Pitching+ carried into the next season more than last season's results' no longer holds.")
+if not (trailed and ahead and sp):
+    raise StaleProse("Free-agent article: the lists of free agents whose results trailed or ran ahead (and the top starter) are empty.")
+
 # Seed sensitivity of the bagged pitch-quality models (pitch_quality/stability.py, v2.0.0), for the method notes.
 STAB = read_json(PQ / "stability.json")
 N.update({"stab_n": str(STAB["n"]), "stab_min_pitches": str(STAB["min_pitches"]),

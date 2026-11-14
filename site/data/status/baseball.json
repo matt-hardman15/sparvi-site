@@ -5,12 +5,13 @@
   "aaa": "2026-09-20",
   "mlb": "2026-09-27"
  },
- "n_checks": 88,
+ "n_checks": 95,
  "n_failed": 0,
  "rows": {
   "aaa_affiliates_2025": 30,
   "aaa_affiliates_2026": 30,
   "batter_heights": 1463,
+  "free_agents_2026": 356,
   "milb_players_2026": 9740,
   "statcast_aaa_2025": 671257,
   "statcast_aaa_2026": 671556,
@@ -398,6 +399,41 @@
    "name": "milb_players_2026: player_id missing",
    "ok": true,
    "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "free_agents_2026: columns and types",
+   "ok": true,
+   "detail": "13 contract columns"
+  },
+  {
+   "name": "free_agents_2026: row count",
+   "ok": true,
+   "detail": "356 rows"
+  },
+  {
+   "name": "free_agents_2026: one row per player_id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "free_agents_2026: player_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "free_agents_2026: name missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "free_agents_2026: position_type missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "free_agents_2026: a full list",
+   "ok": true,
+   "detail": "356 players, 148 pitchers"
   },
   {
    "name": "aaa_affiliates_2025: columns and types",
