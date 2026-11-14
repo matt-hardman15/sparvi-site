@@ -1,0 +1,15 @@
+---
+title: "Liberty Flames"
+pagetitle: "Liberty football: power rating by week"
+description: "Liberty (Conference USA) power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2018–2026."
+image: preview.png
+page-layout: full
+---
+
+Through week 11 of 2026, Liberty is 8–1. Its power rating, +12.8 points against an average FBS team, ranks 16th of 138; it is unranked in the AP poll.
+
+```{=html}
+<div id="team-root" data-team="Liberty"></div>
+```
+
+{{< include ../_team.qmd >}}

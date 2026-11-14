@@ -1,0 +1,15 @@
+---
+title: "Oregon Ducks"
+pagetitle: "Oregon football: power rating by week"
+description: "Oregon (Big Ten) college football power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+Through week 11 of 2026, Oregon is 6–3. Its power rating, +13.6 points against an average FBS team, ranks 14th of 138; the AP poll has it 18th.
+
+```{=html}
+<div id="team-root" data-team="Oregon"></div>
+```
+
+{{< include ../_team.qmd >}}

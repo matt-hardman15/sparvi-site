@@ -296,6 +296,9 @@
   // NFL team pages are static, one per team: /nfl/teams/kc/ (query string carries the view state).
   S.nflTeamHref = (id, qs = "") => `/nfl/teams/${String(id).toLowerCase()}/${qs ? "?" + qs : ""}`;
   S.nflTeamLink = (id, label, qs = "") => `<a href="${S.nflTeamHref(id, qs)}">${label ?? id}</a>`;
+  // CFB team pages: /cfb/teams/<slug>/, one per team in /data/cfb/teams.json (t = that file's entry).
+  S.cfbTeamHref = (t, qs = "") => `/cfb/teams/${t.slug}/${qs ? "?" + qs : ""}`;
+  S.cfbTeamLink = (t, label, qs = "") => (t ? `<a href="${S.cfbTeamHref(t, qs)}">${label ?? t.name}</a>` : (label ?? ""));
   // Rank percentile (0-100) of each row's value within rows, higher = better unless lowerBetter.
   S.rankPct = (rows, key, lowerBetter = false) => {
     const v = rows.map((r) => r[key]).filter((x) => x != null).sort(d3.ascending), n = v.length;

@@ -6,7 +6,7 @@ description: "NFL team efficiency from public play-by-play: offense and defense 
 page-layout: full
 listing:
   id: nfl-articles
-  contents: "*/index.qmd"
+  contents: ["*/index.qmd", "!teams/**"]   # articles only, not the team pages
   sort: "date desc"
   template: ../_listing-cards.ejs
   fields: [image, date, title, description, categories, card-key, card-prefix, card-suffix, card-label]

@@ -434,7 +434,14 @@ def act_nfl_team(p):
     nfl_week_slider(p, "#cap")
 
 
+def no_team_cards(p):
+    # The hub's article listing must not pick up the generated team pages.
+    hrefs = p.eval_on_selector_all("#listing-nfl-articles a, #listing-cfb-articles a", "e => e.map(a => a.getAttribute('href'))")
+    assert hrefs and not [h for h in hrefs if "teams/" in h], hrefs
+
+
 def act_nfl_index(p):
+    no_team_cards(p)
     assert p.locator("#team-grid li a").count() == 32
     assert p.locator(".team-div h4").count() == 8
     assert p.locator(".card-link").count() >= 1
@@ -468,6 +475,45 @@ def act_cfb_article(p):
     assert p.locator("#scatter svg circle").count() >= 20
     select(p, "#c", "Season", "2024"); wait(p, 500)
     assert "the bowls" in p.text_content("#scap")
+
+
+def act_cfb_index(p):
+    no_team_cards(p)
+    assert p.locator(".card-link").count() >= 1
+    assert p.locator("#team-grid li a").count() >= 130
+    assert p.locator(".team-div h4", has_text="SEC").count() == 1
+
+
+def act_cfb_team(p):
+    assert len(p.locator("#quarto-content p").first.text_content()) > 40, "the summary paragraph renders without JS"
+    tiles = p.locator(".stat-row .stat").all_text_contents()
+    assert len(tiles) == 5 and re.search(r"\d+–\d+", tiles[0]) and "of" in tiles[1], tiles
+    for host in ("#power", "#off", "#def"):
+        assert p.locator(f"{host} svg").count() == 1, host
+    assert rows(p, "#games") >= 8
+    assert p.locator("#games a[href^='/cfb/teams/']").count() >= 5, "FBS opponents link to their pages"
+    seg(p, "#c", "Raw"); seg(p, "#c", "Included"); seg(p, "#c", "Passes")
+    assert "passes" in p.text_content("#cap")
+    seg(p, "#c", "All plays")
+    select(p, "#c", "Season", "2019"); assert query(p)["season"] == "2019" and "bowls included" in p.text_content("#gcap")
+    nfl_week_slider(p, "#cap")
+
+
+def act_cfb_former_team(p):
+    # Idaho left FBS after 2017: its page opens on its last FBS season and offers only FBS seasons.
+    assert "2017" in p.text_content("#gcap")
+    opts = p.locator("#c select").first.locator("option").all_text_contents()
+    assert opts[0] == "2017" and "2026" not in opts
+
+
+def act_cfb_loss_cost(p):
+    assert "spots" in p.text_content(".finding")
+    assert p.locator("#scatter svg circle").count() >= 100
+    assert rows(p, "#games") >= 1 or "No regular-season games" in p.text_content("#games")
+    ticks = lambda: p.eval_on_selector_all("#scatter svg [aria-label='y-axis tick label'] text", "e => e.map(t => t.textContent).join('|')")  # noqa: E731
+    before = ticks()
+    seg(p, "#c", "Power rating"); assert query(p)["view"] == "power" and "power rating" in p.text_content("#scap")
+    assert ticks() == before, "both views share one y scale"
 
 
 def act_nfl_offense_defense(p):
@@ -520,9 +566,12 @@ PAGES = [
     ("nfl-offense-or-defense", "/nfl/offense-or-defense/", act_nfl_offense_defense),
     ("nfl-team-efficiency", "/nfl/tools/team-efficiency.html", act_nfl_efficiency),
     ("nfl-team", "/nfl/teams/kc/", act_nfl_team),
-    ("cfb", "/cfb/", lambda p: p.locator(".card-link").count() >= 1),
+    ("cfb", "/cfb/", act_cfb_index),
+    ("cfb-team", "/cfb/teams/georgia/", act_cfb_team),
+    ("cfb-team-former", "/cfb/teams/idaho/", act_cfb_former_team),
     ("cfb-team-ratings", "/cfb/tools/team-ratings.html", act_cfb_ratings),
     ("cfb-ranked-vs-good", "/cfb/ranked-vs-good/", act_cfb_article),
+    ("cfb-what-a-loss-costs", "/cfb/what-a-loss-costs/", act_cfb_loss_cost),
     ("glossary", "/glossary.html", None),
     ("about", "/about.html", None),
     ("status", "/status.html", act_status),

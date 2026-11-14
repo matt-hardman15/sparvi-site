@@ -1,0 +1,15 @@
+---
+title: "James Madison Dukes"
+pagetitle: "James Madison football: power rating by week"
+description: "James Madison (Sun Belt) power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2022–2026."
+image: preview.png
+page-layout: full
+---
+
+Through week 11 of 2026, James Madison is 8–2. Its power rating, +10.5 points against an average FBS team, ranks 25th of 138; it is unranked in the AP poll.
+
+```{=html}
+<div id="team-root" data-team="James Madison"></div>
+```
+
+{{< include ../_team.qmd >}}

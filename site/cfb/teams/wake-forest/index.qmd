@@ -1,0 +1,15 @@
+---
+title: "Wake Forest Demon Deacons"
+pagetitle: "Wake Forest football: power rating by week"
+description: "Wake Forest (ACC) college football power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+Through week 11 of 2026, Wake Forest is 8–1. Its power rating, +16.6 points against an average FBS team, ranks 10th of 138; the AP poll has it 11th.
+
+```{=html}
+<div id="team-root" data-team="Wake Forest"></div>
+```
+
+{{< include ../_team.qmd >}}

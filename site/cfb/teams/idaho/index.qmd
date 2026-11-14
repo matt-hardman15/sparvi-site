@@ -1,0 +1,15 @@
+---
+title: "Idaho Vandals"
+pagetitle: "Idaho football: power rating by week"
+description: "Idaho (Sun Belt) college football power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2017."
+image: preview.png
+page-layout: full
+---
+
+In 2017, its last FBS season, Idaho went 4–8. Its final power rating, −11.7 points against an average FBS team, ranked 108th of 130; it was unranked in the AP poll.
+
+```{=html}
+<div id="team-root" data-team="Idaho"></div>
+```
+
+{{< include ../_team.qmd >}}
