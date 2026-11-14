@@ -209,4 +209,58 @@ if not (jh["finished_top3"] > jh["finished_first"] and jh["won_sb"] == 0 and jh[
     raise StaleProse("JAX article: the history summary (top 3 usually, #1 rarely, every one made the playoffs, none won it) no longer holds.")
 if not abs(jp["r_net"] - jp["r_win_pct"]) < 0.05:
     raise StaleProse("JAX article: 'efficiency and record predict the rest of the season about equally' no longer holds.")
+# ---- Offense or defense (nfl/offense_defense; article site/nfl/offense-or-defense/) ------------------
+OD = json.loads((ROOT / "nfl" / "offense_defense" / "output" / "results.json").read_text(encoding="utf-8"))
+# This week's unit matchups: each offense's adjusted EPA/play (all, pass, run) against the opposing defense's,
+# season to date through the latest week, with ranks. Ratings only: no predicted scores, no lines.
+sched = pd.read_parquet(RAW / "nfl" / "schedules.parquet")
+todo = sched[(sched["season"] == CFG.season) & (sched["game_type"] == "REG") & sched["result"].isna()]
+od_games, od_week, od_through = [], None, None
+if len(todo):
+    od_week = int(todo["week"].min())
+    cur = adj[(adj["season"] == CFG.season) & (adj["gt"] == "no_gt") & (adj["week"] < od_week)]
+    od_through = int(cur["week"].max())
+    latest = cur.sort_values("week").groupby(["team", "split"]).tail(1).set_index(["team", "split"])
+    rank = {}
+    for sp in ("all", "pass", "run"):
+        z = latest.xs(sp, level="split")
+        rank[(sp, "off")] = z["off_adj"].rank(ascending=False, method="min").astype(int)
+        rank[(sp, "def")] = z["def_adj"].rank(ascending=True, method="min").astype(int)
+    unit = lambda o, d: {sp: {"off": round(float(latest.loc[(o, sp), "off_adj"]), 3), "off_rank": int(rank[(sp, "off")][o]),  # noqa: E731
+                              "def": round(float(latest.loc[(d, sp), "def_adj"]), 3), "def_rank": int(rank[(sp, "def")][d])}
+                         for sp in ("all", "pass", "run")}
+    for g in todo[todo["week"] == od_week].sort_values(["gameday", "game_id"]).itertuples():
+        od_games.append({"date": str(g.gameday), "home": g.home_team, "away": g.away_team, "neutral": g.location == "Neutral",
+                         "away_off": unit(g.away_team, g.home_team), "home_off": unit(g.home_team, g.away_team)})
+write_json(OUT / "offense_defense.json", {"seasons": OD["seasons"], "min_week": OD["min_week"],
+                                          "grid": {k: v["grid"] for k, v in OD["splits"].items()},
+                                          "week": od_week, "through": od_through, "games": od_games})
+oa, op_, orun = OD["splits"]["all"], OD["splits"]["pass"], OD["splits"]["run"]
+cell = {(c["off"], c["def"]): c for c in oa["grid"]}
+N.update({
+    "od_first_season": str(OD["seasons"][0]), "od_last_season": str(OD["seasons"][1]), "od_min_week": str(OD["min_week"]),
+    "od_n": f"{oa['n']:,}", "od_n_games": f"{oa['n_games']:,}",
+    "od_r_off": f"{oa['r_off']:.2f}", "od_r_def": f"{oa['r_def']:.2f}", "od_ratio": f"{oa['ratio']:.1f}",
+    "od_ratio_ci": f"{oa['ci90']['ratio'][0]:.1f} to {oa['ci90']['ratio'][1]:.1f}",
+    "od_pass_r_off": f"{op_['r_off']:.2f}", "od_pass_r_def": f"{op_['r_def']:.2f}", "od_pass_ratio": f"{op_['ratio']:.1f}",
+    "od_pass_ratio_ci": f"{op_['ci90']['ratio'][0]:.1f} to {op_['ci90']['ratio'][1]:.1f}",
+    "od_run_r_off": f"{orun['r_off']:.2f}", "od_run_r_def": f"{orun['r_def']:.2f}", "od_run_ratio": f"{orun['ratio']:.1f}",
+    "od_run_ratio_ci": f"{orun['ci90']['ratio'][0]:.1f} to {orun['ci90']['ratio'][1]:.1f}",
+    "od_int_ci": f"{oa['ci90']['b_int'][0]:+.3f} to {oa['ci90']['b_int'][1]:+.3f}",
+    "od_b_off": f"{oa['b_off']:.3f}", "od_b_def": f"{oa['b_def']:.3f}",
+    "od_ss": f"{cell[('strong', 'strong')]['epa']:+.3f}", "od_ww": f"{cell[('weak', 'weak')]['epa']:+.3f}",
+    "od_sw": f"{cell[('strong', 'weak')]['epa']:+.3f}", "od_ws": f"{cell[('weak', 'strong')]['epa']:+.3f}",
+    "od_cell_n": f"{min(c['n'] for c in oa['grid']):,}",
+})
+# Claims the article makes. If one stops holding, rewrite the sentence.
+if not oa["ci90"]["ratio"][0] > 1.5:
+    raise StaleProse("NFL offense/defense article: 'the offense's numbers tell you about twice as much' (interval above 1.5) no longer holds.")
+if not op_["ci90"]["ratio"][0] > 1:
+    raise StaleProse("NFL offense/defense article: 'the same holds for passing' (interval above 1) no longer holds.")
+if not (orun["r_off"] < op_["r_off"] and orun["r_def"] < op_["r_def"]):
+    raise StaleProse("NFL offense/defense article: 'run numbers predict less than pass numbers on both sides' no longer holds.")
+if not oa["ci90"]["b_int"][0] < 0 < oa["ci90"]["b_int"][1]:
+    raise StaleProse("NFL offense/defense article: 'no strength-on-strength effect' (interaction interval spans zero) no longer holds.")
+if not cell[("strong", "strong")]["epa"] > cell[("weak", "weak")]["epa"]:
+    raise StaleProse("NFL offense/defense article: 'a strong offense against a strong defense did better than a weak one against a weak defense' no longer holds.")
 write_numbers("nfl", N, "nfl/export_site_data.py")
