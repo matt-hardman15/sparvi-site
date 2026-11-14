@@ -1,0 +1,80 @@
+# Model card (PLAN-scout A2). Change `code` files only with a new version: python -m sparvi.registry --help
+name: cfb_player_adj
+title: CFB player adjustment
+sport: cfb
+status: champion
+version: 1.0.0
+owner: Matt
+spec: 'Player-level opponent and teammate adjustment for college football passers, rushers, and receivers: each
+  play''s EPA credited to the players on it and the defense it faced (ridge), so a player''s value is EPA per play
+  above an average player against an average defense, with small samples shrunk.'
+target: EPA per play (CFBD "ppa"), outside garbage time, FBS games
+method: 'Ridge per season and play kind (pass: passer + target + defense + home; run: rusher + defense + home) on
+  plays parsed to players from the play text (ingest/cfb/play_players.py, no API calls). Penalty chosen per kind by
+  5-fold held-out-game cross-validation on earlier seasons only (grid 1-800).'
+code:
+- cfb/player_adj/model.py
+- ingest/cfb/play_players.py
+- football/common/filters.py
+training_data:
+- data/raw/cfb/plays_*.parquet
+- data/raw/cfb/games_*.parquet
+- data/raw/cfb/players/play_players_*.parquet
+artifacts:
+- cfb/player_adj/output/validation.json
+validation:
+  file: cfb/player_adj/output/validation.json
+  metrics:
+    r_transfer: transfer.adjusted.r
+    r_transfer_raw: transfer.raw.r
+    edge_vs_raw: transfer.edge_vs_raw.est
+    n_transfer: transfer.n
+    r_wepa_rows_adjusted: wepa.adjusted.r
+    r_wepa_rows_wepa: wepa.wepa.r
+    n_wepa: wepa.n
+eval:
+  set: 'Transfers 2021-2025: players with the role minimum in both seasons (passer 100, rusher 40, target 25 plays)
+    whose team changed, rated on the season before the move and scored on raw EPA/play at the new school
+    (standardized within role).'
+  set_keys:
+    first_outcome_season: seasons.first
+    last_outcome_season: seasons.last
+    n: transfer.n
+  primary: r_transfer
+  higher_is_better: true
+live_window:
+  unit: transfer seasons
+  min: 1
+published_in: []
+backtest:
+  preregistered_at: '2026-11-14'
+  module: models/cfb/player_adj/backtest.py
+  target: Movers' raw EPA/play at the new school in season t, standardized within role (passer, rusher, target)
+  decision_dates: February 1 of the outcome season (after the bowls and the January portal window)
+  splits:
+    type: walk_forward
+    first_test: 2021
+    last_test: 2025
+    train_window: 3
+    predictor_lag: 1
+    decision: 02-01
+    fast_folds: 1
+  group_by: 'none: a player is rated on his own past plays; the penalty is tuned on earlier seasons only'
+  block: entity_id
+  baselines:
+  - last_season
+  primary_metric: pearson_r
+  bootstrap: 2000
+  seed: 7
+  pass_gate:
+    beats_baseline: last_season
+    min_skill: 0.0
+    ci_excludes_zero: true
+  gate_decided: 'Matt, 2026-11-14: strict (the 90% interval of the edge over last season''s raw EPA/play must exclude
+    zero), same as Stuff+'
+  reproduction: Exact on the same machine (sparse ridge, deterministic CV folds). Official runs happen in CI.
+  vault:
+    seasons: [2026]
+    note: Movers into 2026 are sealed; the outcome season completes in January 2027 and is scored once, then.
+    accesses: 0
+experimental: not yet through the backtest harness (pre-registered 2026-11-14)
