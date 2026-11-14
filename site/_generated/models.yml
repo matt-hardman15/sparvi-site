@@ -16,6 +16,6 @@ models:
   pitching_plus_status: "experimental: validated before the backtest harness existed; its harness port is pending"
   pitching_plus_version: "2.0.0"
   stuff_plus: "Stuff+ v2.0.0"
-  stuff_plus_backtest: "Backtest: not yet run for v2.0.0 (the backtest workflow runs it on main); earlier versions' reports are in the model's backtest folder"
-  stuff_plus_status: "experimental: 2.0.0 hasn't been through the backtest harness yet (CI runs it after merge); 1.0.1's edge over last season's results had a 90% interval that included zero, so it didn't clear the strict gate"
+  stuff_plus_backtest: "Backtest (2026-11-14, folds 2026, n 324): r 0.307 vs. 0.193 for last season; edge +0.114 (90% interval +0.007 to +0.214); gate passed; leakage tests all passed; revision-safe: no (data from before snapshots began); vault: none yet (0 accesses)"
+  stuff_plus_status: "validated in the backtest harness"
   stuff_plus_version: "2.0.0"
