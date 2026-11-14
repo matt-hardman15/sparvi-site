@@ -1,0 +1,15 @@
+---
+title: "Bowling Green Falcons"
+pagetitle: "Bowling Green football: power rating by week"
+description: "Bowling Green (Mid-American) power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+Through week 11 of 2026, Bowling Green is 3–7. Its power rating, −12.9 points against an average FBS team, ranks 122nd of 138; it is unranked in the AP poll.
+
+```{=html}
+<div id="team-root" data-team="Bowling Green"></div>
+```
+
+{{< include ../_team.qmd >}}

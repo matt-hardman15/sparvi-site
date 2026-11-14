@@ -73,6 +73,7 @@ last_reg = week.groupby("season")["week"].max()     # bowls are the last week in
 
 teams_all = []
 weeks_by_season: dict[int, list[int]] = {}
+seasons_of: dict[str, list[int]] = {}             # the seasons each team played in FBS (team pages)
 poll_week: dict[str, dict[str, list[int]]] = {}   # per season and poll: the week whose poll each slider week shows
 for season in CFG.seasons:
     fbs = pd.read_parquet(RAW / "cfb" / f"teams_{season}.parquet")
@@ -84,6 +85,8 @@ for season in CFG.seasons:
     if not weeks:
         continue
     weeks_by_season[season] = weeks
+    for t in ids:
+        seasons_of.setdefault(t, []).append(season)
     a = adj[adj["season"] == season]
     pw = power[power["season"] == season]
     rk = ranks[ranks["season"] == season].copy()
@@ -156,8 +159,9 @@ for season in CFG.seasons:
 
 ta = pd.concat(teams_all).sort_values("season").drop_duplicates("school", keep="last")
 info = [{"id": r["school"], "slug": slug(r["school"]), "name": r["school"], "nick": r.get("mascot"),
-         "abbr": r.get("abbreviation") or r["school"][:4].upper(), "conf": r["conference"], "color": r.get("color")}
-        for _, r in ta.sort_values("school").iterrows()]
+         "abbr": r.get("abbreviation") or r["school"][:4].upper(), "conf": r["conference"], "color": r.get("color"),
+         "seasons": seasons_of[r["school"]]}
+        for _, r in ta.sort_values("school").iterrows() if r["school"] in seasons_of]
 if len({t["slug"] for t in info}) != len(info):
     raise SchemaError("two CFB teams share a URL slug")
 write_json(OUT / "teams.json", info)
@@ -217,7 +221,8 @@ N = {
     "pl_first_season": str(PL["seasons"][0]), "pl_last_season": str(PL["seasons"][1]), "pl_min_week": str(PL["min_week"]),
 }
 if gap_rows:
-    fmt = lambda r: f"{r['team']} (AP {r['ap']}, power rating {r['power']})"  # noqa: E731
+    # Team names link to their pages (the prose is markdown, so the link renders in the article).
+    fmt = lambda r: f"[{r['team']}](/cfb/teams/{slug(r['team'])}/) (AP {r['ap']}, power rating {r['power']})"  # noqa: E731
     over = [r for r in gap_rows if r["gap"] >= 10][:3]
     under = sorted((r for r in gap_rows if r["gap"] <= -3), key=lambda r: r["gap"])[:3]
     N["gap_week"] = str(meta["poll_gaps"]["week"])

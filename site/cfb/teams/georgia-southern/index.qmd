@@ -1,0 +1,15 @@
+---
+title: "Georgia Southern Eagles"
+pagetitle: "Georgia Southern football: power rating by week"
+description: "Georgia Southern (Sun Belt) power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+Through week 11 of 2026, Georgia Southern is 5–4. Its power rating, +1.3 points against an average FBS team, ranks 63rd of 138; it is unranked in the AP poll.
+
+```{=html}
+<div id="team-root" data-team="Georgia Southern"></div>
+```
+
+{{< include ../_team.qmd >}}

@@ -1,0 +1,15 @@
+---
+title: "Utah Utes"
+pagetitle: "Utah football: power rating by week"
+description: "Utah (Big 12) college football power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+Through week 11 of 2026, Utah is 9–0. Its power rating, +18.1 points against an average FBS team, ranks 8th of 138; the AP poll has it 2nd.
+
+```{=html}
+<div id="team-root" data-team="Utah"></div>
+```
+
+{{< include ../_team.qmd >}}

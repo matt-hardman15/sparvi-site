@@ -1,0 +1,15 @@
+---
+title: "UTSA Roadrunners"
+pagetitle: "UTSA football: power rating by week"
+description: "UTSA (American Athletic) power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+Through week 11 of 2026, UTSA is 7–2. Its power rating, −1.6 points against an average FBS team, ranks 77th of 138; it is unranked in the AP poll.
+
+```{=html}
+<div id="team-root" data-team="UTSA"></div>
+```
+
+{{< include ../_team.qmd >}}

@@ -1,0 +1,15 @@
+---
+title: "NC State Wolfpack"
+pagetitle: "NC State football: power rating by week"
+description: "NC State (ACC) college football power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+Through week 11 of 2026, NC State is 4–5. Its power rating, −4.0 points against an average FBS team, ranks 86th of 138; it is unranked in the AP poll.
+
+```{=html}
+<div id="team-root" data-team="NC State"></div>
+```
+
+{{< include ../_team.qmd >}}

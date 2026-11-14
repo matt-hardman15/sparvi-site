@@ -1,0 +1,15 @@
+---
+title: "Northwestern Wildcats"
+pagetitle: "Northwestern football: power rating by week"
+description: "Northwestern (Big Ten) power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+Through week 11 of 2026, Northwestern is 6–3. Its power rating, +10.0 points against an average FBS team, ranks 27th of 138; it is unranked in the AP poll.
+
+```{=html}
+<div id="team-root" data-team="Northwestern"></div>
+```
+
+{{< include ../_team.qmd >}}

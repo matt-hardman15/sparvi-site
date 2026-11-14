@@ -1,0 +1,15 @@
+---
+title: "LSU Tigers"
+pagetitle: "LSU football: power rating by week"
+description: "LSU (SEC) college football power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+Through week 11 of 2026, LSU is 6–3. Its power rating, +18.3 points against an average FBS team, ranks 7th of 138; the AP poll has it 24th.
+
+```{=html}
+<div id="team-root" data-team="LSU"></div>
+```
+
+{{< include ../_team.qmd >}}
