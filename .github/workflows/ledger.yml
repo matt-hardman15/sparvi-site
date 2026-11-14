@@ -1,0 +1,36 @@
+name: ledger
+
+# The forecast ledger (PLAN-scout §4, sparvi/ledger.py) is written only by Actions jobs, which push to
+# main with the deploy key and so skip the pull-request checks. This workflow checks each of those pushes:
+# every ledger file must still start with exactly what it held before the push, and every new line must
+# be valid. A failure here means the ledger was edited: restore the old lines and void with a reason.
+#   push to main touching forecasts/ -> append-only check against the commit before the push
+#   manual run                        -> the full write path (writer, gate, check) in a scratch copy
+
+on:
+  push:
+    branches: [main]
+    paths: [forecasts/**]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ledger:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        with:
+          enable-cache: true
+      - run: uv sync --frozen
+      - name: Append-only check against the commit before this push
+        if: github.event_name == 'push'
+        run: |
+          git fetch --no-tags --depth=1 origin ${{ github.event.before }}
+          uv run python -m sparvi.ledger check --base FETCH_HEAD
+      - name: Write path in a scratch copy (nothing reaches the real ledger)
+        if: github.event_name == 'workflow_dispatch'
+        run: uv run python -m sparvi.ledger smoke
