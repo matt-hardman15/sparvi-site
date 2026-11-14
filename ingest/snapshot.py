@@ -29,6 +29,9 @@ def baseball_tables() -> list[Table]:
     rosters = sorted(RAW.glob("rosters_40man_*.parquet"))       # dated files from pull_rosters.py; newest wins
     if rosters:
         t.append(Table("rosters_40man", rosters[-1], ("player_id",), drop=("snapshot_date",)))
+    fa = RAW / f"free_agents_{cfg.season}.parquet"               # pull_free_agents.py, by hand each off-season
+    if fa.exists():
+        t.append(Table(f"free_agents_{cfg.season}", fa, ("player_id",), drop=("pulled_on",)))
     return t
 
 

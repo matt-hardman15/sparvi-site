@@ -369,6 +369,16 @@ def act_player(*sections, role_tag=False):
     return check
 
 
+def act_free_agents(p):
+    assert "Pitching+" in p.text_content(".finding")
+    assert rows(p, "#t") == 25 and p.locator("#t a[href*='player.html?id=']").count() >= 20
+    assert p.locator("#scatter svg circle").count() >= 50
+    seg(p, "#c", "Starters"); assert query(p)["role"] == "SP" and "starters" in p.text_content("#scap")
+    n_sp = rows(p, "#t")
+    seg(p, "#c", "Unsigned"); assert query(p)["status"] == "unsigned" and rows(p, "#t") <= n_sp
+    seg(p, "#c", "All"); seg(p, "#c", "Everyone")
+
+
 def act_farm(p):
     assert "r = " in p.text_content("#cap1") and p.locator("#p1 svg circle").count() >= 25
     select(p, "#c1", "Measure", "fb_velo")
@@ -552,6 +562,7 @@ PAGES = [
     ("shape-changes", "/baseball/shape-changes/", act_shape),
     ("two-week", "/baseball/two-week-signal/", act_two_week),
     ("farm-systems", "/baseball/farm-systems/", act_farm),
+    ("free-agent-pitchers", "/baseball/free-agent-pitchers/", act_free_agents),
     ("stuff-leaderboard", "/baseball/tools/stuff-leaderboard.html", act_leaderboard),
     ("triple-a", "/baseball/tools/triple-a.html", act_triple_a),
     ("triple-a-mlb", "/baseball/tools/triple-a.html?view=mlb", act_triple_a_mlb),

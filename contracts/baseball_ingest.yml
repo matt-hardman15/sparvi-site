@@ -106,6 +106,28 @@ tables:
       level: VARCHAR
       team_id: BIGINT
       parent_org_id: BIGINT
+  free_agents:
+    description: MLB's free-agent list for the off-season after `season`, MLB Stats API (snapshot; pull_free_agents.py)
+    files: "free_agents_{season}.parquet"
+    key: [player_id]
+    max_null:
+      player_id: 0
+      name: 0
+      position_type: 0
+    columns:
+      season: BIGINT
+      player_id: BIGINT
+      name: VARCHAR
+      position: VARCHAR
+      position_type: VARCHAR
+      from_team_id: BIGINT
+      from_team: VARCHAR
+      to_team_id: BIGINT
+      to_team: VARCHAR
+      notes: VARCHAR
+      date_declared: VARCHAR
+      date_signed: VARCHAR
+      pulled_on: VARCHAR
   aaa_affiliates:
     description: Triple-A club -> parent org, one file per season, MLB Stats API
     files: "aaa_affiliates_{season}.parquet"
