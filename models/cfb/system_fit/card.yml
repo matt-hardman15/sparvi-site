@@ -3,7 +3,7 @@ name: cfb_system_fit
 title: CFB system fit
 sport: cfb
 status: champion
-version: 1.0.0
+version: 1.0.1
 owner: Matt
 spec: For a college program and a position, the chance that each transfer-portal entrant succeeds at that program
   (wins the role and produces above the starters' average within two years there), from his profile, his type, the
@@ -119,10 +119,10 @@ backtest:
   gate_decided: 'Matt, 2026-11-15: strict, and against all three baselines: for each of transfer rating, raw production,
     and profile only, the 90% interval of the recall-at-10 edge (bootstrap by player) must be above zero'
   null_baseline: random_direction
-  null_baseline_note: 'Label-permutation null. Changed from uniform random after the first run (Matt, 2026-11-15): a
-    shuffled-label model still beat uniform random (+0.027 over 20 seeds) because any linear ranker puts players with
-    production at the board''s extremes. The null is now the mean credit of 20 random-direction rankers on the same
-    standardized features. The gate is unchanged.'
+  null_baseline_note: 'Label-permutation null. Changed from uniform random after the first run (Matt, 2026-11-15):
+    a shuffled-label model still beat uniform random (+0.027 over 20 seeds) because any linear ranker puts players
+    with production at the board''s extremes. The null is now the mean credit of 20 random-direction rankers on
+    the same standardized features. The gate is unchanged.'
   too_good: 0.9
   secondary: 'Reported, not gating: recall at 25; AUC among each program''s actual transfer signees (pairs within
     program, position, and window); fit x role availability (probability x open share, F0); the efficient label

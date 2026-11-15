@@ -27,22 +27,26 @@ def test_transfers_three_sources():
 
 def test_role_and_success_rules():
     rows = []
-    # n = his dropbacks; each team has 100 pass plays. raw is the in-games-he-played share: q2's 0.9 must not count.
-    for pid, team, n, raw, epa, suc in (("q1", "B", 60, 0.6, 0.3, 0.5), ("q2", "B", 40, 0.9, 0.2, 0.4), ("q3", "C", 90, 0.9, -0.1, 0.3),
+    # n = his dropbacks; B has 120 pass plays, C and D 100. raw is the in-games-he-played share: q2's 0.9 must not count.
+    for pid, team, n, raw, epa, suc in (("q1", "B", 66, 0.6, 0.3, 0.5), ("q2", "B", 54, 0.9, 0.2, 0.4), ("q3", "C", 90, 0.9, -0.1, 0.3),
                                         ("q4", "D", 80, 0.8, 0.1, 0.45)):
         rows += [{"season": 2022, "player_id": pid, "group": "QB", "team": team, "feature": "qb_dropback_share", "n": n, "raw": raw, "adj": raw},
-                 {"season": 2022, "player_id": pid, "group": "QB", "team": team, "feature": "qb_epa", "raw": epa, "adj": epa},
-                 {"season": 2022, "player_id": pid, "group": "QB", "team": team, "feature": "qb_success", "raw": suc, "adj": suc}]
-    plays = pd.Series({("B", "pass"): 100, ("C", "pass"): 100, ("D", "pass"): 100})
+                 {"season": 2022, "player_id": pid, "group": "QB", "team": team, "feature": "qb_epa", "n": n, "raw": epa, "adj": epa, "shrunk": epa},
+                 {"season": 2022, "player_id": pid, "group": "QB", "team": team, "feature": "qb_success", "n": n, "raw": suc, "adj": suc}]
+    plays = pd.Series({("B", "pass"): 120, ("C", "pass"): 100, ("D", "pass"): 100})
     out = LB.role_and_output(pd.DataFrame(rows), 2022, {"B": "SEC", "C": "SEC", "D": "SEC"}, plays).set_index("player_id")
     assert out.loc["q1", "won_role"] and not out.loc["q2", "won_role"]              # 50% of the season's dropbacks
     assert out.loc["q1", "tier"] == "Power"
     assert out.loc["q1", "above_average"] and not out.loc["q3", "above_average"]   # vs. the starters' average
+    # Replacement = backups' (didn't win the role, 50+ dropbacks) volume-weighted EPA/play at the level: only q2 (0.2).
+    assert out.loc["q1", "replacement"] == 0.2
+    assert abs(out.loc["q1", "vor"] - (0.3 - 0.2) * 66) < 1e-9 and out.loc["q3", "vor"] < 0
     tr = pd.DataFrame([{"player_id": "q1", "group": "QB", "team_to": "B"}, {"player_id": "q2", "group": "QB", "team_to": "B"},
                        {"player_id": "q9", "group": "QB", "team_to": "B"}])
     lab = LB.label(tr, out.reset_index()).set_index("player_id")
     assert lab.loc["q1", "success"] and not lab.loc["q2", "success"]
     assert not lab.loc["q9", "played"] and not lab.loc["q9", "success"]             # never played at the new school
+    assert lab.loc["q9", "vor"] == 0 and pd.isna(lab.loc["q9", "vor_rate"])
 
 
 def test_follow_stops_when_he_leaves():
@@ -51,7 +55,8 @@ def test_follow_stops_when_he_leaves():
     rosters = {2022: ros([("a", "B"), ("b", "B")]), 2023: ros([("a", "B"), ("b", "C")]), 2024: ros([("a", "B")])}
     def outc(s, won):
         return pd.DataFrame([{"player_id": "a", "group": "QB", "team": "B", "share": .6 if won else .1, "won_role": won,
-                              "composite": .5, "tier": "Power", "bar": .2, "above_average": True, "season": s}])
+                              "composite": .5, "tier": "Power", "bar": .2, "above_average": True, "season": s,
+                              "volume": 100, "epa_shrunk": .2, "replacement": .1, "vor_rate": .1, "vor": 10.0}])
     outcomes = {2022: outc(2022, False), 2023: outc(2023, True), 2024: outc(2024, True)}
     tr = pd.DataFrame([{"player_id": p, "prev_id": None, "group": "QB", "position": "QB", "team_from": "A", "team_to": "B",
                         "source": "id", "firstName": "X", "lastName": p, "season": 2022} for p in ("a", "b")])

@@ -27,6 +27,8 @@ INDEPENDENT_POWER = {"Notre Dame"}
 EFFICIENCY = {"QB": ("qb_epa", "qb_success"), "RB": ("rb_epa", "rb_success"), "WR": ("rec_epa", "rec_success"),
               "TE": ("rec_epa", "rec_success")}
 SHARE = {"QB": "qb_dropback_share", "RB": "rb_carry_share", "WR": "rec_target_share", "TE": "rec_target_share"}
+EPA = {"QB": "qb_epa", "RB": "rb_epa", "WR": "rec_epa", "TE": "rec_epa"}
+BACKUP_MIN = {"QB": 50, "RB": 30, "WR": 15, "TE": 15}      # dropbacks, carries, targets (Matt, Nov 15)
 
 
 def tier(team: str, season: int, conf: dict[str, str]) -> str:
@@ -73,7 +75,10 @@ def role_and_output(profile: pd.DataFrame, season: int, conf: dict[str, str], pl
             won = (rank <= 2) & (share["share"] >= 0.08)
         eff = q[q["feature"].isin(EFFICIENCY[g])].pivot_table(index="player_id", columns="feature", values="adj")
         z = (eff - eff.mean()) / eff.std()
-        d = share.assign(won_role=won, composite=z.mean(axis=1).reindex(share.index), group=g, season=season)
+        epa = q[q["feature"] == EPA[g]].set_index("player_id")
+        d = share.assign(won_role=won, composite=z.mean(axis=1).reindex(share.index), group=g, season=season,
+                         epa_adj=epa["adj"].reindex(share.index), epa_shrunk=epa["shrunk"].reindex(share.index),
+                         volume=epa["n"].reindex(share.index).fillna(0))
         rows.append(d.reset_index())
     out = pd.concat(rows, ignore_index=True)
     out["tier"] = [tier(t, season, conf) for t in out["team"]]
@@ -81,6 +86,19 @@ def role_and_output(profile: pd.DataFrame, season: int, conf: dict[str, str], pl
     bar = starters.groupby(["group", "tier"])["composite"].mean()
     out["bar"] = [bar.get((g, t), np.nan) for g, t in zip(out["group"], out["tier"], strict=True)]
     out["above_average"] = out["composite"] > out["bar"]
+    return value_over_replacement(out)
+
+
+def value_over_replacement(out: pd.DataFrame) -> pd.DataFrame:
+    """Replacement level (Matt, Nov 15): per position and competition level, the volume-weighted average opponent-
+    adjusted EPA per play of backups (didn't win the role, at least BACKUP_MIN opportunities): what the next man up
+    produces. vor_rate = his shrunk adjusted EPA per play minus that; vor = vor_rate x his volume (EPA plays)."""
+    mins = out["group"].map(BACKUP_MIN)
+    b = out[~out["won_role"] & (out["volume"] >= mins) & out["epa_adj"].notna()]
+    rep = b.groupby(["group", "tier"]).apply(lambda x: float(np.average(x["epa_adj"], weights=x["volume"])), include_groups=False)
+    out["replacement"] = [rep.get((g, t), np.nan) for g, t in zip(out["group"], out["tier"], strict=True)]
+    out["vor_rate"] = out["epa_shrunk"] - out["replacement"]
+    out["vor"] = (out["vor_rate"] * out["volume"]).fillna(0.0)
     return out
 
 
@@ -185,11 +203,15 @@ def label(transfers_t: pd.DataFrame, outcomes_t: pd.DataFrame) -> pd.DataFrame:
     """success = won the role at the new school AND above average there. A transfer with no season-t record at the new
     school (never recorded a dropback, carry, or target there) didn't win the role."""
     o = outcomes_t.rename(columns={"team": "team_played"})
-    d = transfers_t.merge(o[["player_id", "group", "team_played", "share", "won_role", "composite", "tier", "bar", "above_average"]],
+    d = transfers_t.merge(o[["player_id", "group", "team_played", "share", "won_role", "composite", "tier", "bar", "above_average",
+                             "volume", "epa_shrunk", "replacement", "vor_rate", "vor"]],
                           on=["player_id", "group"], how="left")
     at_new = d["team_played"] == d["team_to"]
     d["won_role"] = at_new & d["won_role"].fillna(False).astype(bool)
     d["above_average"] = at_new & d["above_average"].fillna(False).astype(bool)
     d["success"] = d["won_role"] & d["above_average"]
     d["played"] = at_new
+    for c in ("vor", "volume"):
+        d[c] = d[c].where(at_new, 0.0).fillna(0.0)                 # no value at the new school if he never played there
+    d["vor_rate"] = d["vor_rate"].where(at_new)
     return d
