@@ -1,0 +1,300 @@
+{
+ "team_seasons": 2042,
+ "seasons": [
+  2014,
+  2025
+ ],
+ "dimensions": {
+  "explained": [
+   0.2726,
+   0.1773,
+   0.0935,
+   0.0853,
+   0.0772
+  ],
+  "loadings": {
+   "D1": {
+    "pass_rate": 0.502,
+    "early_pass_rate": 0.505,
+    "neutral_pass_rate": 0.49,
+    "short_yardage_pass_rate": 0.382,
+    "plays_per_game": 0.111,
+    "fourth_down_go_rate": 0.002,
+    "wr_target_share": 0.078,
+    "te_target_share": -0.041,
+    "rb_target_share": -0.039,
+    "target_concentration": -0.109,
+    "carry_concentration": 0.046,
+    "qb_run_share": -0.134,
+    "yards_per_completion": -0.232
+   },
+   "D2": {
+    "pass_rate": -0.021,
+    "early_pass_rate": 0.006,
+    "neutral_pass_rate": 0.032,
+    "short_yardage_pass_rate": -0.067,
+    "plays_per_game": 0.202,
+    "fourth_down_go_rate": 0.081,
+    "wr_target_share": 0.621,
+    "te_target_share": -0.469,
+    "rb_target_share": -0.395,
+    "target_concentration": 0.377,
+    "carry_concentration": 0.085,
+    "qb_run_share": 0.078,
+    "yards_per_completion": 0.175
+   },
+   "D3": {
+    "pass_rate": 0.031,
+    "early_pass_rate": 0.082,
+    "neutral_pass_rate": 0.039,
+    "short_yardage_pass_rate": -0.145,
+    "plays_per_game": 0.071,
+    "fourth_down_go_rate": 0.635,
+    "wr_target_share": 0.019,
+    "te_target_share": -0.267,
+    "rb_target_share": 0.267,
+    "target_concentration": -0.242,
+    "carry_concentration": -0.423,
+    "qb_run_share": 0.42,
+    "yards_per_completion": -0.075
+   },
+   "D4": {
+    "pass_rate": -0.002,
+    "early_pass_rate": 0.057,
+    "neutral_pass_rate": 0.085,
+    "short_yardage_pass_rate": -0.202,
+    "plays_per_game": 0.394,
+    "fourth_down_go_rate": 0.478,
+    "wr_target_share": -0.18,
+    "te_target_share": 0.504,
+    "rb_target_share": -0.317,
+    "target_concentration": 0.113,
+    "carry_concentration": 0.39,
+    "qb_run_share": 0.114,
+    "yards_per_completion": 0.02
+   },
+   "D5": {
+    "pass_rate": 0.016,
+    "early_pass_rate": 0.029,
+    "neutral_pass_rate": -0.01,
+    "short_yardage_pass_rate": -0.008,
+    "plays_per_game": -0.372,
+    "fourth_down_go_rate": -0.189,
+    "wr_target_share": 0.096,
+    "te_target_share": -0.031,
+    "rb_target_share": -0.128,
+    "target_concentration": -0.213,
+    "carry_concentration": 0.457,
+    "qb_run_share": 0.688,
+    "yards_per_completion": -0.264
+   }
+  },
+  "split_half_cosine": [
+   0.996,
+   0.996,
+   0.67,
+   0.686,
+   0.828
+  ]
+ },
+ "systems": {
+  "3": {
+   "split_half_ari": 0.626,
+   "bic": 67867,
+   "sizes": [
+    267,
+    989,
+    786
+   ]
+  },
+  "4": {
+   "split_half_ari": 0.563,
+   "bic": 65983,
+   "sizes": [
+    67,
+    622,
+    851,
+    502
+   ]
+  },
+  "5": {
+   "split_half_ari": 0.45,
+   "bic": 64770,
+   "sizes": [
+    56,
+    358,
+    581,
+    650,
+    397
+   ]
+  },
+  "6": {
+   "split_half_ari": 0.476,
+   "bic": 64191,
+   "sizes": [
+    56,
+    326,
+    466,
+    373,
+    435,
+    386
+   ]
+  },
+  "7": {
+   "split_half_ari": 0.405,
+   "bic": 63571,
+   "sizes": [
+    56,
+    326,
+    444,
+    329,
+    412,
+    364,
+    111
+   ]
+  },
+  "8": {
+   "split_half_ari": 0.485,
+   "bic": 63167,
+   "sizes": [
+    53,
+    156,
+    372,
+    376,
+    229,
+    438,
+    324,
+    94
+   ]
+  },
+  "9": {
+   "split_half_ari": 0.401,
+   "bic": 62765,
+   "sizes": [
+    53,
+    159,
+    334,
+    41,
+    392,
+    222,
+    402,
+    343,
+    96
+   ]
+  },
+  "10": {
+   "split_half_ari": 0.377,
+   "bic": 62327,
+   "sizes": [
+    41,
+    23,
+    136,
+    324,
+    331,
+    41,
+    310,
+    401,
+    333,
+    102
+   ]
+  }
+ },
+ "labels": {
+  "k": 4,
+  "means": {
+   "S1": {
+    "pass_rate": -2.79,
+    "early_pass_rate": -2.76,
+    "neutral_pass_rate": -2.74,
+    "short_yardage_pass_rate": -1.95,
+    "plays_per_game": -0.14,
+    "fourth_down_go_rate": 0.6,
+    "wr_target_share": -0.14,
+    "te_target_share": -0.77,
+    "rb_target_share": 0.66,
+    "target_concentration": 0.81,
+    "carry_concentration": -0.51,
+    "qb_run_share": 0.89,
+    "yards_per_completion": 1.92
+   },
+   "S2": {
+    "pass_rate": -0.76,
+    "early_pass_rate": -0.8,
+    "neutral_pass_rate": -0.77,
+    "short_yardage_pass_rate": -0.46,
+    "plays_per_game": -0.16,
+    "fourth_down_go_rate": -0.18,
+    "wr_target_share": -0.13,
+    "te_target_share": 0.19,
+    "rb_target_share": -0.02,
+    "target_concentration": 0.07,
+    "carry_concentration": -0.01,
+    "qb_run_share": 0.1,
+    "yards_per_completion": 0.12
+   },
+   "S3": {
+    "pass_rate": 0.15,
+    "early_pass_rate": 0.14,
+    "neutral_pass_rate": 0.15,
+    "short_yardage_pass_rate": 0.07,
+    "plays_per_game": -0.01,
+    "fourth_down_go_rate": 0.01,
+    "wr_target_share": 0.04,
+    "te_target_share": 0.04,
+    "rb_target_share": -0.1,
+    "target_concentration": -0.03,
+    "carry_concentration": 0.02,
+    "qb_run_share": -0.03,
+    "yards_per_completion": -0.1
+   },
+   "S4": {
+    "pass_rate": 1.1,
+    "early_pass_rate": 1.14,
+    "neutral_pass_rate": 1.07,
+    "short_yardage_pass_rate": 0.7,
+    "plays_per_game": 0.23,
+    "fourth_down_go_rate": 0.12,
+    "wr_target_share": 0.13,
+    "te_target_share": -0.21,
+    "rb_target_share": 0.04,
+    "target_concentration": -0.17,
+    "carry_concentration": -0.01,
+    "qb_run_share": -0.21,
+    "yards_per_completion": -0.3
+   }
+  }
+ },
+ "persistence": {
+  "pairs": {
+   "same_coach": 1090,
+   "new_coach": 284
+  },
+  "median_distance": {
+   "same_coach": 2.356,
+   "new_coach": 2.859,
+   "random_teams": 3.625
+  },
+  "year_to_year_r": {
+   "D1": {
+    "same_coach": 0.751,
+    "new_coach": 0.337
+   },
+   "D2": {
+    "same_coach": 0.607,
+    "new_coach": 0.27
+   },
+   "D3": {
+    "same_coach": 0.517,
+    "new_coach": 0.392
+   },
+   "D4": {
+    "same_coach": 0.469,
+    "new_coach": 0.184
+   },
+   "D5": {
+    "same_coach": 0.46,
+    "new_coach": 0.373
+   }
+  }
+ }
+}

@@ -1,0 +1,139 @@
+{
+ "portal_link": {
+  "entries": 18906,
+  "linked": 0.9183,
+  "methods": {
+   "origin_t1": 16061,
+   "unlinked": 1544,
+   "initial_last": 532,
+   "origin_t2": 466,
+   "any_t1": 303
+  },
+  "movers": {
+   "2022": {
+    "fbs_origin": {
+     "n": 175,
+     "linked": 0.9029
+    },
+    "fcs_origin": {
+     "n": 9,
+     "linked": 0.2222
+    }
+   },
+   "2023": {
+    "fbs_origin": {
+     "n": 178,
+     "linked": 0.9775
+    },
+    "fcs_origin": {
+     "n": 106,
+     "linked": 0.3585
+    }
+   },
+   "2024": {
+    "fbs_origin": {
+     "n": 271,
+     "linked": 0.9889
+    },
+    "fcs_origin": {
+     "n": 124,
+     "linked": 0.5161
+    }
+   },
+   "2025": {
+    "fbs_origin": {
+     "n": 272,
+     "linked": 0.9816
+    },
+    "fcs_origin": {
+     "n": 181,
+     "linked": 0.6519
+    }
+   }
+  }
+ },
+ "fcs": {
+  "2021": 0.0,
+  "2022": 0.3608,
+  "2023": 0.3602,
+  "2024": 0.4161
+ },
+ "availability": {
+  "2024": {
+   "leave_rate_by_experience": {
+    "1": 0.297,
+    "2": 0.28,
+    "3": 0.326,
+    "4": 0.41,
+    "5": 0.738,
+    "6": 0.94
+   },
+   "brier": 0.1647,
+   "brier_flat": 0.2486,
+   "calibration": [
+    {
+     "bin": "(0.1, 0.3]",
+     "n": 356,
+     "predicted": 0.285,
+     "actual": 0.236
+    },
+    {
+     "bin": "(0.3, 0.5]",
+     "n": 438,
+     "predicted": 0.368,
+     "actual": 0.356
+    },
+    {
+     "bin": "(0.7, 0.9]",
+     "n": 196,
+     "predicted": 0.738,
+     "actual": 0.668
+    },
+    {
+     "bin": "(0.9, 1.0]",
+     "n": 384,
+     "predicted": 0.984,
+     "actual": 0.956
+    }
+   ]
+  },
+  "2025": {
+   "leave_rate_by_experience": {
+    "1": 0.291,
+    "2": 0.337,
+    "3": 0.383,
+    "4": 0.414,
+    "5": 0.68,
+    "6": 0.954
+   },
+   "brier": 0.1708,
+   "brier_flat": 0.2343,
+   "calibration": [
+    {
+     "bin": "(0.1, 0.3]",
+     "n": 117,
+     "predicted": 0.291,
+     "actual": 0.188
+    },
+    {
+     "bin": "(0.3, 0.5]",
+     "n": 628,
+     "predicted": 0.38,
+     "actual": 0.449
+    },
+    {
+     "bin": "(0.5, 0.7]",
+     "n": 190,
+     "predicted": 0.68,
+     "actual": 0.8
+    },
+    {
+     "bin": "(0.9, 1.0]",
+     "n": 408,
+     "predicted": 0.985,
+     "actual": 0.941
+    }
+   ]
+  }
+ }
+}

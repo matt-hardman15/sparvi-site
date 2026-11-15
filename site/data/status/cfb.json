@@ -2082,7 +2082,7 @@
   {
    "name": "plays_2026: row count",
    "ok": true,
-   "detail": "228,253 rows (last accepted 228,081)"
+   "detail": "228,253 rows (last accepted 228,253)"
   },
   {
    "name": "plays_2026: one row per id",
@@ -2397,7 +2397,7 @@
   {
    "name": "roster_2014: row count",
    "ok": true,
-   "detail": "16,164 rows"
+   "detail": "16,164 rows (last accepted 16,164)"
   },
   {
    "name": "roster_2014: one row per id + team",
@@ -2422,7 +2422,7 @@
   {
    "name": "player_stats_2014: row count",
    "ok": true,
-   "detail": "40,210 rows"
+   "detail": "40,210 rows (last accepted 40,210)"
   },
   {
    "name": "player_stats_2014: one row per playerId + team + category + statType",
@@ -2452,7 +2452,7 @@
   {
    "name": "player_usage_2014: row count",
    "ok": true,
-   "detail": "3,035 rows"
+   "detail": "3,035 rows (last accepted 3,035)"
   },
   {
    "name": "player_usage_2014: one row per id + team",
@@ -2477,7 +2477,7 @@
   {
    "name": "player_ppa_2014: row count",
    "ok": true,
-   "detail": "3,035 rows"
+   "detail": "3,035 rows (last accepted 3,035)"
   },
   {
    "name": "player_ppa_2014: one row per id + team",
@@ -2497,7 +2497,7 @@
   {
    "name": "player_wepa_2014: row count",
    "ok": true,
-   "detail": "508 rows"
+   "detail": "508 rows (last accepted 508)"
   },
   {
    "name": "player_wepa_2014: one row per kind + athleteId + team",
@@ -2537,7 +2537,7 @@
   {
    "name": "roster_2015: row count",
    "ok": true,
-   "detail": "16,399 rows"
+   "detail": "16,399 rows (last accepted 16,399)"
   },
   {
    "name": "roster_2015: one row per id + team",
@@ -2562,7 +2562,7 @@
   {
    "name": "player_stats_2015: row count",
    "ok": true,
-   "detail": "41,273 rows"
+   "detail": "41,273 rows (last accepted 41,273)"
   },
   {
    "name": "player_stats_2015: one row per playerId + team + category + statType",
@@ -2592,7 +2592,7 @@
   {
    "name": "player_usage_2015: row count",
    "ok": true,
-   "detail": "3,082 rows"
+   "detail": "3,082 rows (last accepted 3,082)"
   },
   {
    "name": "player_usage_2015: one row per id + team",
@@ -2617,7 +2617,7 @@
   {
    "name": "player_ppa_2015: row count",
    "ok": true,
-   "detail": "3,082 rows"
+   "detail": "3,082 rows (last accepted 3,082)"
   },
   {
    "name": "player_ppa_2015: one row per id + team",
@@ -2637,7 +2637,7 @@
   {
    "name": "player_wepa_2015: row count",
    "ok": true,
-   "detail": "647 rows"
+   "detail": "647 rows (last accepted 647)"
   },
   {
    "name": "player_wepa_2015: one row per kind + athleteId + team",
@@ -2677,7 +2677,7 @@
   {
    "name": "roster_2016: row count",
    "ok": true,
-   "detail": "18,041 rows"
+   "detail": "18,041 rows (last accepted 18,041)"
   },
   {
    "name": "roster_2016: one row per id + team",
@@ -2702,7 +2702,7 @@
   {
    "name": "player_stats_2016: row count",
    "ok": true,
-   "detail": "98,529 rows"
+   "detail": "98,529 rows (last accepted 98,529)"
   },
   {
    "name": "player_stats_2016: one row per playerId + team + category + statType",
@@ -2732,7 +2732,7 @@
   {
    "name": "player_usage_2016: row count",
    "ok": true,
-   "detail": "3,226 rows"
+   "detail": "3,226 rows (last accepted 3,226)"
   },
   {
    "name": "player_usage_2016: one row per id + team",
@@ -2757,7 +2757,7 @@
   {
    "name": "player_ppa_2016: row count",
    "ok": true,
-   "detail": "3,226 rows"
+   "detail": "3,226 rows (last accepted 3,226)"
   },
   {
    "name": "player_ppa_2016: one row per id + team",
@@ -2777,7 +2777,7 @@
   {
    "name": "player_wepa_2016: row count",
    "ok": true,
-   "detail": "813 rows"
+   "detail": "813 rows (last accepted 813)"
   },
   {
    "name": "player_wepa_2016: one row per kind + athleteId + team",
@@ -2817,7 +2817,7 @@
   {
    "name": "roster_2017: row count",
    "ok": true,
-   "detail": "17,894 rows"
+   "detail": "17,894 rows (last accepted 17,894)"
   },
   {
    "name": "roster_2017: one row per id + team",
@@ -2842,7 +2842,7 @@
   {
    "name": "player_stats_2017: row count",
    "ok": true,
-   "detail": "102,114 rows"
+   "detail": "102,114 rows (last accepted 102,114)"
   },
   {
    "name": "player_stats_2017: one row per playerId + team + category + statType",
@@ -2872,7 +2872,7 @@
   {
    "name": "player_usage_2017: row count",
    "ok": true,
-   "detail": "3,202 rows"
+   "detail": "3,202 rows (last accepted 3,202)"
   },
   {
    "name": "player_usage_2017: one row per id + team",
@@ -2897,7 +2897,7 @@
   {
    "name": "player_ppa_2017: row count",
    "ok": true,
-   "detail": "3,202 rows"
+   "detail": "3,202 rows (last accepted 3,202)"
   },
   {
    "name": "player_ppa_2017: one row per id + team",
@@ -2917,7 +2917,7 @@
   {
    "name": "player_wepa_2017: row count",
    "ok": true,
-   "detail": "882 rows"
+   "detail": "882 rows (last accepted 882)"
   },
   {
    "name": "player_wepa_2017: one row per kind + athleteId + team",
@@ -2957,7 +2957,7 @@
   {
    "name": "roster_2018: row count",
    "ok": true,
-   "detail": "17,902 rows"
+   "detail": "17,902 rows (last accepted 17,902)"
   },
   {
    "name": "roster_2018: one row per id + team",
@@ -2982,7 +2982,7 @@
   {
    "name": "player_stats_2018: row count",
    "ok": true,
-   "detail": "106,469 rows"
+   "detail": "106,469 rows (last accepted 106,469)"
   },
   {
    "name": "player_stats_2018: one row per playerId + team + category + statType",
@@ -3012,7 +3012,7 @@
   {
    "name": "player_usage_2018: row count",
    "ok": true,
-   "detail": "3,461 rows"
+   "detail": "3,461 rows (last accepted 3,461)"
   },
   {
    "name": "player_usage_2018: one row per id + team",
@@ -3037,7 +3037,7 @@
   {
    "name": "player_ppa_2018: row count",
    "ok": true,
-   "detail": "3,461 rows"
+   "detail": "3,461 rows (last accepted 3,461)"
   },
   {
    "name": "player_ppa_2018: one row per id + team",
@@ -3057,7 +3057,7 @@
   {
    "name": "player_wepa_2018: row count",
    "ok": true,
-   "detail": "897 rows"
+   "detail": "897 rows (last accepted 897)"
   },
   {
    "name": "player_wepa_2018: one row per kind + athleteId + team",
@@ -3097,7 +3097,7 @@
   {
    "name": "roster_2019: row count",
    "ok": true,
-   "detail": "18,732 rows"
+   "detail": "18,732 rows (last accepted 18,732)"
   },
   {
    "name": "roster_2019: one row per id + team",
@@ -3122,7 +3122,7 @@
   {
    "name": "player_stats_2019: row count",
    "ok": true,
-   "detail": "103,303 rows"
+   "detail": "103,303 rows (last accepted 103,303)"
   },
   {
    "name": "player_stats_2019: one row per playerId + team + category + statType",
@@ -3152,7 +3152,7 @@
   {
    "name": "player_usage_2019: row count",
    "ok": true,
-   "detail": "3,489 rows"
+   "detail": "3,489 rows (last accepted 3,489)"
   },
   {
    "name": "player_usage_2019: one row per id + team",
@@ -3177,7 +3177,7 @@
   {
    "name": "player_ppa_2019: row count",
    "ok": true,
-   "detail": "3,489 rows"
+   "detail": "3,489 rows (last accepted 3,489)"
   },
   {
    "name": "player_ppa_2019: one row per id + team",
@@ -3197,7 +3197,7 @@
   {
    "name": "player_wepa_2019: row count",
    "ok": true,
-   "detail": "884 rows"
+   "detail": "884 rows (last accepted 884)"
   },
   {
    "name": "player_wepa_2019: one row per kind + athleteId + team",
@@ -3237,7 +3237,7 @@
   {
    "name": "roster_2020: row count",
    "ok": true,
-   "detail": "16,423 rows"
+   "detail": "16,423 rows (last accepted 16,423)"
   },
   {
    "name": "roster_2020: one row per id + team",
@@ -3262,7 +3262,7 @@
   {
    "name": "player_stats_2020: row count",
    "ok": true,
-   "detail": "73,490 rows"
+   "detail": "73,490 rows (last accepted 73,490)"
   },
   {
    "name": "player_stats_2020: one row per playerId + team + category + statType",
@@ -3292,7 +3292,7 @@
   {
    "name": "player_usage_2020: row count",
    "ok": true,
-   "detail": "2,370 rows"
+   "detail": "2,370 rows (last accepted 2,370)"
   },
   {
    "name": "player_usage_2020: one row per id + team",
@@ -3317,7 +3317,7 @@
   {
    "name": "player_ppa_2020: row count",
    "ok": true,
-   "detail": "2,370 rows"
+   "detail": "2,370 rows (last accepted 2,370)"
   },
   {
    "name": "player_ppa_2020: one row per id + team",
@@ -3337,7 +3337,7 @@
   {
    "name": "player_wepa_2020: row count",
    "ok": true,
-   "detail": "729 rows"
+   "detail": "729 rows (last accepted 729)"
   },
   {
    "name": "player_wepa_2020: one row per kind + athleteId + team",
@@ -3377,7 +3377,7 @@
   {
    "name": "roster_2021: row count",
    "ok": true,
-   "detail": "18,633 rows"
+   "detail": "18,633 rows (last accepted 18,633)"
   },
   {
    "name": "roster_2021: one row per id + team",
@@ -3402,7 +3402,7 @@
   {
    "name": "player_stats_2021: row count",
    "ok": true,
-   "detail": "109,056 rows"
+   "detail": "109,056 rows (last accepted 109,056)"
   },
   {
    "name": "player_stats_2021: one row per playerId + team + category + statType",
@@ -3432,7 +3432,7 @@
   {
    "name": "player_usage_2021: row count",
    "ok": true,
-   "detail": "3,282 rows"
+   "detail": "3,282 rows (last accepted 3,282)"
   },
   {
    "name": "player_usage_2021: one row per id + team",
@@ -3457,7 +3457,7 @@
   {
    "name": "player_ppa_2021: row count",
    "ok": true,
-   "detail": "3,282 rows"
+   "detail": "3,282 rows (last accepted 3,282)"
   },
   {
    "name": "player_ppa_2021: one row per id + team",
@@ -3477,7 +3477,7 @@
   {
    "name": "player_wepa_2021: row count",
    "ok": true,
-   "detail": "866 rows"
+   "detail": "866 rows (last accepted 866)"
   },
   {
    "name": "player_wepa_2021: one row per kind + athleteId + team",
@@ -3517,7 +3517,7 @@
   {
    "name": "roster_2022: row count",
    "ok": true,
-   "detail": "30,388 rows"
+   "detail": "30,388 rows (last accepted 30,388)"
   },
   {
    "name": "roster_2022: one row per id + team",
@@ -3542,7 +3542,7 @@
   {
    "name": "player_stats_2022: row count",
    "ok": true,
-   "detail": "138,632 rows"
+   "detail": "138,632 rows (last accepted 138,632)"
   },
   {
    "name": "player_stats_2022: one row per playerId + team + category + statType",
@@ -3572,7 +3572,7 @@
   {
    "name": "player_usage_2022: row count",
    "ok": true,
-   "detail": "4,971 rows"
+   "detail": "4,971 rows (last accepted 4,971)"
   },
   {
    "name": "player_usage_2022: one row per id + team",
@@ -3597,7 +3597,7 @@
   {
    "name": "player_ppa_2022: row count",
    "ok": true,
-   "detail": "4,971 rows"
+   "detail": "4,971 rows (last accepted 4,971)"
   },
   {
    "name": "player_ppa_2022: one row per id + team",
@@ -3617,7 +3617,7 @@
   {
    "name": "player_wepa_2022: row count",
    "ok": true,
-   "detail": "871 rows"
+   "detail": "871 rows (last accepted 871)"
   },
   {
    "name": "player_wepa_2022: one row per kind + athleteId + team",
@@ -3657,7 +3657,7 @@
   {
    "name": "roster_2023: row count",
    "ok": true,
-   "detail": "22,365 rows"
+   "detail": "22,365 rows (last accepted 22,365)"
   },
   {
    "name": "roster_2023: one row per id + team",
@@ -3682,7 +3682,7 @@
   {
    "name": "player_stats_2023: row count",
    "ok": true,
-   "detail": "132,228 rows"
+   "detail": "132,228 rows (last accepted 132,228)"
   },
   {
    "name": "player_stats_2023: one row per playerId + team + category + statType",
@@ -3712,7 +3712,7 @@
   {
    "name": "player_usage_2023: row count",
    "ok": true,
-   "detail": "4,649 rows"
+   "detail": "4,649 rows (last accepted 4,649)"
   },
   {
    "name": "player_usage_2023: one row per id + team",
@@ -3737,7 +3737,7 @@
   {
    "name": "player_ppa_2023: row count",
    "ok": true,
-   "detail": "4,649 rows"
+   "detail": "4,649 rows (last accepted 4,649)"
   },
   {
    "name": "player_ppa_2023: one row per id + team",
@@ -3757,7 +3757,7 @@
   {
    "name": "player_wepa_2023: row count",
    "ok": true,
-   "detail": "887 rows"
+   "detail": "887 rows (last accepted 887)"
   },
   {
    "name": "player_wepa_2023: one row per kind + athleteId + team",
@@ -3797,7 +3797,7 @@
   {
    "name": "roster_2024: row count",
    "ok": true,
-   "detail": "22,794 rows"
+   "detail": "22,794 rows (last accepted 22,794)"
   },
   {
    "name": "roster_2024: one row per id + team",
@@ -3822,7 +3822,7 @@
   {
    "name": "player_stats_2024: row count",
    "ok": true,
-   "detail": "135,294 rows"
+   "detail": "135,294 rows (last accepted 135,294)"
   },
   {
    "name": "player_stats_2024: one row per playerId + team + category + statType",
@@ -3852,7 +3852,7 @@
   {
    "name": "player_usage_2024: row count",
    "ok": true,
-   "detail": "4,403 rows"
+   "detail": "4,403 rows (last accepted 4,403)"
   },
   {
    "name": "player_usage_2024: one row per id + team",
@@ -3877,7 +3877,7 @@
   {
    "name": "player_ppa_2024: row count",
    "ok": true,
-   "detail": "4,403 rows"
+   "detail": "4,403 rows (last accepted 4,403)"
   },
   {
    "name": "player_ppa_2024: one row per id + team",
@@ -3897,7 +3897,7 @@
   {
    "name": "player_wepa_2024: row count",
    "ok": true,
-   "detail": "854 rows"
+   "detail": "854 rows (last accepted 854)"
   },
   {
    "name": "player_wepa_2024: one row per kind + athleteId + team",
@@ -3937,7 +3937,7 @@
   {
    "name": "roster_2025: row count",
    "ok": true,
-   "detail": "30,031 rows"
+   "detail": "30,031 rows (last accepted 30,031)"
   },
   {
    "name": "roster_2025: one row per id + team",
@@ -3962,7 +3962,7 @@
   {
    "name": "player_stats_2025: row count",
    "ok": true,
-   "detail": "141,637 rows"
+   "detail": "141,637 rows (last accepted 141,637)"
   },
   {
    "name": "player_stats_2025: one row per playerId + team + category + statType",
@@ -3992,7 +3992,7 @@
   {
    "name": "player_usage_2025: row count",
    "ok": true,
-   "detail": "5,551 rows"
+   "detail": "5,551 rows (last accepted 5,551)"
   },
   {
    "name": "player_usage_2025: one row per id + team",
@@ -4017,7 +4017,7 @@
   {
    "name": "player_ppa_2025: row count",
    "ok": true,
-   "detail": "5,551 rows"
+   "detail": "5,551 rows (last accepted 5,551)"
   },
   {
    "name": "player_ppa_2025: one row per id + team",
@@ -4037,7 +4037,7 @@
   {
    "name": "player_wepa_2025: row count",
    "ok": true,
-   "detail": "912 rows"
+   "detail": "912 rows (last accepted 912)"
   },
   {
    "name": "player_wepa_2025: one row per kind + athleteId + team",
@@ -4077,7 +4077,7 @@
   {
    "name": "roster_2026: row count",
    "ok": true,
-   "detail": "31,579 rows"
+   "detail": "31,579 rows (last accepted 31,579)"
   },
   {
    "name": "roster_2026: one row per id + team",
@@ -4102,7 +4102,7 @@
   {
    "name": "player_stats_2026: row count",
    "ok": true,
-   "detail": "154,377 rows"
+   "detail": "154,377 rows (last accepted 154,377)"
   },
   {
    "name": "player_stats_2026: one row per playerId + team + category + statType",
@@ -4132,7 +4132,7 @@
   {
    "name": "player_usage_2026: row count",
    "ok": true,
-   "detail": "5,426 rows"
+   "detail": "5,426 rows (last accepted 5,426)"
   },
   {
    "name": "player_usage_2026: one row per id + team",
@@ -4157,7 +4157,7 @@
   {
    "name": "player_ppa_2026: row count",
    "ok": true,
-   "detail": "5,426 rows"
+   "detail": "5,426 rows (last accepted 5,426)"
   },
   {
    "name": "player_ppa_2026: one row per id + team",
@@ -4177,7 +4177,7 @@
   {
    "name": "player_wepa_2026: row count",
    "ok": true,
-   "detail": "805 rows"
+   "detail": "805 rows (last accepted 805)"
   },
   {
    "name": "player_wepa_2026: one row per kind + athleteId + team",
@@ -4217,7 +4217,7 @@
   {
    "name": "play_players_2014: row count",
    "ok": true,
-   "detail": "171,229 rows"
+   "detail": "171,229 rows (last accepted 171,229)"
   },
   {
    "name": "play_players_2014: one row per play_id + role",
@@ -4252,7 +4252,7 @@
   {
    "name": "play_players_2015: row count",
    "ok": true,
-   "detail": "173,083 rows"
+   "detail": "173,083 rows (last accepted 173,083)"
   },
   {
    "name": "play_players_2015: one row per play_id + role",
@@ -4287,7 +4287,7 @@
   {
    "name": "play_players_2016: row count",
    "ok": true,
-   "detail": "171,319 rows"
+   "detail": "171,319 rows (last accepted 171,319)"
   },
   {
    "name": "play_players_2016: one row per play_id + role",
@@ -4322,7 +4322,7 @@
   {
    "name": "play_players_2017: row count",
    "ok": true,
-   "detail": "170,745 rows"
+   "detail": "170,745 rows (last accepted 170,745)"
   },
   {
    "name": "play_players_2017: one row per play_id + role",
@@ -4357,7 +4357,7 @@
   {
    "name": "play_players_2018: row count",
    "ok": true,
-   "detail": "173,628 rows"
+   "detail": "173,628 rows (last accepted 173,628)"
   },
   {
    "name": "play_players_2018: one row per play_id + role",
@@ -4392,7 +4392,7 @@
   {
    "name": "play_players_2019: row count",
    "ok": true,
-   "detail": "173,613 rows"
+   "detail": "173,613 rows (last accepted 173,613)"
   },
   {
    "name": "play_players_2019: one row per play_id + role",
@@ -4427,7 +4427,7 @@
   {
    "name": "play_players_2020: row count",
    "ok": true,
-   "detail": "111,461 rows"
+   "detail": "111,461 rows (last accepted 111,461)"
   },
   {
    "name": "play_players_2020: one row per play_id + role",
@@ -4462,7 +4462,7 @@
   {
    "name": "play_players_2021: row count",
    "ok": true,
-   "detail": "162,808 rows"
+   "detail": "162,808 rows (last accepted 162,808)"
   },
   {
    "name": "play_players_2021: one row per play_id + role",
@@ -4497,7 +4497,7 @@
   {
    "name": "play_players_2022: row count",
    "ok": true,
-   "detail": "253,114 rows"
+   "detail": "253,114 rows (last accepted 253,114)"
   },
   {
    "name": "play_players_2022: one row per play_id + role",
@@ -4532,7 +4532,7 @@
   {
    "name": "play_players_2023: row count",
    "ok": true,
-   "detail": "250,638 rows"
+   "detail": "250,638 rows (last accepted 250,638)"
   },
   {
    "name": "play_players_2023: one row per play_id + role",
@@ -4567,7 +4567,7 @@
   {
    "name": "play_players_2024: row count",
    "ok": true,
-   "detail": "268,245 rows"
+   "detail": "268,245 rows (last accepted 268,245)"
   },
   {
    "name": "play_players_2024: one row per play_id + role",
@@ -4602,7 +4602,7 @@
   {
    "name": "play_players_2025: row count",
    "ok": true,
-   "detail": "288,655 rows"
+   "detail": "288,655 rows (last accepted 288,655)"
   },
   {
    "name": "play_players_2025: one row per play_id + role",
@@ -4637,7 +4637,7 @@
   {
    "name": "play_players_2026: row count",
    "ok": true,
-   "detail": "203,370 rows"
+   "detail": "203,370 rows (last accepted 203,370)"
   },
   {
    "name": "play_players_2026: one row per play_id + role",
@@ -4672,7 +4672,7 @@
   {
    "name": "portal_2021: row count",
    "ok": true,
-   "detail": "1,770 rows"
+   "detail": "1,770 rows (last accepted 1,770)"
   },
   {
    "name": "portal_2021: one row per firstName + lastName + origin + transferDate",
@@ -4707,7 +4707,7 @@
   {
    "name": "portal_2022: row count",
    "ok": true,
-   "detail": "2,273 rows"
+   "detail": "2,273 rows (last accepted 2,273)"
   },
   {
    "name": "portal_2022: one row per firstName + lastName + origin + transferDate",
@@ -4742,7 +4742,7 @@
   {
    "name": "portal_2023: row count",
    "ok": true,
-   "detail": "2,502 rows"
+   "detail": "2,502 rows (last accepted 2,502)"
   },
   {
    "name": "portal_2023: one row per firstName + lastName + origin + transferDate",
@@ -4777,7 +4777,7 @@
   {
    "name": "portal_2024: row count",
    "ok": true,
-   "detail": "3,378 rows"
+   "detail": "3,378 rows (last accepted 3,378)"
   },
   {
    "name": "portal_2024: one row per firstName + lastName + origin + transferDate",
@@ -4812,7 +4812,7 @@
   {
    "name": "portal_2025: row count",
    "ok": true,
-   "detail": "4,499 rows"
+   "detail": "4,499 rows (last accepted 4,499)"
   },
   {
    "name": "portal_2025: one row per firstName + lastName + origin + transferDate",
@@ -4847,7 +4847,7 @@
   {
    "name": "portal_2026: row count",
    "ok": true,
-   "detail": "4,484 rows"
+   "detail": "4,484 rows (last accepted 4,484)"
   },
   {
    "name": "portal_2026: one row per firstName + lastName + origin + transferDate",
@@ -4912,7 +4912,7 @@
   {
    "name": "recruits_2014: row count",
    "ok": true,
-   "detail": "3,772 rows"
+   "detail": "3,772 rows (last accepted 3,772)"
   },
   {
    "name": "recruits_2014: one row per id",
@@ -4937,7 +4937,7 @@
   {
    "name": "recruits_2015: row count",
    "ok": true,
-   "detail": "3,516 rows"
+   "detail": "3,516 rows (last accepted 3,516)"
   },
   {
    "name": "recruits_2015: one row per id",
@@ -4962,7 +4962,7 @@
   {
    "name": "recruits_2016: row count",
    "ok": true,
-   "detail": "4,452 rows"
+   "detail": "4,452 rows (last accepted 4,452)"
   },
   {
    "name": "recruits_2016: one row per id",
@@ -4987,7 +4987,7 @@
   {
    "name": "recruits_2017: row count",
    "ok": true,
-   "detail": "4,710 rows"
+   "detail": "4,710 rows (last accepted 4,710)"
   },
   {
    "name": "recruits_2017: one row per id",
@@ -5012,7 +5012,7 @@
   {
    "name": "recruits_2018: row count",
    "ok": true,
-   "detail": "4,348 rows"
+   "detail": "4,348 rows (last accepted 4,348)"
   },
   {
    "name": "recruits_2018: one row per id",
@@ -5037,7 +5037,7 @@
   {
    "name": "recruits_2019: row count",
    "ok": true,
-   "detail": "4,455 rows"
+   "detail": "4,455 rows (last accepted 4,455)"
   },
   {
    "name": "recruits_2019: one row per id",
@@ -5062,7 +5062,7 @@
   {
    "name": "recruits_2020: row count",
    "ok": true,
-   "detail": "4,413 rows"
+   "detail": "4,413 rows (last accepted 4,413)"
   },
   {
    "name": "recruits_2020: one row per id",
@@ -5087,7 +5087,7 @@
   {
    "name": "recruits_2021: row count",
    "ok": true,
-   "detail": "3,364 rows"
+   "detail": "3,364 rows (last accepted 3,364)"
   },
   {
    "name": "recruits_2021: one row per id",
@@ -5112,7 +5112,7 @@
   {
    "name": "recruits_2022: row count",
    "ok": true,
-   "detail": "3,955 rows"
+   "detail": "3,955 rows (last accepted 3,955)"
   },
   {
    "name": "recruits_2022: one row per id",
@@ -5137,7 +5137,7 @@
   {
    "name": "recruits_2023: row count",
    "ok": true,
-   "detail": "4,166 rows"
+   "detail": "4,166 rows (last accepted 4,166)"
   },
   {
    "name": "recruits_2023: one row per id",
@@ -5162,7 +5162,7 @@
   {
    "name": "recruits_2024: row count",
    "ok": true,
-   "detail": "4,236 rows"
+   "detail": "4,236 rows (last accepted 4,236)"
   },
   {
    "name": "recruits_2024: one row per id",
@@ -5187,7 +5187,7 @@
   {
    "name": "recruits_2025: row count",
    "ok": true,
-   "detail": "4,120 rows"
+   "detail": "4,120 rows (last accepted 4,120)"
   },
   {
    "name": "recruits_2025: one row per id",
@@ -5212,7 +5212,7 @@
   {
    "name": "recruits_2026: row count",
    "ok": true,
-   "detail": "3,987 rows"
+   "detail": "3,987 rows (last accepted 3,987)"
   },
   {
    "name": "recruits_2026: one row per id",
