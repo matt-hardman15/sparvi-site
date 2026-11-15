@@ -358,7 +358,7 @@ def entrants(loader, t: int, as_of) -> pd.DataFrame:
     p["group"] = p["player_id"].map(rpos).map(G.POSITION_GROUP).fillna(p["position"].map(G.POSITION_GROUP))
     p = p[p["group"].isin(["QB", "RB", "WR", "TE"])]
     p = p.sort_values(["player_id", "transferDate"]).drop_duplicates("player_id", keep="first")
-    return p[["player_id", "group", "origin", "stars", "rating", "transferDate"]].reset_index(drop=True)
+    return p[["player_id", "group", "origin", "stars", "rating", "transferDate", "firstName", "lastName", "destination"]].reset_index(drop=True)
 
 
 def credit(score_: pd.Series, by: list[pd.Series], top: int = TOP) -> np.ndarray:

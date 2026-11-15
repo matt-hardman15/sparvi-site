@@ -3,7 +3,7 @@ name: cfb_system_fit
 title: CFB system fit
 sport: cfb
 status: champion
-version: 1.0.1
+version: 1.1.0
 owner: Matt
 spec: For a college program and a position, the chance that each transfer-portal entrant succeeds at that program
   (wins the role and produces above the starters' average within two years there), from his profile, his type, the
@@ -23,7 +23,10 @@ method: 'One L2-regularized logistic regression per position group (QB, RB, rece
   x each system dimension (the fit), and the level change (destination minus origin) alone and x efficiency (translation).
   Features standardized on the training rows; the penalty is chosen by leave-one-cohort-out log loss within the
   training cohorts from C in {0.01, 0.03, 0.1, 0.3, 1}.'
-history: New (SYSTEM-FIT F4). Builds on PLAYER-PROFILE 1.0.1 (cfb_player_profile) and the F0-F3 data layers.
+history: 'New (SYSTEM-FIT F4). Builds on PLAYER-PROFILE 1.0.1 (cfb_player_profile) and the F0-F3 data layers. 1.1.0
+  (SC-3a, the public portal board): the board trains on transfer cohorts through 2024 only (no 2026 outcome before
+  the Phase 2 vault opens) with dimensions fit on complete seasons, and reads the season just played as of the board''s
+  date while it is still in progress. Same spec; the backtest path is unchanged.'
 code:
 - cfb/fit/model.py
 - cfb/fit/labels.py
@@ -31,6 +34,7 @@ code:
 - cfb/fit/player_types.py
 - cfb/fit/data.py
 - cfb/fit/portal.py
+- cfb/portal/board.py
 - cfb/profile/engine.py
 - cfb/profile/events.py
 - cfb/profile/features.yml

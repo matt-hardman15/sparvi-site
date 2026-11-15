@@ -190,8 +190,17 @@ def main() -> int:
     ap.add_argument("--current", action="store_true", help="only the current season")
     ap.add_argument("--estimate", action="store_true", help="count the calls needed and stop")
     ap.add_argument("--yes", action="store_true", help="go ahead above the approval line")
+    ap.add_argument("--portal", action="store_true", help="only the coming window's portal entries (one call; SC-3a daily)")
     a = ap.parse_args()
     cfg = cfb()
+    if a.portal:
+        c = Client()
+        c.remaining = c.info().get("remainingCalls")
+        if c.remaining is not None and c.remaining - 1 < cfg.call_reserve:
+            print(f"not enough quota above the {cfg.call_reserve}-call reserve; stopping")
+            return 3
+        players.pull(c, only=("portal", cfg.season + 1))
+        return 0
     seasons = [cfg.season] if a.current else cfg.seasons
     need = estimate(seasons) + estimate_players()
     print(f"estimated uncached CFBD calls: {need} (approval line {cfg.approve_over}, reserve {cfg.call_reserve})")

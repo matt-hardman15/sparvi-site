@@ -76,7 +76,7 @@
   "title": "CFB system fit",
   "sport": "cfb",
   "status": "champion",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "registered": "2026-11-15",
   "primary": "recall_at_10",
   "primary_value": 0.1479,

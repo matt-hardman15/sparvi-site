@@ -2,6 +2,12 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-15 · CFB system fit 1.0.1 → 1.1.0 (minor: the portal board's training data)
+SC-3a. For the public portal board the model trains on transfer cohorts through 2024 only, so no 2026 outcome is used
+before the Phase 2 vault opens (PLAN-fit); system and type dimensions are fit on complete seasons (through 2025), and a
+live loader may read the season just played as of the board's date. `cfb/portal/board.py` joins the card's code. The
+backtest path (fit_fold with no cap) is unchanged; still experimental on 1.0.0's result.
+
 ## 2026-11-15 · CFB system fit 1.0.0 → 1.0.1 (patch)
 `cfb/fit/labels.py` (in the card's code) gains value over replacement (SYSTEM-FIT-EXPLORE, Matt: replacement = backups'
 volume-weighted adjusted EPA/play per position, level, season). New columns only: the success labels, the model's

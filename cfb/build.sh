@@ -19,3 +19,4 @@ python cfb/adjusted_ratings/polls.py
 python cfb/export_site_data.py
 python cfb/thumb.py
 python cfb/team_pages.py
+python cfb/portal/export.py
