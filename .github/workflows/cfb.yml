@@ -45,18 +45,31 @@ jobs:
       # Raw CFBD data (and the response cache) carries over between runs: past seasons never change,
       # so only the current season is fetched. Raw data is never committed or published (CFBD terms).
       - name: Restore raw CFB data
+        id: raw_cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: data/raw/cfb
           key: cfb-raw-${{ github.run_id }}
           restore-keys: cfb-raw-
 
+      # No cache (first run, or GitHub evicted it): restore the private R2 seed (ingest/cfb/seed.py) instead of
+      # re-pulling every season from CFBD, which would cost thousands of calls.
+      - name: Restore raw CFB data from the R2 seed
+        if: steps.raw_cache.outputs.cache-matched-key == ''
+        env:
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: uv run python -m ingest.cfb.seed restore
+
       # The key never appears in logs; the client stops at the call reserve in sparvi.toml [cfb].
       - name: Pull CollegeFootballData.com
         env:
           CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
         run: |
-          if [ -d data/raw/cfb ]; then uv run python ingest/cfb/pull.py --current; else uv run python ingest/cfb/pull.py --yes; fi
+          # A full re-pull needs a person's OK (pull.py asks above 300 uncached calls); without data the run stops here.
+          if [ -d data/raw/cfb ]; then uv run python ingest/cfb/pull.py --current; else echo "::error::No CFB raw data (cache and R2 seed both missing)"; exit 1; fi
 
       - name: Save raw CFB data
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
