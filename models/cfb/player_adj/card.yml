@@ -17,7 +17,10 @@ method: 'Per season and play kind, ridge regression of schedule-neutral EPA (EPA
   (ingest/cfb/play_players.py, no API calls).'
 history: 'v1 design (single penalty toward zero, defense dummies, play-level CV) was pre-registered 2026-11-14 and
   run once as a dry run: adjusted r 0.311 vs raw 0.326 on 481 transfers 2021-2025, gate failed (QBs worse, RBs/WRs
-  even). Redesigned to v2 before registration at Matt''s direction (review/model-changes.md, 2026-11-14).'
+  even). Redesigned to v2 before registration at Matt''s direction (review/model-changes.md, 2026-11-14). v2 amended
+  2026-11-14 before any test fold ran (only a training-era fold, outcome 2019, was used to debug): CFBD''s roster class
+  field is unusable, so class year is derived from the recruiting class (or roster history); penalty grid extended
+  down to 10 and 25 plays after the debug fold picked the old minimum.'
 code:
 - cfb/player_adj/model.py
 - ingest/cfb/play_players.py
