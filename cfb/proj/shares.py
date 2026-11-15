@@ -241,13 +241,10 @@ def _boot(d: pd.DataFrame, a: str, b: str) -> dict:
     return {"est": round(float(r(d, a) - r(d, b)), 4), "ci90": [round(float(np.percentile(draws, 5)), 4), round(float(np.percentile(draws, 95)), 4)]}
 
 
-def main() -> None:
-    c = pd.read_parquet(CACHE) if "--cached" in sys.argv and CACHE.exists() else candidates()
-    c.to_parquet(CACHE, index=False)
-    assert c["season"].max() <= 2020, "development seasons only"
-    c = c.reset_index(drop=True)
+def loso(c: pd.DataFrame) -> tuple[pd.Series, dict]:
+    """Leave-one-season-out share predictions over the development seasons, and each pool's coefficients."""
     X = design(c)
-    c["pred"] = np.nan
+    pred = pd.Series(np.nan, index=c.index)
     coefs = {}
     for g in GROUPS:
         for s in DEV:
@@ -257,8 +254,21 @@ def main() -> None:
             keys = (c["season"].astype(str) + "|" + c["team"]).to_numpy()
             y0 = c[tr].groupby(keys[tr])["unprojected"].first().to_dict()
             b = fit(Z[tr], keys[tr], c.loc[tr, "actual"].to_numpy(), y0)
-            c.loc[te, "pred"] = predict(Z[te], keys[te], b)
+            pred[te] = predict(Z[te], keys[te], b)
             coefs.setdefault(g, []).append(b)
+    return pred, coefs
+
+
+def load(cached: bool) -> pd.DataFrame:
+    c = pd.read_parquet(CACHE) if cached and CACHE.exists() else candidates()
+    c.to_parquet(CACHE, index=False)
+    assert c["season"].max() <= 2020, "development seasons only"
+    return c.reset_index(drop=True)
+
+
+def main() -> None:
+    c = load("--cached" in sys.argv)
+    c["pred"], coefs = loso(c)
     c["carry"] = np.where(c["status"] == "returner", c["last_share"], 0.0)
     c["share_only"] = np.where(c["status"] == "freshman", 0.0, c["any_last"])
     res = {"status": "DEVELOPMENT (CFB-PROJ P2): seasons 2016-2020 only; test seasons 2021-2025 not scored", "groups": {}}

@@ -48,8 +48,10 @@ def seasons() -> tuple[pd.DataFrame, pd.DataFrame]:
         ev, pos = D.season_events(L, s, pd.Timestamp(f"{s + 1}-02-01"))
         conf = dict(pd.read_parquet(RAW / "cfb" / f"teams_{s}.parquet")[["school", "conference"]].values)
         grp = ev["player_id"].map(pos).map(G.POSITION_GROUP)
-        for g, opp in (("QB", "dropback"), ("RB", "carry")):
-            r = ev[(ev["opp"] == opp) & (grp == g)]
+        comp = (ev["opp"] == "target") & (ev["complete"] == 1)
+        for g, sel in (("QB", (ev["opp"] == "dropback") & (grp == "QB")), ("RB", (ev["opp"] == "carry") & (grp == "RB")),
+                       ("REC", comp & grp.isin(["WR", "TE", "RB"]))):        # REC: receptions and receiving yards
+            r = ev[sel]
             a = r.groupby("player_id").agg(n=("yards", "size"), yards=("yards", "sum"),
                                            team=("offense", lambda x: x.mode().iloc[0])).reset_index()
             a["level"] = [LEVEL[LB.tier(t, s, conf)] for t in a["team"]]
@@ -57,8 +59,10 @@ def seasons() -> tuple[pd.DataFrame, pd.DataFrame]:
         db = ev[ev["opp"] == "dropback"].drop_duplicates("play_id")
         runs = ev[ev["kind"] == "run"].drop_duplicates("play_id")
         rb = ev[(ev["opp"] == "carry") & (grp == "RB")].drop_duplicates("play_id")
+        rec = ev[comp].drop_duplicates("play_id")
         t = pd.DataFrame({"dropbacks": db.groupby("offense").size(), "pass_yards": db.groupby("offense")["yards"].sum(),
-                          "runs": runs.groupby("offense").size(), "rb_carries": rb.groupby("offense").size()}).fillna(0)
+                          "runs": runs.groupby("offense").size(), "rb_carries": rb.groupby("offense").size(),
+                          "rb_yards": rb.groupby("offense")["yards"].sum(), "rec_yards": rec.groupby("offense")["yards"].sum()}).fillna(0)
         t = t[t.index.isin(conf)]
         tm.append(t.rename_axis("team").reset_index().assign(season=s))
         print(f"  efficiency {s}", flush=True)
@@ -66,6 +70,7 @@ def seasons() -> tuple[pd.DataFrame, pd.DataFrame]:
     p["rate"] = p["yards"] / p["n"]
     t["ypd"] = t["pass_yards"] / t["dropbacks"].clip(lower=1)
     t["rb_frac"] = t["rb_carries"] / t["runs"].clip(lower=1)
+    t["rec_ypd"] = t["rec_yards"] / t["dropbacks"].clip(lower=1)
     return p, t
 
 
@@ -163,13 +168,27 @@ def team_context(t: pd.DataFrame) -> dict:
     return out
 
 
+def load(cached: bool) -> tuple[pd.DataFrame, pd.DataFrame]:
+    if cached and CACHE_P.exists() and CACHE_T.exists():
+        return pd.read_parquet(CACHE_P), pd.read_parquet(CACHE_T)
+    p, t = seasons()
+    p.to_parquet(CACHE_P, index=False)
+    t.to_parquet(CACHE_T, index=False)
+    return p, t
+
+
+def team_dev(p: pd.DataFrame, season, team, group) -> np.ndarray:
+    """The team's rate at the position in the season before, minus the league's (0 when unknown)."""
+    tr = p.groupby(["season", "team", "group"]).agg(y=("yards", "sum"), n=("n", "sum"))
+    tr = (tr["y"] / tr["n"]).rename("rate")
+    lg = p.groupby(["season", "group"]).apply(lambda z: z["yards"].sum() / z["n"].sum(), include_groups=False)
+    out = [tr.get((s - 1, tm, g), np.nan) - lg.get((s - 1, g), np.nan) for s, tm, g in zip(season, team, group, strict=True)]
+    return np.nan_to_num(np.array(out, float))
+
+
 def main() -> None:
-    if "--cached" in sys.argv and CACHE_P.exists() and CACHE_T.exists():
-        p, t = pd.read_parquet(CACHE_P), pd.read_parquet(CACHE_T)
-    else:
-        p, t = seasons()
-        p.to_parquet(CACHE_P, index=False)
-        t.to_parquet(CACHE_T, index=False)
+    p, t = load("--cached" in sys.argv)
+    p = p[p["group"].isin(["QB", "RB"])]
     d = player_rows(p)
     assert d["season"].max() <= 2020, "development seasons only"
     res = {"status": "DEVELOPMENT (CFB-PROJ P3): seasons 2016-2020 only; test seasons 2021-2025 not scored", "players": {}}
@@ -219,6 +238,7 @@ def main() -> None:
             mean[(q["season"] == s).to_numpy()] = tr["yards"].sum() / tr["n"].sum()
         carry = np.where(q["n1"] > 0, q["y1"] / q["n1"].where(q["n1"] > 0, 1), mean)
         y = q["actual"].to_numpy()
+        res.setdefault("fitted", {})[g] = {"K": {s: v[g] for s, v in chosen.items()}, "team_weight": dict(zip(DEV, lam[g], strict=True))}
         res["players"][g] = {
             "rows": int(len(q)), "with_history": int((q["n1"] + q["n2"] > 0).sum()), "K_chosen": sorted({v[g] for v in chosen.values()}),
             "model": {"r": round(float(np.corrcoef(q["pred"], y)[0, 1]), 4), "mae": round(float(np.abs(q["pred"] - y).mean()), 4)},
