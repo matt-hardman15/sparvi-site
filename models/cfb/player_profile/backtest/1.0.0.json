@@ -1,10 +1,10 @@
 {
-  "run_id": "118781e2cd17",
+  "run_id": "62ba197b9a0f",
   "model": "cfb_player_profile",
   "version": "1.0.0",
   "kind": "full",
-  "ran_at": "2026-11-15T05:06:18Z",
-  "code_sha": "f036f909fdce7afd82f6f3a81ba3805a3e5e8a77",
+  "ran_at": "2026-11-15T05:33:37Z",
+  "code_sha": "e56f75065880279fbc8daa30955010cf03940c19",
   "lockfile": "e6f7c7528ac332cf",
   "preregistered_at": "2026-11-14",
   "spec": {
@@ -106,7 +106,7 @@
           "fold": 2023,
           "fit_max_available_at": null,
           "train_until": "2021-12-31 23:59:59",
-          "predict_max_available_at": "2023-02-01 00:00:00",
+          "predict_max_available_at": "2023-01-11 00:00:00",
           "decision_date": "2023-02-01 00:00:00",
           "passes": true
         },
@@ -114,7 +114,7 @@
           "fold": 2024,
           "fit_max_available_at": null,
           "train_until": "2022-12-31 23:59:59",
-          "predict_max_available_at": "2024-02-01 00:00:00",
+          "predict_max_available_at": "2024-01-10 00:00:00",
           "decision_date": "2024-02-01 00:00:00",
           "passes": true
         },
