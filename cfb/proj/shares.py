@@ -42,6 +42,7 @@ POOLS_OF = {"QB": ("QB",), "RB": ("RB", "REC"), "WR": ("REC",), "TE": ("REC",)}
 RECRUIT_POS = {"PRO": "QB", "DUAL": "QB", "QB": "QB", "RB": "RB", "APB": "RB", "WR": "WR", "TE": "TE"}
 FEATS = ["sq_share", "had_role", "exp", "exp2", "transfer", "freshman", "log_stay", "hs", "no_hs", "dlvl", "eff", "no_eff",
          "sq_x_transfer", "sq_x_dlvl", "is_te", "is_rb"]
+TRANSFER_FEATS = ["open_x_transfer", "open_x_freshman", "tr_dlvl", "tr_eff", "tr_no_eff", "tr_hs", "tr_exp"]
 L2, SEED, N_BOOT = 1.0, 7, 1000
 
 
@@ -177,7 +178,16 @@ def design(c: pd.DataFrame) -> pd.DataFrame:
     x["sq_x_transfer"] = x["sq_share"] * x["transfer"]
     x["sq_x_dlvl"] = x["sq_share"] * x["dlvl"]
     x["is_te"], x["is_rb"] = (c["pos"] == "TE").astype(float), (c["pos"] == "RB").astype(float)
-    return x[FEATS]
+    # Transfers get their own terms (returners are 85%+ of rows and would otherwise set every coefficient), and the
+    # destination's opening: 1 - the returners' expected share (last share x P(stays)), the same for a whole team, so
+    # it acts only through newcomers vs. returners.
+    ret = c["status"] == "returner"
+    kept = (c["last_share"] * np.exp(c["log_stay"])).where(ret, 0.0).groupby([c["season"], c["team"], c["group"]]).transform("sum")
+    x["open"] = (1 - kept).clip(0, 1)
+    x["open_x_transfer"], x["open_x_freshman"] = x["open"] * x["transfer"], x["open"] * x["freshman"]
+    for f in ("dlvl", "eff", "no_eff", "hs", "exp"):
+        x[f"tr_{f}"] = x[f] * x["transfer"]
+    return x[FEATS + TRANSFER_FEATS]
 
 
 def fit(X: np.ndarray, keys: np.ndarray, y: np.ndarray, y0: dict) -> np.ndarray:
@@ -255,7 +265,7 @@ def main() -> None:
     for g in GROUPS:
         d = c[c["group"] == g]
         out = {"rows": int(len(d)), "unprojected_share_mean": round(float(d.groupby(["season", "team"])["unprojected"].first().mean()), 4),
-               "coef_std": dict(zip([*FEATS, "outside"], np.round(np.mean(coefs[g], axis=0), 3).tolist(), strict=True))}
+               "coef_std": dict(zip([*FEATS, *TRANSFER_FEATS, "outside"], np.round(np.mean(coefs[g], axis=0), 3).tolist(), strict=True))}
         for m in ("pred", "carry", "share_only"):
             out[m] = {"r": round(float(np.corrcoef(d[m], d["actual"])[0, 1]), 4), "mae": round(float((d[m] - d["actual"]).abs().mean()), 5)}
         out["model_minus_carry_r"] = _boot(d, "pred", "carry")
@@ -263,6 +273,8 @@ def main() -> None:
         if g == "REC":
             out["by_position"] = {pp: {"n": int(len(q)), **{m: round(float(np.corrcoef(q[m], q["actual"])[0, 1]), 4)
                                                              for m in ("pred", "carry", "share_only")}} for pp, q in d.groupby("pos")}
+        q = d[d["status"] == "transfer"]
+        out["transfers_model_minus_share_only_r"] = _boot(q, "pred", "share_only")
         out["by_status"] = {}
         for st, q in d.groupby("status"):
             out["by_status"][st] = {"n": int(len(q)), "actual_mean": round(float(q["actual"].mean()), 4),
