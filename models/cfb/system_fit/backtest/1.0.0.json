@@ -1,10 +1,10 @@
 {
-  "run_id": "070d3961c0ba",
+  "run_id": "28ef15e46370",
   "model": "cfb_system_fit",
   "version": "1.0.0",
   "kind": "full",
-  "ran_at": "2026-11-15T14:12:14Z",
-  "code_sha": "31ece50259b3d0dfdc7acc820f5c0584b77dc9d1",
+  "ran_at": "2026-11-15T15:03:15Z",
+  "code_sha": "cf9592d5f1c949a8360adbad105dadfb00e5e1f3",
   "lockfile": "e6f7c7528ac332cf",
   "preregistered_at": "2026-11-15",
   "spec": {
@@ -52,7 +52,8 @@
       "ci_excludes_zero": true
     },
     "gate_decided": "Matt, 2026-11-15: strict, and against all three baselines: for each of transfer rating, raw production, and profile only, the 90% interval of the recall-at-10 edge (bootstrap by player) must be above zero",
-    "null_baseline": "random",
+    "null_baseline": "random_direction",
+    "null_baseline_note": "Label-permutation null. Changed from uniform random after the first run (Matt, 2026-11-15): a shuffled-label model still beat uniform random (+0.027 over 20 seeds) because any linear ranker puts players with production at the board's extremes. The null is now the mean credit of 20 random-direction rankers on the same standardized features. The gate is unchanged.",
     "too_good": 0.9,
     "secondary": "Reported, not gating: recall at 25; AUC among each program's actual transfer signees (pairs within program, position, and window); fit x role availability (probability x open share, F0); the efficient label (above the starters' average with >= 10% share, within two years); the 2025 window on the year-1 label; by position and by destination level; FCS destinations where a system exists; calibration (predicted vs. actual by decile among signees, Brier vs. the base rate).",
     "limits": "The test sees only where players went, not whether a program could have signed them. About a third of successes are at FCS programs, outside the primary test. Early folds train on few transfers (2021: cohorts 2018-2019). Not seen at all: health, makeup, NIL cost, academics, film traits.",
@@ -201,12 +202,12 @@
       "n": 151018
     },
     "label_permutation": {
-      "passed": false,
-      "edge_over": "random",
-      "est": 0.04763112824069355,
+      "passed": true,
+      "edge_over": "random_direction",
+      "est": 0.02762345679012345,
       "ci90": [
-        0.009094658231084088,
-        0.09412684703324718
+        -0.013279320987654327,
+        0.071929012345679
       ],
       "n": 108
     },

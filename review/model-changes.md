@@ -8,10 +8,11 @@ program's portal board, windows 2021-2024, success within two years; must beat t
 profile only, each with the 90% interval above zero (Matt). Run once (run 070d3961c0ba): fit 0.148 vs. 0.142 / 0.153 /
 0.151 (random 0.045), n 311; edges +0.005, -0.005, -0.003, intervals about ±0.04. Failed. Secondary (cfb/fit/output/
 f4.json): recall at 25 behind raw production (0.302 vs. 0.351); AUC among signees 0.644 vs. 0.628 / 0.668 / 0.611;
-calibration overconfident at the top. The label-permutation leakage check also failed (shuffled-label models beat
-random by +0.027 on average over 20 seeds): with a board-recall metric, any linear ranker puts players with real
-production at the extremes, so beating uniform random isn't evidence of a leak. Timestamp and future-poisoning checks
-pass; the check's design is open with Matt.
+calibration overconfident at the top. The label-permutation leakage check also failed in that run (shuffled-label models beat
+uniform random by +0.027 on average over 20 seeds): with a board-recall metric, any linear ranker puts players with real
+production at the extremes. Matt approved a fair null: the mean credit of 20 random-direction rankers on the same
+features. Rerun 28ef15e46370 (same code and data): primary identical (0.1479), every leakage check passes
+(permutation edge over the null +0.028, 90% interval -0.013 to +0.072).
 
 ## 2026-11-15 · CFB player profile 1.0.0 → 1.0.1 (patch)
 Share features (target share, carry share, dropback share, runs per dropback) now divide by the team's pass or run plays counted by play id instead of matched dropbacks, capped at 1. Found in SYSTEM-FIT F2: teams whose passers weren't matched to rosters (mostly FCS) produced shares up to 74. The opponent-adjusted features the pre-registered gate tests are unaffected.

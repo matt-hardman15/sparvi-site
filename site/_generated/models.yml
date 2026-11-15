@@ -11,7 +11,7 @@ models:
   cfb_power_rating_status: "experimental: validated before the backtest harness existed; its harness port is pending"
   cfb_power_rating_version: "1.0.0"
   cfb_system_fit: "CFB system fit v1.0.0"
-  cfb_system_fit_backtest: "Backtest (2026-11-15, folds 2021, 2022, 2023, 2024, n 311): recall 0.148 vs. 0.142 for transfer rating; edge +0.005 (90% interval -0.035 to +0.046); gate not passed; leakage tests FAILED; revision-safe: no (data from before snapshots began); vault: 2026 (0 accesses)"
+  cfb_system_fit_backtest: "Backtest (2026-11-15, folds 2021, 2022, 2023, 2024, n 311): recall 0.148 vs. 0.142 for transfer rating; edge +0.005 (90% interval -0.035 to +0.046); gate not passed; leakage tests all passed; revision-safe: no (data from before snapshots began); vault: 2026 (0 accesses)"
   cfb_system_fit_status: "experimental: its pre-registered test (2021-2024 portal windows, 311 successful transfers) tied every baseline: recall at 10 0.148 vs. transfer rating 0.142, raw production 0.153, profile only 0.151 (random 0.045); edges -0.005 to +0.005, each 90% interval spanning zero. The system and fit terms add nothing detectable over ranking players by quality alone"
   cfb_system_fit_version: "1.0.0"
   location_plus: "Location+ v2.0.0"
