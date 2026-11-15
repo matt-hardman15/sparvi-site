@@ -5,7 +5,10 @@ not the portal list, so it covers 2018-2020 (before CFBD's portal records) and p
 new school (they didn't win the role).
 
 Success in season t at the new school = won the role AND produced above average:
-  won the role   QB: at least 50% of the team's dropbacks. RB: the team's largest carry share or at least 35%.
+  won the role   shares are of the team's whole season (his opportunities / all the team's pass plays, run plays, or targets), not
+                 only the games he played (the profile's share features use those, which let a backup who
+                 played a few games count as the starter).
+                 QB: at least 50% of the team's dropbacks. RB: the team's largest carry share or at least 35%.
                  WR: among the team's top three in targets with at least 12% of them. TE: top two, at least 8%.
   above average  his efficiency composite (mean of the within-position z-scores of opponent-adjusted EPA and success
                  rate per opportunity) above the average composite of players who won the role at his position, at
@@ -35,15 +38,30 @@ def tier(team: str, season: int, conf: dict[str, str]) -> str:
     return "G5"
 
 
-def role_and_output(profile: pd.DataFrame, season: int, conf: dict[str, str]) -> pd.DataFrame:
-    """One row per player and position group in a season: team, share, won_role, composite, tier, above_average."""
+def team_plays(ev: pd.DataFrame) -> pd.Series:
+    """Each team's season denominators for the role rule, counted by play id. Index (team, kind):
+      pass    pass plays (QB dropbacks; the same count the profile's share features use per game)
+      run     run plays (RB carries)
+      target  pass plays with a parsed target (WR/TE: the approved rule is a share of the team's targets)"""
+    pr = ev[ev["kind"].isin(["pass", "run"])].drop_duplicates("play_id").groupby(["offense", "kind"]).size()
+    tg = ev[ev["opp"] == "target"].drop_duplicates("play_id").groupby("offense").size()
+    tg.index = pd.MultiIndex.from_tuples([(t, "target") for t in tg.index], names=["offense", "kind"])
+    return pd.concat([pr, tg])
+
+
+def role_and_output(profile: pd.DataFrame, season: int, conf: dict[str, str], plays: pd.Series) -> pd.DataFrame:
+    """One row per player and position group in a season: team, share (of the team's season), won_role, composite,
+    tier, above_average. plays: team_plays() for the season."""
     p = profile[profile["season"] == season]
     rows = []
     for g in ("QB", "RB", "WR", "TE"):
         q = p[p["group"] == g]
-        share = q[q["feature"] == SHARE[g]].set_index("player_id")[["team", "raw"]].rename(columns={"raw": "share"})
+        share = q[q["feature"] == SHARE[g]].set_index("player_id")[["team", "n"]]
         if share.empty:
             continue
+        kind = {"QB": "pass", "RB": "run"}.get(g, "target")
+        den = np.array([plays.get((t, kind), 0) for t in share["team"]], dtype=float)
+        share = share.assign(share=np.minimum(share["n"] / np.maximum(den, 1), 1.0)).drop(columns="n")
         rank = share.groupby("team")["share"].rank(ascending=False, method="min")
         if g == "QB":
             won = share["share"] >= 0.5
@@ -66,17 +84,33 @@ def role_and_output(profile: pd.DataFrame, season: int, conf: dict[str, str]) ->
     return out
 
 
-def transfers(rosters: dict[int, pd.DataFrame], t: int, portal: pd.DataFrame | None = None) -> pd.DataFrame:
+def _one_team(r: pd.DataFrame, played: dict[str, str] | None) -> pd.DataFrame:
+    """One roster row per player id. An id listed on two teams in a season (195 in 2021, stale listings) keeps the team
+    he recorded plays for; with no plays to settle it, he is dropped rather than guessed."""
+    r = r.assign(player_id=r["id"].astype(str)).drop_duplicates(["player_id", "team"])
+    multi = r["player_id"].duplicated(keep=False)
+    if not multi.any():
+        return r
+    played = played or {}
+    ok = [played.get(p) == t for p, t in zip(r.loc[multi, "player_id"], r.loc[multi, "team"], strict=True)]
+    return pd.concat([r[~multi], r[multi][ok]]).drop_duplicates("player_id", keep=False)
+
+
+def transfers(rosters: dict[int, pd.DataFrame], t: int, portal: pd.DataFrame | None = None,
+              played: dict[int, dict[str, str]] | None = None) -> pd.DataFrame:
     """Transfers into season t (QB, RB, WR, TE by the season-t roster position), from three sources, first match wins:
       id      the same athlete id on a different roster team than in t-1
       reid    a new id in season t whose normalized full name matches exactly one t-1 roster player of the same position
               group on a different team (CFBD sometimes issues a new id on transfer, e.g. Bo Nix in 2022)
       portal  a portal entry for season t with a destination, matched by name to the destination's season-t roster
-              (catches players missing from the origin roster, e.g. Quinn Ewers in 2022); origin from the entry
-    prev_id is the player's id in season t-1 where known (to link his prior profile); player_id is his season-t id."""
+              (catches players missing from the origin roster, e.g. Quinn Ewers in 2022); origin from the entry.
+              Withdrawn entries (destination = his t-1 team, e.g. Jake Haener at Fresno State in 2022) are skipped
+    prev_id is the player's id in season t-1 where known (to link his prior profile); player_id is his season-t id.
+    played: season -> {player_id: team he recorded plays for}, to settle ids listed on two rosters (see _one_team)."""
     from ingest.cfb.play_players import norm
-    prev = rosters[t - 1].assign(player_id=rosters[t - 1]["id"].astype(str)).drop_duplicates("player_id")
-    cur = rosters[t].assign(player_id=rosters[t]["id"].astype(str)).drop_duplicates("player_id")
+    played = played or {}
+    prev = _one_team(rosters[t - 1], played.get(t - 1))
+    cur = _one_team(rosters[t], played.get(t))
     for d in (prev, cur):
         d["full"] = (d["firstName"].fillna("") + " " + d["lastName"].fillna("")).map(norm)
         d["group"] = d["position"].map(G.POSITION_GROUP)
@@ -101,11 +135,50 @@ def transfers(rosters: dict[int, pd.DataFrame], t: int, portal: pd.DataFrame | N
                        left_on=["destination", "full"], right_on=["team", "full"], suffixes=("_p", ""))
         hit = hit[hit.groupby(["destination", "full"])["player_id"].transform("size") == 1]
         hit = hit.assign(team_from=hit["origin"], team_to=hit["destination"], source="portal")
+        # A withdrawn entry lists his own school as the destination: not a transfer if he was already there in t-1.
+        was_id = set(zip(prev["player_id"], prev["team"], strict=True))
+        was_name = set(zip(prev["full"], prev["team"], strict=True))
+        stayed = [(p, d) in was_id or (f, d) in was_name or o == d
+                  for p, f, o, d in zip(hit["player_id"], hit["full"], hit["origin"], hit["destination"], strict=True)]
+        hit = hit[~np.array(stayed, dtype=bool)]
         uniq = prev[~prev.duplicated(["team", "full"], keep=False)].set_index(["team", "full"])["player_id"]
         hit["prev_id"] = [uniq.get((o, f)) for o, f in zip(hit["origin"], hit["full"], strict=True)]
         out.append(hit[["player_id", "prev_id", "team_from", "team_to", "position", "group", "firstName", "lastName", "source"]])
     allm = pd.concat(out, ignore_index=True).drop_duplicates("player_id", keep="first")
     return allm.assign(season=t)
+
+
+def follow(labeled: pd.DataFrame, rosters: dict[int, pd.DataFrame], outcomes: dict[int, pd.DataFrame], last: int,
+           played: dict[int, dict[str, str]] | None = None) -> pd.DataFrame:
+    """Each transfer's seasons at his destination: year 1 is the transfer season (the `label` row), year k is season
+    t+k-1, kept while he is on the destination's roster and didn't record plays for another team. The first season he isn't (transferred again, left, or no
+    roster) ends his record there; what he does at a later school doesn't count. Seasons after `last` are unobserved.
+    One row per transfer and year: transfer_season, year, season, plus label's columns for that season.
+    played: season -> {player_id: team he recorded plays for} (as in transfers); defaults to the outcome tables."""
+    out = [labeled.assign(transfer_season=labeled["season"], year=1)]
+    keep = ["player_id", "prev_id", "group", "position", "team_from", "team_to", "source", "firstName", "lastName"]
+    alive = labeled[[*keep, "season"]].rename(columns={"season": "transfer_season"})
+    k = 1
+    while len(alive):
+        k += 1
+        alive = alive.assign(season=alive["transfer_season"] + k - 1)
+        alive = alive[alive["season"] <= last]
+        rows = []
+        for s, a in alive.groupby("season"):
+            r = rosters.get(s)
+            if r is None:
+                continue
+            on = set(zip(r["id"].astype(str), r["team"], strict=True))
+            elsewhere = (played or {}).get(s) or dict(zip(outcomes[s]["player_id"], outcomes[s]["team"], strict=True))
+            a = a[[(p, t) in on and elsewhere.get(p, t) == t for p, t in zip(a["player_id"], a["team_to"], strict=True)]]
+            if len(a):
+                rows.append(label(a.drop(columns="season"), outcomes[s]).assign(season=s, year=k))
+        if not rows:
+            break
+        nxt = pd.concat(rows, ignore_index=True)
+        out.append(nxt)
+        alive = nxt[[*keep, "transfer_season"]]
+    return pd.concat(out, ignore_index=True)
 
 
 def label(transfers_t: pd.DataFrame, outcomes_t: pd.DataFrame) -> pd.DataFrame:
