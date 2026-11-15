@@ -1,0 +1,127 @@
+{
+ "status": "DEVELOPMENT (CFB-PROJ P1): seasons 2016-2020 only; test seasons 2021-2025 not scored",
+ "team_seasons": 643,
+ "new_hc_share": 0.1975,
+ "oc_known_share": 0.6283,
+ "targets": {
+  "pass_pg": {
+   "mean": 30.122,
+   "carry": {
+    "mae": 4.1597,
+    "r": 0.6981
+   },
+   "shrink": {
+    "mae": 3.8485,
+    "r": 0.6944
+   },
+   "ridge": {
+    "mae": 3.7861,
+    "r": 0.7162
+   },
+   "ridge_minus_carry_mae": {
+    "est": -0.3736,
+    "ci90": [
+     -0.5063,
+     -0.2356
+    ]
+   },
+   "ridge_minus_shrink_mae": {
+    "est": -0.0624,
+    "ci90": [
+     -0.1595,
+     0.0326
+    ]
+   },
+   "ridge_coef_std": {
+    "pass_pg_1": 3.443,
+    "run_pg_1": -0.249,
+    "pass_rate_1": 0.5,
+    "games_1": 0.425,
+    "pass_pg_2": 1.086,
+    "run_pg_2": -0.4,
+    "pass_rate_2": -0.101,
+    "off_epa_1": 0.062,
+    "def_epa_1": -0.021,
+    "new_hc": 0.15,
+    "has_hc_old": 0.114,
+    "hc_old_shift": 1.037,
+    "new_oc": -0.007,
+    "oc_known": -0.163
+   }
+  },
+  "run_pg": {
+   "mean": 30.807,
+   "carry": {
+    "mae": 4.342,
+    "r": 0.5953
+   },
+   "shrink": {
+    "mae": 3.8834,
+    "r": 0.5909
+   },
+   "ridge": {
+    "mae": 3.8718,
+    "r": 0.6166
+   },
+   "ridge_minus_carry_mae": {
+    "est": -0.4701,
+    "ci90": [
+     -0.6179,
+     -0.313
+    ]
+   },
+   "ridge_minus_shrink_mae": {
+    "est": -0.0116,
+    "ci90": [
+     -0.121,
+     0.0984
+    ]
+   },
+   "ridge_coef_std": {
+    "pass_pg_1": -0.71,
+    "run_pg_1": 2.718,
+    "pass_rate_1": -0.314,
+    "games_1": -0.198,
+    "pass_pg_2": -0.847,
+    "run_pg_2": 1.245,
+    "pass_rate_2": 0.935,
+    "off_epa_1": 0.213,
+    "def_epa_1": 0.118,
+    "new_hc": -0.256,
+    "has_hc_old": 0.023,
+    "hc_old_shift": -0.948,
+    "new_oc": -0.04,
+    "oc_known": 0.132
+   }
+  },
+  "games": {
+   "mean": 12.657,
+   "carry": {
+    "mae": 0.6686,
+    "r": 0.2948
+   },
+   "shrink": {
+    "mae": 0.6807,
+    "r": -0.1082
+   },
+   "ridge": {
+    "mae": 0.5827,
+    "r": 0.3789
+   },
+   "ridge_minus_carry_mae": {
+    "est": -0.0859,
+    "ci90": [
+     -0.1471,
+     -0.0326
+    ]
+   },
+   "ridge_minus_shrink_mae": {
+    "est": -0.098,
+    "ci90": [
+     -0.1218,
+     -0.076
+    ]
+   }
+  }
+ }
+}
