@@ -35,7 +35,8 @@ def load_module(path: str):
 
 def folds_for(spec: dict, fast: bool):
     s = spec["splits"]
-    fs = season_folds(s["first_test"], s["last_test"], s.get("train_window"), s.get("decision", "03-01"), s.get("predictor_lag", 1))
+    fs = season_folds(s["first_test"], s["last_test"], s.get("train_window"), s.get("decision", "03-01"), s.get("predictor_lag", 1),
+                      s.get("train_until"))
     return fs[-s.get("fast_folds", 1):] if fast else fs
 
 
@@ -57,7 +58,8 @@ def run_fold(mod, loader: Loader, fold) -> tuple[pd.DataFrame, dict]:
 def evaluate(df: pd.DataFrame, spec: dict) -> dict:
     metric = spec["primary_metric"]
     block = spec.get("block", "entity_id")
-    out = {"metric": metric, "n": int(len(df)), "point": metrics.score(metric, df["point"], df["y"]), "baselines": {}}
+    out = {"metric": metric, "n": int(len(df)), "point": metrics.score(metric, df["point"], df["y"]), "baselines": {},
+           "by_fold": {int(f): metrics.score(metric, g["point"], g["y"]) for f, g in df.groupby("fold")}}
     for b in spec["baselines"]:
         out["baselines"][b] = {"value": metrics.score(metric, df[b], df["y"]),
                                "paired": metrics.paired_bootstrap(df.reset_index(drop=True), metric, "point", b, "y", block,
@@ -66,17 +68,23 @@ def evaluate(df: pd.DataFrame, spec: dict) -> dict:
 
 
 def gate(ev: dict, g: dict) -> dict:
-    """The pre-registered pass gate. Comparisons are oriented so 'better' is positive."""
+    """The pre-registered pass gate. Comparisons are oriented so 'better' is positive. beats_baseline is one baseline
+    or a list; with a list, every check must hold against each of them (gap and lower bound are the worst)."""
     sign = 1 if metrics.higher_is_better(ev["metric"]) else -1
-    base = ev["baselines"][g["beats_baseline"]]
-    gap = sign * base["paired"]["est"]
-    lo = min(sign * base["paired"]["ci90"][0], sign * base["paired"]["ci90"][1])
+    names = g["beats_baseline"] if isinstance(g["beats_baseline"], list) else [g["beats_baseline"]]
+    gaps, los = [], []
+    for b in names:
+        base = ev["baselines"][b]
+        gaps.append(sign * base["paired"]["est"])
+        los.append(min(sign * base["paired"]["ci90"][0], sign * base["paired"]["ci90"][1]))
+    gap, lo = min(gaps), min(los)
     checks = {"beats_baseline": gap > 0,
               "min_skill": gap >= g.get("min_skill", 0.0),
               "ci_excludes_zero": (lo > 0) if g.get("ci_excludes_zero") else True}
     if "min_point" in g:
         checks["min_point"] = ev["point"] >= g["min_point"] if metrics.higher_is_better(ev["metric"]) else ev["point"] <= g["min_point"]
-    return {"checks": checks, "passed": all(checks.values()), "gap": gap}
+    return {"checks": checks, "passed": all(checks.values()), "gap": gap,
+            "per_baseline": {b: {"gap": x, "ci90_low": y} for b, x, y in zip(names, gaps, los, strict=True)}}
 
 
 def run(name: str, fast: bool = False, loader: Loader | None = None, write: bool = True, leakage: bool = True) -> dict:
