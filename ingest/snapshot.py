@@ -111,9 +111,14 @@ def cfb_player_tables() -> list[Table]:
     return t
 
 
-def _by_season_start(df: pd.DataFrame, ingested: pd.Timestamp) -> pd.Series:
-    """A season's head coach is public by its first game (September 1 here; a mid-season change shows when pulled)."""
-    return pd.to_datetime(df["season"].astype(str) + "-09-01")
+def _coach_available(df: pd.DataFrame, ingested: pd.Timestamp) -> pd.Series:
+    """A season's head coach is public when he's hired for it (SC-3a; 91% of coaching changes are hired by May 1):
+    max(hire date, December 1 before the season), so a coach who stays is known once the carousel starts and a
+    mid-season hire (an interim) only from his hire date. September 1 when the hire date is missing."""
+    start = pd.to_datetime(df["season"].astype(str) + "-09-01")
+    carousel = pd.to_datetime((df["season"] - 1).astype(str) + "-12-01")
+    hired = pd.to_datetime(df["hire_date"], utc=True, errors="coerce").dt.tz_localize(None).dt.normalize()
+    return pd.concat([hired, carousel], axis=1).max(axis=1).where(hired.notna(), start)
 
 
 def _play_players_available(games_path, plays_path):
@@ -132,7 +137,7 @@ def cfb_tables() -> list[Table]:
     cfg = cfb()
     d = RAW / "cfb"
     t = cfb_player_tables()
-    t.append(Table("coaches", d / "coaches.parquet", ("season", "school", "coach_id"), _by_season_start))
+    t.append(Table("coaches", d / "coaches.parquet", ("season", "school", "coach_id"), _coach_available))
     for s in cfg.seasons:
         # Who was on each play (parsed from the cached play text, PLAYER-ADJ): one row per play x role.
         t.append(Table(f"play_players_{s}", d / "players" / f"play_players_{s}.parquet", ("play_id", "role"),

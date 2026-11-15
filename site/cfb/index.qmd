@@ -18,6 +18,7 @@ listing:
 ```{=html}
 <div class="cards">
 <a class="card-link" href="/cfb/tools/team-ratings.html"><span class="kicker">Tool</span><h3>Team ratings</h3><p>Every FBS team's power rating and opponent-adjusted offense and defense, week by week since {{< meta cfb.first_season >}}, next to its AP and CFP rank.</p></a>
+<a class="card-link" href="/cfb/tools/portal-board.html"><span class="kicker">Tool</span><h3>Transfer portal board</h3><p>Every quarterback, running back, receiver and tight end in the portal: last season's adjusted production, size, market tier, similar players, and each program's offense and open roles.</p></a>
 </div>
 ```
 

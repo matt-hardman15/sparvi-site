@@ -487,6 +487,28 @@ def act_cfb_article(p):
     assert "the bowls" in p.text_content("#scap")
 
 
+def act_cfb_portal(p):
+    """SC-3a: position tabs, filters, search, and a program's experimental fit list with its summary."""
+    assert rows(p, "#t") == 25 and "Value over repl." in p.text_content("#t thead")
+    assert "quarterbacks in the" in p.text_content("#tcap")
+    assert "Tier 1" in p.text_content("#tier-rules") and p.locator("[data-n]").first.text_content().strip()
+    seg(p, "#c", "WR"); assert query(p)["pos"] == "WR" and "wide receivers" in p.text_content("#tcap")
+    select(p, "#c2", "Level last season", "FCS"); assert query(p)["lvl"] == "FCS" and rows(p, "#t") >= 1
+    select(p, "#c2", "Level last season", "all")
+    select(p, "#c2", "Market tier", "1"); assert query(p)["tier"] == "1"
+    select(p, "#c2", "Market tier", "all")
+    seg(p, "#c", "QB")
+    name = p.locator("#t tbody tr td strong").first.text_content()
+    search(p, "#c2", name); assert rows(p, "#t") >= 1 and name in p.text_content("#t tbody")
+    search(p, "#c2", "")
+    select(p, "#c", "Program", "Ohio State"); wait(p, 400)
+    assert query(p)["prog"] == "Ohio State" and "Ohio State" in p.text_content("#prog") and "experimental" in p.text_content("#prog")
+    assert "Fit" in p.text_content("#t thead") and 1 <= rows(p, "#t") <= 25
+    assert "frozen in the forecast record" in p.text_content("#tcap")
+    seg(p, "#c2", "Backup minimum"); wait(p, 300)
+    assert query(p)["min"] == "floor" and "ranked among entrants with at least" in p.text_content("#tcap")
+
+
 def act_cfb_index(p):
     no_team_cards(p)
     assert p.locator(".card-link").count() >= 1
@@ -581,6 +603,7 @@ PAGES = [
     ("cfb-team", "/cfb/teams/georgia/", act_cfb_team),
     ("cfb-team-former", "/cfb/teams/idaho/", act_cfb_former_team),
     ("cfb-team-ratings", "/cfb/tools/team-ratings.html", act_cfb_ratings),
+    ("cfb-portal", "/cfb/tools/portal-board.html", act_cfb_portal),
     ("cfb-ranked-vs-good", "/cfb/ranked-vs-good/", act_cfb_article),
     ("cfb-what-a-loss-costs", "/cfb/what-a-loss-costs/", act_cfb_loss_cost),
     ("glossary", "/glossary.html", None),

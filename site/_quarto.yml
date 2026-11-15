@@ -54,6 +54,8 @@ website:
           - text: College Football
           - text: Team ratings
             href: cfb/tools/team-ratings.qmd
+          - text: Transfer portal board
+            href: cfb/tools/portal-board.qmd
       - text: Glossary
         href: glossary.qmd
       - text: About

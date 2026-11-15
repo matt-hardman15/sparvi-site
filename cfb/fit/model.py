@@ -73,25 +73,29 @@ def efficiency(prof: pd.DataFrame) -> pd.Series:
 
 
 def season(loader, s: int, cutoff) -> dict:
-    """Everything the model needs from one completed season, cached on the loader."""
-    if done(s) > pd.Timestamp(cutoff):
+    """Everything the model needs from one completed season, cached on the loader. A live loader (live(loader): the
+    portal board, never a backtest) may also read a season still in progress, as of the cutoff; those inputs are what
+    was public that day."""
+    partial = done(s) > pd.Timestamp(cutoff)
+    if partial and not getattr(loader, "_fit_live", False):
         raise ValueError(f"season {s} isn't complete until {done(s).date()}; cutoff {pd.Timestamp(cutoff).date()}")
     cache = loader.__dict__.setdefault("_fit_seasons", {})
-    if s not in cache:
-        as_of = done(s)
+    key = (s, pd.Timestamp(cutoff).normalize()) if partial else s
+    if key not in cache:
+        as_of = pd.Timestamp(cutoff) if partial else done(s)
         ev, pos = D.season_events(loader, s, as_of)
         prof = G.season_profile(ev, pos, s)
         teams = loader.load(f"teams_{s}", as_of, columns=["school", "conference"])
         conf = dict(zip(teams["school"], teams["conference"], strict=True))
         roster = loader.load(f"players_roster_{s}", as_of)
-        cache[s] = {
+        cache[key] = {
             "prof": prof, "roster": roster, "conf": conf, "pos": pos,
             "style": S.style(loader.load(f"plays_{s}", as_of), ev, pos),
             "played": ev.groupby("player_id")["offense"].agg(_mode).to_dict(),
             "outcomes": LB.role_and_output(prof, s, conf, LB.team_plays(ev)),
             "offense": offense_quality(ev), "yards": production(ev, pos), "eff": efficiency(prof),
             "workload": D.workload(ev, pos), "played_pairs": set(zip(ev["offense"], ev["player_id"], strict=True))}
-    return cache[s]
+    return cache[key]
 
 
 def recruits(loader, last_class: int, cutoff) -> pd.DataFrame:
@@ -268,9 +272,16 @@ def availability(loader, t: int, as_of) -> pd.DataFrame:
     return w.groupby(["team", "group"])["leaving"].sum().clip(0, 1).rename("open_share").reset_index()
 
 
-def training_rows(loader, fold_t: int, cutoff, dm: dict) -> pd.DataFrame:
+def live(loader):
+    """Mark a loader as the live board's: seasons in progress may be read as of the cutoff (season())."""
+    loader._fit_live = True
+    return loader
+
+
+def training_rows(loader, fold_t: int, cutoff, dm: dict, last_cohort: int | None = None) -> pd.DataFrame:
     rows = []
-    for c in range(FIRST_COHORT, fold_t - 1):                     # cohorts 2018 .. t-2
+    last = fold_t - 2 if last_cohort is None else min(fold_t - 2, last_cohort)
+    for c in range(FIRST_COHORT, last + 1):                       # cohorts 2018 .. t-2 (or last_cohort)
         lab = cohort_labels(loader, c, fold_t - 1, cutoff)
         lab = lab[lab["prev_id"].notna()]
         conf_c = season(loader, c, cutoff)["conf"]
@@ -309,9 +320,12 @@ def fit_group(d: pd.DataFrame, cols: list[str]) -> dict:
             "coef": dict(zip(cols, m.coef_[0].tolist(), strict=True))}
 
 
-def fit_fold(loader, t: int, cutoff, permute_seed: int | None = None) -> dict:
-    dm = dims(loader, t - 1, cutoff)
-    d = training_rows(loader, t, cutoff, dm)
+def fit_fold(loader, t: int, cutoff, permute_seed: int | None = None, last_cohort: int | None = None,
+             dims_last: int | None = None) -> dict:
+    """last_cohort caps the training cohorts (the live board: 2024, so no 2026 outcome is used before the Phase 2
+    vault opens); dims_last caps the seasons the dimensions are fit on (complete seasons only)."""
+    dm = dims(loader, t - 1 if dims_last is None else min(t - 1, dims_last), cutoff)
+    d = training_rows(loader, t, cutoff, dm, last_cohort)
     if permute_seed is not None:
         rng = np.random.default_rng(permute_seed)
         for g in d["fit_group"].unique():
@@ -344,7 +358,7 @@ def entrants(loader, t: int, as_of) -> pd.DataFrame:
     p["group"] = p["player_id"].map(rpos).map(G.POSITION_GROUP).fillna(p["position"].map(G.POSITION_GROUP))
     p = p[p["group"].isin(["QB", "RB", "WR", "TE"])]
     p = p.sort_values(["player_id", "transferDate"]).drop_duplicates("player_id", keep="first")
-    return p[["player_id", "group", "origin", "stars", "rating", "transferDate"]].reset_index(drop=True)
+    return p[["player_id", "group", "origin", "stars", "rating", "transferDate", "firstName", "lastName", "destination"]].reset_index(drop=True)
 
 
 def credit(score_: pd.Series, by: list[pd.Series], top: int = TOP) -> np.ndarray:

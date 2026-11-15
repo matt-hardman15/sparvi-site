@@ -1,0 +1,146 @@
+---
+title: "College football transfer portal board"
+pagetitle: "Transfer portal board: QBs, RBs, WRs and TEs"
+description: "Every quarterback, running back, receiver and tight end in the transfer portal: last season's adjusted production, size, market tier and similar players."
+page-layout: full
+---
+
+Every quarterback, running back, wide receiver and tight end in the transfer portal, with what each did last season: his share of the team's work, his **opponent-adjusted EPA per play**, and his **value over replacement** (how much better he was than his level's backups, times how often he had the ball). Pick a **program** to see its offense in plain words, how much of last season's work at each position is leaving, and an **experimental** fit list. Team pages: [all FBS teams](/cfb/), [team ratings](/cfb/tools/team-ratings.html).
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c"></div>
+  <div class="controls" id="c2"></div>
+  <div id="prog"></div>
+  <div id="t"><div class="loading">Loading…</div></div>
+  <p class="caption" id="tcap"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt, U = S.urlState;
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+  const index = await S.load("/data/cfb/portal/index.json");
+  const teams = new Map((await S.load("/data/cfb/teams.json")).map(t => [t.id, t]));
+  const WINDOWS = index.windows.map(w => String(w.window));
+  const DEF = { win: WINDOWS[0], pos: "QB", lvl: "all", tier: "all", prog: "", q: "", min: "any" };
+  const st = { win: WINDOWS.includes(U.get("win")) ? U.get("win") : DEF.win, pos: ["QB", "RB", "WR", "TE"].includes(U.get("pos")) ? U.get("pos") : DEF.pos,
+               lvl: ["Power", "G5", "FCS"].includes(U.get("lvl")) ? U.get("lvl") : DEF.lvl, tier: ["1", "2", "3", "4"].includes(U.get("tier")) ? U.get("tier") : DEF.tier,
+               prog: U.get("prog") || DEF.prog, q: "", min: U.get("min") === "floor" ? "floor" : DEF.min };
+  const POS = { QB: "Quarterbacks", RB: "Running backs", WR: "Wide receivers", TE: "Tight ends" };
+  const LVL = { Power: "Power", G5: "Group of Five", FCS: "FCS" };
+  const OPP = { QB: "dropbacks", RB: "carries", WR: "targets", TE: "targets" };
+  const c = document.getElementById("c"), c2 = document.getElementById("c2"), prog = document.getElementById("prog");
+  const team = name => teams.has(name) ? S.cfbTeamLink(teams.get(name), esc(name)) : esc(name);
+  const htwt = r => `${r.ht ? `${Math.floor(r.ht / 12)}'${r.ht % 12}"` : "—"} / ${r.wt ?? "—"}`;
+  let board, programs;
+
+  async function load() {
+    [board, programs] = await Promise.all([S.load(`/data/cfb/portal/board_${st.win}.json`), S.load(`/data/cfb/portal/programs_${st.win}.json`)]);
+    if (st.prog && !programs.programs.some(p => p.team === st.prog)) st.prog = "";
+  }
+
+  function controls() {
+    c.replaceChildren(
+      S.select("Window", WINDOWS.map(w => [w, `${w} season (${index.windows.find(x => String(x.window) === w).as_of})`]), st.win, async v => { st.win = v; await load(); controls(); draw(); }),
+      S.el("label", {}, "Position", S.seg(Object.keys(POS).map(k => [k, k]), st.pos, v => { st.pos = v; draw(); })),
+      S.select("Program", [["", "All entrants"], ...programs.programs.map(p => [p.team, p.team])], st.prog, v => { st.prog = v; draw(); }));
+    c2.replaceChildren(
+      S.select("Level last season", [["all", "All levels"], ...Object.entries(LVL)], st.lvl, v => { st.lvl = v; draw(); }),
+      S.select("Market tier", [["all", "All tiers"], ["1", "Tier 1"], ["2", "Tier 2"], ["3", "Tier 3"], ["4", "Tier 4"]], st.tier, v => { st.tier = v; draw(); }),
+      S.el("label", {}, "Minimum plays", S.seg([["any", "Any"], ["floor", "Backup minimum"]], st.min, v => { st.min = v; draw(); })),
+      S.search("Find a player", "Name or school", v => { st.q = v || ""; draw(); }));
+  }
+
+  const baseCols = [
+    { key: "name", label: "Player", align: "l", sortVal: r => r.name, html: r => `<strong>${esc(r.name)}</strong>` },
+    { key: "from", label: "From", align: "l", sortVal: r => r.from, html: r => team(r.from) },
+    { key: "lvl", label: "Level", align: "l", fmt: v => LVL[v] ?? v },
+    { key: "size", label: "Ht / wt", align: "l", sortVal: r => r.wt ?? 0, fmt: (v, r) => htwt(r) },
+    { key: "exp", label: "Yrs", fmt: f.int, title: "Seasons of college football played, including last season" },
+    { key: "share", label: "Share", fmt: v => (v == null ? "—" : f.pct(v)), sortVal: r => r.share ?? -1,
+      title: "His share of the team's season: dropbacks for QBs, carries for RBs, targets for WRs and TEs" },
+    { key: "epa", label: "Adj EPA/play", heat: "pct", heatVal: r => r.epa_pct, fmt: v => (v == null ? "—" : f.signed(v, 3)), sortVal: r => r.epa ?? -9,
+      title: "Opponent-adjusted EPA per play on his opportunities; color = percentile among players at his position with enough plays" },
+    { key: "vor", label: "Value over repl.", fmt: v => f.signed(v, 1), title: "(His shrunk adjusted EPA/play minus the average of backups at his level) x his plays" },
+    { key: "yds", label: "Yards", fmt: f.int, title: "Passing yards on dropbacks (QB), rushing yards (RB), receiving yards (WR/TE)" },
+    { key: "tier", label: "Tier", fmt: f.int, desc: false, title: "Market tier from public proxies (see the rules below), not NIL dollars" },
+    { key: "str", label: "Strengths", align: "l", sortVal: r => r.str.length, html: r => esc(r.str.join(", ")) || "—" },
+    { key: "sim", label: "Similar players", align: "l", sortVal: r => r.sim.length,
+      html: r => r.sim.map(s => `${esc(s.name)} (${esc(s.team)} ${s.season})`).join("; ") || "—" },
+    { key: "dest", label: "Destination", align: "l", sortVal: r => r.dest ?? "", html: r => (r.dest ? team(r.dest) : "—") },
+  ];
+
+  let table = null, tableKey = "";
+  function draw() {
+    const players = board.players.filter(r => r.pos === st.pos);
+    const byId = new Map(players.map(r => [r.id, r]));
+    const keep = r => (st.min === "any" || r.floor) && (st.lvl === "all" || r.lvl === st.lvl) && (st.tier === "all" || String(r.tier) === st.tier)
+      && (!st.q || r.name.toLowerCase().includes(st.q) || (r.from || "").toLowerCase().includes(st.q));
+    let rows, cols, key;
+    const P = programs.programs.find(p => p.team === st.prog);
+    if (P) {
+      const fit = (st.min === "floor" ? P.fit_floor : P.fit)[st.pos] || [];
+      rows = fit.map(([id, band], i) => ({ ...byId.get(id), fit_rank: i + 1, band })).filter(r => r.id && keep(r));
+      cols = [{ key: "fit_rank", label: "Fit", fmt: f.int, desc: false, title: "Experimental fit rank at this program (the model tied simple rankings in its backtest)" },
+              ...baseCols.slice(0, 2),
+              { key: "band", label: "Old offense vs. this one", align: "l", fmt: v => v ?? "—", title: "How similar his last team's offense was to this program's: run/pass balance and how targets are spread" },
+              ...baseCols.slice(2)];
+      key = "fit_rank";
+      const open = P.open[st.pos];
+      prog.replaceChildren(S.el("div", { class: "so-what" },
+        S.el("p", {}, S.el("strong", {}, P.team), ` (${P.conf}). `,
+          P.style ? `Last season's offense: ${P.style.run_pass}, with a ${P.style.spread}. ` : "No offensive style on record. ",
+          P.kept_coach == null ? "" : P.kept_coach ? "Kept its head coach. " : "New head coach. ",
+          open == null ? "" : `About ${f.pct(open)} of last season's ${OPP[st.pos]} at ${st.pos} are leaving (portal entries filed so far, plus expected exits by experience).`),
+        S.el("p", { class: "muted" }, `The list below is the experimental fit model's top ${programs.top} at ${st.pos} for this program. It is ${board.model_state}: ${board.model_reason}.`)));
+    } else {
+      prog.replaceChildren();
+      rows = players.filter(keep);
+      cols = baseCols;
+      key = "vor";
+    }
+    const tk = cols.map(x => x.key).join() + key;
+    if (!table || tk !== tableKey) { table = S.table(document.getElementById("t"), cols, { sortKey: key, desc: key !== "fit_rank", pageSize: 25 }); tableKey = tk; }
+    table.update(rows);
+    U.set({ win: st.win, pos: st.pos, lvl: st.lvl, tier: st.tier, prog: st.prog, min: st.min }, DEF);
+    const bm = programs.numbers.backup_min[st.pos];
+    const w = index.windows.find(x => String(x.window) === st.win);
+    document.getElementById("tcap").textContent = (P
+      ? `${rows.length} of ${P.team}'s top ${programs.top} at ${st.pos}` + (st.min === "floor"
+          ? `, ranked among entrants with at least ${bm} ${OPP[st.pos]} last season. ` : ", as the model ranks them (this is the list frozen in the forecast record). ")
+      : `${rows.length} ${POS[st.pos].toLowerCase()} in the ${st.win} portal window, as of ${w.as_of}` + (st.min === "floor" ? ` with at least ${bm} ${OPP[st.pos]} last season` : "")
+        + `; sorted by value over replacement. `)
+      + `Statistics are from the ${+st.win - 1} season. Color on adjusted EPA/play ranks him among players at his position (orange better, blue worse). `
+      + `Players with too few plays have no percentile, strengths, or similar players.`;
+  }
+  await load(); controls(); draw();
+  const rules = document.getElementById("tier-rules");
+  document.querySelectorAll("[data-n]").forEach(el => { el.textContent = programs.numbers[el.dataset.n]; });
+  if (rules) rules.replaceChildren(...Object.entries(board.tier_rules).map(([k, v]) => S.el("li", {}, S.el("strong", {}, `Tier ${k}: `), v)));
+})();
+</script>
+```
+
+## How to read it
+
+**Value over replacement** compares each player with what his team would get from its next man up: the average opponent-adjusted EPA per play of backups at his position and competition level that season, weighted by how often they played. A positive number means he was better than a typical backup at his level; a big one usually means he was good *and* played a lot.
+
+**Market tiers** are rough price levels from public information only. Sparvi doesn't know what anyone is paid. The rules:
+
+<ul id="tier-rules"></ul>
+
+**The fit list is experimental.** For a program, it ranks entrants by a model of how likely each one is to win the job and play above his level's starters within <span data-n="horizon_years"></span> seasons there, from his production, his playing style, the program's offense, and the jump in competition. Its status: {{< meta models.cfb_system_fit_status >}}. So treat it as a starting point for a conversation, not a recommendation. From the January portal window on, every program's list and the simple rankings beside it are frozen each day in Sparvi's [public forecast record](https://github.com/matt-hardman15/sparvi-site/tree/main/forecasts), so how the fit list actually does will be on the record.
+
+<details class="method">
+<summary>Method, data, and what this can't tell you</summary>
+
+**Data.** Portal entries, rosters, recruiting classes and play-by-play from CollegeFootballData.com. Each entrant is matched to his previous team's roster by name and school; entrants who can't be matched aren't shown. Statistics are from FBS and FCS games outside garbage time. "Opponent-adjusted" means each play is credited net of what that defense allowed in the same stat that season.
+
+**Definitions.** Share is of the team's whole season. Strengths are his <span data-n="strengths_n"></span> highest-percentile performance components among those he had enough plays for. Similar players are the nearest player-seasons at his position over the last <span data-n="similar_seasons"></span> seasons by playing style, size and efficiency. "Old offense vs. this one" compares his last team's offense with the program's on run/pass balance and how passes are spread between receivers, tight ends and backs.
+
+**The fit model.** [{{< meta models.cfb_system_fit >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/cfb/system_fit/card.yml) ({{< meta models.cfb_system_fit_status >}}). It is trained only on transfers whose outcome was complete before the season the board looks ahead to (classes through <span data-n="last_cohort"></span>).
+
+**What this can't tell you.** Health and medicals, character and makeup, NIL cost, academics, and anything only film shows (route running, blocking, contact balance). Offensive linemen, defenders and specialists aren't on the board yet. Stars and ratings from recruiting services are used only inside the market tier.
+
+Data provided by [CollegeFootballData.com](https://collegefootballdata.com). Sparvi is not affiliated with the NCAA, any conference, or any school.
+</details>
