@@ -2,6 +2,22 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-15 · CFB player profile 1.0.2 → 1.0.3, CFB system fit 1.1.2 → 1.1.3 (patch: re-parse trigger)
+`ingest/cfb/play_players.py` records a PARSER_VERSION per season and re-parses any cached season parsed by an older
+one, so CI's cached 2025 file picks up the receiver fix. Parsing and every output are identical to 1.0.2 / 1.1.2;
+metrics unchanged.
+
+## 2026-11-15 · CFB player profile 1.0.1 → 1.0.2, CFB system fit 1.1.1 → 1.1.2 (patch: receiver parsing)
+CFB-RECV-FIX. `ingest/cfb/play_players.py` (in both cards' code) missed the receiver in 2025's jersey-style play text
+("to #81 X.Phipps caught at ASU49"), in "pass complete. Catch made by X", and in "A pass to B for 80 yds". Completions
+naming a receiver: 2025 57.8% → 99.9%, 2026 3.4% → 99.9%, 2024 98.7% → 99.9%; 2014-2020 byte-identical. Found by
+FIT-STABLE (receivers' yards per target fell from 11.2 in 2024 to 5.8 in 2025). A new data check requires >= 95% of
+completions to name a receiver in every season. Profile validation: movers r 0.1818 → 0.1795 (n 480 → 494), all
+players 0.2636 → 0.2651, split-half 0.2876 → 0.2958. On the portal board, WR entrants' total receiving yards rise
+70,550 → 119,052. System fit's backtest was not rerun (its windows' outcomes are 2021-2025 and its inputs before 2025
+are unchanged except a few hundred 2021-2024 rows). Not fixed (a source gap): CFBD's text names the receiver on only
+21-54% of incompletions in 2021-2024, so target-based receiver stats are biased in those seasons.
+
 ## 2026-11-15 · CFB system fit 1.1.0 → 1.1.1 (patch: board display)
 `cfb/portal/board.py` (in the card's code) also builds each program's top 25 among entrants who reached last season's
 backup minimum, shown only when a viewer turns on the "Backup minimum" filter (Matt). The model's own list stays the

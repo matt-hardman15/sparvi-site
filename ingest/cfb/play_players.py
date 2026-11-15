@@ -14,6 +14,8 @@ Play text comes in two families:
   full names    "Brad Kaaya pass complete to Stacy Coley for 12 yds ...", "A run for 5 yds", "A sacked by D for ...",
                 "B 29 Yd pass from A (K Kick)", "A pass intercepted D return for 34 yds"
   jersey style  "No Huddle-Shotgun #15 E.Vasko pass complete short right to #5 A.Little for ...",
+                "... pass complete short middle to #81 X.Phipps caught at ASU49, for 13 yards ..." (2025: a name
+                can end at "caught"; before CFB-RECV-FIX, 42% of 2025 completions lost their receiver)
                 "Shotgun #9 J.Thomas rush middle for 4 yards ...", "#15 E.Vasko pass intercepted by #21 Z.Rodriguez-Brown"
 Matching, within the team's roster for that season: exact full name; then first initial + last name (unique);
 then jersey number + last name (jersey style); then jersey alone if unique. Suffixes (Jr., III) and punctuation
@@ -35,6 +37,7 @@ from sparvi.config import RAW, cfb
 
 OUT = RAW / "cfb" / "players"
 MIN_MATCH = 0.95
+MIN_TARGET = 0.95                 # completions naming a receiver (CFB-RECV-FIX)
 PASS_TYPES = {"Pass Reception", "Pass Incompletion", "Passing Touchdown", "Sack", "Interception", "Pass Interception Return",
               "Pass Interception"}
 RUSH_TYPES = {"Rush", "Rushing Touchdown"}
@@ -42,8 +45,12 @@ SUFFIX = re.compile(r"\b(jr|sr|ii|iii|iv|v)\b\.?", re.I)
 
 NAME = r"[A-Z][\w'.\-]*(?:\s+[A-Za-z][\w'.\-]*)*?"          # one to several capitalized-ish tokens
 J = r"#(\d+)\s+([A-Z][\w'.\-]*(?:\s+[A-Z][\w'.\-]*)*?)"     # "#15 E.Vasko", "#21 Z.Rodriguez-Brown"
-END = r"(?=\s+(?:for|at|return|rush|rushed|pass|sacked|run|thrown|\d+\s+Yd|left|right|middle|up|short|deep)\b|\s*[,(;]|\.\s*(?:$|(?:Catch|Tackled|Gain|End|Fumble|PENALTY|Penalty|TOUCHDOWN|Touchdown|Out|Ball)\b)|$)"
+END = r"(?=\s+(?:for|at|return|rush|rushed|pass|sacked|run|thrown|\d+\s+Yd|left|right|middle|up|short|deep|caught)\b|\s*[,(;]|\.\s*(?:$|(?:Catch|Tackled|Gain|End|Fumble|PENALTY|Penalty|TOUCHDOWN|Touchdown|Out|Ball)\b)|$)"
 FULL = [  # (pattern, roles in group order)
+    # "B.Shapen pass complete. Catch made by A.Evans for 21 yards." (CFB-RECV-FIX)
+    (re.compile(rf"^(?P<a>{NAME})\s+pass\s+complete\.\s+Catch\s+made\s+by\s+(?P<b>{NAME}){END}"), ("passer", "target")),
+    # "Z. Tanner pass to R. Ransom for 18 yds, for a TD" (CFB-RECV-FIX: no complete/incomplete word)
+    (re.compile(rf"^(?P<a>{NAME})\s+pass\s+(?:(?:complete|incomplete)\s+)?to\s+(?P<b>{NAME}){END}"), ("passer", "target")),
     (re.compile(rf"^(?P<a>{NAME})\s+pass\s+(?:complete|incomplete)(?:\s+to\s+(?P<b>{NAME}))?{END}"), ("passer", "target")),
     (re.compile(rf"^(?P<b>{NAME})\s+\d+\s+Yd\s+pass\s+from\s+(?P<a>{NAME}){END}"), ("passer", "target")),
     (re.compile(rf"^(?P<a>{NAME})\s+sacked\s+by\s+(?P<b>{NAME}){END}"), ("passer", "sacked_by")),
@@ -166,10 +173,20 @@ def season(s: int) -> tuple[pd.DataFrame, dict]:
     return pd.DataFrame(out), rates
 
 
+PARSER_VERSION = 2                # bump on any parsing change: every season's file is rebuilt on the next pull
+VERSIONS = OUT / "play_players_versions.json"
+
+
+def _versions() -> dict[str, int]:
+    return json.loads(VERSIONS.read_text(encoding="utf-8")) if VERSIONS.exists() else {}
+
+
 def missing_or_current() -> list[int]:
-    """Seasons to (re)parse: the current one (its plays grow every week) and any past one without a file."""
-    cfg = cfb()
-    return [s for s in cfg.seasons if s == cfg.season or not (OUT / f"play_players_{s}.parquet").exists()]
+    """Seasons to (re)parse: the current one (its plays grow every week), any past one without a file, and any parsed
+    by an older PARSER_VERSION (a cached past season would otherwise keep the old parse: CFB-RECV-FIX)."""
+    cfg, done = cfb(), _versions()
+    return [s for s in cfg.seasons if s == cfg.season or not (OUT / f"play_players_{s}.parquet").exists()
+            or done.get(str(s)) != PARSER_VERSION]
 
 
 def main(seasons: list[int] | None = None) -> dict:
@@ -182,6 +199,7 @@ def main(seasons: list[int] | None = None) -> dict:
             print(f"{s}: no cached plays")
             continue
         df.to_parquet(OUT / f"play_players_{s}.parquet", index=False)
+        VERSIONS.write_text(json.dumps({**_versions(), str(s): PARSER_VERSION}, indent=1, sort_keys=True) + "\n", encoding="utf-8")
         report[s] = rates
         print(f"{s}: {rates['plays']:,} pass/rush plays, parsed {rates['parsed']:.1%}; "
               + ", ".join(f"{k[6:]} {v:.1%}" for k, v in rates.items() if k.startswith("match_")))
