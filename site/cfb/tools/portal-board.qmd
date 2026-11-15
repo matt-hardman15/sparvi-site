@@ -22,10 +22,10 @@ Every quarterback, running back, wide receiver and tight end in the transfer por
   const index = await S.load("/data/cfb/portal/index.json");
   const teams = new Map((await S.load("/data/cfb/teams.json")).map(t => [t.id, t]));
   const WINDOWS = index.windows.map(w => String(w.window));
-  const DEF = { win: WINDOWS[0], pos: "QB", lvl: "all", tier: "all", prog: "", q: "" };
+  const DEF = { win: WINDOWS[0], pos: "QB", lvl: "all", tier: "all", prog: "", q: "", min: "any" };
   const st = { win: WINDOWS.includes(U.get("win")) ? U.get("win") : DEF.win, pos: ["QB", "RB", "WR", "TE"].includes(U.get("pos")) ? U.get("pos") : DEF.pos,
                lvl: ["Power", "G5", "FCS"].includes(U.get("lvl")) ? U.get("lvl") : DEF.lvl, tier: ["1", "2", "3", "4"].includes(U.get("tier")) ? U.get("tier") : DEF.tier,
-               prog: U.get("prog") || DEF.prog, q: "" };
+               prog: U.get("prog") || DEF.prog, q: "", min: U.get("min") === "floor" ? "floor" : DEF.min };
   const POS = { QB: "Quarterbacks", RB: "Running backs", WR: "Wide receivers", TE: "Tight ends" };
   const LVL = { Power: "Power", G5: "Group of Five", FCS: "FCS" };
   const OPP = { QB: "dropbacks", RB: "carries", WR: "targets", TE: "targets" };
@@ -47,6 +47,7 @@ Every quarterback, running back, wide receiver and tight end in the transfer por
     c2.replaceChildren(
       S.select("Level last season", [["all", "All levels"], ...Object.entries(LVL)], st.lvl, v => { st.lvl = v; draw(); }),
       S.select("Market tier", [["all", "All tiers"], ["1", "Tier 1"], ["2", "Tier 2"], ["3", "Tier 3"], ["4", "Tier 4"]], st.tier, v => { st.tier = v; draw(); }),
+      S.el("label", {}, "Minimum plays", S.seg([["any", "Any"], ["floor", "Backup minimum"]], st.min, v => { st.min = v; draw(); })),
       S.search("Find a player", "Name or school", v => { st.q = v || ""; draw(); }));
   }
 
@@ -73,12 +74,12 @@ Every quarterback, running back, wide receiver and tight end in the transfer por
   function draw() {
     const players = board.players.filter(r => r.pos === st.pos);
     const byId = new Map(players.map(r => [r.id, r]));
-    const keep = r => (st.lvl === "all" || r.lvl === st.lvl) && (st.tier === "all" || String(r.tier) === st.tier)
+    const keep = r => (st.min === "any" || r.floor) && (st.lvl === "all" || r.lvl === st.lvl) && (st.tier === "all" || String(r.tier) === st.tier)
       && (!st.q || r.name.toLowerCase().includes(st.q) || (r.from || "").toLowerCase().includes(st.q));
     let rows, cols, key;
     const P = programs.programs.find(p => p.team === st.prog);
     if (P) {
-      const fit = P.fit[st.pos] || [];
+      const fit = (st.min === "floor" ? P.fit_floor : P.fit)[st.pos] || [];
       rows = fit.map(([id, band], i) => ({ ...byId.get(id), fit_rank: i + 1, band })).filter(r => r.id && keep(r));
       cols = [{ key: "fit_rank", label: "Fit", fmt: f.int, desc: false, title: "Experimental fit rank at this program (the model tied simple rankings in its backtest)" },
               ...baseCols.slice(0, 2),
@@ -101,11 +102,14 @@ Every quarterback, running back, wide receiver and tight end in the transfer por
     const tk = cols.map(x => x.key).join() + key;
     if (!table || tk !== tableKey) { table = S.table(document.getElementById("t"), cols, { sortKey: key, desc: key !== "fit_rank", pageSize: 25 }); tableKey = tk; }
     table.update(rows);
-    U.set({ win: st.win, pos: st.pos, lvl: st.lvl, tier: st.tier, prog: st.prog }, DEF);
+    U.set({ win: st.win, pos: st.pos, lvl: st.lvl, tier: st.tier, prog: st.prog, min: st.min }, DEF);
+    const bm = programs.numbers.backup_min[st.pos];
     const w = index.windows.find(x => String(x.window) === st.win);
     document.getElementById("tcap").textContent = (P
-      ? `${rows.length} of ${P.team}'s top ${programs.top} at ${st.pos}. `
-      : `${rows.length} ${POS[st.pos].toLowerCase()} in the ${st.win} portal window, as of ${w.as_of}; sorted by value over replacement. `)
+      ? `${rows.length} of ${P.team}'s top ${programs.top} at ${st.pos}` + (st.min === "floor"
+          ? `, ranked among entrants with at least ${bm} ${OPP[st.pos]} last season. ` : ", as the model ranks them (this is the list frozen in the forecast record). ")
+      : `${rows.length} ${POS[st.pos].toLowerCase()} in the ${st.win} portal window, as of ${w.as_of}` + (st.min === "floor" ? ` with at least ${bm} ${OPP[st.pos]} last season` : "")
+        + `; sorted by value over replacement. `)
       + `Statistics are from the ${+st.win - 1} season. Color on adjusted EPA/play ranks him among players at his position (orange better, blue worse). `
       + `Players with too few plays have no percentile, strengths, or similar players.`;
   }

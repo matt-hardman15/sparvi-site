@@ -17,6 +17,7 @@ import argparse
 import pandas as pd
 
 from backtest.gate import require_passing
+from cfb.fit import labels as LB
 from cfb.fit import model as M
 from cfb.portal import board as B
 from ingest.cfb.players import seasons
@@ -52,7 +53,7 @@ def player_rows(pl: pd.DataFrame) -> list[dict]:
         rows.append({"id": r.player_id, "name": r.name, "pos": r.group, "from": r.team_from, "lvl": r.level,
                      "ht": _r(r.height, 0), "wt": _r(r.weight, 0), "exp": int(r.exp), "share": _r(r.share, 3),
                      "epa": _r(r.epa_adj, 3), "epa_pct": _r(r.epa_pct, 0), "vor": _r(r.vor, 1), "yds": _r(r.yards, 0),
-                     "tier": int(r.tier), "str": list(r.strengths), "sim": list(r.similar),
+                     "tier": int(r.tier), "floor": bool(r.floor), "str": list(r.strengths), "sim": list(r.similar),
                      "dest": None if pd.isna(r.destination) else r.destination,
                      "entered": str(pd.Timestamp(r.transferDate).date()) if pd.notna(r.transferDate) else None})
     return rows
@@ -67,7 +68,8 @@ def export(t: int, as_of: pd.Timestamp) -> dict:
     OUT.mkdir(parents=True, exist_ok=True)
     write_json(OUT / f"board_{t}.json", {**head, "tier_rules": {str(k): v for k, v in B.TIER_RULES.items()},
                                           "players": player_rows(res["players"])})
-    numbers = {"horizon_years": B.HORIZON_YEARS, "strengths_n": B.N_STRENGTHS, "similar_seasons": B.SIMILAR_SEASONS, "last_cohort": B.LAST_COHORT}
+    numbers = {"horizon_years": B.HORIZON_YEARS, "strengths_n": B.N_STRENGTHS, "similar_seasons": B.SIMILAR_SEASONS, "last_cohort": B.LAST_COHORT,
+               "backup_min": dict(LB.BACKUP_MIN)}
     write_json(OUT / f"programs_{t}.json", {**head, "top": B.TOP_FIT, "numbers": numbers, "programs": res["programs"]})
     return {"window": t, "as_of": str(as_of.date()), "players": int(len(res["players"])), "result": res}
 

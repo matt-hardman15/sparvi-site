@@ -504,7 +504,9 @@ def act_cfb_portal(p):
     select(p, "#c", "Program", "Ohio State"); wait(p, 400)
     assert query(p)["prog"] == "Ohio State" and "Ohio State" in p.text_content("#prog") and "experimental" in p.text_content("#prog")
     assert "Fit" in p.text_content("#t thead") and 1 <= rows(p, "#t") <= 25
-    assert "top" in p.text_content("#tcap")
+    assert "frozen in the forecast record" in p.text_content("#tcap")
+    seg(p, "#c2", "Backup minimum"); wait(p, 300)
+    assert query(p)["min"] == "floor" and "ranked among entrants with at least" in p.text_content("#tcap")
 
 
 def act_cfb_index(p):

@@ -2,6 +2,11 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-15 · CFB system fit 1.1.0 → 1.1.1 (patch: board display)
+`cfb/portal/board.py` (in the card's code) also builds each program's top 25 among entrants who reached last season's
+backup minimum, shown only when a viewer turns on the "Backup minimum" filter (Matt). The model's own list stays the
+default and is the one frozen in the ledger; predictions are unchanged.
+
 ## 2026-11-15 · CFB system fit 1.0.1 → 1.1.0 (minor: the portal board's training data)
 SC-3a. For the public portal board the model trains on transfer cohorts through 2024 only, so no 2026 outcome is used
 before the Phase 2 vault opens (PLAN-fit); system and type dimensions are fit on complete seasons (through 2025), and a

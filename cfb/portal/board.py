@@ -1,6 +1,8 @@
 """The public portal board (SC-3a): every QB, RB, WR, and TE portal entrant for a window, with last season's production,
-size, experience, a market tier, and similar players; and, per FBS program, its experimental fit top 25 by position,
-role availability, offensive style, and whether it kept its head coach.
+size, experience, a market tier, and similar players; and, per FBS program, its experimental fit top 25 by position
+(as the model ranks them, and among entrants who reached last season's backup minimum: Matt, Nov 15, the floor is a
+filter, the model's own list is the default and the one frozen in the ledger), role availability, offensive style,
+and whether it kept its head coach.
 
 Everything reads through the point-in-time loader as of the board's date (a live loader: the season just played may be
 in progress). The fit model (cfb_system_fit) trains on transfer cohorts through 2024 only, so no 2026 transfer outcome
@@ -145,6 +147,7 @@ def build(t: int, as_of, loader: Loader | None = None) -> dict:
     sim = similar(L, t, as_of, pid, pl["group"], rosters)
     pl["similar"] = [sim.get(p, []) for p in pid]
     pl["yards"] = pid.map(prev["yards"]).fillna(0.0)
+    pl["floor"] = pl["volume"] >= pl["group"].map(LB.BACKUP_MIN)        # reached last season's backup minimum
     # Programs.
     teams_t = L.load(f"teams_{t}", as_of, columns=["school", "conference"])
     conf_t = dict(zip(teams_t["school"], teams_t["conference"], strict=True))
@@ -158,6 +161,7 @@ def build(t: int, as_of, loader: Loader | None = None) -> dict:
     coaches = L.load("coaches", as_of)
     head = coaches.sort_values("games").groupby(["season", "school"])["coach_id"].last()
     sysmap = dict(zip(pl["player_id"], map(tuple, origin_sys), strict=True))
+    floor_ids = set(pl.loc[pl["floor"], "player_id"])
     programs = []
     for team in sorted(conf_t):
         row = tf.loc[team] if team in tf.index else None
@@ -166,15 +170,16 @@ def build(t: int, as_of, loader: Loader | None = None) -> dict:
                 "style": None if row is None else style_words(row["sys1"], row["sys2"], q1, q2),
                 "kept_coach": None if new is None or old is None else bool(new == old),
                 "open": {g: (None if (team, g) not in avail.index else round(float(avail[(team, g)]), 3)) for g in ("QB", "RB", "WR", "TE")},
-                "fit": {}}
+                "fit": {}, "fit_floor": {}}
         bt = b[b["team"] == team]
         for g in ("QB", "RB", "WR", "TE"):
-            top = bt[bt["group"] == g].sort_values("p", ascending=False, kind="stable").head(TOP_FIT)
-            lst = []
-            for p in top["player"]:
-                o = sysmap.get(p, (np.nan, np.nan))
-                d = np.hypot(row["sys1"] - o[0], row["sys2"] - o[1]) if row is not None else np.nan
-                lst.append([p, None if np.isnan(d) else similarity_band(d, cuts)])
-            prog["fit"][g] = lst
+            ranked = bt[bt["group"] == g].sort_values("p", ascending=False, kind="stable")
+            for name, cand in (("fit", ranked), ("fit_floor", ranked[ranked["player"].isin(floor_ids)])):
+                lst = []
+                for p in cand["player"].head(TOP_FIT):
+                    o = sysmap.get(p, (np.nan, np.nan))
+                    d = np.hypot(row["sys1"] - o[0], row["sys2"] - o[1]) if row is not None else np.nan
+                    lst.append([p, None if np.isnan(d) else similarity_band(d, cuts)])
+                prog[name][g] = lst
         programs.append(prog)
     return {"players": pl, "programs": programs, "fitted": fitted, "board": b, "as_of": as_of, "window": t}
