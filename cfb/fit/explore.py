@@ -180,6 +180,106 @@ def analyses(df: pd.DataFrame) -> list[dict]:
     return log
 
 
+# ---- round 2 (Matt, Nov 15): the coaching-continuity pattern up close, and does a new coach's system travel? ----------
+LEADS = [("RB", "A_vor"), ("RB", "A_rate"), ("WR", "B_vor"), ("TE", "A_vor"), ("TE", "A_rate")]   # round 1's coherent leads
+
+
+def head_coaches() -> pd.DataFrame:
+    co = pd.read_parquet(RAW / "cfb" / "coaches.parquet")
+    return co.sort_values("games").groupby(["season", "school"]).tail(1)[["season", "school", "coach_id", "hire_date"]]
+
+
+def coach_carryover(st: pd.DataFrame, head: pd.DataFrame) -> dict:
+    """For head coaches who moved (head coach at school X in t-1, at Y in t): is Y's season-t system closer to X's t-1
+    system (his) or to Y's own t-1 system (the program's)? Per dimension correlations and median distances."""
+    h = head.set_index(["season", "school"])["coach_id"]
+    prev_school = {(s, c): sc for (s, sc), c in h.items()}
+    rows = []
+    for (s, y), c in h.items():
+        x = prev_school.get((s - 1, c))
+        if x is None or x == y or h.get((s - 1, y)) == c:
+            continue
+        k_new, k_his, k_prog = (s, y), (s - 1, x), (s - 1, y)
+        if all(k in st.index for k in (k_new, k_his, k_prog)):
+            rows.append({"season": s, "school": y, "from": x, **{f"{d}_{w}": st.loc[k, d] for d in ("D1", "D2") for w, k in
+                                                                  (("new", k_new), ("his", k_his), ("prog", k_prog))}})
+    d = pd.DataFrame(rows)
+    out = {"coaches_who_moved": int(len(d))}
+    for dim in ("D1", "D2"):
+        out[dim] = {"r_with_his_old_team": round(float(np.corrcoef(d[f"{dim}_new"], d[f"{dim}_his"])[0, 1]), 3),
+                    "r_with_program_last_year": round(float(np.corrcoef(d[f"{dim}_new"], d[f"{dim}_prog"])[0, 1]), 3)}
+    dist = lambda a: np.hypot(d["D1_new"] - d[f"D1_{a}"], d["D2_new"] - d[f"D2_{a}"])  # noqa: E731
+    out["median_distance"] = {"to_his_old_team": round(float(dist("his").median()), 3),
+                              "to_program_last_year": round(float(dist("prog").median()), 3)}
+    return out
+
+
+def analyses_round2(df: pd.DataFrame) -> tuple[list[dict], dict]:
+    log = []
+
+    def add(aid, desc, d, est_ci):
+        est, ci = est_ci
+        log.append({"id": aid, "analysis": desc, "n": int(len(d)), "est": round(est, 4), "ci90": [round(ci[0], 4), round(ci[1], 4)],
+                    "excludes_zero": bool(ci[0] > 0 or ci[1] < 0)})
+
+    st = pd.read_csv(OUT / "team_styles.csv").set_index(["season", "team"])
+    head = head_coaches()
+    h = head.set_index(["season", "school"])["coach_id"]
+    prev_school = {(s, c): sc for (s, sc), c in h.items()}
+    # The new coach's old system, for destinations whose head coach changed and who was a head coach the year before.
+    his = []
+    for s, t in zip(df["transfer_season"], df["team_to"], strict=True):
+        c = h.get((s, t))
+        x = prev_school.get((s - 1, c)) if c is not None and h.get((s - 1, t)) != c else None
+        his.append((s - 1, x) if x is not None and x != t else None)
+    for dim in ("D1", "D2"):
+        df[f"coach_{dim}"] = [st[dim].get(k, np.nan) if k else np.nan for k in his]
+    df["M1_coach_distance"] = np.hypot(df["coach_D1"] - df["from_D1"], df["coach_D2"] - df["from_D2"])
+    df["dD1"], df["dD2"] = (df["to_D1"] - df["from_D1"]).abs(), (df["to_D2"] - df["from_D2"]).abs()
+    df["ty1_x_sys1"] = df["ty1"] * df["to_D1"]
+    cohorts = {"2018-2020": (2018, 2020), "2021-2022": (2021, 2022), "2023-2025": (2023, 2025)}
+    for g, out in LEADS:
+        d = df[(df["group"] == g) & df[out].notna()].copy()
+        d["resid"] = d[out] - _loco(d, BASE, out)
+        same = d[d["same_coach"] & d["M1_distance"].notna()]
+        for dim in ("dD1", "dD2"):
+            add(f"R2.{g}.{out}.same_coach.{dim}", f"corr(|change in {dim[1:]}|, residual), destinations that kept their coach", same,
+                _boot(same, _corr(dim, "resid")))
+        for name, lo in (("fbs_origin", same[same["lvl_from"] > 0]), ("fcs_origin", same[same["lvl_from"] == 0])):
+            if len(lo) > 30:
+                add(f"R2.{g}.{out}.same_coach.{name}", "M1 (kept coach) by origin level", lo, _boot(lo, _corr("M1_distance", "resid")))
+        for name, (a, b) in cohorts.items():
+            q = same[same["transfer_season"].between(a, b)]
+            if len(q) > 30:
+                add(f"R2.{g}.{out}.same_coach.{name}", "M1 (kept coach) by cohort", q, _boot(q, _corr("M1_distance", "resid")))
+    for g in ("QB", "RB", "WR", "TE"):
+        for out in ("A_vor", "A_rate", "B_vor"):
+            d = df[(df["group"] == g) & df[out].notna()].copy()
+            d["resid"] = d[out] - _loco(d, BASE, out)
+            q = d[d["M1_coach_distance"].notna()]
+            if len(q) > 20:
+                add(f"R2.{g}.{out}.coach_system", "new coach with a head-coaching past: corr(distance to HIS old system, residual)", q,
+                    _boot(q, _corr("M1_coach_distance", "resid")))
+                q2 = q[q["M1_distance"].notna()]
+                add(f"R2.{g}.{out}.coach_system_vs_program", "same rows: corr(distance to the program's own last system, residual)", q2,
+                    _boot(q2, _corr("M1_distance", "resid")))
+            q = d[d["ty1"].notna() & d["to_D1"].notna()]
+            if len(q) > 50:
+                add(f"R2.{g}.{out}.ty1_x_sys1", "one interaction only: corr(type D1 x system D1, residual)", q, _boot(q, _corr("ty1_x_sys1", "resid")))
+    return log, {"coach_carryover": coach_carryover(st, head),
+                 "hire_dates": hire_timing(head)}
+
+
+def hire_timing(head: pd.DataFrame) -> dict:
+    """Is a new head coach public by a May 1 decision date? Share of coaching changes whose hire date is before May 1 of
+    the season (so the coach feature can be used honestly in Phase 2)."""
+    h = head.set_index(["season", "school"])
+    new = [(s, sc) for (s, sc) in h.index if (s - 1, sc) in h.index and h.loc[(s - 1, sc), "coach_id"] != h.loc[(s, sc), "coach_id"]]
+    hd = pd.to_datetime(pd.Series([h.loc[k, "hire_date"] for k in new]), utc=True, errors="coerce").dt.tz_localize(None)
+    before = [d <= pd.Timestamp(f"{s}-05-01") for d, (s, _) in zip(hd, new, strict=True) if pd.notna(d)]
+    return {"coaching_changes": len(new), "with_hire_date": int(hd.notna().sum()), "hired_by_may_1": round(float(np.mean(before)), 3)}
+
+
 def main() -> None:
     import sys
     cache = RAW / "cfb" / "fit_explore.parquet"                             # private (built from CFBD rosters)
@@ -189,13 +289,15 @@ def main() -> None:
         df = frame()
         df.to_parquet(cache, index=False)
     log = analyses(df)
+    log2, extra = analyses_round2(df)
+    log += log2
     n = len(log)
     res = {"status": "EXPLORATORY: every transfer here has been seen; nothing is a test (Phase 2 confirms on the 2026 vault)",
            "transfers": int(len(df)), "by_group": df["group"].value_counts().to_dict(),
            "outcome_rates": {o: {"n": int(df[o].notna().sum()), "positive": round(float((df[o] > 0).mean()), 4)} for o in ("A_vor", "B_vor")},
            "replacement_level_note": "per position, level, season: volume-weighted adjusted EPA/play of backups",
            "analyses_run": n, "expected_by_chance_at_90pct": round(0.10 * n, 1),
-           "excluding_zero": sum(a["excludes_zero"] for a in log), "analyses": log}
+           "excluding_zero": sum(a["excludes_zero"] for a in log), **extra, "analyses": log}
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "explore.json").write_text(json.dumps(res, indent=1, default=str) + "\n", encoding="utf-8", newline="\n")
     print(json.dumps({k: v for k, v in res.items() if k != "analyses"}, indent=1, default=str))
