@@ -111,6 +111,11 @@ def cfb_player_tables() -> list[Table]:
     return t
 
 
+def _by_season_start(df: pd.DataFrame, ingested: pd.Timestamp) -> pd.Series:
+    """A season's head coach is public by its first game (September 1 here; a mid-season change shows when pulled)."""
+    return pd.to_datetime(df["season"].astype(str) + "-09-01")
+
+
 def _play_players_available(games_path, plays_path):
     """play_players rows (ingest/cfb/play_players.py) carry game_id; same rule as plays (the day after the game, by
     week for FCS-only games), each game's date taken from the plays file's rows for it."""
@@ -127,6 +132,7 @@ def cfb_tables() -> list[Table]:
     cfg = cfb()
     d = RAW / "cfb"
     t = cfb_player_tables()
+    t.append(Table("coaches", d / "coaches.parquet", ("season", "school", "coach_id"), _by_season_start))
     for s in cfg.seasons:
         # Who was on each play (parsed from the cached play text, PLAYER-ADJ): one row per play x role.
         t.append(Table(f"play_players_{s}", d / "players" / f"play_players_{s}.parquet", ("play_id", "role"),

@@ -50,6 +50,11 @@ def player_checks(c: Checks, d, cfg) -> None:
         c.add(f"player_usage_{s}: same players as PPA", diff == 0, f"{diff} usage rows without PPA" if diff else "")
         bad, known = c.sql(f"select count(*) filter (where height not between 60 and 86), count(height) from {r('roster')}")
         c.add(f"roster_{s}: heights plausible", bad <= 0.005 * known, f"{bad} of {known:,} outside 5'0\"-7'2\"")
+    f = d / "coaches.parquet"                 # head coaches (SYSTEM-FIT): every season in the window present
+    if f.exists() and c.table("coaches", f, "coaches"):
+        seasons = {int(x[0]) for x in __import__("duckdb").sql(f"select distinct season from read_parquet('{f.as_posix()}')").fetchall()}
+        missing = sorted(set(cfg.seasons) - seasons)
+        c.add("coaches: every season", not missing, f"missing {missing}" if missing else f"{len(seasons)} seasons")
     # Who was on each play (PLAYER-ADJ): passers and rushers must match a roster player on >= MIN_MATCH of rows.
     from ingest.cfb.play_players import MIN_MATCH
     for s in cfg.seasons:
