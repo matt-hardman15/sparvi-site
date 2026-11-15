@@ -195,6 +195,22 @@ tables:
       usage_thirdDown: DOUBLE
       usage_standardDowns: DOUBLE
       usage_passingDowns: DOUBLE
+  coaches:
+    description: FBS head coaches by season (one row per coach x school x season; mid-season changes give two rows), CFBD /coaches
+    files: "cfb/coaches.parquet"
+    key: [season, school, coach_id]
+    min_rows: 1000
+    max_null:
+      season: 0
+      coach_id: 0
+      school: 0
+    columns:
+      season: BIGINT
+      coach_id: BIGINT
+      coach: VARCHAR
+      school: VARCHAR
+      games: BIGINT
+      hire_date: VARCHAR
   play_players:
     description: Who was on each pass or run play (passer, rusher, target; sack, interception, and pass-breakup defenders),
       parsed from CFBD's cached play text and matched to the season's rosters (ingest/cfb/play_players.py, PLAYER-ADJ)
