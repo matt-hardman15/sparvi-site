@@ -25,6 +25,19 @@ def last_report(m) -> dict | None:
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
 
 
+def comparable_point(rep: dict, prev: dict | None) -> float | None:
+    """The recorded score on the same folds as this run: the pooled score when the folds match, else (a fast run
+    against a full report) that fold's score from the report's by_fold. None when there is nothing comparable."""
+    if prev is None:
+        return None
+    if list(prev.get("folds", [])) == list(rep["folds"]):
+        return prev["evaluation"]["point"]
+    by = prev["evaluation"].get("by_fold", {})
+    if len(rep["folds"]) == 1 and str(rep["folds"][0]) in {str(k) for k in by}:
+        return {str(k): v for k, v in by.items()}[str(rep["folds"][0])]
+    return None
+
+
 def judge(m, rep: dict, prev: dict | None) -> tuple[bool, list[str]]:
     spec = m.card["backtest"]
     notes, ok = [], True
@@ -32,13 +45,16 @@ def judge(m, rep: dict, prev: dict | None) -> tuple[bool, list[str]]:
     if leaks:
         ok = False
         notes.append(f"leakage test failed: {', '.join(leaks)}")
-    if prev is not None:
+    before = comparable_point(rep, prev)
+    if prev is not None and before is None:
+        notes.append(f"no recorded score for fold(s) {rep['folds']} to compare this {rep['kind']} run with; regression check skipped")
+    if before is not None:
         tol = spec.get("regression_tolerance", 0.01)
         sign = 1 if metrics.higher_is_better(rep["evaluation"]["metric"]) else -1
-        delta = sign * (rep["evaluation"]["point"] - prev["evaluation"]["point"])
+        delta = sign * (rep["evaluation"]["point"] - before)
         if delta < -tol:
             ok = False
-            notes.append(f"{rep['evaluation']['metric']} got worse: {prev['evaluation']['point']:.4f} → {rep['evaluation']['point']:.4f} (tolerance {tol})")
+            notes.append(f"{rep['evaluation']['metric']} got worse: {before:.4f} → {rep['evaluation']['point']:.4f} (tolerance {tol})")
     if not rep["gate"]["passed"] and not m.card.get("experimental"):
         ok = False
         notes.append("failed its pre-registered gate and isn't flagged experimental")
@@ -70,7 +86,7 @@ def main() -> int:
         notes_all += [f"**{m.name}**: {n}" for n in notes]
         b = next(iter(rep["evaluation"]["baselines"].items()))
         rows.append({"model": m.name, "version": m.version, "kind": rep["kind"], "metric": rep["evaluation"]["metric"],
-                     "now": f"{rep['evaluation']['point']:.4f}", "prev": f"{prev['evaluation']['point']:.4f}" if prev else "none",
+                     "now": f"{rep['evaluation']['point']:.4f}", "prev": f"{comparable_point(rep, prev):.4f}" if comparable_point(rep, prev) is not None else "none",
                      "edge": f"{b[0]}: {b[1]['paired']['est']:+.4f} ({b[1]['paired']['ci90'][0]:+.3f} to {b[1]['paired']['ci90'][1]:+.3f})",
                      "gate": "pass" if rep["gate"]["passed"] else "fail",
                      "leakage": "pass" if all(v["passed"] for v in rep["leakage"].values()) else "FAIL",

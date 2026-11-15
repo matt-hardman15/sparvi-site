@@ -8,7 +8,7 @@ import pytest
 from synthetic_statcast import write_fixture
 
 import ingest.snapshot as snap
-from backtest import leakage, metrics, runner
+from backtest import ci, leakage, metrics, runner
 from backtest.asof import SNAPSHOTS_START, Loader
 from backtest.splits import season_folds
 from sparvi.config import baseball
@@ -98,6 +98,36 @@ def test_gate_is_strict_about_the_interval():
     assert runner.gate(ev_mae, {"beats_baseline": "elo", "ci_excludes_zero": True})["passed"]
 
 
+def test_gate_against_several_baselines_needs_every_one():
+    ev = {"metric": "recall", "point": 0.30, "baselines": {
+        "a": {"value": 0.20, "paired": {"est": 0.10, "ci90": [0.04, 0.16]}},
+        "b": {"value": 0.27, "paired": {"est": 0.03, "ci90": [-0.01, 0.07]}}}}
+    assert runner.gate(ev, {"beats_baseline": ["a"], "ci_excludes_zero": True})["passed"]
+    g = runner.gate(ev, {"beats_baseline": ["a", "b"], "ci_excludes_zero": True})
+    assert not g["passed"] and g["gap"] == 0.03 and g["per_baseline"]["b"]["ci90_low"] == -0.01
+
+
+def test_recall_metric_and_training_cutoff():
+    assert metrics.recall([1.0, 0.5, 0.0, 0.9], [1, 1, 1, 0]) == 0.5          # mean credit over the positive rows
+    assert metrics.higher_is_better("recall")
+    f = season_folds(2023, 2023, train_window=1, decision_month_day="05-01", train_until_month_day="05-01")[0]
+    assert f.train_until == pd.Timestamp("2023-05-01") and f.decision_date == pd.Timestamp("2023-05-01")
+    assert season_folds(2023, 2023, train_window=1)[0].train_until == pd.Timestamp("2021-12-31 23:59:59")
+
+
+def test_ci_compares_a_fast_run_with_the_same_fold():
+    full = {"kind": "full", "folds": [2021, 2022], "evaluation": {"metric": "recall", "point": 0.15, "by_fold": {"2021": 0.18, "2022": 0.12}}}
+    fast = {"kind": "fast", "folds": [2022], "evaluation": {"metric": "recall", "point": 0.12}, "leakage": {}, "gate": {"passed": True}}
+    m = SimpleNamespace(card={"backtest": {}, "experimental": None})
+    assert ci.comparable_point(fast, full) == 0.12
+    assert ci.judge(m, fast, full) == (True, [])                       # not "worse than 0.15": that's two folds pooled
+    old = {"kind": "full", "folds": [2021, 2022], "evaluation": {"metric": "recall", "point": 0.15}}
+    ok, notes = ci.judge(m, fast, old)                                   # older report without per-fold scores
+    assert ok and "skipped" in notes[0]
+    assert ci.comparable_point({**fast, "evaluation": {"metric": "recall", "point": 0.10}}, full) == 0.12
+    assert not ci.judge(m, {**fast, "evaluation": {"metric": "recall", "point": 0.10}}, full)[0]
+
+
 def test_paired_bootstrap_is_seeded_and_blocked():
     rng = np.random.default_rng(0)
     df = pd.DataFrame({"entity_id": np.repeat(range(50), 3), "y": rng.normal(size=150)})
@@ -146,7 +176,8 @@ def test_model_code_reads_data_only_through_the_loader():
 
     from sparvi.config import ROOT
     bad = []
-    for p in list((ROOT / "models").rglob("*.py")) + list((ROOT / "features").rglob("*.py") if (ROOT / "features").exists() else []):
+    model_code = [ROOT / "cfb" / "fit" / "model.py"]          # feature code that lives beside its sport
+    for p in list((ROOT / "models").rglob("*.py")) + list((ROOT / "features").rglob("*.py") if (ROOT / "features").exists() else [])             + [q for q in model_code if q.exists()]:
         text = p.read_text(encoding="utf-8")
         for pat in (r"read_parquet\(", r"read_csv\(", r"\bRAW\b", r"data/raw", r"duckdb\.(sql|connect)\("):
             if re.search(pat, text):

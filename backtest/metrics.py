@@ -21,7 +21,13 @@ def rmse(pred, y) -> float:
     return float(np.sqrt(np.mean((np.asarray(y, float) - np.asarray(pred, float)) ** 2)))
 
 
-METRICS = {"pearson_r": (pearson, True), "mae": (mae, False), "rmse": (rmse, False)}
+def recall(credit, y) -> float:
+    """Board recall: the mean hit credit (0-1, e.g. the chance of ranking in a board's top 10) over the positive rows."""
+    c, y = np.asarray(credit, float), np.asarray(y, float)
+    return float(c[y == 1].mean())
+
+
+METRICS = {"pearson_r": (pearson, True), "mae": (mae, False), "rmse": (rmse, False), "recall": (recall, True)}
 
 
 def score(metric: str, pred, y) -> float:

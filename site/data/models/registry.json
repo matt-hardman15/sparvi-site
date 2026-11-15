@@ -72,6 +72,18 @@
   "experimental": "validated before the backtest harness existed; its harness port is pending"
  },
  {
+  "model": "cfb_system_fit",
+  "title": "CFB system fit",
+  "sport": "cfb",
+  "status": "champion",
+  "version": "1.0.0",
+  "registered": "2026-11-15",
+  "primary": "recall_at_10",
+  "primary_value": 0.1479,
+  "challengers": [],
+  "experimental": "its pre-registered test (2021-2024 portal windows, 311 successful transfers) tied every baseline: recall at 10 0.148 vs. transfer rating 0.142, raw production 0.153, profile only 0.151 (random 0.045); edges -0.005 to +0.005, each 90% interval spanning zero. The system and fit terms add nothing detectable over ranking players by quality alone"
+ },
+ {
   "model": "nfl_team_efficiency",
   "title": "NFL opponent adjustment",
   "sport": "nfl",
