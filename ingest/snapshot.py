@@ -113,12 +113,12 @@ def cfb_player_tables() -> list[Table]:
 
 def _coach_available(df: pd.DataFrame, ingested: pd.Timestamp) -> pd.Series:
     """A season's head coach is public when he's hired for it (SC-3a; 91% of coaching changes are hired by May 1):
-    max(hire date, December 1 before the season), so a coach who stays is known once the carousel starts. Never later
-    than the season's first game (September 1), and September 1 when the hire date is missing."""
+    max(hire date, December 1 before the season), so a coach who stays is known once the carousel starts and a
+    mid-season hire (an interim) only from his hire date. September 1 when the hire date is missing."""
     start = pd.to_datetime(df["season"].astype(str) + "-09-01")
     carousel = pd.to_datetime((df["season"] - 1).astype(str) + "-12-01")
     hired = pd.to_datetime(df["hire_date"], utc=True, errors="coerce").dt.tz_localize(None).dt.normalize()
-    return pd.concat([hired, carousel], axis=1).max(axis=1).where(hired.notna(), start).clip(upper=start)
+    return pd.concat([hired, carousel], axis=1).max(axis=1).where(hired.notna(), start)
 
 
 def _play_players_available(games_path, plays_path):
