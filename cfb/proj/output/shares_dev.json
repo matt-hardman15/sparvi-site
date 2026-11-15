@@ -1,0 +1,241 @@
+{
+ "status": "DEVELOPMENT (CFB-PROJ P2): seasons 2016-2020 only; test seasons 2021-2025 not scored",
+ "groups": {
+  "QB": {
+   "rows": 3883,
+   "unprojected_share_mean": 0.0945,
+   "coef_std": {
+    "sq_share": 0.283,
+    "had_role": 0.108,
+    "exp": 0.647,
+    "exp2": -0.809,
+    "transfer": 0.202,
+    "freshman": -0.084,
+    "log_stay": 0.178,
+    "hs": 0.593,
+    "no_hs": 0.33,
+    "dlvl": 0.0,
+    "eff": 0.176,
+    "no_eff": -0.35,
+    "sq_x_transfer": -0.029,
+    "sq_x_dlvl": -0.071,
+    "is_te": 0.0,
+    "is_rb": 0.0,
+    "outside": -0.145
+   },
+   "pred": {
+    "r": 0.5061,
+    "mae": 0.17106
+   },
+   "carry": {
+    "r": 0.4024,
+    "mae": 0.16779
+   },
+   "share_only": {
+    "r": 0.4121,
+    "mae": 0.16897
+   },
+   "model_minus_carry_r": {
+    "est": 0.1037,
+    "ci90": [
+     0.0834,
+     0.1232
+    ]
+   },
+   "model_minus_share_only_r": {
+    "est": 0.094,
+    "ci90": [
+     0.0753,
+     0.1126
+    ]
+   },
+   "by_status": {
+    "freshman": {
+     "n": 577,
+     "actual_mean": 0.0657,
+     "pred": 0.3182,
+     "carry": null,
+     "share_only": null
+    },
+    "returner": {
+     "n": 3117,
+     "actual_mean": 0.1585,
+     "pred": 0.5223,
+     "carry": 0.4353,
+     "share_only": 0.4353
+    },
+    "transfer": {
+     "n": 189,
+     "actual_mean": 0.275,
+     "pred": 0.1986,
+     "carry": null,
+     "share_only": 0.0848
+    }
+   }
+  },
+  "RB": {
+   "rows": 6549,
+   "unprojected_share_mean": 0.0783,
+   "coef_std": {
+    "sq_share": 0.388,
+    "had_role": -0.013,
+    "exp": 0.5,
+    "exp2": -0.815,
+    "transfer": 0.03,
+    "freshman": 0.147,
+    "log_stay": 0.027,
+    "hs": 0.28,
+    "no_hs": -0.033,
+    "dlvl": -0.09,
+    "eff": 0.064,
+    "no_eff": -0.424,
+    "sq_x_transfer": 0.001,
+    "sq_x_dlvl": 0.026,
+    "is_te": 0.0,
+    "is_rb": 0.0,
+    "outside": 0.187
+   },
+   "pred": {
+    "r": 0.5095,
+    "mae": 0.09749
+   },
+   "carry": {
+    "r": 0.4104,
+    "mae": 0.10001
+   },
+   "share_only": {
+    "r": 0.4117,
+    "mae": 0.10063
+   },
+   "model_minus_carry_r": {
+    "est": 0.0992,
+    "ci90": [
+     0.0853,
+     0.1136
+    ]
+   },
+   "model_minus_share_only_r": {
+    "est": 0.0978,
+    "ci90": [
+     0.0849,
+     0.111
+    ]
+   },
+   "by_status": {
+    "freshman": {
+     "n": 710,
+     "actual_mean": 0.0805,
+     "pred": 0.1994,
+     "carry": null,
+     "share_only": null
+    },
+    "returner": {
+     "n": 5723,
+     "actual_mean": 0.0913,
+     "pred": 0.5342,
+     "carry": 0.44,
+     "share_only": 0.44
+    },
+    "transfer": {
+     "n": 116,
+     "actual_mean": 0.1206,
+     "pred": 0.2695,
+     "carry": null,
+     "share_only": 0.1551
+    }
+   }
+  },
+  "REC": {
+   "rows": 22669,
+   "unprojected_share_mean": 0.0863,
+   "coef_std": {
+    "sq_share": 0.802,
+    "had_role": -0.113,
+    "exp": 0.671,
+    "exp2": -0.933,
+    "transfer": 0.075,
+    "freshman": 0.023,
+    "log_stay": 0.054,
+    "hs": 0.236,
+    "no_hs": -0.042,
+    "dlvl": -0.01,
+    "eff": -0.035,
+    "no_eff": 0.024,
+    "sq_x_transfer": -0.044,
+    "sq_x_dlvl": -0.027,
+    "is_te": -0.17,
+    "is_rb": -0.386,
+    "outside": 1.677
+   },
+   "pred": {
+    "r": 0.5244,
+    "mae": 0.02957
+   },
+   "carry": {
+    "r": 0.4542,
+    "mae": 0.02923
+   },
+   "share_only": {
+    "r": 0.4518,
+    "mae": 0.02955
+   },
+   "model_minus_carry_r": {
+    "est": 0.0702,
+    "ci90": [
+     0.0624,
+     0.0776
+    ]
+   },
+   "model_minus_share_only_r": {
+    "est": 0.0726,
+    "ci90": [
+     0.0644,
+     0.0809
+    ]
+   },
+   "by_position": {
+    "RB": {
+     "n": 6549,
+     "pred": 0.4671,
+     "carry": 0.4146,
+     "share_only": 0.4091
+    },
+    "TE": {
+     "n": 4670,
+     "pred": 0.5202,
+     "carry": 0.4432,
+     "share_only": 0.4319
+    },
+    "WR": {
+     "n": 11450,
+     "pred": 0.4988,
+     "carry": 0.4282,
+     "share_only": 0.4263
+    }
+   },
+   "by_status": {
+    "freshman": {
+     "n": 2381,
+     "actual_mean": 0.0144,
+     "pred": 0.1884,
+     "carry": null,
+     "share_only": null
+    },
+    "returner": {
+     "n": 19817,
+     "actual_mean": 0.0273,
+     "pred": 0.5383,
+     "carry": 0.467,
+     "share_only": 0.4669
+    },
+    "transfer": {
+     "n": 471,
+     "actual_mean": 0.0335,
+     "pred": 0.122,
+     "carry": null,
+     "share_only": 0.1623
+    }
+   }
+  }
+ }
+}
