@@ -58,7 +58,8 @@ def run_fold(mod, loader: Loader, fold) -> tuple[pd.DataFrame, dict]:
 def evaluate(df: pd.DataFrame, spec: dict) -> dict:
     metric = spec["primary_metric"]
     block = spec.get("block", "entity_id")
-    out = {"metric": metric, "n": int(len(df)), "point": metrics.score(metric, df["point"], df["y"]), "baselines": {}}
+    out = {"metric": metric, "n": int(len(df)), "point": metrics.score(metric, df["point"], df["y"]), "baselines": {},
+           "by_fold": {int(f): metrics.score(metric, g["point"], g["y"]) for f, g in df.groupby("fold")}}
     for b in spec["baselines"]:
         out["baselines"][b] = {"value": metrics.score(metric, df[b], df["y"]),
                                "paired": metrics.paired_bootstrap(df.reset_index(drop=True), metric, "point", b, "y", block,

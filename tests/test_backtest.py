@@ -8,7 +8,7 @@ import pytest
 from synthetic_statcast import write_fixture
 
 import ingest.snapshot as snap
-from backtest import leakage, metrics, runner
+from backtest import ci, leakage, metrics, runner
 from backtest.asof import SNAPSHOTS_START, Loader
 from backtest.splits import season_folds
 from sparvi.config import baseball
@@ -113,6 +113,19 @@ def test_recall_metric_and_training_cutoff():
     f = season_folds(2023, 2023, train_window=1, decision_month_day="05-01", train_until_month_day="05-01")[0]
     assert f.train_until == pd.Timestamp("2023-05-01") and f.decision_date == pd.Timestamp("2023-05-01")
     assert season_folds(2023, 2023, train_window=1)[0].train_until == pd.Timestamp("2021-12-31 23:59:59")
+
+
+def test_ci_compares_a_fast_run_with_the_same_fold():
+    full = {"kind": "full", "folds": [2021, 2022], "evaluation": {"metric": "recall", "point": 0.15, "by_fold": {"2021": 0.18, "2022": 0.12}}}
+    fast = {"kind": "fast", "folds": [2022], "evaluation": {"metric": "recall", "point": 0.12}, "leakage": {}, "gate": {"passed": True}}
+    m = SimpleNamespace(card={"backtest": {}, "experimental": None})
+    assert ci.comparable_point(fast, full) == 0.12
+    assert ci.judge(m, fast, full) == (True, [])                       # not "worse than 0.15": that's two folds pooled
+    old = {"kind": "full", "folds": [2021, 2022], "evaluation": {"metric": "recall", "point": 0.15}}
+    ok, notes = ci.judge(m, fast, old)                                   # older report without per-fold scores
+    assert ok and "skipped" in notes[0]
+    assert ci.comparable_point({**fast, "evaluation": {"metric": "recall", "point": 0.10}}, full) == 0.12
+    assert not ci.judge(m, {**fast, "evaluation": {"metric": "recall", "point": 0.10}}, full)[0]
 
 
 def test_paired_bootstrap_is_seeded_and_blocked():
