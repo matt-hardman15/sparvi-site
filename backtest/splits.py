@@ -18,15 +18,17 @@ class Fold:
 
 
 def season_folds(first_test: int, last_test: int, train_window: int | None, decision_month_day: str = "03-01",
-                 predictor_lag: int = 1) -> list[Fold]:
+                 predictor_lag: int = 1, train_until_month_day: str | None = None) -> list[Fold]:
     """One fold per test season. Training uses seasons up to test - predictor_lag - 1 (the predictor
     season itself is graded, not trained on), either all of them (train_window None, expanding) or the
-    last `train_window`. Decisions happen on decision_month_day of the test season (before it starts)."""
+    last `train_window`. Decisions happen on decision_month_day of the test season (before it starts).
+    train_until_month_day moves the training cutoff from Dec 31 of the last training season to that day of the test
+    season, for models whose training labels finish with the bowls (e.g. a transfer's second season)."""
     folds = []
     for t in range(first_test, last_test + 1):
         last_train = t - predictor_lag - 1
         first_train = last_train - train_window + 1 if train_window else None
         train = tuple(range(first_train, last_train + 1)) if first_train else (last_train,)
-        folds.append(Fold(t, train, pd.Timestamp(f"{last_train}-12-31 23:59:59"), pd.Timestamp(f"{t}-{decision_month_day}"),
-                          pd.Timestamp(f"{t}-12-31 23:59:59")))
+        until = pd.Timestamp(f"{t}-{train_until_month_day}") if train_until_month_day else pd.Timestamp(f"{last_train}-12-31 23:59:59")
+        folds.append(Fold(t, train, until, pd.Timestamp(f"{t}-{decision_month_day}"), pd.Timestamp(f"{t}-12-31 23:59:59")))
     return folds
