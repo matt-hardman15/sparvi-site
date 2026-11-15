@@ -4,7 +4,7 @@ models:
   aaa_translation_status: "experimental: validated before the backtest harness existed; its harness port is pending"
   aaa_translation_version: "1.0.0"
   cfb_player_profile: "CFB player profile v1.0.0"
-  cfb_player_profile_backtest: "Backtest: not yet run for v1.0.0 (the backtest workflow runs it on main); earlier versions' reports are in the model's backtest folder"
+  cfb_player_profile_backtest: "Backtest (2026-11-15, folds 2021, 2022, 2023, 2024, 2025, n 3629): r 0.182 vs. 0.181 for last season; edge +0.000 (90% interval -0.017 to +0.018); gate not passed; leakage tests all passed; revision-safe: no (data from before snapshots began); vault: 2026 (0 accesses)"
   cfb_player_profile_status: "experimental: its pre-registered test (do components carry over when a player changes teams?) tied raw: edge +0.000, 90% interval -0.017 to +0.018. Secondary: more reliable within a season and nearly independent of opponent strength; team context (line, teammates, scheme) is the next layer (PROFILE-CONTEXT)"
   cfb_player_profile_version: "1.0.0"
   cfb_power_rating: "CFB power rating v1.0.0"
