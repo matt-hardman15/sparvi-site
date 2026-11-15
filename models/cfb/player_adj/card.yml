@@ -1,17 +1,23 @@
 # Model card (PLAN-scout A2). Change `code` files only with a new version: python -m sparvi.registry --help
 name: cfb_player_adj
-title: CFB player adjustment
+title: CFB player rating
 sport: cfb
 status: champion
 version: 1.0.0
 owner: Matt
-spec: 'Player-level opponent and teammate adjustment for college football passers, rushers, and receivers: each
-  play''s EPA credited to the players on it and the defense it faced (ridge), so a player''s value is EPA per play
-  above an average player against an average defense, with small samples shrunk.'
+spec: 'Player rating for college football passers, rushers, and receivers: EPA per play credited to the player after
+  removing the strength of the opposing unit he faced (that week, for that play type), sharing credit with teammates
+  and a team-offense term (line, scheme, play-calling), and shrinking toward his own projection (recency-weighted
+  past seasons, recruiting rating, class-year development) rather than toward zero.'
 target: EPA per play (CFBD "ppa"), outside garbage time, FBS games
-method: 'Ridge per season and play kind (pass: passer + target + defense + home; run: rusher + defense + home) on
-  plays parsed to players from the play text (ingest/cfb/play_players.py, no API calls). Penalty chosen per kind by
-  5-fold held-out-game cross-validation on earlier seasons only (grid 1-800).'
+method: 'Per season and play kind, ridge regression of schedule-neutral EPA (EPA minus the opposing unit''s strength
+  as of the prior week, blended toward its prior season) on passer + target + team offense (pass) or rusher + team
+  offense (run), penalized toward each player''s prior projection with a penalty per role. Penalties and the prior''s
+  weights are fit on earlier seasons only, to predict next season. Play-player links parsed from the play text
+  (ingest/cfb/play_players.py, no API calls).'
+history: 'v1 design (single penalty toward zero, defense dummies, play-level CV) was pre-registered 2026-11-14 and
+  run once as a dry run: adjusted r 0.311 vs raw 0.326 on 481 transfers 2021-2025, gate failed (QBs worse, RBs/WRs
+  even). Redesigned to v2 before registration at Matt''s direction (review/model-changes.md, 2026-11-14).'
 code:
 - cfb/player_adj/model.py
 - ingest/cfb/play_players.py
@@ -20,46 +26,55 @@ training_data:
 - data/raw/cfb/plays_*.parquet
 - data/raw/cfb/games_*.parquet
 - data/raw/cfb/players/play_players_*.parquet
+- data/raw/cfb/players/roster_*.parquet
+- data/raw/cfb/players/recruits_*.parquet
+- cfb/adjusted_ratings/output/adjusted_team_week.csv
 artifacts:
 - cfb/player_adj/output/validation.json
 validation:
   file: cfb/player_adj/output/validation.json
   metrics:
-    r_transfer: transfer.adjusted.r
-    r_transfer_raw: transfer.raw.r
-    edge_vs_raw: transfer.edge_vs_raw.est
-    n_transfer: transfer.n
-    r_wepa_rows_adjusted: wepa.adjusted.r
+    r_next: primary.rating.r
+    r_next_raw: primary.raw.r
+    edge_vs_raw: primary.edge_vs_raw.est
+    n_next: primary.n
+    r_movers: movers.rating.r
+    r_movers_raw: movers.raw.r
+    r_movers_neutral: movers.neutral.r
+    n_movers: movers.n
+    r_wepa_rows_rating: wepa.rating.r
     r_wepa_rows_wepa: wepa.wepa.r
-    n_wepa: wepa.n
+    split_half_rating: split_half.rating
+    split_half_raw: split_half.raw
 eval:
-  set: 'Transfers 2021-2025: players with the role minimum in both seasons (passer 100, rusher 40, target 25 plays)
-    whose team changed, rated on the season before the move and scored on raw EPA/play at the new school
-    (standardized within role).'
+  set: 'Every passer, rusher, and receiver with the role minimum in consecutive seasons (passer 100, rusher 40, target 25
+    plays), outcome seasons 2021-2025: rating at the end of season t-1 against schedule-neutral EPA/play in season t
+    net of the expected class-year change (standardized within role). Stayers and movers together.'
   set_keys:
     first_outcome_season: seasons.first
     last_outcome_season: seasons.last
-    n: transfer.n
-  primary: r_transfer
+    n: primary.n
+  primary: r_next
   higher_is_better: true
 live_window:
-  unit: transfer seasons
+  unit: seasons
   min: 1
 published_in: []
 backtest:
   preregistered_at: '2026-11-14'
   module: models/cfb/player_adj/backtest.py
-  target: Movers' raw EPA/play at the new school in season t, standardized within role (passer, rusher, target)
+  target: 'Season t schedule-neutral EPA/play (EPA minus the opposing unit''s prior-week strength) net of the expected
+    class-year change, standardized within role; players with the role minimum in seasons t-1 and t'
   decision_dates: February 1 of the outcome season (after the bowls and the January portal window)
   splits:
     type: walk_forward
     first_test: 2021
     last_test: 2025
-    train_window: 3
+    train_window: 4
     predictor_lag: 1
     decision: 02-01
     fast_folds: 1
-  group_by: 'none: a player is rated on his own past plays; the penalty is tuned on earlier seasons only'
+  group_by: 'none: a player is rated on his own plays; penalties and prior weights are fit on earlier seasons only'
   block: entity_id
   baselines:
   - last_season
@@ -72,9 +87,12 @@ backtest:
     ci_excludes_zero: true
   gate_decided: 'Matt, 2026-11-14: strict (the 90% interval of the edge over last season''s raw EPA/play must exclude
     zero), same as Stuff+'
-  reproduction: Exact on the same machine (sparse ridge, deterministic CV folds). Official runs happen in CI.
+  secondary: 'Reported, not gating: movers only (team changed) against raw and against schedule-neutral-only
+    production; WEPA on the rows it covers (passing, rushing); split-half reliability (odd vs. even games); correlation
+    of per-game residuals with opponent strength.'
+  reproduction: Exact on the same machine (sparse ridge, deterministic folds). Official runs happen in CI.
   vault:
     seasons: [2026]
-    note: Movers into 2026 are sealed; the outcome season completes in January 2027 and is scored once, then.
+    note: Season 2026 outcomes are sealed; scored once after the season completes (January 2027).
     accesses: 0
-experimental: not yet through the backtest harness (pre-registered 2026-11-14)
+experimental: not yet through the backtest harness (v2 pre-registered 2026-11-14)
