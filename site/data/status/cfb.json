@@ -4,9 +4,9 @@
  "data_through": {
   "season": 2026,
   "week": 11,
-  "last_game": "2026-11-13"
+  "last_game": "2026-11-14"
  },
- "n_checks": 443,
+ "n_checks": 1011,
  "n_failed": 0,
  "rows": {
   "games_2014": 868,
@@ -35,6 +35,71 @@
   "lines_2024": 3172,
   "lines_2025": 3289,
   "lines_2026": 2110,
+  "play_players_2014": 171229,
+  "play_players_2015": 173083,
+  "play_players_2016": 171319,
+  "play_players_2017": 170745,
+  "play_players_2018": 173628,
+  "play_players_2019": 173613,
+  "play_players_2020": 111461,
+  "play_players_2021": 162808,
+  "play_players_2022": 253114,
+  "play_players_2023": 250638,
+  "play_players_2024": 268245,
+  "play_players_2025": 288655,
+  "play_players_2026": 203370,
+  "player_ppa_2014": 3035,
+  "player_ppa_2015": 3082,
+  "player_ppa_2016": 3226,
+  "player_ppa_2017": 3202,
+  "player_ppa_2018": 3461,
+  "player_ppa_2019": 3489,
+  "player_ppa_2020": 2370,
+  "player_ppa_2021": 3282,
+  "player_ppa_2022": 4971,
+  "player_ppa_2023": 4649,
+  "player_ppa_2024": 4403,
+  "player_ppa_2025": 5551,
+  "player_ppa_2026": 5426,
+  "player_stats_2014": 40210,
+  "player_stats_2015": 41273,
+  "player_stats_2016": 98529,
+  "player_stats_2017": 102114,
+  "player_stats_2018": 106469,
+  "player_stats_2019": 103303,
+  "player_stats_2020": 73490,
+  "player_stats_2021": 109056,
+  "player_stats_2022": 138632,
+  "player_stats_2023": 132228,
+  "player_stats_2024": 135294,
+  "player_stats_2025": 141637,
+  "player_stats_2026": 154377,
+  "player_usage_2014": 3035,
+  "player_usage_2015": 3082,
+  "player_usage_2016": 3226,
+  "player_usage_2017": 3202,
+  "player_usage_2018": 3461,
+  "player_usage_2019": 3489,
+  "player_usage_2020": 2370,
+  "player_usage_2021": 3282,
+  "player_usage_2022": 4971,
+  "player_usage_2023": 4649,
+  "player_usage_2024": 4403,
+  "player_usage_2025": 5551,
+  "player_usage_2026": 5426,
+  "player_wepa_2014": 508,
+  "player_wepa_2015": 647,
+  "player_wepa_2016": 813,
+  "player_wepa_2017": 882,
+  "player_wepa_2018": 897,
+  "player_wepa_2019": 884,
+  "player_wepa_2020": 729,
+  "player_wepa_2021": 866,
+  "player_wepa_2022": 871,
+  "player_wepa_2023": 887,
+  "player_wepa_2024": 854,
+  "player_wepa_2025": 912,
+  "player_wepa_2026": 805,
   "plays_2014": 158315,
   "plays_2015": 160127,
   "plays_2016": 158487,
@@ -47,7 +112,14 @@
   "plays_2023": 250659,
   "plays_2024": 276483,
   "plays_2025": 291073,
-  "plays_2026": 228081,
+  "plays_2026": 228253,
+  "portal_2021": 1770,
+  "portal_2022": 2273,
+  "portal_2023": 2502,
+  "portal_2024": 3378,
+  "portal_2025": 4499,
+  "portal_2026": 4484,
+  "portal_2027": 0,
   "rankings_2014": 1050,
   "rankings_2015": 951,
   "rankings_2016": 950,
@@ -61,6 +133,32 @@
   "rankings_2024": 1001,
   "rankings_2025": 1000,
   "rankings_2026": 601,
+  "recruits_2014": 3772,
+  "recruits_2015": 3516,
+  "recruits_2016": 4452,
+  "recruits_2017": 4710,
+  "recruits_2018": 4348,
+  "recruits_2019": 4455,
+  "recruits_2020": 4413,
+  "recruits_2021": 3364,
+  "recruits_2022": 3955,
+  "recruits_2023": 4166,
+  "recruits_2024": 4236,
+  "recruits_2025": 4120,
+  "recruits_2026": 3987,
+  "roster_2014": 16164,
+  "roster_2015": 16399,
+  "roster_2016": 18041,
+  "roster_2017": 17894,
+  "roster_2018": 17902,
+  "roster_2019": 18732,
+  "roster_2020": 16423,
+  "roster_2021": 18633,
+  "roster_2022": 30388,
+  "roster_2023": 22365,
+  "roster_2024": 22794,
+  "roster_2025": 30031,
+  "roster_2026": 31579,
   "teams_2014": 128,
   "teams_2015": 128,
   "teams_2016": 128,
@@ -1984,7 +2082,7 @@
   {
    "name": "plays_2026: row count",
    "ok": true,
-   "detail": "228,081 rows (last accepted 228,081)"
+   "detail": "228,253 rows (last accepted 228,081)"
   },
   {
    "name": "plays_2026: one row per id",
@@ -2274,22 +2372,2862 @@
   {
    "name": "games_2026: completed games have results",
    "ok": true,
-   "detail": "693 completed games"
+   "detail": "694 completed games"
   },
   {
    "name": "plays_2026: completed games have play-by-play",
    "ok": true,
-   "detail": "0 of 693 games without plays (0.0%; limit 2%)"
+   "detail": "0 of 694 games without plays (0.0%; limit 2%)"
   },
   {
    "name": "plays_2026: final scores agree with results",
    "ok": true,
-   "detail": "676 of 693 games (97.5%; bar 90%); 1 off by 9+ points"
+   "detail": "677 of 694 games (97.6%; bar 90%); 1 off by 9+ points"
   },
   {
    "name": "games_2026: results are current",
    "ok": true,
    "detail": ""
+  },
+  {
+   "name": "roster_2014: columns and types",
+   "ok": true,
+   "detail": "12 contract columns"
+  },
+  {
+   "name": "roster_2014: row count",
+   "ok": true,
+   "detail": "16,164 rows"
+  },
+  {
+   "name": "roster_2014: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2014: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "roster_2014: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2014: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_stats_2014: row count",
+   "ok": true,
+   "detail": "40,210 rows"
+  },
+  {
+   "name": "player_stats_2014: one row per playerId + team + category + statType",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_stats_2014: playerId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2014: category missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2014: statType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2014: columns and types",
+   "ok": true,
+   "detail": "14 contract columns"
+  },
+  {
+   "name": "player_usage_2014: row count",
+   "ok": true,
+   "detail": "3,035 rows"
+  },
+  {
+   "name": "player_usage_2014: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_usage_2014: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2014: usage_all missing",
+   "ok": true,
+   "detail": "0.00% (limit 1%)"
+  },
+  {
+   "name": "player_ppa_2014: columns and types",
+   "ok": true,
+   "detail": "22 contract columns"
+  },
+  {
+   "name": "player_ppa_2014: row count",
+   "ok": true,
+   "detail": "3,035 rows"
+  },
+  {
+   "name": "player_ppa_2014: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_ppa_2014: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2014: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_wepa_2014: row count",
+   "ok": true,
+   "detail": "508 rows"
+  },
+  {
+   "name": "player_wepa_2014: one row per kind + athleteId + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_wepa_2014: athleteId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2014: kind missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2014: players on the roster",
+   "ok": true,
+   "detail": "4,835 of 4,835 players (100.0%; bar 95%)"
+  },
+  {
+   "name": "player_usage_2014: same players as PPA",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2014: heights plausible",
+   "ok": true,
+   "detail": "3 of 14,896 outside 5'0\"-7'2\""
+  },
+  {
+   "name": "roster_2015: columns and types",
+   "ok": true,
+   "detail": "12 contract columns"
+  },
+  {
+   "name": "roster_2015: row count",
+   "ok": true,
+   "detail": "16,399 rows"
+  },
+  {
+   "name": "roster_2015: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2015: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "roster_2015: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2015: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_stats_2015: row count",
+   "ok": true,
+   "detail": "41,273 rows"
+  },
+  {
+   "name": "player_stats_2015: one row per playerId + team + category + statType",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_stats_2015: playerId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2015: category missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2015: statType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2015: columns and types",
+   "ok": true,
+   "detail": "14 contract columns"
+  },
+  {
+   "name": "player_usage_2015: row count",
+   "ok": true,
+   "detail": "3,082 rows"
+  },
+  {
+   "name": "player_usage_2015: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_usage_2015: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2015: usage_all missing",
+   "ok": true,
+   "detail": "0.00% (limit 1%)"
+  },
+  {
+   "name": "player_ppa_2015: columns and types",
+   "ok": true,
+   "detail": "22 contract columns"
+  },
+  {
+   "name": "player_ppa_2015: row count",
+   "ok": true,
+   "detail": "3,082 rows"
+  },
+  {
+   "name": "player_ppa_2015: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_ppa_2015: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2015: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_wepa_2015: row count",
+   "ok": true,
+   "detail": "647 rows"
+  },
+  {
+   "name": "player_wepa_2015: one row per kind + athleteId + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_wepa_2015: athleteId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2015: kind missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2015: players on the roster",
+   "ok": true,
+   "detail": "4,932 of 4,932 players (100.0%; bar 95%)"
+  },
+  {
+   "name": "player_usage_2015: same players as PPA",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2015: heights plausible",
+   "ok": true,
+   "detail": "2 of 15,437 outside 5'0\"-7'2\""
+  },
+  {
+   "name": "roster_2016: columns and types",
+   "ok": true,
+   "detail": "12 contract columns"
+  },
+  {
+   "name": "roster_2016: row count",
+   "ok": true,
+   "detail": "18,041 rows"
+  },
+  {
+   "name": "roster_2016: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2016: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "roster_2016: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2016: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_stats_2016: row count",
+   "ok": true,
+   "detail": "98,529 rows"
+  },
+  {
+   "name": "player_stats_2016: one row per playerId + team + category + statType",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_stats_2016: playerId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2016: category missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2016: statType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2016: columns and types",
+   "ok": true,
+   "detail": "14 contract columns"
+  },
+  {
+   "name": "player_usage_2016: row count",
+   "ok": true,
+   "detail": "3,226 rows"
+  },
+  {
+   "name": "player_usage_2016: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_usage_2016: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2016: usage_all missing",
+   "ok": true,
+   "detail": "0.00% (limit 1%)"
+  },
+  {
+   "name": "player_ppa_2016: columns and types",
+   "ok": true,
+   "detail": "22 contract columns"
+  },
+  {
+   "name": "player_ppa_2016: row count",
+   "ok": true,
+   "detail": "3,226 rows"
+  },
+  {
+   "name": "player_ppa_2016: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_ppa_2016: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2016: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_wepa_2016: row count",
+   "ok": true,
+   "detail": "813 rows"
+  },
+  {
+   "name": "player_wepa_2016: one row per kind + athleteId + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_wepa_2016: athleteId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2016: kind missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2016: players on the roster",
+   "ok": true,
+   "detail": "9,963 of 9,963 players (100.0%; bar 95%)"
+  },
+  {
+   "name": "player_usage_2016: same players as PPA",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2016: heights plausible",
+   "ok": true,
+   "detail": "2 of 16,859 outside 5'0\"-7'2\""
+  },
+  {
+   "name": "roster_2017: columns and types",
+   "ok": true,
+   "detail": "12 contract columns"
+  },
+  {
+   "name": "roster_2017: row count",
+   "ok": true,
+   "detail": "17,894 rows"
+  },
+  {
+   "name": "roster_2017: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2017: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "roster_2017: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2017: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_stats_2017: row count",
+   "ok": true,
+   "detail": "102,114 rows"
+  },
+  {
+   "name": "player_stats_2017: one row per playerId + team + category + statType",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_stats_2017: playerId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2017: category missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2017: statType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2017: columns and types",
+   "ok": true,
+   "detail": "14 contract columns"
+  },
+  {
+   "name": "player_usage_2017: row count",
+   "ok": true,
+   "detail": "3,202 rows"
+  },
+  {
+   "name": "player_usage_2017: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_usage_2017: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2017: usage_all missing",
+   "ok": true,
+   "detail": "0.00% (limit 1%)"
+  },
+  {
+   "name": "player_ppa_2017: columns and types",
+   "ok": true,
+   "detail": "22 contract columns"
+  },
+  {
+   "name": "player_ppa_2017: row count",
+   "ok": true,
+   "detail": "3,202 rows"
+  },
+  {
+   "name": "player_ppa_2017: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_ppa_2017: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2017: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_wepa_2017: row count",
+   "ok": true,
+   "detail": "882 rows"
+  },
+  {
+   "name": "player_wepa_2017: one row per kind + athleteId + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_wepa_2017: athleteId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2017: kind missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2017: players on the roster",
+   "ok": true,
+   "detail": "10,477 of 10,477 players (100.0%; bar 95%)"
+  },
+  {
+   "name": "player_usage_2017: same players as PPA",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2017: heights plausible",
+   "ok": true,
+   "detail": "5 of 17,794 outside 5'0\"-7'2\""
+  },
+  {
+   "name": "roster_2018: columns and types",
+   "ok": true,
+   "detail": "12 contract columns"
+  },
+  {
+   "name": "roster_2018: row count",
+   "ok": true,
+   "detail": "17,902 rows"
+  },
+  {
+   "name": "roster_2018: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2018: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "roster_2018: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2018: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_stats_2018: row count",
+   "ok": true,
+   "detail": "106,469 rows"
+  },
+  {
+   "name": "player_stats_2018: one row per playerId + team + category + statType",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_stats_2018: playerId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2018: category missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2018: statType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2018: columns and types",
+   "ok": true,
+   "detail": "14 contract columns"
+  },
+  {
+   "name": "player_usage_2018: row count",
+   "ok": true,
+   "detail": "3,461 rows"
+  },
+  {
+   "name": "player_usage_2018: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_usage_2018: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2018: usage_all missing",
+   "ok": true,
+   "detail": "0.00% (limit 1%)"
+  },
+  {
+   "name": "player_ppa_2018: columns and types",
+   "ok": true,
+   "detail": "22 contract columns"
+  },
+  {
+   "name": "player_ppa_2018: row count",
+   "ok": true,
+   "detail": "3,461 rows"
+  },
+  {
+   "name": "player_ppa_2018: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_ppa_2018: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2018: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_wepa_2018: row count",
+   "ok": true,
+   "detail": "897 rows"
+  },
+  {
+   "name": "player_wepa_2018: one row per kind + athleteId + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_wepa_2018: athleteId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2018: kind missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2018: players on the roster",
+   "ok": true,
+   "detail": "10,922 of 10,931 players (99.9%; bar 95%)"
+  },
+  {
+   "name": "player_usage_2018: same players as PPA",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2018: heights plausible",
+   "ok": true,
+   "detail": "11 of 17,258 outside 5'0\"-7'2\""
+  },
+  {
+   "name": "roster_2019: columns and types",
+   "ok": true,
+   "detail": "12 contract columns"
+  },
+  {
+   "name": "roster_2019: row count",
+   "ok": true,
+   "detail": "18,732 rows"
+  },
+  {
+   "name": "roster_2019: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2019: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "roster_2019: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2019: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_stats_2019: row count",
+   "ok": true,
+   "detail": "103,303 rows"
+  },
+  {
+   "name": "player_stats_2019: one row per playerId + team + category + statType",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_stats_2019: playerId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2019: category missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2019: statType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2019: columns and types",
+   "ok": true,
+   "detail": "14 contract columns"
+  },
+  {
+   "name": "player_usage_2019: row count",
+   "ok": true,
+   "detail": "3,489 rows"
+  },
+  {
+   "name": "player_usage_2019: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_usage_2019: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2019: usage_all missing",
+   "ok": true,
+   "detail": "0.00% (limit 1%)"
+  },
+  {
+   "name": "player_ppa_2019: columns and types",
+   "ok": true,
+   "detail": "22 contract columns"
+  },
+  {
+   "name": "player_ppa_2019: row count",
+   "ok": true,
+   "detail": "3,489 rows"
+  },
+  {
+   "name": "player_ppa_2019: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_ppa_2019: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2019: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_wepa_2019: row count",
+   "ok": true,
+   "detail": "884 rows"
+  },
+  {
+   "name": "player_wepa_2019: one row per kind + athleteId + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_wepa_2019: athleteId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2019: kind missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2019: players on the roster",
+   "ok": true,
+   "detail": "10,754 of 10,754 players (100.0%; bar 95%)"
+  },
+  {
+   "name": "player_usage_2019: same players as PPA",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2019: heights plausible",
+   "ok": true,
+   "detail": "5 of 17,942 outside 5'0\"-7'2\""
+  },
+  {
+   "name": "roster_2020: columns and types",
+   "ok": true,
+   "detail": "12 contract columns"
+  },
+  {
+   "name": "roster_2020: row count",
+   "ok": true,
+   "detail": "16,423 rows"
+  },
+  {
+   "name": "roster_2020: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2020: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "roster_2020: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2020: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_stats_2020: row count",
+   "ok": true,
+   "detail": "73,490 rows"
+  },
+  {
+   "name": "player_stats_2020: one row per playerId + team + category + statType",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_stats_2020: playerId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2020: category missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2020: statType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2020: columns and types",
+   "ok": true,
+   "detail": "14 contract columns"
+  },
+  {
+   "name": "player_usage_2020: row count",
+   "ok": true,
+   "detail": "2,370 rows"
+  },
+  {
+   "name": "player_usage_2020: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_usage_2020: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2020: usage_all missing",
+   "ok": true,
+   "detail": "0.00% (limit 1%)"
+  },
+  {
+   "name": "player_ppa_2020: columns and types",
+   "ok": true,
+   "detail": "22 contract columns"
+  },
+  {
+   "name": "player_ppa_2020: row count",
+   "ok": true,
+   "detail": "2,370 rows"
+  },
+  {
+   "name": "player_ppa_2020: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_ppa_2020: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2020: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_wepa_2020: row count",
+   "ok": true,
+   "detail": "729 rows"
+  },
+  {
+   "name": "player_wepa_2020: one row per kind + athleteId + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_wepa_2020: athleteId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2020: kind missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2020: players on the roster",
+   "ok": true,
+   "detail": "7,403 of 7,671 players (96.5%; bar 95%)"
+  },
+  {
+   "name": "player_usage_2020: same players as PPA",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2020: heights plausible",
+   "ok": true,
+   "detail": "1 of 16,298 outside 5'0\"-7'2\""
+  },
+  {
+   "name": "roster_2021: columns and types",
+   "ok": true,
+   "detail": "12 contract columns"
+  },
+  {
+   "name": "roster_2021: row count",
+   "ok": true,
+   "detail": "18,633 rows"
+  },
+  {
+   "name": "roster_2021: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2021: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "roster_2021: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2021: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_stats_2021: row count",
+   "ok": true,
+   "detail": "109,056 rows"
+  },
+  {
+   "name": "player_stats_2021: one row per playerId + team + category + statType",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_stats_2021: playerId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2021: category missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2021: statType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2021: columns and types",
+   "ok": true,
+   "detail": "14 contract columns"
+  },
+  {
+   "name": "player_usage_2021: row count",
+   "ok": true,
+   "detail": "3,282 rows"
+  },
+  {
+   "name": "player_usage_2021: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_usage_2021: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2021: usage_all missing",
+   "ok": true,
+   "detail": "0.00% (limit 1%)"
+  },
+  {
+   "name": "player_ppa_2021: columns and types",
+   "ok": true,
+   "detail": "22 contract columns"
+  },
+  {
+   "name": "player_ppa_2021: row count",
+   "ok": true,
+   "detail": "3,282 rows"
+  },
+  {
+   "name": "player_ppa_2021: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_ppa_2021: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2021: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_wepa_2021: row count",
+   "ok": true,
+   "detail": "866 rows"
+  },
+  {
+   "name": "player_wepa_2021: one row per kind + athleteId + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_wepa_2021: athleteId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2021: kind missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2021: players on the roster",
+   "ok": true,
+   "detail": "11,268 of 11,769 players (95.7%; bar 95%)"
+  },
+  {
+   "name": "player_usage_2021: same players as PPA",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2021: heights plausible",
+   "ok": true,
+   "detail": "1 of 17,928 outside 5'0\"-7'2\""
+  },
+  {
+   "name": "roster_2022: columns and types",
+   "ok": true,
+   "detail": "12 contract columns"
+  },
+  {
+   "name": "roster_2022: row count",
+   "ok": true,
+   "detail": "30,388 rows"
+  },
+  {
+   "name": "roster_2022: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2022: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "roster_2022: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2022: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_stats_2022: row count",
+   "ok": true,
+   "detail": "138,632 rows"
+  },
+  {
+   "name": "player_stats_2022: one row per playerId + team + category + statType",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_stats_2022: playerId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2022: category missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2022: statType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2022: columns and types",
+   "ok": true,
+   "detail": "14 contract columns"
+  },
+  {
+   "name": "player_usage_2022: row count",
+   "ok": true,
+   "detail": "4,971 rows"
+  },
+  {
+   "name": "player_usage_2022: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_usage_2022: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2022: usage_all missing",
+   "ok": true,
+   "detail": "0.00% (limit 1%)"
+  },
+  {
+   "name": "player_ppa_2022: columns and types",
+   "ok": true,
+   "detail": "22 contract columns"
+  },
+  {
+   "name": "player_ppa_2022: row count",
+   "ok": true,
+   "detail": "4,971 rows"
+  },
+  {
+   "name": "player_ppa_2022: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_ppa_2022: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2022: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_wepa_2022: row count",
+   "ok": true,
+   "detail": "871 rows"
+  },
+  {
+   "name": "player_wepa_2022: one row per kind + athleteId + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_wepa_2022: athleteId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2022: kind missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2022: players on the roster",
+   "ok": true,
+   "detail": "14,235 of 14,244 players (99.9%; bar 95%)"
+  },
+  {
+   "name": "player_usage_2022: same players as PPA",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2022: heights plausible",
+   "ok": true,
+   "detail": "1 of 29,582 outside 5'0\"-7'2\""
+  },
+  {
+   "name": "roster_2023: columns and types",
+   "ok": true,
+   "detail": "12 contract columns"
+  },
+  {
+   "name": "roster_2023: row count",
+   "ok": true,
+   "detail": "22,365 rows"
+  },
+  {
+   "name": "roster_2023: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2023: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "roster_2023: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2023: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_stats_2023: row count",
+   "ok": true,
+   "detail": "132,228 rows"
+  },
+  {
+   "name": "player_stats_2023: one row per playerId + team + category + statType",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_stats_2023: playerId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2023: category missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2023: statType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2023: columns and types",
+   "ok": true,
+   "detail": "14 contract columns"
+  },
+  {
+   "name": "player_usage_2023: row count",
+   "ok": true,
+   "detail": "4,649 rows"
+  },
+  {
+   "name": "player_usage_2023: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_usage_2023: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2023: usage_all missing",
+   "ok": true,
+   "detail": "0.00% (limit 1%)"
+  },
+  {
+   "name": "player_ppa_2023: columns and types",
+   "ok": true,
+   "detail": "22 contract columns"
+  },
+  {
+   "name": "player_ppa_2023: row count",
+   "ok": true,
+   "detail": "4,649 rows"
+  },
+  {
+   "name": "player_ppa_2023: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_ppa_2023: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2023: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_wepa_2023: row count",
+   "ok": true,
+   "detail": "887 rows"
+  },
+  {
+   "name": "player_wepa_2023: one row per kind + athleteId + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_wepa_2023: athleteId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2023: kind missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2023: players on the roster",
+   "ok": true,
+   "detail": "13,604 of 13,604 players (100.0%; bar 95%)"
+  },
+  {
+   "name": "player_usage_2023: same players as PPA",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2023: heights plausible",
+   "ok": true,
+   "detail": "0 of 21,166 outside 5'0\"-7'2\""
+  },
+  {
+   "name": "roster_2024: columns and types",
+   "ok": true,
+   "detail": "12 contract columns"
+  },
+  {
+   "name": "roster_2024: row count",
+   "ok": true,
+   "detail": "22,794 rows"
+  },
+  {
+   "name": "roster_2024: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2024: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "roster_2024: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2024: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_stats_2024: row count",
+   "ok": true,
+   "detail": "135,294 rows"
+  },
+  {
+   "name": "player_stats_2024: one row per playerId + team + category + statType",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_stats_2024: playerId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2024: category missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2024: statType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2024: columns and types",
+   "ok": true,
+   "detail": "14 contract columns"
+  },
+  {
+   "name": "player_usage_2024: row count",
+   "ok": true,
+   "detail": "4,403 rows"
+  },
+  {
+   "name": "player_usage_2024: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_usage_2024: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2024: usage_all missing",
+   "ok": true,
+   "detail": "0.00% (limit 1%)"
+  },
+  {
+   "name": "player_ppa_2024: columns and types",
+   "ok": true,
+   "detail": "22 contract columns"
+  },
+  {
+   "name": "player_ppa_2024: row count",
+   "ok": true,
+   "detail": "4,403 rows"
+  },
+  {
+   "name": "player_ppa_2024: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_ppa_2024: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2024: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_wepa_2024: row count",
+   "ok": true,
+   "detail": "854 rows"
+  },
+  {
+   "name": "player_wepa_2024: one row per kind + athleteId + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_wepa_2024: athleteId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2024: kind missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2024: players on the roster",
+   "ok": true,
+   "detail": "13,949 of 13,951 players (100.0%; bar 95%)"
+  },
+  {
+   "name": "player_usage_2024: same players as PPA",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2024: heights plausible",
+   "ok": true,
+   "detail": "0 of 21,573 outside 5'0\"-7'2\""
+  },
+  {
+   "name": "roster_2025: columns and types",
+   "ok": true,
+   "detail": "12 contract columns"
+  },
+  {
+   "name": "roster_2025: row count",
+   "ok": true,
+   "detail": "30,031 rows"
+  },
+  {
+   "name": "roster_2025: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2025: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "roster_2025: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2025: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_stats_2025: row count",
+   "ok": true,
+   "detail": "141,637 rows"
+  },
+  {
+   "name": "player_stats_2025: one row per playerId + team + category + statType",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_stats_2025: playerId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2025: category missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2025: statType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2025: columns and types",
+   "ok": true,
+   "detail": "14 contract columns"
+  },
+  {
+   "name": "player_usage_2025: row count",
+   "ok": true,
+   "detail": "5,551 rows"
+  },
+  {
+   "name": "player_usage_2025: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_usage_2025: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2025: usage_all missing",
+   "ok": true,
+   "detail": "0.00% (limit 1%)"
+  },
+  {
+   "name": "player_ppa_2025: columns and types",
+   "ok": true,
+   "detail": "22 contract columns"
+  },
+  {
+   "name": "player_ppa_2025: row count",
+   "ok": true,
+   "detail": "5,551 rows"
+  },
+  {
+   "name": "player_ppa_2025: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_ppa_2025: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2025: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_wepa_2025: row count",
+   "ok": true,
+   "detail": "912 rows"
+  },
+  {
+   "name": "player_wepa_2025: one row per kind + athleteId + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_wepa_2025: athleteId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2025: kind missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2025: players on the roster",
+   "ok": true,
+   "detail": "14,721 of 14,721 players (100.0%; bar 95%)"
+  },
+  {
+   "name": "player_usage_2025: same players as PPA",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2025: heights plausible",
+   "ok": true,
+   "detail": "0 of 29,090 outside 5'0\"-7'2\""
+  },
+  {
+   "name": "roster_2026: columns and types",
+   "ok": true,
+   "detail": "12 contract columns"
+  },
+  {
+   "name": "roster_2026: row count",
+   "ok": true,
+   "detail": "31,579 rows"
+  },
+  {
+   "name": "roster_2026: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2026: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "roster_2026: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2026: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_stats_2026: row count",
+   "ok": true,
+   "detail": "154,377 rows"
+  },
+  {
+   "name": "player_stats_2026: one row per playerId + team + category + statType",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_stats_2026: playerId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2026: category missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2026: statType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2026: columns and types",
+   "ok": true,
+   "detail": "14 contract columns"
+  },
+  {
+   "name": "player_usage_2026: row count",
+   "ok": true,
+   "detail": "5,426 rows"
+  },
+  {
+   "name": "player_usage_2026: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_usage_2026: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_usage_2026: usage_all missing",
+   "ok": true,
+   "detail": "0.00% (limit 1%)"
+  },
+  {
+   "name": "player_ppa_2026: columns and types",
+   "ok": true,
+   "detail": "22 contract columns"
+  },
+  {
+   "name": "player_ppa_2026: row count",
+   "ok": true,
+   "detail": "5,426 rows"
+  },
+  {
+   "name": "player_ppa_2026: one row per id + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_ppa_2026: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2026: columns and types",
+   "ok": true,
+   "detail": "9 contract columns"
+  },
+  {
+   "name": "player_wepa_2026: row count",
+   "ok": true,
+   "detail": "805 rows"
+  },
+  {
+   "name": "player_wepa_2026: one row per kind + athleteId + team",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_wepa_2026: athleteId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_wepa_2026: kind missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_stats_2026: players on the roster",
+   "ok": true,
+   "detail": "16,483 of 16,487 players (100.0%; bar 95%)"
+  },
+  {
+   "name": "player_usage_2026: same players as PPA",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2026: heights plausible",
+   "ok": true,
+   "detail": "0 of 29,611 outside 5'0\"-7'2\""
+  },
+  {
+   "name": "play_players_2014: columns and types",
+   "ok": true,
+   "detail": "7 contract columns"
+  },
+  {
+   "name": "play_players_2014: row count",
+   "ok": true,
+   "detail": "171,229 rows"
+  },
+  {
+   "name": "play_players_2014: one row per play_id + role",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "play_players_2014: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2014: role missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2014: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2014: passers and rushers matched to rosters",
+   "ok": true,
+   "detail": "98.4% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2015: columns and types",
+   "ok": true,
+   "detail": "7 contract columns"
+  },
+  {
+   "name": "play_players_2015: row count",
+   "ok": true,
+   "detail": "173,083 rows"
+  },
+  {
+   "name": "play_players_2015: one row per play_id + role",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "play_players_2015: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2015: role missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2015: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2015: passers and rushers matched to rosters",
+   "ok": true,
+   "detail": "98.1% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2016: columns and types",
+   "ok": true,
+   "detail": "7 contract columns"
+  },
+  {
+   "name": "play_players_2016: row count",
+   "ok": true,
+   "detail": "171,319 rows"
+  },
+  {
+   "name": "play_players_2016: one row per play_id + role",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "play_players_2016: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2016: role missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2016: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2016: passers and rushers matched to rosters",
+   "ok": true,
+   "detail": "97.7% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2017: columns and types",
+   "ok": true,
+   "detail": "7 contract columns"
+  },
+  {
+   "name": "play_players_2017: row count",
+   "ok": true,
+   "detail": "170,745 rows"
+  },
+  {
+   "name": "play_players_2017: one row per play_id + role",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "play_players_2017: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2017: role missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2017: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2017: passers and rushers matched to rosters",
+   "ok": true,
+   "detail": "97.1% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2018: columns and types",
+   "ok": true,
+   "detail": "7 contract columns"
+  },
+  {
+   "name": "play_players_2018: row count",
+   "ok": true,
+   "detail": "173,628 rows"
+  },
+  {
+   "name": "play_players_2018: one row per play_id + role",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "play_players_2018: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2018: role missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2018: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2018: passers and rushers matched to rosters",
+   "ok": true,
+   "detail": "96.6% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2019: columns and types",
+   "ok": true,
+   "detail": "7 contract columns"
+  },
+  {
+   "name": "play_players_2019: row count",
+   "ok": true,
+   "detail": "173,613 rows"
+  },
+  {
+   "name": "play_players_2019: one row per play_id + role",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "play_players_2019: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2019: role missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2019: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2019: passers and rushers matched to rosters",
+   "ok": true,
+   "detail": "96.7% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2020: columns and types",
+   "ok": true,
+   "detail": "7 contract columns"
+  },
+  {
+   "name": "play_players_2020: row count",
+   "ok": true,
+   "detail": "111,461 rows"
+  },
+  {
+   "name": "play_players_2020: one row per play_id + role",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "play_players_2020: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2020: role missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2020: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2020: passers and rushers matched to rosters",
+   "ok": true,
+   "detail": "98.0% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2021: columns and types",
+   "ok": true,
+   "detail": "7 contract columns"
+  },
+  {
+   "name": "play_players_2021: row count",
+   "ok": true,
+   "detail": "162,808 rows"
+  },
+  {
+   "name": "play_players_2021: one row per play_id + role",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "play_players_2021: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2021: role missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2021: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2021: passers and rushers matched to rosters",
+   "ok": true,
+   "detail": "98.0% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2022: columns and types",
+   "ok": true,
+   "detail": "7 contract columns"
+  },
+  {
+   "name": "play_players_2022: row count",
+   "ok": true,
+   "detail": "253,114 rows"
+  },
+  {
+   "name": "play_players_2022: one row per play_id + role",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "play_players_2022: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2022: role missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2022: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2022: passers and rushers matched to rosters",
+   "ok": true,
+   "detail": "98.4% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2023: columns and types",
+   "ok": true,
+   "detail": "7 contract columns"
+  },
+  {
+   "name": "play_players_2023: row count",
+   "ok": true,
+   "detail": "250,638 rows"
+  },
+  {
+   "name": "play_players_2023: one row per play_id + role",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "play_players_2023: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2023: role missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2023: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2023: passers and rushers matched to rosters",
+   "ok": true,
+   "detail": "98.7% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2024: columns and types",
+   "ok": true,
+   "detail": "7 contract columns"
+  },
+  {
+   "name": "play_players_2024: row count",
+   "ok": true,
+   "detail": "268,245 rows"
+  },
+  {
+   "name": "play_players_2024: one row per play_id + role",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "play_players_2024: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2024: role missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2024: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2024: passers and rushers matched to rosters",
+   "ok": true,
+   "detail": "99.2% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2025: columns and types",
+   "ok": true,
+   "detail": "7 contract columns"
+  },
+  {
+   "name": "play_players_2025: row count",
+   "ok": true,
+   "detail": "288,655 rows"
+  },
+  {
+   "name": "play_players_2025: one row per play_id + role",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "play_players_2025: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2025: role missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2025: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2025: passers and rushers matched to rosters",
+   "ok": true,
+   "detail": "99.3% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2026: columns and types",
+   "ok": true,
+   "detail": "7 contract columns"
+  },
+  {
+   "name": "play_players_2026: row count",
+   "ok": true,
+   "detail": "203,370 rows"
+  },
+  {
+   "name": "play_players_2026: one row per play_id + role",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "play_players_2026: play_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2026: role missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2026: team missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "play_players_2026: passers and rushers matched to rosters",
+   "ok": true,
+   "detail": "99.4% (want >= 95%)"
+  },
+  {
+   "name": "portal_2021: columns and types",
+   "ok": true,
+   "detail": "10 contract columns"
+  },
+  {
+   "name": "portal_2021: row count",
+   "ok": true,
+   "detail": "1,770 rows"
+  },
+  {
+   "name": "portal_2021: one row per firstName + lastName + origin + transferDate",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "portal_2021: lastName missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "portal_2021: origin missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "portal_2021: transferDate missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "portal_2021: entries",
+   "ok": true,
+   "detail": "1,770 entries"
+  },
+  {
+   "name": "portal_2022: columns and types",
+   "ok": true,
+   "detail": "10 contract columns"
+  },
+  {
+   "name": "portal_2022: row count",
+   "ok": true,
+   "detail": "2,273 rows"
+  },
+  {
+   "name": "portal_2022: one row per firstName + lastName + origin + transferDate",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "portal_2022: lastName missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "portal_2022: origin missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "portal_2022: transferDate missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "portal_2022: entries",
+   "ok": true,
+   "detail": "2,273 entries"
+  },
+  {
+   "name": "portal_2023: columns and types",
+   "ok": true,
+   "detail": "10 contract columns"
+  },
+  {
+   "name": "portal_2023: row count",
+   "ok": true,
+   "detail": "2,502 rows"
+  },
+  {
+   "name": "portal_2023: one row per firstName + lastName + origin + transferDate",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "portal_2023: lastName missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "portal_2023: origin missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "portal_2023: transferDate missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "portal_2023: entries",
+   "ok": true,
+   "detail": "2,502 entries"
+  },
+  {
+   "name": "portal_2024: columns and types",
+   "ok": true,
+   "detail": "10 contract columns"
+  },
+  {
+   "name": "portal_2024: row count",
+   "ok": true,
+   "detail": "3,378 rows"
+  },
+  {
+   "name": "portal_2024: one row per firstName + lastName + origin + transferDate",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "portal_2024: lastName missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "portal_2024: origin missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "portal_2024: transferDate missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "portal_2024: entries",
+   "ok": true,
+   "detail": "3,378 entries"
+  },
+  {
+   "name": "portal_2025: columns and types",
+   "ok": true,
+   "detail": "10 contract columns"
+  },
+  {
+   "name": "portal_2025: row count",
+   "ok": true,
+   "detail": "4,499 rows"
+  },
+  {
+   "name": "portal_2025: one row per firstName + lastName + origin + transferDate",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "portal_2025: lastName missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "portal_2025: origin missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "portal_2025: transferDate missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "portal_2025: entries",
+   "ok": true,
+   "detail": "4,499 entries"
+  },
+  {
+   "name": "portal_2026: columns and types",
+   "ok": true,
+   "detail": "10 contract columns"
+  },
+  {
+   "name": "portal_2026: row count",
+   "ok": true,
+   "detail": "4,484 rows"
+  },
+  {
+   "name": "portal_2026: one row per firstName + lastName + origin + transferDate",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "portal_2026: lastName missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "portal_2026: origin missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "portal_2026: transferDate missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "portal_2026: entries",
+   "ok": true,
+   "detail": "4,484 entries"
+  },
+  {
+   "name": "portal_2027: columns and types",
+   "ok": true,
+   "detail": "10 contract columns"
+  },
+  {
+   "name": "portal_2027: row count",
+   "ok": true,
+   "detail": "0 rows"
+  },
+  {
+   "name": "portal_2027: one row per firstName + lastName + origin + transferDate",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "portal_2027: lastName missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "portal_2027: origin missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "portal_2027: transferDate missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2014: columns and types",
+   "ok": true,
+   "detail": "15 contract columns"
+  },
+  {
+   "name": "recruits_2014: row count",
+   "ok": true,
+   "detail": "3,772 rows"
+  },
+  {
+   "name": "recruits_2014: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "recruits_2014: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2014: name missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2015: columns and types",
+   "ok": true,
+   "detail": "15 contract columns"
+  },
+  {
+   "name": "recruits_2015: row count",
+   "ok": true,
+   "detail": "3,516 rows"
+  },
+  {
+   "name": "recruits_2015: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "recruits_2015: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2015: name missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2016: columns and types",
+   "ok": true,
+   "detail": "15 contract columns"
+  },
+  {
+   "name": "recruits_2016: row count",
+   "ok": true,
+   "detail": "4,452 rows"
+  },
+  {
+   "name": "recruits_2016: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "recruits_2016: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2016: name missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2017: columns and types",
+   "ok": true,
+   "detail": "15 contract columns"
+  },
+  {
+   "name": "recruits_2017: row count",
+   "ok": true,
+   "detail": "4,710 rows"
+  },
+  {
+   "name": "recruits_2017: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "recruits_2017: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2017: name missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2018: columns and types",
+   "ok": true,
+   "detail": "15 contract columns"
+  },
+  {
+   "name": "recruits_2018: row count",
+   "ok": true,
+   "detail": "4,348 rows"
+  },
+  {
+   "name": "recruits_2018: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "recruits_2018: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2018: name missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2019: columns and types",
+   "ok": true,
+   "detail": "15 contract columns"
+  },
+  {
+   "name": "recruits_2019: row count",
+   "ok": true,
+   "detail": "4,455 rows"
+  },
+  {
+   "name": "recruits_2019: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "recruits_2019: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2019: name missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2020: columns and types",
+   "ok": true,
+   "detail": "15 contract columns"
+  },
+  {
+   "name": "recruits_2020: row count",
+   "ok": true,
+   "detail": "4,413 rows"
+  },
+  {
+   "name": "recruits_2020: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "recruits_2020: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2020: name missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2021: columns and types",
+   "ok": true,
+   "detail": "15 contract columns"
+  },
+  {
+   "name": "recruits_2021: row count",
+   "ok": true,
+   "detail": "3,364 rows"
+  },
+  {
+   "name": "recruits_2021: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "recruits_2021: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2021: name missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2022: columns and types",
+   "ok": true,
+   "detail": "15 contract columns"
+  },
+  {
+   "name": "recruits_2022: row count",
+   "ok": true,
+   "detail": "3,955 rows"
+  },
+  {
+   "name": "recruits_2022: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "recruits_2022: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2022: name missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2023: columns and types",
+   "ok": true,
+   "detail": "15 contract columns"
+  },
+  {
+   "name": "recruits_2023: row count",
+   "ok": true,
+   "detail": "4,166 rows"
+  },
+  {
+   "name": "recruits_2023: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "recruits_2023: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2023: name missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2024: columns and types",
+   "ok": true,
+   "detail": "15 contract columns"
+  },
+  {
+   "name": "recruits_2024: row count",
+   "ok": true,
+   "detail": "4,236 rows"
+  },
+  {
+   "name": "recruits_2024: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "recruits_2024: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2024: name missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2025: columns and types",
+   "ok": true,
+   "detail": "15 contract columns"
+  },
+  {
+   "name": "recruits_2025: row count",
+   "ok": true,
+   "detail": "4,120 rows"
+  },
+  {
+   "name": "recruits_2025: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "recruits_2025: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2025: name missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2026: columns and types",
+   "ok": true,
+   "detail": "15 contract columns"
+  },
+  {
+   "name": "recruits_2026: row count",
+   "ok": true,
+   "detail": "3,987 rows"
+  },
+  {
+   "name": "recruits_2026: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "recruits_2026: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "recruits_2026: name missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
   }
  ],
  "score_gaps": [

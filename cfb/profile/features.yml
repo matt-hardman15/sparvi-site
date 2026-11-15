@@ -1,0 +1,76 @@
+# Player-profile features (PLAYER-PROFILE). The engine (cfb/profile/engine.py) computes every entry the same way:
+#
+#   opp        the opportunity rows it's measured on (dropback, target, carry: see events.py)
+#   filter     optional: which of those rows count (a pandas expression on the event columns)
+#   value      what's averaged over those rows (a column or expression); a rate when the value is 0/1
+#   kind       mean (the average of `value`) or share (the player's count of `opp` rows as a share of his team's, in
+#              the games he played)
+#   adjust     opponent: remove what the opposing defenses allowed in this same stat (team-level additive fit);
+#              none: style and usage stats, which describe the player's role rather than how well he played it
+#   better     higher / lower / style (no direction: a trait, not a grade; percentiles aren't flipped)
+#   min_n      opportunities needed for a percentile and for the comparison tool (fewer: shown, not compared)
+#   from       first season the stat exists (the play-text stats start in 2025); omitted = every season
+#   group      position groups the feature belongs to (QB, RB, WR, TE)
+#
+# Not available on free data (would need charting or tracking: add an adapter when a source exists): air yards and
+# depth of target (CFBD logs the target spot only on incompletions, so an average would be biased deep), yards after
+# catch and after contact, drops, separation, turnover-worthy throws, pressure allowed.
+#
+# Adding a stat: add an entry here. A stat from a new source: add the adapter in events.py, then the entry.
+features:
+  # ---------------- quarterbacks: efficiency ----------------
+  - {id: qb_epa, label: "EPA per dropback", group: [QB], opp: dropback, value: epa, kind: mean, adjust: opponent, better: higher, min_n: 100}
+  - {id: qb_success, label: "Success rate", group: [QB], opp: dropback, value: success, kind: mean, adjust: opponent, better: higher, min_n: 100}
+  - {id: qb_comp, label: "Completion rate", group: [QB], opp: dropback, filter: "attempt == 1", value: complete, kind: mean, adjust: opponent, better: higher, min_n: 100}
+  - {id: qb_ypa, label: "Yards per attempt", group: [QB], opp: dropback, filter: "attempt == 1", value: yards, kind: mean, adjust: opponent, better: higher, min_n: 100}
+  - {id: qb_explosive, label: "Explosive pass rate (20+)", group: [QB], opp: dropback, filter: "attempt == 1", value: explosive, kind: mean, adjust: opponent, better: higher, min_n: 100}
+  - {id: qb_td, label: "Touchdown rate", group: [QB], opp: dropback, filter: "attempt == 1", value: td, kind: mean, adjust: opponent, better: higher, min_n: 100}
+  # ---------------- quarterbacks: risk ----------------
+  - {id: qb_sack, label: "Sack rate", group: [QB], opp: dropback, value: sack, kind: mean, adjust: opponent, better: lower, min_n: 100}
+  - {id: qb_int, label: "Interception rate", group: [QB], opp: dropback, filter: "attempt == 1", value: interception, kind: mean, adjust: opponent, better: lower, min_n: 100}
+  # ---------------- quarterbacks: situations ----------------
+  - {id: qb_third, label: "3rd-down conversion", group: [QB], opp: dropback, filter: "third_down == 1", value: first_down, kind: mean, adjust: opponent, better: higher, min_n: 30}
+  - {id: qb_long, label: "3rd/4th-and-long conversion", group: [QB], opp: dropback, filter: "long_yardage == 1", value: first_down, kind: mean, adjust: opponent, better: higher, min_n: 20}
+  - {id: qb_early, label: "Early-down success", group: [QB], opp: dropback, filter: "early_down == 1", value: success, kind: mean, adjust: opponent, better: higher, min_n: 60}
+  - {id: qb_redzone, label: "Red-zone touchdown rate", group: [QB], opp: dropback, filter: "red_zone == 1 and attempt == 1", value: td, kind: mean, adjust: opponent, better: higher, min_n: 20}
+  # ---------------- quarterbacks: mobility and role ----------------
+  - {id: qb_rush_share, label: "Runs per dropback", group: [QB], opp: carry, kind: share, of: dropback, adjust: none, better: style, min_n: 100}
+  - {id: qb_rush_epa, label: "EPA per run", group: [QB], opp: carry, value: epa, kind: mean, adjust: opponent, better: higher, min_n: 30}
+  - {id: qb_rush_explosive, label: "Explosive run rate (10+)", group: [QB], opp: carry, value: run10, kind: mean, adjust: opponent, better: higher, min_n: 30}
+  - {id: qb_dropback_share, label: "Share of team dropbacks", group: [QB], opp: dropback, kind: share, of: dropback, adjust: none, better: style, min_n: 100}
+  # ---------------- quarterbacks: style (2025 on, from the play text) ----------------
+  - {id: qb_deep_rate, label: "Deep-throw rate", group: [QB], opp: dropback, filter: "deep == deep", value: deep, kind: mean, adjust: none, better: style, min_n: 80, from: 2025}
+  - {id: qb_deep_comp, label: "Deep completion rate", group: [QB], opp: dropback, filter: "deep == 1", value: complete, kind: mean, adjust: opponent, better: higher, min_n: 20, from: 2025}
+  - {id: qb_short_comp, label: "Short completion rate", group: [QB], opp: dropback, filter: "deep == 0", value: complete, kind: mean, adjust: opponent, better: higher, min_n: 60, from: 2025}
+  - {id: qb_shotgun, label: "Shotgun rate", group: [QB], opp: dropback, filter: "shotgun == shotgun", value: shotgun, kind: mean, adjust: none, better: style, min_n: 80, from: 2025}
+  - {id: qb_tempo, label: "No-huddle rate", group: [QB], opp: dropback, filter: "no_huddle == no_huddle", value: no_huddle, kind: mean, adjust: none, better: style, min_n: 80, from: 2025}
+  - {id: qb_middle, label: "Throws to the middle", group: [QB], opp: dropback, filter: "dir_middle == dir_middle", value: dir_middle, kind: mean, adjust: none, better: style, min_n: 80, from: 2025}
+
+  # ---------------- running backs ----------------
+  - {id: rb_epa, label: "EPA per carry", group: [RB], opp: carry, value: epa, kind: mean, adjust: opponent, better: higher, min_n: 40}
+  - {id: rb_success, label: "Success rate", group: [RB], opp: carry, value: success, kind: mean, adjust: opponent, better: higher, min_n: 40}
+  - {id: rb_ypc, label: "Yards per carry", group: [RB], opp: carry, value: yards, kind: mean, adjust: opponent, better: higher, min_n: 40}
+  - {id: rb_stuff, label: "Stuff rate (stopped at or behind the line)", group: [RB], opp: carry, value: stuffed, kind: mean, adjust: opponent, better: lower, min_n: 40}
+  - {id: rb_run10, label: "10+ yard run rate", group: [RB], opp: carry, value: run10, kind: mean, adjust: opponent, better: higher, min_n: 40}
+  - {id: rb_run20, label: "20+ yard run rate", group: [RB], opp: carry, value: explosive, kind: mean, adjust: opponent, better: higher, min_n: 40}
+  - {id: rb_short, label: "Short-yardage conversion", group: [RB], opp: carry, filter: "short_yardage == 1", value: first_down, kind: mean, adjust: opponent, better: higher, min_n: 10}
+  - {id: rb_goal_line, label: "Goal-line carries (share of his carries)", group: [RB], opp: carry, value: goal_line, kind: mean, adjust: none, better: style, min_n: 40}
+  - {id: rb_carry_share, label: "Share of team carries", group: [RB], opp: carry, kind: share, of: carry, adjust: none, better: style, min_n: 40}
+  - {id: rb_target_share, label: "Targets per team dropback", group: [RB], opp: target, kind: share, of: dropback, adjust: none, better: style, min_n: 40}
+  - {id: rb_rec_epa, label: "EPA per target", group: [RB], opp: target, value: epa, kind: mean, adjust: opponent, better: higher, min_n: 15}
+  - {id: rb_middle, label: "Runs up the middle", group: [RB], opp: carry, filter: "dir_middle == dir_middle", value: dir_middle, kind: mean, adjust: none, better: style, min_n: 40, from: 2025}
+
+  # ---------------- receivers (WR and TE) ----------------
+  - {id: rec_epa, label: "EPA per target", group: [WR, TE], opp: target, value: epa, kind: mean, adjust: opponent, better: higher, min_n: 25}
+  - {id: rec_success, label: "Success rate when targeted", group: [WR, TE], opp: target, value: success, kind: mean, adjust: opponent, better: higher, min_n: 25}
+  - {id: rec_catch, label: "Catch rate", group: [WR, TE], opp: target, value: complete, kind: mean, adjust: opponent, better: higher, min_n: 25}
+  - {id: rec_ypt, label: "Yards per target", group: [WR, TE], opp: target, value: yards, kind: mean, adjust: opponent, better: higher, min_n: 25}
+  - {id: rec_ypr, label: "Yards per catch", group: [WR, TE], opp: target, filter: "complete == 1", value: yards, kind: mean, adjust: opponent, better: higher, min_n: 15}
+  - {id: rec_explosive, label: "20+ yard catch rate", group: [WR, TE], opp: target, value: explosive, kind: mean, adjust: opponent, better: higher, min_n: 25}
+  - {id: rec_td, label: "Touchdown rate", group: [WR, TE], opp: target, value: td, kind: mean, adjust: opponent, better: higher, min_n: 25}
+  - {id: rec_third, label: "3rd-down conversion when targeted", group: [WR, TE], opp: target, filter: "third_down == 1", value: first_down, kind: mean, adjust: opponent, better: higher, min_n: 10}
+  - {id: rec_target_share, label: "Targets per team dropback", group: [WR, TE], opp: target, kind: share, of: dropback, adjust: none, better: style, min_n: 25}
+  - {id: rec_redzone_share, label: "Red-zone targets (share of his targets)", group: [WR, TE], opp: target, value: red_zone, kind: mean, adjust: none, better: style, min_n: 25}
+  - {id: rec_third_share, label: "3rd-down targets (share of his targets)", group: [WR, TE], opp: target, value: third_down, kind: mean, adjust: none, better: style, min_n: 25}
+  - {id: rec_deep_rate, label: "Deep targets (share)", group: [WR, TE], opp: target, filter: "deep == deep", value: deep, kind: mean, adjust: none, better: style, min_n: 20, from: 2025}
+  - {id: rec_middle, label: "Targets over the middle", group: [WR, TE], opp: target, filter: "dir_middle == dir_middle", value: dir_middle, kind: mean, adjust: none, better: style, min_n: 20, from: 2025}

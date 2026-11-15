@@ -27,7 +27,7 @@ from datetime import UTC, datetime, timedelta
 
 import pandas as pd
 
-from ingest.cfb import players
+from ingest.cfb import play_players, players
 from ingest.cfb.client import BudgetExhausted, Client, cache_path
 from sparvi.config import RAW, cfb
 
@@ -211,6 +211,7 @@ def main() -> int:
         for s in seasons:
             pull_season(c, s)
         players.pull(c)
+        play_players.main(play_players.missing_or_current())   # who was on each play: parsed from the cache, no calls
     except BudgetExhausted as e:
         print(e)
         return 3

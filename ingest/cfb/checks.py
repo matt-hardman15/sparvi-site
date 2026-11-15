@@ -50,6 +50,13 @@ def player_checks(c: Checks, d, cfg) -> None:
         c.add(f"player_usage_{s}: same players as PPA", diff == 0, f"{diff} usage rows without PPA" if diff else "")
         bad, known = c.sql(f"select count(*) filter (where height not between 60 and 86), count(height) from {r('roster')}")
         c.add(f"roster_{s}: heights plausible", bad <= 0.005 * known, f"{bad} of {known:,} outside 5'0\"-7'2\"")
+    # Who was on each play (PLAYER-ADJ): passers and rushers must match a roster player on >= MIN_MATCH of rows.
+    from ingest.cfb.play_players import MIN_MATCH
+    for s in cfg.seasons:
+        f = d / f"play_players_{s}.parquet"
+        if f.exists() and c.table(f"play_players_{s}", f, "play_players"):
+            rate = c.sql(f"select avg((player_id is not null)::int) from read_parquet('{f.as_posix()}') where role in ('passer', 'rusher')")[0]
+            c.add(f"play_players_{s}: passers and rushers matched to rosters", rate >= MIN_MATCH, f"{rate:.1%} (want >= {MIN_MATCH:.0%})")
     for s in ss["portal"]:
         if c.table(f"portal_{s}", d / f"portal_{s}.parquet", "portal") and players.portal_done(s):
             n = c.rows[f"portal_{s}"]

@@ -48,6 +48,18 @@
   "experimental": "2.0.0 hasn't been through the backtest harness yet (CI runs it after merge); 1.0.1's edge over last season's results had a 90% interval that included zero, so it didn't clear the strict gate"
  },
  {
+  "model": "cfb_player_profile",
+  "title": "CFB player profile",
+  "sport": "cfb",
+  "status": "champion",
+  "version": "1.0.0",
+  "registered": "2026-11-14",
+  "primary": "r_movers_adjusted",
+  "primary_value": 0.1818,
+  "challengers": [],
+  "experimental": "its pre-registered test (do components carry over when a player changes teams?) tied raw: edge +0.000, 90% interval -0.017 to +0.018. Secondary: more reliable within a season and nearly independent of opponent strength; team context (line, teammates, scheme) is the next layer (PROFILE-CONTEXT)"
+ },
+ {
   "model": "cfb_power_rating",
   "title": "CFB power rating",
   "sport": "cfb",
