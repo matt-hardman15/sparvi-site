@@ -1,10 +1,10 @@
 {
-  "run_id": "28ef15e46370",
+  "run_id": "0165cba97f4f",
   "model": "cfb_system_fit",
   "version": "1.0.0",
   "kind": "full",
-  "ran_at": "2026-11-15T15:03:15Z",
-  "code_sha": "cf9592d5f1c949a8360adbad105dadfb00e5e1f3",
+  "ran_at": "2026-11-15T16:05:41Z",
+  "code_sha": "eb6f96bfbffa6720508f7736050c1e2a7dcba0b0",
   "lockfile": "e6f7c7528ac332cf",
   "preregistered_at": "2026-11-15",
   "spec": {
@@ -133,6 +133,12 @@
           "seed": 7
         }
       }
+    },
+    "by_fold": {
+      "2021": 0.11904761904761904,
+      "2022": 0.17567567567567569,
+      "2023": 0.1724137931034483,
+      "2024": 0.12037037037037036
     }
   },
   "gate": {

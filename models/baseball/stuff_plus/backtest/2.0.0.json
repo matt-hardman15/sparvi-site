@@ -1,10 +1,10 @@
 {
-  "run_id": "b90daa2370e3",
+  "run_id": "08a34644d3c2",
   "model": "stuff_plus",
   "version": "2.0.0",
   "kind": "full",
-  "ran_at": "2026-11-15T05:47:42Z",
-  "code_sha": "f526ab7e204b72cd13c27f523cc7109e2903950b",
+  "ran_at": "2026-11-15T16:02:00Z",
+  "code_sha": "eb6f96bfbffa6720508f7736050c1e2a7dcba0b0",
   "lockfile": "e6f7c7528ac332cf",
   "preregistered_at": "2026-11-13",
   "spec": {
@@ -48,15 +48,15 @@
   "evaluation": {
     "metric": "pearson_r",
     "n": 324,
-    "point": 0.30868169026660636,
+    "point": 0.3068834680844296,
     "baselines": {
       "last_season": {
-        "value": 0.19259585980517258,
+        "value": 0.19259585980517263,
         "paired": {
-          "est": 0.11608583046143378,
+          "est": 0.11428760827925699,
           "ci90": [
-            0.009406738975133265,
-            0.21627906572237943
+            0.006567826251904411,
+            0.21442908120860096
           ],
           "n": 324,
           "blocks": 324,
@@ -64,6 +64,9 @@
           "seed": 7
         }
       }
+    },
+    "by_fold": {
+      "2026": 0.3068834680844296
     }
   },
   "gate": {
@@ -73,7 +76,13 @@
       "ci_excludes_zero": true
     },
     "passed": true,
-    "gap": 0.11608583046143378
+    "gap": 0.11428760827925699,
+    "per_baseline": {
+      "last_season": {
+        "gap": 0.11428760827925699,
+        "ci90_low": 0.006567826251904411
+      }
+    }
   },
   "leakage": {
     "timestamp": {
@@ -96,16 +105,16 @@
     },
     "label_permutation": {
       "passed": true,
-      "r": -0.0691605767367279,
+      "r": -0.06929549076301396,
       "ci90": [
-        -0.16887409115285015,
-        0.0306197447078037
+        -0.16928196508732857,
+        0.030456645856747632
       ],
       "n": 324
     },
     "too_good": {
       "passed": true,
-      "r": 0.30868169026660636,
+      "r": 0.3068834680844296,
       "ceiling": 0.9
     },
     "entity_overlap": {
@@ -123,8 +132,8 @@
   "passed": true,
   "primary": {
     "metric": "pearson_r",
-    "point": 0.30868169026660636,
-    "last_season": 0.19259585980517258
+    "point": 0.3068834680844296,
+    "last_season": 0.19259585980517263
   },
   "revision_safe": false,
   "approximate_tables": [
