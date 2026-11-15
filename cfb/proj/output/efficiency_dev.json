@@ -1,0 +1,121 @@
+{
+ "status": "DEVELOPMENT (CFB-PROJ P3): seasons 2016-2020 only; test seasons 2021-2025 not scored",
+ "players": {
+  "QB": {
+   "rows": 964,
+   "with_history": 670,
+   "K_chosen": [
+    200,
+    300
+   ],
+   "model": {
+    "r": 0.3476,
+    "mae": 1.0075
+   },
+   "carry": {
+    "r": 0.1351,
+    "mae": 1.4495
+   },
+   "mean": {
+    "mae": 1.092
+   },
+   "model_minus_carry_r": {
+    "est": 0.2125,
+    "ci90": [
+     0.1498,
+     0.272
+    ]
+   },
+   "without_team": {
+    "r": 0.2947,
+    "mae": 1.022
+   },
+   "team_weight": [
+    0.18,
+    0.21,
+    0.189,
+    0.195,
+    0.175
+   ],
+   "team_minus_without_r": {
+    "est": 0.0529,
+    "ci90": [
+     0.0323,
+     0.0743
+    ]
+   }
+  },
+  "RB": {
+   "rows": 1571,
+   "with_history": 1167,
+   "K_chosen": [
+    200,
+    300
+   ],
+   "model": {
+    "r": 0.2435,
+    "mae": 0.8431
+   },
+   "carry": {
+    "r": 0.1873,
+    "mae": 1.1977
+   },
+   "mean": {
+    "mae": 0.8684
+   },
+   "model_minus_carry_r": {
+    "est": 0.0562,
+    "ci90": [
+     0.0137,
+     0.0975
+    ]
+   },
+   "without_team": {
+    "r": 0.2119,
+    "mae": 0.8474
+   },
+   "team_weight": [
+    0.169,
+    0.147,
+    0.146,
+    0.137,
+    0.176
+   ],
+   "team_minus_without_r": {
+    "est": 0.0315,
+    "ci90": [
+     0.019,
+     0.0441
+    ]
+   }
+  }
+ },
+ "teams": {
+  "ypd": {
+   "team_seasons": 642,
+   "mean": 6.5335,
+   "model": {
+    "r": 0.3578,
+    "mae": 0.894
+   },
+   "carry": {
+    "r": 0.3775,
+    "mae": 1.0584
+   },
+   "mean_only_mae": 0.9604
+  },
+  "rb_frac": {
+   "team_seasons": 642,
+   "mean": 0.719,
+   "model": {
+    "r": 0.683,
+    "mae": 0.089
+   },
+   "carry": {
+    "r": 0.7014,
+    "mae": 0.0964
+   },
+   "mean_only_mae": 0.1155
+  }
+ }
+}
