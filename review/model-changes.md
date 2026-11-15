@@ -2,6 +2,11 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-15 · CFB player profile 1.0.2 → 1.0.3, CFB system fit 1.1.2 → 1.1.3 (patch: re-parse trigger)
+`ingest/cfb/play_players.py` records a PARSER_VERSION per season and re-parses any cached season parsed by an older
+one, so CI's cached 2025 file picks up the receiver fix. Parsing and every output are identical to 1.0.2 / 1.1.2;
+metrics unchanged.
+
 ## 2026-11-15 · CFB player profile 1.0.1 → 1.0.2, CFB system fit 1.1.1 → 1.1.2 (patch: receiver parsing)
 CFB-RECV-FIX. `ingest/cfb/play_players.py` (in both cards' code) missed the receiver in 2025's jersey-style play text
 ("to #81 X.Phipps caught at ASU49"), in "pass complete. Catch made by X", and in "A pass to B for 80 yds". Completions
