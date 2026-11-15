@@ -2,6 +2,17 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-15 · CFB system fit 1.0.0 (new, experimental: failed its pre-registered gate)
+SYSTEM-FIT F4/F5. Pre-registered the same day before any model code (commit 7f3c350): recall at 10 on each FBS
+program's portal board, windows 2021-2024, success within two years; must beat transfer rating, raw production, and
+profile only, each with the 90% interval above zero (Matt). Run once (run 070d3961c0ba): fit 0.148 vs. 0.142 / 0.153 /
+0.151 (random 0.045), n 311; edges +0.005, -0.005, -0.003, intervals about ±0.04. Failed. Secondary (cfb/fit/output/
+f4.json): recall at 25 behind raw production (0.302 vs. 0.351); AUC among signees 0.644 vs. 0.628 / 0.668 / 0.611;
+calibration overconfident at the top. The label-permutation leakage check also failed (shuffled-label models beat
+random by +0.027 on average over 20 seeds): with a board-recall metric, any linear ranker puts players with real
+production at the extremes, so beating uniform random isn't evidence of a leak. Timestamp and future-poisoning checks
+pass; the check's design is open with Matt.
+
 ## 2026-11-15 · CFB player profile 1.0.0 → 1.0.1 (patch)
 Share features (target share, carry share, dropback share, runs per dropback) now divide by the team's pass or run plays counted by play id instead of matched dropbacks, capped at 1. Found in SYSTEM-FIT F2: teams whose passers weren't matched to rosters (mostly FCS) produced shares up to 74. The opponent-adjusted features the pre-registered gate tests are unaffected.
 

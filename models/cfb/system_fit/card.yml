@@ -5,24 +5,25 @@ sport: cfb
 status: champion
 version: 1.0.0
 owner: Matt
-spec: 'For a college program and a position, the chance that each transfer-portal entrant succeeds at that program
-  (wins the role and produces above the starters'' average within two years there), from his profile, his type, the
-  program''s offensive system, how the two combine, and the change in competition level. Ranks the program''s portal
-  board (SYSTEM-FIT, PLAN-fit). Role availability is shown beside it, never mixed in.'
-target: 'Success within two years at the destination (cfb/fit/labels.py, labels.follow): in year 1 or year 2 at the
-  school, while still there, he won the role (QB >= 50% of the team''s dropbacks; RB the largest carry share or >= 35%;
-  WR top three in team targets with >= 12%; TE top two with >= 8%) and his opponent-adjusted efficiency composite beat
-  the average of players who won the role at his position and competition level (Power, Group of Five, FCS) that season'
-method: 'One L2-regularized logistic regression per position group (QB, RB, receivers with a TE flag), trained on every
-  earlier transfer whose two-year outcome is known. Player features from his season before the move: opponent-adjusted,
+spec: For a college program and a position, the chance that each transfer-portal entrant succeeds at that program
+  (wins the role and produces above the starters' average within two years there), from his profile, his type, the
+  program's offensive system, how the two combine, and the change in competition level. Ranks the program's portal
+  board (SYSTEM-FIT, PLAN-fit). Role availability is shown beside it, never mixed in.
+target: 'Success within two years at the destination (cfb/fit/labels.py, labels.follow): in year 1 or year 2 at
+  the school, while still there, he won the role (QB >= 50% of the team''s dropbacks; RB the largest carry share
+  or >= 35%; WR top three in team targets with >= 12%; TE top two with >= 8%) and his opponent-adjusted efficiency
+  composite beat the average of players who won the role at his position and competition level (Power, Group of
+  Five, FCS) that season'
+method: 'One L2-regularized logistic regression per position group (QB, RB, receivers with a TE flag), trained on
+  every earlier transfer whose two-year outcome is known. Player features from his season before the move: opponent-adjusted,
   shrunk efficiency composite and a no-prior-production flag; his share of the team''s season (dropbacks, carries,
   targets); his first two type dimensions (F2); seasons of experience; high school recruiting rating and a no-rating
   flag; origin level. Program features from its season before: its first two system dimensions (F1: D1 pass-heaviness,
-  D2 spread vs. TE/RB), opponent-adjusted offensive EPA per play, and its level. Interactions: each type dimension x each
-  system dimension (the fit), and the level change (destination minus origin) alone and x efficiency (translation).
+  D2 spread vs. TE/RB), opponent-adjusted offensive EPA per play, and its level. Interactions: each type dimension
+  x each system dimension (the fit), and the level change (destination minus origin) alone and x efficiency (translation).
   Features standardized on the training rows; the penalty is chosen by leave-one-cohort-out log loss within the
   training cohorts from C in {0.01, 0.03, 0.1, 0.3, 1}.'
-history: 'New (SYSTEM-FIT F4). Builds on PLAYER-PROFILE 1.0.1 (cfb_player_profile) and the F0-F3 data layers.'
+history: New (SYSTEM-FIT F4). Builds on PLAYER-PROFILE 1.0.1 (cfb_player_profile) and the F0-F3 data layers.
 code:
 - cfb/fit/model.py
 - cfb/fit/labels.py
@@ -55,9 +56,9 @@ validation:
     recall_at_10_random: primary.random
     n_successes: primary.n
 eval:
-  set: 'Portal windows into seasons 2021-2024: every successful transfer (two-year label) at an FBS program who was on
-    that program''s board (a portal entrant filed by May 1, linked to his previous-season roster id). Credit: his chance
-    of ranking in the top 10 of that program''s board at his position.'
+  set: 'Portal windows into seasons 2021-2024: every successful transfer (two-year label) at an FBS program who
+    was on that program''s board (a portal entrant filed by May 1, linked to his previous-season roster id). Credit:
+    his chance of ranking in the top 10 of that program''s board at his position.'
   set_keys:
     n_successes: primary.n
   primary: recall_at_10
@@ -69,10 +70,10 @@ published_in: []
 backtest:
   preregistered_at: '2026-11-15'
   module: models/cfb/system_fit/backtest.py
-  target: 'Success within two years at the destination (see target). Rows: successful transfers at FBS programs who
-    were on that program''s board; y = 1'
-  decision_dates: 'May 1 of the season the player transfers into (after the spring window). Boards hold entries filed
-    by then; every feature uses data available then'
+  target: 'Success within two years at the destination (see target). Rows: successful transfers at FBS programs
+    who were on that program''s board; y = 1'
+  decision_dates: May 1 of the season the player transfers into (after the spring window). Boards hold entries filed
+    by then; every feature uses data available then
   splits:
     type: walk_forward
     first_test: 2021
@@ -82,13 +83,13 @@ backtest:
     decision: 05-01
     train_until: 05-01
     fast_folds: 1
-  training: 'Fold t trains on transfer cohorts 2018 through t-2, the cohorts whose two-year outcome is complete by May
-    1 of season t (cohort t-1 is left out: only its first year is known; Matt, 2026-11-15). Type dimensions (F2) and
-    system dimensions (F1) are refit each fold on seasons 2017 through t-1. The first two dimensions of each are used
-    (the stable ones in the F1/F2 reports, fixed before any result).'
+  training: 'Fold t trains on transfer cohorts 2018 through t-2, the cohorts whose two-year outcome is complete
+    by May 1 of season t (cohort t-1 is left out: only its first year is known; Matt, 2026-11-15). Type dimensions
+    (F2) and system dimensions (F1) are refit each fold on seasons 2017 through t-1. The first two dimensions of
+    each are used (the stable ones in the F1/F2 reports, fixed before any result).'
   boards: 'One board per FBS program (teams_t), position (QB, RB, WR, TE by the previous-season roster), and window:
-    every portal entrant for season t filed by May 1 and linked to a season t-1 (or t-2) roster id, whether or not he
-    played. Ranked by the model''s probability for that program.'
+    every portal entrant for season t filed by May 1 and linked to a season t-1 (or t-2) roster id, whether or not
+    he played. Ranked by the model''s probability for that program.'
   group_by: 'none: player and program features; the outcome rows are the test cohort''s transfers, never in training'
   block: player
   baselines:
@@ -103,8 +104,8 @@ backtest:
       previous production ranks last
     random: 10 / board size (reported only)
   primary_metric: recall
-  metric_definition: 'Recall at 10: the mean, over successful transfers, of the chance he ranks in the top 10 of his
-    destination''s board at his position. Tied scores share the places they span (credit = (10 - players strictly
+  metric_definition: 'Recall at 10: the mean, over successful transfers, of the chance he ranks in the top 10 of
+    his destination''s board at his position. Tied scores share the places they span (credit = (10 - players strictly
     above) / players tied, clipped to [0, 1])'
   bootstrap: 2000
   seed: 7
@@ -115,23 +116,26 @@ backtest:
     - profile_only
     min_skill: 0.0
     ci_excludes_zero: true
-  gate_decided: 'Matt, 2026-11-15: strict, and against all three baselines: for each of transfer rating, raw
-    production, and profile only, the 90% interval of the recall-at-10 edge (bootstrap by player) must be above zero'
+  gate_decided: 'Matt, 2026-11-15: strict, and against all three baselines: for each of transfer rating, raw production,
+    and profile only, the 90% interval of the recall-at-10 edge (bootstrap by player) must be above zero'
   null_baseline: random
   too_good: 0.9
-  secondary: 'Reported, not gating: recall at 25; AUC among each program''s actual transfer signees (pairs within program,
-    position, and window); fit x role availability (probability x open share, F0); the efficient label (above the
-    starters'' average with >= 10% share, within two years); the 2025 window on the year-1 label; by position and by
-    destination level; FCS destinations where a system exists; calibration (predicted vs. actual by decile among
-    signees, Brier vs. the base rate).'
+  secondary: 'Reported, not gating: recall at 25; AUC among each program''s actual transfer signees (pairs within
+    program, position, and window); fit x role availability (probability x open share, F0); the efficient label
+    (above the starters'' average with >= 10% share, within two years); the 2025 window on the year-1 label; by
+    position and by destination level; FCS destinations where a system exists; calibration (predicted vs. actual
+    by decile among signees, Brier vs. the base rate).'
   limits: 'The test sees only where players went, not whether a program could have signed them. About a third of
-    successes are at FCS programs, outside the primary test. Early folds train on few transfers (2021: cohorts
-    2018-2019). Not seen at all: health, makeup, NIL cost, academics, film traits.'
+    successes are at FCS programs, outside the primary test. Early folds train on few transfers (2021: cohorts 2018-2019).
+    Not seen at all: health, makeup, NIL cost, academics, film traits.'
   reproduction: Exact on the same machine (deterministic solvers). Official runs happen in CI.
   vault:
     seasons:
     - 2026
-    note: 'Season 2026 outcomes are sealed: the 2025 window''s second year and the 2026 window''s first, scored once
-      after the season completes (January 2027).'
+    note: 'Season 2026 outcomes are sealed: the 2025 window''s second year and the 2026 window''s first, scored
+      once after the season completes (January 2027).'
     accesses: 0
-experimental: pre-registered on 2026-11-15; the backtest hasn't run yet
+experimental: 'its pre-registered test (2021-2024 portal windows, 311 successful transfers) tied every baseline:
+  recall at 10 0.148 vs. transfer rating 0.142, raw production 0.153, profile only 0.151 (random 0.045); edges -0.005
+  to +0.005, each 90% interval spanning zero. The system and fit terms add nothing detectable over ranking players
+  by quality alone'
