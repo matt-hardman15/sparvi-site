@@ -132,13 +132,14 @@ def season_profile(ev: pd.DataFrame, positions: pd.Series, season: int, feats: l
             noise = float(g.groupby("player_id")["a"].var().dropna().mean()) if len(g) > 2 else 0.0
             agg = pd.concat([_shrink(x, noise) for _, x in agg.groupby("group")], ignore_index=True)
         else:   # share of the team's opportunities of type `of`, in the games he played
-            denom_rows = ev[ev["opp"] == f["of"]]
-            team_game = denom_rows.groupby(["offense", "game_id"]).size()
-            if f["of"] == "dropback":
-                team_game = denom_rows.drop_duplicates("play_id").groupby(["offense", "game_id"]).size()
+            # The team's plays of that kind (pass plays for dropbacks/targets, runs for carries), counted by play id
+            # whether or not every player on them was matched: a dropback count would undercount teams whose passers
+            # aren't matched (v1.0.1 fix; shares above 1 appeared).
+            kind = "run" if f["of"] == "carry" else "pass"
+            team_game = ev[ev["kind"] == kind].drop_duplicates("play_id").groupby(["offense", "game_id"]).size()
             num = r.groupby(["player_id", "group"]).size().rename("n").reset_index()
             den = [sum(team_game.get((team_of[p], gid), 0) for gid in games[p]) for p in num["player_id"]]
-            num["raw"] = num["n"] / np.maximum(den, 1)
+            num["raw"] = np.minimum(num["n"] / np.maximum(den, 1), 1.0)
             num["adj"] = num["shrunk"] = num["raw"]
             num["reliability"] = np.nan
             agg = num
