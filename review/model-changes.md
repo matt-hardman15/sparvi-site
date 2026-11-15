@@ -2,6 +2,9 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-15 · CFB player profile 1.0.0 → 1.0.1 (patch)
+Share features (target share, carry share, dropback share, runs per dropback) now divide by the team's pass or run plays counted by play id instead of matched dropbacks, capped at 1. Found in SYSTEM-FIT F2: teams whose passers weren't matched to rosters (mostly FCS) produced shares up to 74. The opponent-adjusted features the pre-registered gate tests are unaffected.
+
 ## 2026-11-14 · Stuff+, Location+, Pitching+ 2.0.0: bagged training (PQ-STABLE)
 **Why.** Checking free-agent grades (MLB-FA) against the published ones found per-pitcher Stuff+ up to 15 points apart between a local build and CI. Experiments (same data and code): Windows and Linux gave byte-identical models, so neither the OS nor floating point was the cause; changing only the seed (7 → 8) moved Stuff+ by 3.0 points on average and up to 64 (Pitching+ 2.1, up to 42). Each regressor was one LightGBM model early-stopped on a single 15% pitcher slice; the Stuff+ models stopped after 12–100 trees, and which pitchers fell in the slice (or a tiny data revision, which is how CI's cached raw data differed from the local copy) moved the stopping point and with it the grades. This corrects the 2026-11-13 entry below, which put cross-machine differences down to CPU models: the instability, not the hardware, made them large.
 
