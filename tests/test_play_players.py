@@ -23,3 +23,18 @@ CASES = [
 def test_passer_and_receiver(text, kind, want):
     roles = {r: n for r, n, _ in parse(text, kind)}
     assert (roles.get("passer"), roles.get("target")) == want
+
+
+def test_parser_change_reparses_cached_seasons(tmp_path, monkeypatch):
+    """A cached past season parsed by an older PARSER_VERSION is parsed again on the next pull (CFB-RECV-FIX)."""
+    import json
+    from types import SimpleNamespace
+
+    import ingest.cfb.play_players as PP
+    monkeypatch.setattr(PP, "OUT", tmp_path)
+    monkeypatch.setattr(PP, "VERSIONS", tmp_path / "play_players_versions.json")
+    monkeypatch.setattr(PP, "cfb", lambda: SimpleNamespace(seasons=[2024, 2025, 2026], season=2026))
+    for s in (2024, 2025):
+        (tmp_path / f"play_players_{s}.parquet").write_bytes(b"x")
+    PP.VERSIONS.write_text(json.dumps({"2024": PP.PARSER_VERSION, "2025": PP.PARSER_VERSION - 1}))
+    assert PP.missing_or_current() == [2025, 2026]

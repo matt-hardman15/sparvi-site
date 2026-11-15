@@ -173,10 +173,20 @@ def season(s: int) -> tuple[pd.DataFrame, dict]:
     return pd.DataFrame(out), rates
 
 
+PARSER_VERSION = 2                # bump on any parsing change: every season's file is rebuilt on the next pull
+VERSIONS = OUT / "play_players_versions.json"
+
+
+def _versions() -> dict[str, int]:
+    return json.loads(VERSIONS.read_text(encoding="utf-8")) if VERSIONS.exists() else {}
+
+
 def missing_or_current() -> list[int]:
-    """Seasons to (re)parse: the current one (its plays grow every week) and any past one without a file."""
-    cfg = cfb()
-    return [s for s in cfg.seasons if s == cfg.season or not (OUT / f"play_players_{s}.parquet").exists()]
+    """Seasons to (re)parse: the current one (its plays grow every week), any past one without a file, and any parsed
+    by an older PARSER_VERSION (a cached past season would otherwise keep the old parse: CFB-RECV-FIX)."""
+    cfg, done = cfb(), _versions()
+    return [s for s in cfg.seasons if s == cfg.season or not (OUT / f"play_players_{s}.parquet").exists()
+            or done.get(str(s)) != PARSER_VERSION]
 
 
 def main(seasons: list[int] | None = None) -> dict:
@@ -189,6 +199,7 @@ def main(seasons: list[int] | None = None) -> dict:
             print(f"{s}: no cached plays")
             continue
         df.to_parquet(OUT / f"play_players_{s}.parquet", index=False)
+        VERSIONS.write_text(json.dumps({**_versions(), str(s): PARSER_VERSION}, indent=1, sort_keys=True) + "\n", encoding="utf-8")
         report[s] = rates
         print(f"{s}: {rates['plays']:,} pass/rush plays, parsed {rates['parsed']:.1%}; "
               + ", ".join(f"{k[6:]} {v:.1%}" for k, v in rates.items() if k.startswith("match_")))
