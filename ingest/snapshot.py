@@ -61,11 +61,19 @@ def _game_available(df: pd.DataFrame, ingested: pd.Timestamp) -> pd.Series:
 
 
 def _plays_available(games_path):
-    """Plays carry no date; take the day after their game's start (from that season's games file)."""
+    """Plays carry no date; take the day after their game's start (from that season's games file). Games between two
+    FCS teams aren't in the FBS games file: those plays take the day after the last FBS game of the same season type and
+    week (SYSTEM-FIT F0, Nov 15 2026). Snapshots taken before that stored the ingest date for them; snapshots are never
+    rewritten, so point-in-time reads from R2 still see those rows as late, while reads from the raw files (the
+    backtest workflow's) use this rule."""
     def f(df: pd.DataFrame, ingested: pd.Timestamp) -> pd.Series:
-        g = pd.read_parquet(games_path, columns=["id", "startDate"])
+        g = pd.read_parquet(games_path, columns=["id", "startDate", "week", "seasonType"])
         start = pd.to_datetime(g["startDate"], utc=True).dt.tz_localize(None).dt.normalize() + pd.Timedelta(days=1)
         out = df["gameId"].map(dict(zip(g["id"], start, strict=True)))
+        if out.isna().any() and {"week", "seasonType"} <= set(df.columns):
+            week_end = start.groupby([g["seasonType"], g["week"]]).max()
+            by_week = pd.Series(list(zip(df["seasonType"], df["week"], strict=True)), index=df.index).map(week_end.to_dict())
+            out = out.fillna(by_week)
         return out.fillna(ingested.tz_localize(None).normalize())
     return f
 
@@ -103,10 +111,16 @@ def cfb_player_tables() -> list[Table]:
     return t
 
 
-def _play_players_available(games_path):
-    """play_players rows (ingest/cfb/play_players.py) carry game_id; same rule as plays: the day after the game."""
+def _play_players_available(games_path, plays_path):
+    """play_players rows (ingest/cfb/play_players.py) carry game_id; same rule as plays (the day after the game, by
+    week for FCS-only games), each game's date taken from the plays file's rows for it."""
     inner = _plays_available(games_path)
-    return lambda df, ingested: inner(df.rename(columns={"game_id": "gameId"}), ingested)
+
+    def f(df: pd.DataFrame, ingested: pd.Timestamp) -> pd.Series:
+        games = pd.read_parquet(plays_path, columns=["gameId", "week", "seasonType"]).drop_duplicates("gameId")
+        when = dict(zip(games["gameId"], inner(games, ingested), strict=True))
+        return df["game_id"].map(when).fillna(ingested.tz_localize(None).normalize())
+    return f
 
 
 def cfb_tables() -> list[Table]:
@@ -116,7 +130,7 @@ def cfb_tables() -> list[Table]:
     for s in cfg.seasons:
         # Who was on each play (parsed from the cached play text, PLAYER-ADJ): one row per play x role.
         t.append(Table(f"play_players_{s}", d / "players" / f"play_players_{s}.parquet", ("play_id", "role"),
-                       _play_players_available(d / f"games_{s}.parquet")))
+                       _play_players_available(d / f"games_{s}.parquet", d / f"plays_{s}.parquet")))
         t += [Table(f"plays_{s}", d / f"plays_{s}.parquet", ("id",), _plays_available(d / f"games_{s}.parquet")),
               Table(f"games_{s}", d / f"games_{s}.parquet", ("id",), _game_available),
               Table(f"teams_{s}", d / f"teams_{s}.parquet", ("id",)),
