@@ -99,3 +99,13 @@ def test_duplicate_keys_are_refused(tmp_path):
     games([(1, 1, "2026-04-01", 94.0), (1, 1, "2026-04-01", 95.0)]).to_parquet(path, index=False)
     with pytest.raises(ValueError, match="duplicate"):
         snapshot(LocalStore(tmp_path / "b"), "baseball", Table("x", path, ("game_pk", "pitch")), T0)
+
+
+def test_head_coach_is_public_when_hired():
+    """SC-3a: a season's head coach becomes available at his hire date (not before Dec 1 of the year before), at the
+    latest at the season's first game; without a hire date, at the first game."""
+    from ingest.snapshot import _coach_available
+    d = pd.DataFrame({"season": [2024, 2024, 2024, 2024],
+                      "hire_date": ["2023-12-03T00:00:00.000Z", "2015-01-01T00:00:00.000Z", None, "2024-10-10T00:00:00.000Z"]})
+    got = _coach_available(d, pd.Timestamp("2026-01-01", tz="UTC")).tolist()
+    assert got == [pd.Timestamp("2023-12-03"), pd.Timestamp("2023-12-01"), pd.Timestamp("2024-09-01"), pd.Timestamp("2024-09-01")]
