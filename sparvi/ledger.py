@@ -114,6 +114,16 @@ def validate_forecast(rec: dict) -> None:
     if after <= made.date():
         raise LedgerError(f"{what}: resolves_after {after} must be after the day it was made ({made.date()})")
     prob, interval = rec.get("prob"), [rec.get(k) for k in ("point", "lo80", "hi80")]
+    detail = rec.get("detail") or {}
+    if detail.get("kind") == "ranking":
+        # A board's list (SC-3a): no probability or point; the ordered list is the forecast, scored afterwards by how
+        # many listed players hit the target.
+        if prob is not None or any(v is not None for v in interval):
+            raise LedgerError(f"{what}: a ranking carries its list in detail, not a prob or point")
+        lst = detail.get("list")
+        if not isinstance(lst, list) or not lst or len(set(map(str, lst))) != len(lst):
+            raise LedgerError(f"{what}: a ranking needs detail.list, a non-empty list without repeats")
+        return
     if prob is not None:
         if any(v is not None for v in interval):
             raise LedgerError(f"{what}: a forecast is either a probability or a point with an interval, not both")
