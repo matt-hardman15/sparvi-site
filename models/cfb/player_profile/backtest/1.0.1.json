@@ -1,10 +1,10 @@
 {
-  "run_id": "305252167366",
+  "run_id": "7abc0e4150f8",
   "model": "cfb_player_profile",
   "version": "1.0.1",
   "kind": "full",
-  "ran_at": "2026-11-15T18:59:16Z",
-  "code_sha": "ca3565fee5dd654ce4d14408c9cd0f6d8c1fe1af",
+  "ran_at": "2026-11-15T20:47:06Z",
+  "code_sha": "9869e8a353210a23a50d931c2c7521bf7fc7717b",
   "lockfile": "e6f7c7528ac332cf",
   "preregistered_at": "2026-11-14",
   "spec": {
