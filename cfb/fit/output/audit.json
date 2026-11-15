@@ -1,0 +1,3120 @@
+{
+ "status": "EXPLORATORY (FIT-AUDIT, PLAN-fit Phase 1b): every transfer here has been seen; the 2026 vault is not read",
+ "transfers": 5110,
+ "coverage": {
+  "f4": 2956,
+  "f4_sys": 2956,
+  "style": 3133
+ },
+ "analyses_run": 223,
+ "expected_by_chance_at_90pct": 22.3,
+ "excluding_zero": 45,
+ "D_C": {
+  "label_rates": {
+   "all": {
+    "n": 3788,
+    "year1_success": 0.1294,
+    "year1_won_role": 0.2558,
+    "year1_vor_pos": 0.4351,
+    "within2_success": 0.1814,
+    "within2_won_role": 0.3273,
+    "within2_vor_pos": 0.5282
+   },
+   "QB": {
+    "n": 804,
+    "year1_success": 0.1654,
+    "year1_won_role": 0.3109,
+    "year1_vor_pos": 0.4913,
+    "within2_success": 0.2114,
+    "within2_won_role": 0.3781,
+    "within2_vor_pos": 0.5821
+   },
+   "RB": {
+    "n": 819,
+    "year1_success": 0.1282,
+    "year1_won_role": 0.2564,
+    "year1_vor_pos": 0.3919,
+    "within2_success": 0.1673,
+    "within2_won_role": 0.3175,
+    "within2_vor_pos": 0.4811
+   },
+   "WR": {
+    "n": 1630,
+    "year1_success": 0.1301,
+    "year1_won_role": 0.2656,
+    "year1_vor_pos": 0.4429,
+    "within2_success": 0.1951,
+    "within2_won_role": 0.3485,
+    "within2_vor_pos": 0.5393
+   },
+   "TE": {
+    "n": 535,
+    "year1_success": 0.0748,
+    "year1_won_role": 0.1421,
+    "year1_vor_pos": 0.3925,
+    "within2_success": 0.1159,
+    "within2_won_role": 0.2019,
+    "within2_vor_pos": 0.486
+   }
+  },
+  "auc_note": "AUC of each single input for the outcome among FBS-destination transfers 2021-2024 (open share as of May 1; won_role is year 1; 0.5 = no signal)",
+  "auc": {
+   "success2": {
+    "all": {
+     "n": 2896,
+     "open": 0.5437,
+     "p_epa": 0.5137,
+     "p_share": 0.6306,
+     "p_vor": 0.5502
+    },
+    "QB": {
+     "n": 575,
+     "open": 0.5627,
+     "p_epa": 0.5894,
+     "p_share": 0.6807,
+     "p_vor": 0.6057
+    },
+    "RB": {
+     "n": 643,
+     "open": 0.5285,
+     "p_epa": 0.5459,
+     "p_share": 0.6386,
+     "p_vor": 0.4957
+    },
+    "WR": {
+     "n": 1268,
+     "open": 0.4985,
+     "p_epa": 0.5002,
+     "p_share": 0.5934,
+     "p_vor": 0.5269
+    },
+    "TE": {
+     "n": 410,
+     "open": 0.4513,
+     "p_epa": 0.5463,
+     "p_share": 0.648,
+     "p_vor": 0.6299
+    }
+   },
+   "won_role": {
+    "all": {
+     "n": 2896,
+     "open": 0.5655,
+     "p_epa": 0.4766,
+     "p_share": 0.6748,
+     "p_vor": 0.5444
+    },
+    "QB": {
+     "n": 575,
+     "open": 0.5393,
+     "p_epa": 0.6076,
+     "p_share": 0.6751,
+     "p_vor": 0.5945
+    },
+    "RB": {
+     "n": 643,
+     "open": 0.5424,
+     "p_epa": 0.5258,
+     "p_share": 0.6704,
+     "p_vor": 0.518
+    },
+    "WR": {
+     "n": 1268,
+     "open": 0.5153,
+     "p_epa": 0.453,
+     "p_share": 0.6594,
+     "p_vor": 0.5135
+    },
+    "TE": {
+     "n": 410,
+     "open": 0.5074,
+     "p_epa": 0.5281,
+     "p_share": 0.7162,
+     "p_vor": 0.6094
+    }
+   }
+  }
+ },
+ "D_B_tables": {
+  "DB.f4.A.all.all": {
+   "good": {
+    "beat": 199,
+    "fell_short": 245,
+    "didnt_play": 534
+   },
+   "middle": {
+    "beat": 202,
+    "fell_short": 234,
+    "didnt_play": 567
+   },
+   "poor": {
+    "beat": 190,
+    "fell_short": 233,
+    "didnt_play": 552
+   }
+  },
+  "DB.f4.A.QB.all": {
+   "good": {
+    "beat": 45,
+    "fell_short": 47,
+    "didnt_play": 91
+   },
+   "middle": {
+    "beat": 45,
+    "fell_short": 38,
+    "didnt_play": 107
+   },
+   "poor": {
+    "beat": 36,
+    "fell_short": 48,
+    "didnt_play": 104
+   }
+  },
+  "DB.f4.A.RB.all": {
+   "good": {
+    "beat": 47,
+    "fell_short": 46,
+    "didnt_play": 89
+   },
+   "middle": {
+    "beat": 48,
+    "fell_short": 67,
+    "didnt_play": 94
+   },
+   "poor": {
+    "beat": 56,
+    "fell_short": 61,
+    "didnt_play": 125
+   }
+  },
+  "DB.f4.A.WR.all": {
+   "good": {
+    "beat": 95,
+    "fell_short": 128,
+    "didnt_play": 217
+   },
+   "middle": {
+    "beat": 88,
+    "fell_short": 112,
+    "didnt_play": 243
+   },
+   "poor": {
+    "beat": 84,
+    "fell_short": 100,
+    "didnt_play": 218
+   }
+  },
+  "DB.f4.A.TE.all": {
+   "good": {
+    "beat": 12,
+    "fell_short": 24,
+    "didnt_play": 137
+   },
+   "middle": {
+    "beat": 21,
+    "fell_short": 17,
+    "didnt_play": 123
+   },
+   "poor": {
+    "beat": 14,
+    "fell_short": 24,
+    "didnt_play": 105
+   }
+  },
+  "DB.f4.B.all.all": {
+   "good": {
+    "beat": 107,
+    "fell_short": 70,
+    "didnt_play": 250
+   },
+   "middle": {
+    "beat": 90,
+    "fell_short": 75,
+    "didnt_play": 274
+   },
+   "poor": {
+    "beat": 90,
+    "fell_short": 74,
+    "didnt_play": 250
+   }
+  },
+  "DB.f4.B.QB.all": {
+   "good": {
+    "beat": 24,
+    "fell_short": 10,
+    "didnt_play": 50
+   },
+   "middle": {
+    "beat": 17,
+    "fell_short": 9,
+    "didnt_play": 68
+   },
+   "poor": {
+    "beat": 19,
+    "fell_short": 10,
+    "didnt_play": 54
+   }
+  },
+  "DB.f4.B.RB.all": {
+   "good": {
+    "beat": 17,
+    "fell_short": 11,
+    "didnt_play": 43
+   },
+   "middle": {
+    "beat": 14,
+    "fell_short": 34,
+    "didnt_play": 50
+   },
+   "poor": {
+    "beat": 12,
+    "fell_short": 35,
+    "didnt_play": 64
+   }
+  },
+  "DB.f4.B.WR.all": {
+   "good": {
+    "beat": 57,
+    "fell_short": 42,
+    "didnt_play": 123
+   },
+   "middle": {
+    "beat": 52,
+    "fell_short": 23,
+    "didnt_play": 110
+   },
+   "poor": {
+    "beat": 44,
+    "fell_short": 20,
+    "didnt_play": 107
+   }
+  },
+  "DB.f4.B.TE.all": {
+   "good": {
+    "beat": 9,
+    "fell_short": 7,
+    "didnt_play": 34
+   },
+   "middle": {
+    "beat": 7,
+    "fell_short": 9,
+    "didnt_play": 46
+   },
+   "poor": {
+    "beat": 15,
+    "fell_short": 9,
+    "didnt_play": 25
+   }
+  },
+  "DB.f4_sys.A.all.all": {
+   "good": {
+    "beat": 210,
+    "fell_short": 268,
+    "didnt_play": 565
+   },
+   "middle": {
+    "beat": 199,
+    "fell_short": 222,
+    "didnt_play": 556
+   },
+   "poor": {
+    "beat": 182,
+    "fell_short": 222,
+    "didnt_play": 532
+   }
+  },
+  "DB.f4_sys.A.QB.all": {
+   "good": {
+    "beat": 47,
+    "fell_short": 44,
+    "didnt_play": 92
+   },
+   "middle": {
+    "beat": 42,
+    "fell_short": 43,
+    "didnt_play": 106
+   },
+   "poor": {
+    "beat": 37,
+    "fell_short": 46,
+    "didnt_play": 104
+   }
+  },
+  "DB.f4_sys.A.RB.all": {
+   "good": {
+    "beat": 51,
+    "fell_short": 58,
+    "didnt_play": 91
+   },
+   "middle": {
+    "beat": 45,
+    "fell_short": 62,
+    "didnt_play": 112
+   },
+   "poor": {
+    "beat": 55,
+    "fell_short": 54,
+    "didnt_play": 105
+   }
+  },
+  "DB.f4_sys.A.WR.all": {
+   "good": {
+    "beat": 101,
+    "fell_short": 142,
+    "didnt_play": 243
+   },
+   "middle": {
+    "beat": 89,
+    "fell_short": 100,
+    "didnt_play": 217
+   },
+   "poor": {
+    "beat": 77,
+    "fell_short": 98,
+    "didnt_play": 218
+   }
+  },
+  "DB.f4_sys.A.TE.all": {
+   "good": {
+    "beat": 11,
+    "fell_short": 24,
+    "didnt_play": 139
+   },
+   "middle": {
+    "beat": 23,
+    "fell_short": 17,
+    "didnt_play": 121
+   },
+   "poor": {
+    "beat": 13,
+    "fell_short": 24,
+    "didnt_play": 105
+   }
+  },
+  "DB.f4_sys.B.all.all": {
+   "good": {
+    "beat": 112,
+    "fell_short": 75,
+    "didnt_play": 267
+   },
+   "middle": {
+    "beat": 85,
+    "fell_short": 70,
+    "didnt_play": 284
+   },
+   "poor": {
+    "beat": 90,
+    "fell_short": 74,
+    "didnt_play": 223
+   }
+  },
+  "DB.f4_sys.B.QB.all": {
+   "good": {
+    "beat": 23,
+    "fell_short": 10,
+    "didnt_play": 52
+   },
+   "middle": {
+    "beat": 19,
+    "fell_short": 10,
+    "didnt_play": 69
+   },
+   "poor": {
+    "beat": 18,
+    "fell_short": 9,
+    "didnt_play": 51
+   }
+  },
+  "DB.f4_sys.B.RB.all": {
+   "good": {
+    "beat": 16,
+    "fell_short": 19,
+    "didnt_play": 49
+   },
+   "middle": {
+    "beat": 16,
+    "fell_short": 28,
+    "didnt_play": 56
+   },
+   "poor": {
+    "beat": 11,
+    "fell_short": 33,
+    "didnt_play": 52
+   }
+  },
+  "DB.f4_sys.B.WR.all": {
+   "good": {
+    "beat": 64,
+    "fell_short": 39,
+    "didnt_play": 127
+   },
+   "middle": {
+    "beat": 42,
+    "fell_short": 23,
+    "didnt_play": 117
+   },
+   "poor": {
+    "beat": 47,
+    "fell_short": 23,
+    "didnt_play": 96
+   }
+  },
+  "DB.f4_sys.B.TE.all": {
+   "good": {
+    "beat": 9,
+    "fell_short": 7,
+    "didnt_play": 39
+   },
+   "middle": {
+    "beat": 8,
+    "fell_short": 9,
+    "didnt_play": 42
+   },
+   "poor": {
+    "beat": 14,
+    "fell_short": 9,
+    "didnt_play": 24
+   }
+  },
+  "DB.style.A.all.all": {
+   "good": {
+    "beat": 222,
+    "fell_short": 245,
+    "didnt_play": 618
+   },
+   "middle": {
+    "beat": 223,
+    "fell_short": 238,
+    "didnt_play": 564
+   },
+   "poor": {
+    "beat": 181,
+    "fell_short": 254,
+    "didnt_play": 568
+   }
+  },
+  "DB.style.A.QB.all": {
+   "good": {
+    "beat": 43,
+    "fell_short": 43,
+    "didnt_play": 112
+   },
+   "middle": {
+    "beat": 47,
+    "fell_short": 49,
+    "didnt_play": 103
+   },
+   "poor": {
+    "beat": 46,
+    "fell_short": 56,
+    "didnt_play": 114
+   }
+  },
+  "DB.style.A.RB.all": {
+   "good": {
+    "beat": 68,
+    "fell_short": 55,
+    "didnt_play": 110
+   },
+   "middle": {
+    "beat": 56,
+    "fell_short": 53,
+    "didnt_play": 114
+   },
+   "poor": {
+    "beat": 41,
+    "fell_short": 66,
+    "didnt_play": 102
+   }
+  },
+  "DB.style.A.WR.all": {
+   "good": {
+    "beat": 91,
+    "fell_short": 135,
+    "didnt_play": 248
+   },
+   "middle": {
+    "beat": 105,
+    "fell_short": 113,
+    "didnt_play": 230
+   },
+   "poor": {
+    "beat": 81,
+    "fell_short": 101,
+    "didnt_play": 251
+   }
+  },
+  "DB.style.A.TE.all": {
+   "good": {
+    "beat": 20,
+    "fell_short": 12,
+    "didnt_play": 148
+   },
+   "middle": {
+    "beat": 15,
+    "fell_short": 23,
+    "didnt_play": 117
+   },
+   "poor": {
+    "beat": 13,
+    "fell_short": 31,
+    "didnt_play": 101
+   }
+  },
+  "DB.style.B.all.all": {
+   "good": {
+    "beat": 91,
+    "fell_short": 58,
+    "didnt_play": 238
+   },
+   "middle": {
+    "beat": 93,
+    "fell_short": 65,
+    "didnt_play": 250
+   },
+   "poor": {
+    "beat": 87,
+    "fell_short": 74,
+    "didnt_play": 213
+   }
+  },
+  "DB.style.B.QB.all": {
+   "good": {
+    "beat": 16,
+    "fell_short": 8,
+    "didnt_play": 52
+   },
+   "middle": {
+    "beat": 18,
+    "fell_short": 8,
+    "didnt_play": 50
+   },
+   "poor": {
+    "beat": 21,
+    "fell_short": 12,
+    "didnt_play": 51
+   }
+  },
+  "DB.style.B.RB.all": {
+   "good": {
+    "beat": 8,
+    "fell_short": 19,
+    "didnt_play": 52
+   },
+   "middle": {
+    "beat": 19,
+    "fell_short": 26,
+    "didnt_play": 57
+   },
+   "poor": {
+    "beat": 13,
+    "fell_short": 29,
+    "didnt_play": 38
+   }
+  },
+  "DB.style.B.WR.all": {
+   "good": {
+    "beat": 59,
+    "fell_short": 24,
+    "didnt_play": 99
+   },
+   "middle": {
+    "beat": 47,
+    "fell_short": 22,
+    "didnt_play": 109
+   },
+   "poor": {
+    "beat": 39,
+    "fell_short": 25,
+    "didnt_play": 100
+   }
+  },
+  "DB.style.B.TE.all": {
+   "good": {
+    "beat": 8,
+    "fell_short": 7,
+    "didnt_play": 35
+   },
+   "middle": {
+    "beat": 9,
+    "fell_short": 9,
+    "didnt_play": 34
+   },
+   "poor": {
+    "beat": 14,
+    "fell_short": 8,
+    "didnt_play": 24
+   }
+  }
+ },
+ "analyses": [
+  {
+   "id": "DA.f4.all",
+   "analysis": "mean destination fit rank minus 0.5 (negative: coaches sign toward fit)",
+   "n": 2947,
+   "est": 0.001,
+   "ci90": [
+    -0.0084,
+    0.0097
+   ],
+   "excludes_zero": false,
+   "best_third_share": 0.3308
+  },
+  {
+   "id": "DA.f4.QB",
+   "analysis": "mean destination fit rank minus 0.5 (negative: coaches sign toward fit)",
+   "n": 561,
+   "est": 0.0061,
+   "ci90": [
+    -0.0156,
+    0.0264
+   ],
+   "excludes_zero": false,
+   "best_third_share": 0.3262
+  },
+  {
+   "id": "DA.f4.RB",
+   "analysis": "mean destination fit rank minus 0.5 (negative: coaches sign toward fit)",
+   "n": 627,
+   "est": 0.0353,
+   "ci90": [
+    0.017,
+    0.0542
+   ],
+   "excludes_zero": true,
+   "best_third_share": 0.2887
+  },
+  {
+   "id": "DA.f4.WR",
+   "analysis": "mean destination fit rank minus 0.5 (negative: coaches sign toward fit)",
+   "n": 1282,
+   "est": -0.0105,
+   "ci90": [
+    -0.024,
+    0.0022
+   ],
+   "excludes_zero": false,
+   "best_third_share": 0.3417
+  },
+  {
+   "id": "DA.f4.TE",
+   "analysis": "mean destination fit rank minus 0.5 (negative: coaches sign toward fit)",
+   "n": 477,
+   "est": -0.0193,
+   "ci90": [
+    -0.0394,
+    0.0031
+   ],
+   "excludes_zero": false,
+   "best_third_share": 0.3627
+  },
+  {
+   "id": "DA.f4_sys.all",
+   "analysis": "mean destination fit rank minus 0.5 (negative: coaches sign toward fit)",
+   "n": 2947,
+   "est": -0.0111,
+   "ci90": [
+    -0.0201,
+    -0.0021
+   ],
+   "excludes_zero": true,
+   "best_third_share": 0.3532
+  },
+  {
+   "id": "DA.f4_sys.QB",
+   "analysis": "mean destination fit rank minus 0.5 (negative: coaches sign toward fit)",
+   "n": 561,
+   "est": 0.0006,
+   "ci90": [
+    -0.0204,
+    0.0212
+   ],
+   "excludes_zero": false,
+   "best_third_share": 0.3262
+  },
+  {
+   "id": "DA.f4_sys.RB",
+   "analysis": "mean destination fit rank minus 0.5 (negative: coaches sign toward fit)",
+   "n": 627,
+   "est": 0.0091,
+   "ci90": [
+    -0.0086,
+    0.027
+   ],
+   "excludes_zero": false,
+   "best_third_share": 0.3174
+  },
+  {
+   "id": "DA.f4_sys.WR",
+   "analysis": "mean destination fit rank minus 0.5 (negative: coaches sign toward fit)",
+   "n": 1282,
+   "est": -0.0198,
+   "ci90": [
+    -0.0331,
+    -0.0068
+   ],
+   "excludes_zero": true,
+   "best_third_share": 0.3783
+  },
+  {
+   "id": "DA.f4_sys.TE",
+   "analysis": "mean destination fit rank minus 0.5 (negative: coaches sign toward fit)",
+   "n": 477,
+   "est": -0.0282,
+   "ci90": [
+    -0.0478,
+    -0.0071
+   ],
+   "excludes_zero": true,
+   "best_third_share": 0.3648
+  },
+  {
+   "id": "DA.style.all",
+   "analysis": "mean destination fit rank minus 0.5 (negative: coaches sign toward fit)",
+   "n": 3122,
+   "est": -0.0117,
+   "ci90": [
+    -0.0206,
+    -0.0032
+   ],
+   "excludes_zero": true,
+   "best_third_share": 0.3479
+  },
+  {
+   "id": "DA.style.QB",
+   "analysis": "mean destination fit rank minus 0.5 (negative: coaches sign toward fit)",
+   "n": 613,
+   "est": 0.0056,
+   "ci90": [
+    -0.0137,
+    0.0228
+   ],
+   "excludes_zero": false,
+   "best_third_share": 0.323
+  },
+  {
+   "id": "DA.style.RB",
+   "analysis": "mean destination fit rank minus 0.5 (negative: coaches sign toward fit)",
+   "n": 660,
+   "est": -0.0169,
+   "ci90": [
+    -0.0352,
+    0.0011
+   ],
+   "excludes_zero": false,
+   "best_third_share": 0.3515
+  },
+  {
+   "id": "DA.style.WR",
+   "analysis": "mean destination fit rank minus 0.5 (negative: coaches sign toward fit)",
+   "n": 1349,
+   "est": -0.0128,
+   "ci90": [
+    -0.0253,
+    0.0006
+   ],
+   "excludes_zero": false,
+   "best_third_share": 0.3506
+  },
+  {
+   "id": "DA.style.TE",
+   "analysis": "mean destination fit rank minus 0.5 (negative: coaches sign toward fit)",
+   "n": 500,
+   "est": -0.0233,
+   "ci90": [
+    -0.0436,
+    -0.0012
+   ],
+   "excludes_zero": true,
+   "best_third_share": 0.366
+  },
+  {
+   "id": "DB.f4.A.all.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 2956,
+   "est": 0.0043,
+   "ci90": [
+    -0.0112,
+    0.0189
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.all.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 2956,
+   "est": -0.0548,
+   "ci90": [
+    -0.9065,
+    0.8503
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.all.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 2032,
+   "est": 0.0015,
+   "ci90": [
+    -0.0158,
+    0.0201
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.all.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 2032,
+   "est": -0.5408,
+   "ci90": [
+    -1.5814,
+    0.474
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.all.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 924,
+   "est": 0.0107,
+   "ci90": [
+    -0.0135,
+    0.0373
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.all.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 924,
+   "est": 0.97,
+   "ci90": [
+    -0.5187,
+    2.4378
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.QB.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 561,
+   "est": 0.0272,
+   "ci90": [
+    -0.0075,
+    0.0594
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.QB.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 561,
+   "est": -1.9996,
+   "ci90": [
+    -6.4379,
+    1.9148
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.QB.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 375,
+   "est": 0.0196,
+   "ci90": [
+    -0.0235,
+    0.0613
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.QB.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 375,
+   "est": -4.3981,
+   "ci90": [
+    -9.4937,
+    0.7688
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.QB.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 186,
+   "est": 0.0426,
+   "ci90": [
+    -0.0162,
+    0.0981
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.QB.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 186,
+   "est": 2.3205,
+   "ci90": [
+    -4.5438,
+    9.5076
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.RB.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 633,
+   "est": 0.0131,
+   "ci90": [
+    -0.0205,
+    0.0461
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.RB.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 633,
+   "est": 1.1531,
+   "ci90": [
+    0.1078,
+    2.1122
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.f4.A.RB.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 428,
+   "est": 0.0081,
+   "ci90": [
+    -0.035,
+    0.0494
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.RB.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 428,
+   "est": 1.0924,
+   "ci90": [
+    -0.1699,
+    2.3552
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.RB.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 205,
+   "est": 0.0223,
+   "ci90": [
+    -0.0312,
+    0.0797
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.RB.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 205,
+   "est": 1.2991,
+   "ci90": [
+    -0.1837,
+    2.8606
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.WR.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 1285,
+   "est": 0.0035,
+   "ci90": [
+    -0.0194,
+    0.0263
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.WR.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 1285,
+   "est": 0.1609,
+   "ci90": [
+    -0.4193,
+    0.715
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.WR.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 889,
+   "est": 0.0005,
+   "ci90": [
+    -0.027,
+    0.0293
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.WR.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 889,
+   "est": 0.039,
+   "ci90": [
+    -0.6138,
+    0.8182
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.WR.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 396,
+   "est": 0.0124,
+   "ci90": [
+    -0.0256,
+    0.0512
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.WR.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 396,
+   "est": 0.4394,
+   "ci90": [
+    -0.4362,
+    1.341
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.TE.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 477,
+   "est": -0.0141,
+   "ci90": [
+    -0.0403,
+    0.0111
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.TE.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 477,
+   "est": 0.1203,
+   "ci90": [
+    -0.1109,
+    0.3464
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.TE.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 340,
+   "est": -0.0092,
+   "ci90": [
+    -0.0414,
+    0.0192
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.TE.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 340,
+   "est": 0.1745,
+   "ci90": [
+    -0.1098,
+    0.4632
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.TE.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 137,
+   "est": -0.0279,
+   "ci90": [
+    -0.082,
+    0.0199
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.A.TE.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 137,
+   "est": -0.0203,
+   "ci90": [
+    -0.3175,
+    0.2732
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.all.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 1280,
+   "est": 0.0166,
+   "ci90": [
+    -0.0068,
+    0.039
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.all.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 1280,
+   "est": 0.904,
+   "ci90": [
+    -0.678,
+    2.4333
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.all.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 890,
+   "est": 0.0079,
+   "ci90": [
+    -0.0222,
+    0.0371
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.all.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 890,
+   "est": 0.2951,
+   "ci90": [
+    -1.2514,
+    1.7496
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.all.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 390,
+   "est": 0.0361,
+   "ci90": [
+    -0.0034,
+    0.079
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.all.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 390,
+   "est": 2.2329,
+   "ci90": [
+    -1.4434,
+    5.8952
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.QB.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 261,
+   "est": 0.0284,
+   "ci90": [
+    -0.0235,
+    0.0859
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.QB.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 261,
+   "est": 0.0912,
+   "ci90": [
+    -7.2225,
+    8.1251
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.QB.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 171,
+   "est": 0.0148,
+   "ci90": [
+    -0.0507,
+    0.0779
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.QB.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 171,
+   "est": -2.6243,
+   "ci90": [
+    -10.0259,
+    4.3769
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.QB.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 90,
+   "est": 0.0533,
+   "ci90": [
+    -0.0494,
+    0.1515
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.QB.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 90,
+   "est": 4.9296,
+   "ci90": [
+    -12.8053,
+    23.1846
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.RB.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 280,
+   "est": 0.0625,
+   "ci90": [
+    0.0171,
+    0.1109
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.f4.B.RB.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 280,
+   "est": 2.6427,
+   "ci90": [
+    1.2809,
+    4.1677
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.f4.B.RB.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 200,
+   "est": 0.0775,
+   "ci90": [
+    0.0243,
+    0.1317
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.f4.B.RB.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 200,
+   "est": 2.6754,
+   "ci90": [
+    1.0637,
+    4.6853
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.f4.B.RB.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 80,
+   "est": 0.0274,
+   "ci90": [
+    -0.0484,
+    0.1076
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.RB.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 80,
+   "est": 2.5726,
+   "ci90": [
+    0.4554,
+    4.9499
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.f4.B.WR.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 578,
+   "est": -0.0003,
+   "ci90": [
+    -0.037,
+    0.0325
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.WR.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 578,
+   "est": 0.4222,
+   "ci90": [
+    -0.3892,
+    1.2694
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.WR.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 402,
+   "est": -0.02,
+   "ci90": [
+    -0.0637,
+    0.0223
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.WR.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 402,
+   "est": 0.2121,
+   "ci90": [
+    -0.9284,
+    1.3545
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.WR.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 176,
+   "est": 0.0407,
+   "ci90": [
+    -0.0176,
+    0.1004
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.WR.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 176,
+   "est": 0.8741,
+   "ci90": [
+    -0.2469,
+    2.0571
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.TE.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 161,
+   "est": -0.0631,
+   "ci90": [
+    -0.1295,
+    0.0104
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.TE.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 161,
+   "est": 0.1044,
+   "ci90": [
+    -0.1951,
+    0.483
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.TE.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 117,
+   "est": -0.0734,
+   "ci90": [
+    -0.1553,
+    0.0034
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4.B.TE.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 117,
+   "est": 0.2419,
+   "ci90": [
+    -0.1369,
+    0.7244
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.all.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 2956,
+   "est": 0.0034,
+   "ci90": [
+    -0.0118,
+    0.0184
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.all.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 2956,
+   "est": 0.0355,
+   "ci90": [
+    -0.833,
+    0.9439
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.all.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 2032,
+   "est": 0.0065,
+   "ci90": [
+    -0.0109,
+    0.024
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.all.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 2032,
+   "est": -0.3512,
+   "ci90": [
+    -1.4986,
+    0.7773
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.all.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 924,
+   "est": -0.0024,
+   "ci90": [
+    -0.0271,
+    0.022
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.all.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 924,
+   "est": 0.8469,
+   "ci90": [
+    -0.7611,
+    2.274
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.QB.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 561,
+   "est": 0.0295,
+   "ci90": [
+    -0.0053,
+    0.0619
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.QB.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 561,
+   "est": -0.3139,
+   "ci90": [
+    -4.9043,
+    4.06
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.QB.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 375,
+   "est": 0.0237,
+   "ci90": [
+    -0.0205,
+    0.0663
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.QB.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 375,
+   "est": -2.582,
+   "ci90": [
+    -8.2769,
+    3.0953
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.QB.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 186,
+   "est": 0.0428,
+   "ci90": [
+    -0.0148,
+    0.1003
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.QB.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 186,
+   "est": 3.9463,
+   "ci90": [
+    -3.5052,
+    11.5604
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.RB.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 633,
+   "est": -0.001,
+   "ci90": [
+    -0.0364,
+    0.0324
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.RB.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 633,
+   "est": -0.0651,
+   "ci90": [
+    -1.0,
+    0.9731
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.RB.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 428,
+   "est": 0.0049,
+   "ci90": [
+    -0.0397,
+    0.0446
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.RB.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 428,
+   "est": -0.0466,
+   "ci90": [
+    -1.3078,
+    1.0354
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.RB.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 205,
+   "est": -0.0137,
+   "ci90": [
+    -0.0783,
+    0.0481
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.RB.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 205,
+   "est": 0.0269,
+   "ci90": [
+    -2.088,
+    2.1336
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.WR.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 1285,
+   "est": 0.0059,
+   "ci90": [
+    -0.0167,
+    0.028
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.WR.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 1285,
+   "est": 0.2773,
+   "ci90": [
+    -0.2868,
+    0.8173
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.WR.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 889,
+   "est": 0.0117,
+   "ci90": [
+    -0.0157,
+    0.0383
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.WR.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 889,
+   "est": 0.302,
+   "ci90": [
+    -0.3811,
+    1.0486
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.WR.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 396,
+   "est": -0.0052,
+   "ci90": [
+    -0.041,
+    0.0314
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.WR.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 396,
+   "est": 0.2256,
+   "ci90": [
+    -0.6294,
+    1.0811
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.TE.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 477,
+   "est": -0.014,
+   "ci90": [
+    -0.0375,
+    0.0099
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.TE.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 477,
+   "est": 0.1457,
+   "ci90": [
+    -0.0574,
+    0.3404
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.TE.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 340,
+   "est": -0.0065,
+   "ci90": [
+    -0.0353,
+    0.0198
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.TE.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 340,
+   "est": 0.2733,
+   "ci90": [
+    0.031,
+    0.5238
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.f4_sys.A.TE.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 137,
+   "est": -0.0321,
+   "ci90": [
+    -0.082,
+    0.0114
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.A.TE.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 137,
+   "est": -0.1615,
+   "ci90": [
+    -0.4656,
+    0.1148
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.all.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 1280,
+   "est": 0.007,
+   "ci90": [
+    -0.0151,
+    0.0301
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.all.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 1280,
+   "est": 0.3902,
+   "ci90": [
+    -1.0428,
+    1.8892
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.all.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 890,
+   "est": -0.0049,
+   "ci90": [
+    -0.0352,
+    0.0244
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.all.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 890,
+   "est": 0.0748,
+   "ci90": [
+    -1.464,
+    1.4746
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.all.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 390,
+   "est": 0.0331,
+   "ci90": [
+    -0.0094,
+    0.0756
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.all.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 390,
+   "est": 0.9881,
+   "ci90": [
+    -2.5538,
+    4.0337
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.QB.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 261,
+   "est": 0.0199,
+   "ci90": [
+    -0.0344,
+    0.0775
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.QB.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 261,
+   "est": -1.4503,
+   "ci90": [
+    -8.676,
+    6.5192
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.QB.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 171,
+   "est": 0.0159,
+   "ci90": [
+    -0.0535,
+    0.0831
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.QB.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 171,
+   "est": -2.0139,
+   "ci90": [
+    -9.4744,
+    4.9794
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.QB.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 90,
+   "est": 0.0244,
+   "ci90": [
+    -0.0775,
+    0.1176
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.QB.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 90,
+   "est": -1.0229,
+   "ci90": [
+    -17.3343,
+    16.3121
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.RB.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 280,
+   "est": 0.0378,
+   "ci90": [
+    -0.0064,
+    0.0828
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.RB.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 280,
+   "est": 1.7961,
+   "ci90": [
+    0.3955,
+    3.1587
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.f4_sys.B.RB.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 200,
+   "est": 0.0536,
+   "ci90": [
+    0.0024,
+    0.1053
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.f4_sys.B.RB.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 200,
+   "est": 1.1818,
+   "ci90": [
+    -0.1891,
+    2.6801
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.RB.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 80,
+   "est": -0.0074,
+   "ci90": [
+    -0.0988,
+    0.0815
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.RB.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 80,
+   "est": 2.9492,
+   "ci90": [
+    0.0447,
+    6.1707
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.f4_sys.B.WR.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 578,
+   "est": -0.0024,
+   "ci90": [
+    -0.0415,
+    0.0322
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.WR.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 578,
+   "est": 0.4291,
+   "ci90": [
+    -0.4113,
+    1.2522
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.WR.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 402,
+   "est": -0.0324,
+   "ci90": [
+    -0.0777,
+    0.0114
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.WR.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 402,
+   "est": 0.0845,
+   "ci90": [
+    -1.0712,
+    1.2728
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.WR.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 176,
+   "est": 0.0596,
+   "ci90": [
+    -0.0032,
+    0.1166
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.WR.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 176,
+   "est": 1.1362,
+   "ci90": [
+    0.059,
+    2.2118
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.f4_sys.B.TE.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 161,
+   "est": -0.0667,
+   "ci90": [
+    -0.1291,
+    0.0027
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.TE.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 161,
+   "est": 0.0955,
+   "ci90": [
+    -0.1782,
+    0.4147
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.f4_sys.B.TE.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 117,
+   "est": -0.0895,
+   "ci90": [
+    -0.1724,
+    -0.0138
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.f4_sys.B.TE.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 117,
+   "est": 0.1661,
+   "ci90": [
+    -0.1563,
+    0.6049
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.all.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 3113,
+   "est": 0.0121,
+   "ci90": [
+    -0.001,
+    0.0268
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.all.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 3113,
+   "est": 0.5378,
+   "ci90": [
+    -0.3227,
+    1.4152
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.all.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 2136,
+   "est": 0.0086,
+   "ci90": [
+    -0.0078,
+    0.026
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.all.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 2136,
+   "est": 1.0267,
+   "ci90": [
+    0.0635,
+    2.0804
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.style.A.all.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 977,
+   "est": 0.0211,
+   "ci90": [
+    -0.0033,
+    0.0452
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.all.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 977,
+   "est": -0.3975,
+   "ci90": [
+    -2.091,
+    1.1976
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.QB.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 613,
+   "est": 0.0021,
+   "ci90": [
+    -0.0279,
+    0.0347
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.QB.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 613,
+   "est": 0.9058,
+   "ci90": [
+    -3.1994,
+    5.2237
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.QB.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 406,
+   "est": -0.0014,
+   "ci90": [
+    -0.0387,
+    0.0393
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.QB.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 406,
+   "est": 3.2814,
+   "ci90": [
+    -1.4398,
+    8.2037
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.QB.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 207,
+   "est": 0.015,
+   "ci90": [
+    -0.0481,
+    0.0765
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.QB.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 207,
+   "est": -3.3461,
+   "ci90": [
+    -10.4112,
+    4.5034
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.RB.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 665,
+   "est": 0.0477,
+   "ci90": [
+    0.015,
+    0.0815
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.style.A.RB.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 665,
+   "est": 0.7891,
+   "ci90": [
+    -0.0541,
+    1.7651
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.RB.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 455,
+   "est": 0.055,
+   "ci90": [
+    0.0137,
+    0.0956
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.style.A.RB.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 455,
+   "est": 0.9717,
+   "ci90": [
+    -0.0594,
+    1.9355
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.RB.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 210,
+   "est": 0.031,
+   "ci90": [
+    -0.0301,
+    0.0916
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.RB.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 210,
+   "est": 0.4057,
+   "ci90": [
+    -1.289,
+    2.1959
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.WR.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 1355,
+   "est": 0.0025,
+   "ci90": [
+    -0.0181,
+    0.0241
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.WR.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 1355,
+   "est": 0.2162,
+   "ci90": [
+    -0.2728,
+    0.7196
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.WR.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 936,
+   "est": -0.0106,
+   "ci90": [
+    -0.0346,
+    0.0136
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.WR.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 936,
+   "est": 0.1579,
+   "ci90": [
+    -0.4731,
+    0.8088
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.WR.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 419,
+   "est": 0.0286,
+   "ci90": [
+    -0.006,
+    0.0663
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.WR.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 419,
+   "est": 0.345,
+   "ci90": [
+    -0.4566,
+    1.2311
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.TE.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 480,
+   "est": 0.0106,
+   "ci90": [
+    -0.0171,
+    0.0353
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.TE.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 480,
+   "est": 0.3578,
+   "ci90": [
+    0.1476,
+    0.5708
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.style.A.TE.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 339,
+   "est": 0.0237,
+   "ci90": [
+    -0.0049,
+    0.0515
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.TE.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 339,
+   "est": 0.3942,
+   "ci90": [
+    0.1241,
+    0.6628
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.style.A.TE.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 141,
+   "est": -0.0156,
+   "ci90": [
+    -0.0675,
+    0.0416
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.A.TE.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 141,
+   "est": 0.3295,
+   "ci90": [
+    -0.0015,
+    0.7201
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.B.all.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 1169,
+   "est": 0.0013,
+   "ci90": [
+    -0.0231,
+    0.0276
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.B.all.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 1169,
+   "est": 0.7481,
+   "ci90": [
+    -0.7893,
+    2.3204
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.B.all.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 806,
+   "est": 0.0144,
+   "ci90": [
+    -0.0164,
+    0.0442
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.B.all.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 806,
+   "est": 0.9129,
+   "ci90": [
+    -0.9942,
+    2.7459
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.B.all.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 363,
+   "est": -0.0293,
+   "ci90": [
+    -0.0718,
+    0.0155
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.B.all.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 363,
+   "est": 0.4444,
+   "ci90": [
+    -2.3863,
+    3.7843
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.B.QB.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 236,
+   "est": -0.0197,
+   "ci90": [
+    -0.0782,
+    0.0346
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.B.QB.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 236,
+   "est": 1.0649,
+   "ci90": [
+    -6.6771,
+    7.8638
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.B.QB.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 155,
+   "est": -0.012,
+   "ci90": [
+    -0.0778,
+    0.0572
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.B.QB.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 155,
+   "est": 0.2111,
+   "ci90": [
+    -8.7908,
+    9.2149
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.B.QB.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 81,
+   "est": -0.043,
+   "ci90": [
+    -0.1177,
+    0.0351
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.B.QB.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 81,
+   "est": 2.3495,
+   "ci90": [
+    -10.2112,
+    15.2607
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.B.RB.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 261,
+   "est": -0.0306,
+   "ci90": [
+    -0.0743,
+    0.0128
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.B.RB.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 261,
+   "est": 0.3367,
+   "ci90": [
+    -0.8027,
+    1.4067
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.B.RB.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 186,
+   "est": -0.0593,
+   "ci90": [
+    -0.1122,
+    -0.0138
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.style.B.RB.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 186,
+   "est": -0.0092,
+   "ci90": [
+    -1.221,
+    1.0937
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.B.RB.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 75,
+   "est": 0.0498,
+   "ci90": [
+    -0.0414,
+    0.1471
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.B.RB.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 75,
+   "est": 1.7202,
+   "ci90": [
+    -0.979,
+    4.5734
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.B.WR.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 524,
+   "est": 0.0431,
+   "ci90": [
+    0.0043,
+    0.0817
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.style.B.WR.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 524,
+   "est": 1.1016,
+   "ci90": [
+    0.1983,
+    2.1013
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.style.B.WR.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 357,
+   "est": 0.0844,
+   "ci90": [
+    0.0363,
+    0.1323
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.style.B.WR.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 357,
+   "est": 2.1594,
+   "ci90": [
+    1.0021,
+    3.5275
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.style.B.WR.new.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 167,
+   "est": -0.0525,
+   "ci90": [
+    -0.1103,
+    0.0082
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.B.WR.new.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 167,
+   "est": -1.0208,
+   "ci90": [
+    -2.6196,
+    0.3204
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.B.TE.all.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 148,
+   "est": -0.072,
+   "ci90": [
+    -0.143,
+    -0.001
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DB.style.B.TE.all.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 148,
+   "est": -0.1486,
+   "ci90": [
+    -0.6149,
+    0.2352
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.B.TE.kept.agree",
+   "analysis": "agreement rate minus its rate if fit and outcome were unrelated",
+   "n": 108,
+   "est": -0.0694,
+   "ci90": [
+    -0.1437,
+    0.0051
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DB.style.B.TE.kept.gap",
+   "analysis": "mean outcome-minus-expectation, good-fit minus poor-fit moves",
+   "n": 108,
+   "est": -0.3516,
+   "ci90": [
+    -0.977,
+    0.1667
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DD.QB.stayers.raw",
+   "analysis": "year-to-year r of raw EPA/opportunity, players who stayed",
+   "n": 810,
+   "est": 0.3191,
+   "ci90": [
+    0.2606,
+    0.375
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DD.QB.transfers.raw",
+   "analysis": "r of raw at the old school with opponent-adjusted EPA/opportunity at the new one",
+   "n": 227,
+   "est": 0.2025,
+   "ci90": [
+    0.0802,
+    0.3138
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DD.QB.stayers.opp",
+   "analysis": "year-to-year r of opp EPA/opportunity, players who stayed",
+   "n": 810,
+   "est": 0.3373,
+   "ci90": [
+    0.2792,
+    0.3919
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DD.QB.transfers.opp",
+   "analysis": "r of opp at the old school with opponent-adjusted EPA/opportunity at the new one",
+   "n": 227,
+   "est": 0.2712,
+   "ci90": [
+    0.1542,
+    0.3776
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DD.RB.stayers.raw",
+   "analysis": "year-to-year r of raw EPA/opportunity, players who stayed",
+   "n": 1525,
+   "est": 0.2558,
+   "ci90": [
+    0.2099,
+    0.2984
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DD.RB.transfers.raw",
+   "analysis": "r of raw at the old school with opponent-adjusted EPA/opportunity at the new one",
+   "n": 271,
+   "est": 0.1521,
+   "ci90": [
+    0.0497,
+    0.2566
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DD.RB.stayers.opp",
+   "analysis": "year-to-year r of opp EPA/opportunity, players who stayed",
+   "n": 1525,
+   "est": 0.2513,
+   "ci90": [
+    0.2082,
+    0.2937
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DD.RB.transfers.opp",
+   "analysis": "r of opp at the old school with opponent-adjusted EPA/opportunity at the new one",
+   "n": 271,
+   "est": 0.1634,
+   "ci90": [
+    0.0641,
+    0.2677
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DD.RB.stayers.mate",
+   "analysis": "year-to-year r of mate EPA/opportunity, players who stayed",
+   "n": 1520,
+   "est": 0.1515,
+   "ci90": [
+    0.1113,
+    0.1944
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DD.RB.transfers.mate",
+   "analysis": "r of mate at the old school with opponent-adjusted EPA/opportunity at the new one",
+   "n": 271,
+   "est": 0.0935,
+   "ci90": [
+    -0.0232,
+    0.2133
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DD.RB.stayers.both",
+   "analysis": "year-to-year r of both EPA/opportunity, players who stayed",
+   "n": 1520,
+   "est": 0.1526,
+   "ci90": [
+    0.1123,
+    0.1951
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DD.RB.transfers.both",
+   "analysis": "r of both at the old school with opponent-adjusted EPA/opportunity at the new one",
+   "n": 271,
+   "est": 0.0948,
+   "ci90": [
+    -0.0211,
+    0.2146
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DD.RB.transfers.mate_minus_opp",
+   "analysis": "r(mate, new) minus r(opp, new) on the same transfers",
+   "n": 271,
+   "est": -0.0699,
+   "ci90": [
+    -0.1399,
+    0.0077
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DD.RB.transfers.both_minus_opp",
+   "analysis": "r(both, new) minus r(opp, new) on the same transfers",
+   "n": 271,
+   "est": -0.0686,
+   "ci90": [
+    -0.1403,
+    0.0108
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DD.WR.stayers.raw",
+   "analysis": "year-to-year r of raw EPA/opportunity, players who stayed",
+   "n": 2304,
+   "est": 0.0994,
+   "ci90": [
+    0.0636,
+    0.1343
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DD.WR.transfers.raw",
+   "analysis": "r of raw at the old school with opponent-adjusted EPA/opportunity at the new one",
+   "n": 428,
+   "est": 0.0677,
+   "ci90": [
+    -0.0116,
+    0.1489
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DD.WR.stayers.opp",
+   "analysis": "year-to-year r of opp EPA/opportunity, players who stayed",
+   "n": 2304,
+   "est": 0.1618,
+   "ci90": [
+    0.1288,
+    0.1957
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DD.WR.transfers.opp",
+   "analysis": "r of opp at the old school with opponent-adjusted EPA/opportunity at the new one",
+   "n": 428,
+   "est": 0.0856,
+   "ci90": [
+    0.008,
+    0.1702
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DD.WR.stayers.mate",
+   "analysis": "year-to-year r of mate EPA/opportunity, players who stayed",
+   "n": 2293,
+   "est": 0.1081,
+   "ci90": [
+    0.0726,
+    0.1422
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DD.WR.transfers.mate",
+   "analysis": "r of mate at the old school with opponent-adjusted EPA/opportunity at the new one",
+   "n": 428,
+   "est": 0.0508,
+   "ci90": [
+    -0.0271,
+    0.1376
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DD.WR.stayers.both",
+   "analysis": "year-to-year r of both EPA/opportunity, players who stayed",
+   "n": 2293,
+   "est": 0.1171,
+   "ci90": [
+    0.0825,
+    0.1518
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DD.WR.transfers.both",
+   "analysis": "r of both at the old school with opponent-adjusted EPA/opportunity at the new one",
+   "n": 428,
+   "est": 0.0561,
+   "ci90": [
+    -0.0204,
+    0.1417
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DD.WR.transfers.mate_minus_opp",
+   "analysis": "r(mate, new) minus r(opp, new) on the same transfers",
+   "n": 428,
+   "est": -0.0348,
+   "ci90": [
+    -0.0768,
+    0.0037
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DD.WR.transfers.both_minus_opp",
+   "analysis": "r(both, new) minus r(opp, new) on the same transfers",
+   "n": 428,
+   "est": -0.0295,
+   "ci90": [
+    -0.0696,
+    0.0074
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DD.TE.stayers.raw",
+   "analysis": "year-to-year r of raw EPA/opportunity, players who stayed",
+   "n": 433,
+   "est": 0.047,
+   "ci90": [
+    -0.0419,
+    0.1315
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DD.TE.transfers.raw",
+   "analysis": "r of raw at the old school with opponent-adjusted EPA/opportunity at the new one",
+   "n": 57,
+   "est": 0.2036,
+   "ci90": [
+    -0.0086,
+    0.3872
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DD.TE.stayers.opp",
+   "analysis": "year-to-year r of opp EPA/opportunity, players who stayed",
+   "n": 433,
+   "est": 0.088,
+   "ci90": [
+    0.0076,
+    0.1652
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "DD.TE.transfers.opp",
+   "analysis": "r of opp at the old school with opponent-adjusted EPA/opportunity at the new one",
+   "n": 57,
+   "est": 0.1581,
+   "ci90": [
+    -0.0623,
+    0.3587
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DD.TE.stayers.mate",
+   "analysis": "year-to-year r of mate EPA/opportunity, players who stayed",
+   "n": 429,
+   "est": 0.0587,
+   "ci90": [
+    -0.0222,
+    0.1415
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DD.TE.transfers.mate",
+   "analysis": "r of mate at the old school with opponent-adjusted EPA/opportunity at the new one",
+   "n": 57,
+   "est": 0.1127,
+   "ci90": [
+    -0.1517,
+    0.3619
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DD.TE.stayers.both",
+   "analysis": "year-to-year r of both EPA/opportunity, players who stayed",
+   "n": 429,
+   "est": 0.0644,
+   "ci90": [
+    -0.0125,
+    0.1424
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DD.TE.transfers.both",
+   "analysis": "r of both at the old school with opponent-adjusted EPA/opportunity at the new one",
+   "n": 57,
+   "est": 0.1056,
+   "ci90": [
+    -0.1644,
+    0.3557
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DD.TE.transfers.mate_minus_opp",
+   "analysis": "r(mate, new) minus r(opp, new) on the same transfers",
+   "n": 57,
+   "est": -0.0454,
+   "ci90": [
+    -0.1971,
+    0.1104
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "DD.TE.transfers.both_minus_opp",
+   "analysis": "r(both, new) minus r(opp, new) on the same transfers",
+   "n": 57,
+   "est": -0.0525,
+   "ci90": [
+    -0.2047,
+    0.1051
+   ],
+   "excludes_zero": false
+  }
+ ]
+}
