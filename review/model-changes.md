@@ -2,6 +2,11 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-15 · CFB system fit 1.0.0 → 1.0.1 (patch)
+`cfb/fit/labels.py` (in the card's code) gains value over replacement (SYSTEM-FIT-EXPLORE, Matt: replacement = backups'
+volume-weighted adjusted EPA/play per position, level, season). New columns only: the success labels, the model's
+features, and its predictions are unchanged, so 1.0.0's backtest result stands; still experimental.
+
 ## 2026-11-15 · CFB system fit 1.0.0 (new, experimental: failed its pre-registered gate)
 SYSTEM-FIT F4/F5. Pre-registered the same day before any model code (commit 7f3c350): recall at 10 on each FBS
 program's portal board, windows 2021-2024, success within two years; must beat transfer rating, raw production, and
