@@ -56,12 +56,22 @@ def player_checks(c: Checks, d, cfg) -> None:
         missing = sorted(set(cfg.seasons) - seasons)
         c.add("coaches: every season", not missing, f"missing {missing}" if missing else f"{len(seasons)} seasons")
     # Who was on each play (PLAYER-ADJ): passers and rushers must match a roster player on >= MIN_MATCH of rows.
-    from ingest.cfb.play_players import MIN_MATCH
+    from ingest.cfb.play_players import MIN_MATCH, MIN_TARGET
     for s in cfg.seasons:
         f = d / f"play_players_{s}.parquet"
         if f.exists() and c.table(f"play_players_{s}", f, "play_players"):
             rate = c.sql(f"select avg((player_id is not null)::int) from read_parquet('{f.as_posix()}') where role in ('passer', 'rusher')")[0]
             c.add(f"play_players_{s}: passers and rushers matched to rosters", rate >= MIN_MATCH, f"{rate:.1%} (want >= {MIN_MATCH:.0%})")
+            # Receivers (CFB-RECV-FIX): completions must name one; incompletions often don't in the source text (reported).
+            plays = d.parent / f"plays_{s}.parquet"           # d is data/raw/cfb/players
+            if plays.exists():
+                comp, inc = c.sql(
+                    f"select avg((t.play_id is not null)::int) filter (where p.playType in ('Pass Reception', 'Passing Touchdown')), "
+                    f"avg((t.play_id is not null)::int) filter (where p.playType = 'Pass Incompletion') "
+                    f"from read_parquet('{plays.as_posix()}') p left join (select distinct play_id from read_parquet('{f.as_posix()}') "
+                    f"where role = 'target') t on t.play_id = p.id::varchar")
+                c.add(f"play_players_{s}: completions name a receiver", (comp or 0) >= MIN_TARGET,
+                      f"{(comp or 0):.1%} (want >= {MIN_TARGET:.0%}); incompletions {(inc or 0):.1%} (source text often omits him)")
     for s in ss["portal"]:
         if c.table(f"portal_{s}", d / f"portal_{s}.parquet", "portal") and players.portal_done(s):
             n = c.rows[f"portal_{s}"]
