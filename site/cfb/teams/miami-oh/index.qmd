@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Miami (OH) is 6–4. Its power rating, −7.5 points against an average FBS team, ranks 103rd of 138; it is unranked in the AP poll.
+Through week 11 of 2026, Miami (OH) is 6–4. Its power rating, −7.3 points against an average FBS team, ranks 104th of 138; it is unranked in the AP poll.
 
 ```{=html}
 <div id="team-root" data-team="Miami (OH)"></div>

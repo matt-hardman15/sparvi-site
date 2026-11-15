@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, UTEP is 1–8. Its power rating, −20.1 points against an average FBS team, ranks 135th of 138; it is unranked in the AP poll.
+Through week 11 of 2026, UTEP is 1–9. Its power rating, −20.1 points against an average FBS team, ranks 134th of 138; it is unranked in the AP poll.
 
 ```{=html}
 <div id="team-root" data-team="UTEP"></div>

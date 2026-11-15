@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, North Carolina is 5–4. Its power rating, +4.1 points against an average FBS team, ranks 50th of 138; it is unranked in the AP poll.
+Through week 11 of 2026, North Carolina is 5–5. Its power rating, +4.0 points against an average FBS team, ranks 52nd of 138; it is unranked in the AP poll.
 
 ```{=html}
 <div id="team-root" data-team="North Carolina"></div>

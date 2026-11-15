@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, South Alabama is 4–5. Its power rating, −7.0 points against an average FBS team, ranks 100th of 138; it is unranked in the AP poll.
+Through week 11 of 2026, South Alabama is 5–5. Its power rating, −6.1 points against an average FBS team, ranks 96th of 138; it is unranked in the AP poll.
 
 ```{=html}
 <div id="team-root" data-team="South Alabama"></div>

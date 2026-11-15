@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Indiana is 8–1. Its power rating, +21.7 points against an average FBS team, ranks 3rd of 138; the AP poll has it 6th.
+Through week 11 of 2026, Indiana is 9–1. Its power rating, +21.8 points against an average FBS team, ranks 3rd of 138; the AP poll has it 6th.
 
 ```{=html}
 <div id="team-root" data-team="Indiana"></div>

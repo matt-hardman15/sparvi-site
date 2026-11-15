@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Missouri State is 3–6. Its power rating, −12.7 points against an average FBS team, ranks 121st of 138; it is unranked in the AP poll.
+Through week 11 of 2026, Missouri State is 4–6. Its power rating, −12.5 points against an average FBS team, ranks 121st of 138; it is unranked in the AP poll.
 
 ```{=html}
 <div id="team-root" data-team="Missouri State"></div>

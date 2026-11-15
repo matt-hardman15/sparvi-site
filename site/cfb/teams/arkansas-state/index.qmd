@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Arkansas State is 4–5. Its power rating, −7.8 points against an average FBS team, ranks 107th of 138; it is unranked in the AP poll.
+Through week 11 of 2026, Arkansas State is 4–6. Its power rating, −8.8 points against an average FBS team, ranks 112th of 138; it is unranked in the AP poll.
 
 ```{=html}
 <div id="team-root" data-team="Arkansas State"></div>

@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Utah is 9–0. Its power rating, +18.1 points against an average FBS team, ranks 8th of 138; the AP poll has it 2nd.
+Through week 11 of 2026, Utah is 10–0. Its power rating, +18.2 points against an average FBS team, ranks 9th of 138; the AP poll has it 2nd.
 
 ```{=html}
 <div id="team-root" data-team="Utah"></div>

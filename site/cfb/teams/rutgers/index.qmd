@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Rutgers is 2–7. Its power rating, −8.1 points against an average FBS team, ranks 110th of 138; it is unranked in the AP poll.
+Through week 11 of 2026, Rutgers is 2–8. Its power rating, −9.8 points against an average FBS team, ranks 115th of 138; it is unranked in the AP poll.
 
 ```{=html}
 <div id="team-root" data-team="Rutgers"></div>

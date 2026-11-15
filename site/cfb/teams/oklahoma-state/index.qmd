@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Oklahoma State is 6–3. Its power rating, +6.2 points against an average FBS team, ranks 41st of 138; it is unranked in the AP poll.
+Through week 11 of 2026, Oklahoma State is 6–4. Its power rating, +4.3 points against an average FBS team, ranks 49th of 138; it is unranked in the AP poll.
 
 ```{=html}
 <div id="team-root" data-team="Oklahoma State"></div>

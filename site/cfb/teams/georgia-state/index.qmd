@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Georgia State is 5–4. Its power rating, −3.7 points against an average FBS team, ranks 85th of 138; it is unranked in the AP poll.
+Through week 11 of 2026, Georgia State is 5–5. Its power rating, −5.3 points against an average FBS team, ranks 93rd of 138; it is unranked in the AP poll.
 
 ```{=html}
 <div id="team-root" data-team="Georgia State"></div>

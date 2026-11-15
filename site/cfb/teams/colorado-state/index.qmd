@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Colorado State is 3–6. Its power rating, −13.7 points against an average FBS team, ranks 125th of 138; it is unranked in the AP poll.
+Through week 11 of 2026, Colorado State is 3–7. Its power rating, −19.2 points against an average FBS team, ranks 133rd of 138; it is unranked in the AP poll.
 
 ```{=html}
 <div id="team-root" data-team="Colorado State"></div>

@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, New Mexico is 8–1. Its power rating, +8.7 points against an average FBS team, ranks 33rd of 138; the AP poll has it 23rd.
+Through week 11 of 2026, New Mexico is 8–2. Its power rating, +7.5 points against an average FBS team, ranks 33rd of 138; the AP poll has it 23rd.
 
 ```{=html}
 <div id="team-root" data-team="New Mexico"></div>

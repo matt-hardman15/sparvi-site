@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Tennessee is 7–2. Its power rating, +15.9 points against an average FBS team, ranks 11th of 138; the AP poll has it 9th.
+Through week 11 of 2026, Tennessee is 8–2. Its power rating, +17.1 points against an average FBS team, ranks 10th of 138; the AP poll has it 9th.
 
 ```{=html}
 <div id="team-root" data-team="Tennessee"></div>

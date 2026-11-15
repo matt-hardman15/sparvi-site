@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, James Madison is 8–2. Its power rating, +10.5 points against an average FBS team, ranks 25th of 138; it is unranked in the AP poll.
+Through week 11 of 2026, James Madison is 8–3. Its power rating, +6.9 points against an average FBS team, ranks 34th of 138; it is unranked in the AP poll.
 
 ```{=html}
 <div id="team-root" data-team="James Madison"></div>

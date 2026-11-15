@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Boise State is 8–1. Its power rating, +10.6 points against an average FBS team, ranks 24th of 138; the AP poll has it 17th.
+Through week 11 of 2026, Boise State is 9–1. Its power rating, +10.0 points against an average FBS team, ranks 26th of 138; the AP poll has it 17th.
 
 ```{=html}
 <div id="team-root" data-team="Boise State"></div>

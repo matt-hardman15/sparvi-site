@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Houston is 7–2. Its power rating, +6.8 points against an average FBS team, ranks 40th of 138; the AP poll has it 14th.
+Through week 11 of 2026, Houston is 7–3. Its power rating, +5.1 points against an average FBS team, ranks 44th of 138; the AP poll has it 14th.
 
 ```{=html}
 <div id="team-root" data-team="Houston"></div>

@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Washington is 5–4. Its power rating, +8.1 points against an average FBS team, ranks 35th of 138; it is unranked in the AP poll.
+Through week 11 of 2026, Washington is 6–4. Its power rating, +8.3 points against an average FBS team, ranks 29th of 138; it is unranked in the AP poll.
 
 ```{=html}
 <div id="team-root" data-team="Washington"></div>

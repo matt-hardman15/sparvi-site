@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Kennesaw State is 3–6. Its power rating, −8.2 points against an average FBS team, ranks 111th of 138; it is unranked in the AP poll.
+Through week 11 of 2026, Kennesaw State is 4–6. Its power rating, −7.4 points against an average FBS team, ranks 105th of 138; it is unranked in the AP poll.
 
 ```{=html}
 <div id="team-root" data-team="Kennesaw State"></div>

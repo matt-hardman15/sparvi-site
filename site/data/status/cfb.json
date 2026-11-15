@@ -4,7 +4,7 @@
  "data_through": {
   "season": 2026,
   "week": 11,
-  "last_game": "2026-11-14"
+  "last_game": "2026-11-15"
  },
  "n_checks": 1011,
  "n_failed": 0,
@@ -34,7 +34,7 @@
   "lines_2023": 3072,
   "lines_2024": 3172,
   "lines_2025": 3289,
-  "lines_2026": 2110,
+  "lines_2026": 2165,
   "play_players_2014": 171229,
   "play_players_2015": 173083,
   "play_players_2016": 171319,
@@ -47,7 +47,7 @@
   "play_players_2023": 250638,
   "play_players_2024": 268245,
   "play_players_2025": 288655,
-  "play_players_2026": 203370,
+  "play_players_2026": 222290,
   "player_ppa_2014": 3035,
   "player_ppa_2015": 3082,
   "player_ppa_2016": 3226,
@@ -60,7 +60,7 @@
   "player_ppa_2023": 4649,
   "player_ppa_2024": 4403,
   "player_ppa_2025": 5551,
-  "player_ppa_2026": 5426,
+  "player_ppa_2026": 5477,
   "player_stats_2014": 40210,
   "player_stats_2015": 41273,
   "player_stats_2016": 98529,
@@ -73,7 +73,7 @@
   "player_stats_2023": 132228,
   "player_stats_2024": 135294,
   "player_stats_2025": 141637,
-  "player_stats_2026": 154377,
+  "player_stats_2026": 158781,
   "player_usage_2014": 3035,
   "player_usage_2015": 3082,
   "player_usage_2016": 3226,
@@ -86,7 +86,7 @@
   "player_usage_2023": 4649,
   "player_usage_2024": 4403,
   "player_usage_2025": 5551,
-  "player_usage_2026": 5426,
+  "player_usage_2026": 5477,
   "player_wepa_2014": 508,
   "player_wepa_2015": 647,
   "player_wepa_2016": 813,
@@ -99,7 +99,7 @@
   "player_wepa_2023": 887,
   "player_wepa_2024": 854,
   "player_wepa_2025": 912,
-  "player_wepa_2026": 805,
+  "player_wepa_2026": 844,
   "plays_2014": 158315,
   "plays_2015": 160127,
   "plays_2016": 158487,
@@ -112,7 +112,7 @@
   "plays_2023": 250659,
   "plays_2024": 276483,
   "plays_2025": 291073,
-  "plays_2026": 228253,
+  "plays_2026": 249407,
   "portal_2021": 1770,
   "portal_2022": 2273,
   "portal_2023": 2502,
@@ -132,7 +132,7 @@
   "rankings_2023": 975,
   "rankings_2024": 1001,
   "rankings_2025": 1000,
-  "rankings_2026": 601,
+  "rankings_2026": 626,
   "recruits_2014": 3772,
   "recruits_2015": 3516,
   "recruits_2016": 4452,
@@ -158,7 +158,7 @@
   "roster_2023": 22365,
   "roster_2024": 22794,
   "roster_2025": 30031,
-  "roster_2026": 31579,
+  "roster_2026": 31590,
   "teams_2014": 128,
   "teams_2015": 128,
   "teams_2016": 128,
@@ -2082,7 +2082,7 @@
   {
    "name": "plays_2026: row count",
    "ok": true,
-   "detail": "228,253 rows (last accepted 228,253)"
+   "detail": "249,407 rows (last accepted 228,253)"
   },
   {
    "name": "plays_2026: one row per id",
@@ -2142,7 +2142,7 @@
   {
    "name": "rankings_2026: row count",
    "ok": true,
-   "detail": "601 rows (last accepted 601)"
+   "detail": "626 rows (last accepted 601)"
   },
   {
    "name": "rankings_2026: one row per season + seasonType + week + poll + school",
@@ -2167,7 +2167,7 @@
   {
    "name": "lines_2026: row count",
    "ok": true,
-   "detail": "2,110 rows (last accepted 2,110)"
+   "detail": "2,165 rows (last accepted 2,110)"
   },
   {
    "name": "lines_2026: one row per game_id + provider",
@@ -2372,17 +2372,17 @@
   {
    "name": "games_2026: completed games have results",
    "ok": true,
-   "detail": "694 completed games"
+   "detail": "751 completed games"
   },
   {
    "name": "plays_2026: completed games have play-by-play",
    "ok": true,
-   "detail": "0 of 694 games without plays (0.0%; limit 2%)"
+   "detail": "0 of 751 games without plays (0.0%; limit 2%)"
   },
   {
    "name": "plays_2026: final scores agree with results",
    "ok": true,
-   "detail": "677 of 694 games (97.6%; bar 90%); 1 off by 9+ points"
+   "detail": "731 of 751 games (97.3%; bar 90%); 1 off by 9+ points"
   },
   {
    "name": "games_2026: results are current",
@@ -4077,7 +4077,7 @@
   {
    "name": "roster_2026: row count",
    "ok": true,
-   "detail": "31,579 rows (last accepted 31,579)"
+   "detail": "31,590 rows (last accepted 31,579)"
   },
   {
    "name": "roster_2026: one row per id + team",
@@ -4102,7 +4102,7 @@
   {
    "name": "player_stats_2026: row count",
    "ok": true,
-   "detail": "154,377 rows (last accepted 154,377)"
+   "detail": "158,781 rows (last accepted 154,377)"
   },
   {
    "name": "player_stats_2026: one row per playerId + team + category + statType",
@@ -4132,7 +4132,7 @@
   {
    "name": "player_usage_2026: row count",
    "ok": true,
-   "detail": "5,426 rows (last accepted 5,426)"
+   "detail": "5,477 rows (last accepted 5,426)"
   },
   {
    "name": "player_usage_2026: one row per id + team",
@@ -4157,7 +4157,7 @@
   {
    "name": "player_ppa_2026: row count",
    "ok": true,
-   "detail": "5,426 rows (last accepted 5,426)"
+   "detail": "5,477 rows (last accepted 5,426)"
   },
   {
    "name": "player_ppa_2026: one row per id + team",
@@ -4177,7 +4177,7 @@
   {
    "name": "player_wepa_2026: row count",
    "ok": true,
-   "detail": "805 rows (last accepted 805)"
+   "detail": "844 rows (last accepted 805)"
   },
   {
    "name": "player_wepa_2026: one row per kind + athleteId + team",
@@ -4197,7 +4197,7 @@
   {
    "name": "player_stats_2026: players on the roster",
    "ok": true,
-   "detail": "16,483 of 16,487 players (100.0%; bar 95%)"
+   "detail": "16,700 of 16,704 players (100.0%; bar 95%)"
   },
   {
    "name": "player_usage_2026: same players as PPA",
@@ -4207,7 +4207,7 @@
   {
    "name": "roster_2026: heights plausible",
    "ok": true,
-   "detail": "0 of 29,611 outside 5'0\"-7'2\""
+   "detail": "0 of 29,613 outside 5'0\"-7'2\""
   },
   {
    "name": "play_players_2014: columns and types",
@@ -4637,7 +4637,7 @@
   {
    "name": "play_players_2026: row count",
    "ok": true,
-   "detail": "203,370 rows (last accepted 203,370)"
+   "detail": "222,290 rows (last accepted 203,370)"
   },
   {
    "name": "play_players_2026: one row per play_id + role",

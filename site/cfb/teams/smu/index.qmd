@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, SMU is 7–2. Its power rating, +9.5 points against an average FBS team, ranks 30th of 138; the AP poll has it 25th.
+Through week 11 of 2026, SMU is 7–3. Its power rating, +5.2 points against an average FBS team, ranks 43rd of 138; the AP poll has it 25th.
 
 ```{=html}
 <div id="team-root" data-team="SMU"></div>

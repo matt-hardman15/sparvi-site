@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Hawai'i is 3–6. Its power rating, −7.2 points against an average FBS team, ranks 102nd of 138; it is unranked in the AP poll.
+Through week 11 of 2026, Hawai'i is 3–7. Its power rating, −7.3 points against an average FBS team, ranks 103rd of 138; it is unranked in the AP poll.
 
 ```{=html}
 <div id="team-root" data-team="Hawai&#x27;i"></div>

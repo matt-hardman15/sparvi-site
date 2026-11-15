@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Michigan is 5–4. Its power rating, +6.9 points against an average FBS team, ranks 39th of 138; it is unranked in the AP poll.
+Through week 11 of 2026, Michigan is 5–5. Its power rating, +4.9 points against an average FBS team, ranks 47th of 138; it is unranked in the AP poll.
 
 ```{=html}
 <div id="team-root" data-team="Michigan"></div>

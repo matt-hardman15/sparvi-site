@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Clemson is 6–3. Its power rating, +2.2 points against an average FBS team, ranks 56th of 138; it is unranked in the AP poll.
+Through week 11 of 2026, Clemson is 6–4. Its power rating, −0.6 points against an average FBS team, ranks 72nd of 138; it is unranked in the AP poll.
 
 ```{=html}
 <div id="team-root" data-team="Clemson"></div>

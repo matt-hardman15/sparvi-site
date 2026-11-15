@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, TCU is 4–5. Its power rating, +5.9 points against an average FBS team, ranks 43rd of 138; it is unranked in the AP poll.
+Through week 11 of 2026, TCU is 5–5. Its power rating, +5.7 points against an average FBS team, ranks 40th of 138; it is unranked in the AP poll.
 
 ```{=html}
 <div id="team-root" data-team="TCU"></div>

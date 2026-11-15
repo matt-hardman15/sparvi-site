@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Texas is 7–2. Its power rating, +16.9 points against an average FBS team, ranks 9th of 138; the AP poll has it 8th.
+Through week 11 of 2026, Texas is 8–2. Its power rating, +16.9 points against an average FBS team, ranks 11th of 138; the AP poll has it 8th.
 
 ```{=html}
 <div id="team-root" data-team="Texas"></div>

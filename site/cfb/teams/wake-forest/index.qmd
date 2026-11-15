@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Wake Forest is 8–1. Its power rating, +16.6 points against an average FBS team, ranks 10th of 138; the AP poll has it 11th.
+Through week 11 of 2026, Wake Forest is 9–1. Its power rating, +21.0 points against an average FBS team, ranks 4th of 138; the AP poll has it 11th.
 
 ```{=html}
 <div id="team-root" data-team="Wake Forest"></div>

@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Louisiana is 7–3. Its power rating, +1.7 points against an average FBS team, ranks 60th of 138; it is unranked in the AP poll.
+Through week 11 of 2026, Louisiana is 7–3. Its power rating, +0.9 points against an average FBS team, ranks 65th of 138; it is unranked in the AP poll.
 
 ```{=html}
 <div id="team-root" data-team="Louisiana"></div>

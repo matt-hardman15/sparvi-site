@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, USC is 7–2. Its power rating, +10.8 points against an average FBS team, ranks 23rd of 138; the AP poll has it 15th.
+Through week 11 of 2026, USC is 7–3. Its power rating, +10.5 points against an average FBS team, ranks 24th of 138; the AP poll has it 15th.
 
 ```{=html}
 <div id="team-root" data-team="USC"></div>

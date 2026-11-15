@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Eastern Michigan is 4–6. Its power rating, −15.9 points against an average FBS team, ranks 129th of 138; it is unranked in the AP poll.
+Through week 11 of 2026, Eastern Michigan is 4–6. Its power rating, −16.0 points against an average FBS team, ranks 128th of 138; it is unranked in the AP poll.
 
 ```{=html}
 <div id="team-root" data-team="Eastern Michigan"></div>

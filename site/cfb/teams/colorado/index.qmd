@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Colorado is 3–6. Its power rating, −6.8 points against an average FBS team, ranks 99th of 138; it is unranked in the AP poll.
+Through week 11 of 2026, Colorado is 4–6. Its power rating, −4.7 points against an average FBS team, ranks 90th of 138; it is unranked in the AP poll.
 
 ```{=html}
 <div id="team-root" data-team="Colorado"></div>

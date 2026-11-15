@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, Florida Atlantic is 6–3. Its power rating, −5.4 points against an average FBS team, ranks 93rd of 138; it is unranked in the AP poll.
+Through week 11 of 2026, Florida Atlantic is 6–4. Its power rating, −6.6 points against an average FBS team, ranks 101st of 138; it is unranked in the AP poll.
 
 ```{=html}
 <div id="team-root" data-team="Florida Atlantic"></div>

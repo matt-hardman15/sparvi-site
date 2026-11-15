@@ -6,7 +6,7 @@ image: preview.png
 page-layout: full
 ---
 
-Through week 11 of 2026, San José State is 5–5. Its power rating, −6.0 points against an average FBS team, ranks 96th of 138; it is unranked in the AP poll.
+Through week 11 of 2026, San José State is 5–6. Its power rating, −7.5 points against an average FBS team, ranks 106th of 138; it is unranked in the AP poll.
 
 ```{=html}
 <div id="team-root" data-team="San José State"></div>
