@@ -99,6 +99,31 @@ jobs:
           restore-keys: baseball-raw-cur-${{ steps.cfg.outputs.season }}-
           fail-on-cache-miss: true
 
+      # College football (PLAYER-ADJ): the cfb workflow's raw-data cache, including CFBD's cached responses, from which
+      # the play-player links are parsed (no API calls). A miss leaves the CFB backtest without data, and it fails.
+      - name: Restore CFB raw data
+        if: steps.gate.outputs.run == 'true'
+        id: cfb_cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: data/raw/cfb
+          key: cfb-raw-none
+          restore-keys: cfb-raw-
+
+      # No CFB cache yet (the cfb workflow hasn't saved one, or it was evicted): the private R2 seed instead.
+      - name: Restore CFB raw data from the R2 seed
+        if: ${{ steps.gate.outputs.run == 'true' && steps.cfb_cache.outputs.cache-matched-key == '' }}
+        env:
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: uv run python -m ingest.cfb.seed restore
+
+      - name: Parse missing play-player links (from the CFB cache)
+        if: steps.gate.outputs.run == 'true'
+        run: if [ -d data/raw/cfb/cache ]; then uv run python -m ingest.cfb.play_players --missing; fi
+
       # Batter heights (Location+'s zone) aren't in refresh-baseball's caches: this workflow keeps its own.
       - name: Restore batter heights
         if: steps.gate.outputs.run == 'true'

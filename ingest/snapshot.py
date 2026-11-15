@@ -103,11 +103,20 @@ def cfb_player_tables() -> list[Table]:
     return t
 
 
+def _play_players_available(games_path):
+    """play_players rows (ingest/cfb/play_players.py) carry game_id; same rule as plays: the day after the game."""
+    inner = _plays_available(games_path)
+    return lambda df, ingested: inner(df.rename(columns={"game_id": "gameId"}), ingested)
+
+
 def cfb_tables() -> list[Table]:
     cfg = cfb()
     d = RAW / "cfb"
     t = cfb_player_tables()
     for s in cfg.seasons:
+        # Who was on each play (parsed from the cached play text, PLAYER-ADJ): one row per play x role.
+        t.append(Table(f"play_players_{s}", d / "players" / f"play_players_{s}.parquet", ("play_id", "role"),
+                       _play_players_available(d / f"games_{s}.parquet")))
         t += [Table(f"plays_{s}", d / f"plays_{s}.parquet", ("id",), _plays_available(d / f"games_{s}.parquet")),
               Table(f"games_{s}", d / f"games_{s}.parquet", ("id",), _game_available),
               Table(f"teams_{s}", d / f"teams_{s}.parquet", ("id",)),
