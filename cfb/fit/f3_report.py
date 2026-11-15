@@ -28,7 +28,8 @@ SPOT = [("Joe", "Burrow", 2018), ("Jalen", "Hurts", 2019), ("Joe", "Milton III",
         ("Cam", "Ward", 2024), ("Dillon", "Gabriel", 2024)]
 
 
-def build() -> tuple[pd.DataFrame, pd.DataFrame]:
+def build(with_outcomes: bool = False):
+    """(year-1 labels, later years), and with_outcomes the per-season role/value tables (FIRST-1 .. LAST) too."""
     L = Loader()
     P = RAW / "cfb" / "players"
     rosters = {s: pd.read_parquet(P / f"roster_{s}.parquet") for s in range(FIRST - 1, LAST + 1)}
@@ -37,11 +38,11 @@ def build() -> tuple[pd.DataFrame, pd.DataFrame]:
     for t in range(FIRST - 1, LAST + 1):
         ev, pos = D.season_events(L, t, pd.Timestamp(f"{t + 1}-02-01"))
         played[t] = ev.groupby("player_id")["offense"].agg(lambda s: s.mode().iloc[0]).to_dict()
-        if t >= FIRST:
-            conf = dict(pd.read_parquet(RAW / "cfb" / f"teams_{t}.parquet")[["school", "conference"]].values)
-            outcomes[t] = LB.role_and_output(G.season_profile(ev, pos, t), t, conf, LB.team_plays(ev))
+        conf = dict(pd.read_parquet(RAW / "cfb" / f"teams_{t}.parquet")[["school", "conference"]].values)
+        outcomes[t] = LB.role_and_output(G.season_profile(ev, pos, t), t, conf, LB.team_plays(ev))
     d = pd.concat([LB.label(LB.transfers(rosters, t, portal, played), outcomes[t]) for t in range(FIRST, LAST + 1)], ignore_index=True)
-    return d, LB.follow(d, rosters, outcomes, LAST, played)
+    y = LB.follow(d, rosters, outcomes, LAST, played)
+    return (d, y, outcomes) if with_outcomes else (d, y)
 
 
 def by_year(y: pd.DataFrame, flag: str, k: int) -> dict:

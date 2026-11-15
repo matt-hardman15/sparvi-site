@@ -1,0 +1,664 @@
+{
+ "status": "EXPLORATORY: every transfer here has been seen; nothing is a test (Phase 2 confirms on the 2026 vault)",
+ "transfers": 5110,
+ "by_group": {
+  "WR": 2220,
+  "RB": 1100,
+  "QB": 1030,
+  "TE": 760
+ },
+ "outcome_rates": {
+  "A_vor": {
+   "n": 5110,
+   "positive": 0.455
+  },
+  "B_vor": {
+   "n": 2584,
+   "positive": 0.1419
+  }
+ },
+ "replacement_level_note": "per position, level, season: volume-weighted adjusted EPA/play of backups",
+ "analyses_run": 58,
+ "expected_by_chance_at_90pct": 5.8,
+ "excluding_zero": 18,
+ "analyses": [
+  {
+   "id": "QB.A_vor.M1",
+   "analysis": "corr(style distance, residual); closer is better if negative",
+   "n": 857,
+   "est": 0.0263,
+   "ci90": [
+    -0.0254,
+    0.0816
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "QB.A_vor.M3",
+   "analysis": "corr(change in positional usage, residual); more usage better if positive",
+   "n": 857,
+   "est": -0.0861,
+   "ci90": [
+    -0.1407,
+    -0.0322
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "QB.A_vor.M2",
+   "analysis": "cross-validated R^2 gain from type x system terms (qualified players)",
+   "n": 258,
+   "est": -0.0757,
+   "ci90": [
+    -0.1292,
+    -0.0249
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "QB.A_vor.M4.same_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 433,
+   "est": -0.0334,
+   "ci90": [
+    -0.095,
+    0.0319
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "QB.A_vor.M4.new_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 424,
+   "est": 0.0857,
+   "ci90": [
+    0.015,
+    0.1683
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "QB.A_rate.M1",
+   "analysis": "corr(style distance, residual); closer is better if negative",
+   "n": 410,
+   "est": 0.0051,
+   "ci90": [
+    -0.0772,
+    0.0903
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "QB.A_rate.M3",
+   "analysis": "corr(change in positional usage, residual); more usage better if positive",
+   "n": 410,
+   "est": -0.077,
+   "ci90": [
+    -0.1539,
+    0.0019
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "QB.A_rate.M2",
+   "analysis": "cross-validated R^2 gain from type x system terms (qualified players)",
+   "n": 180,
+   "est": -0.0818,
+   "ci90": [
+    -0.1402,
+    -0.0345
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "QB.A_rate.M4.same_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 195,
+   "est": -0.0163,
+   "ci90": [
+    -0.135,
+    0.1004
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "QB.A_rate.M4.new_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 215,
+   "est": 0.0312,
+   "ci90": [
+    -0.0886,
+    0.1493
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "QB.B_vor.M1",
+   "analysis": "corr(style distance, residual); closer is better if negative",
+   "n": 406,
+   "est": 0.0577,
+   "ci90": [
+    -0.0147,
+    0.1304
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "QB.B_vor.M3",
+   "analysis": "corr(change in positional usage, residual); more usage better if positive",
+   "n": 406,
+   "est": -0.0613,
+   "ci90": [
+    -0.1543,
+    0.0365
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "QB.B_vor.M2",
+   "analysis": "cross-validated R^2 gain from type x system terms (qualified players)",
+   "n": 120,
+   "est": -0.1891,
+   "ci90": [
+    -0.4016,
+    -0.0592
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "QB.B_vor.M4.same_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 231,
+   "est": 0.0807,
+   "ci90": [
+    -0.002,
+    0.1634
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "QB.B_vor.M4.new_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 175,
+   "est": 0.0265,
+   "ci90": [
+    -0.0927,
+    0.1661
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "RB.A_vor.M1",
+   "analysis": "corr(style distance, residual); closer is better if negative",
+   "n": 933,
+   "est": -0.0377,
+   "ci90": [
+    -0.0812,
+    0.0026
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "RB.A_vor.M3",
+   "analysis": "corr(change in positional usage, residual); more usage better if positive",
+   "n": 933,
+   "est": -0.0297,
+   "ci90": [
+    -0.0897,
+    0.0268
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "RB.A_vor.M2",
+   "analysis": "cross-validated R^2 gain from type x system terms (qualified players)",
+   "n": 363,
+   "est": -0.0136,
+   "ci90": [
+    -0.0508,
+    0.0209
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "RB.A_vor.M4.same_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 465,
+   "est": -0.0745,
+   "ci90": [
+    -0.1313,
+    -0.0123
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "RB.A_vor.M4.new_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 468,
+   "est": -0.0028,
+   "ci90": [
+    -0.0628,
+    0.057
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "RB.A_rate.M1",
+   "analysis": "corr(style distance, residual); closer is better if negative",
+   "n": 484,
+   "est": -0.0377,
+   "ci90": [
+    -0.1088,
+    0.0315
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "RB.A_rate.M3",
+   "analysis": "corr(change in positional usage, residual); more usage better if positive",
+   "n": 484,
+   "est": -0.0588,
+   "ci90": [
+    -0.1329,
+    0.0147
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "RB.A_rate.M2",
+   "analysis": "cross-validated R^2 gain from type x system terms (qualified players)",
+   "n": 238,
+   "est": -0.0255,
+   "ci90": [
+    -0.0829,
+    0.0304
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "RB.A_rate.M4.same_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 226,
+   "est": -0.1228,
+   "ci90": [
+    -0.2326,
+    -0.0119
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "RB.A_rate.M4.new_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 258,
+   "est": 0.0362,
+   "ci90": [
+    -0.0443,
+    0.1239
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "RB.B_vor.M1",
+   "analysis": "corr(style distance, residual); closer is better if negative",
+   "n": 395,
+   "est": -0.0537,
+   "ci90": [
+    -0.1151,
+    0.0129
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "RB.B_vor.M3",
+   "analysis": "corr(change in positional usage, residual); more usage better if positive",
+   "n": 395,
+   "est": 0.0373,
+   "ci90": [
+    -0.0311,
+    0.1068
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "RB.B_vor.M2",
+   "analysis": "cross-validated R^2 gain from type x system terms (qualified players)",
+   "n": 143,
+   "est": -0.1911,
+   "ci90": [
+    -0.3753,
+    -0.0624
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "RB.B_vor.M4.same_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 239,
+   "est": -0.0079,
+   "ci90": [
+    -0.0888,
+    0.0742
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "RB.B_vor.M4.new_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 156,
+   "est": -0.1205,
+   "ci90": [
+    -0.2094,
+    -0.015
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "WR.A_vor.M1",
+   "analysis": "corr(style distance, residual); closer is better if negative",
+   "n": 1857,
+   "est": 0.0222,
+   "ci90": [
+    -0.0139,
+    0.0572
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "WR.A_vor.M3",
+   "analysis": "corr(change in positional usage, residual); more usage better if positive",
+   "n": 1857,
+   "est": 0.0131,
+   "ci90": [
+    -0.0221,
+    0.0505
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "WR.A_vor.M2",
+   "analysis": "cross-validated R^2 gain from type x system terms (qualified players)",
+   "n": 473,
+   "est": -0.0219,
+   "ci90": [
+    -0.0412,
+    -0.0059
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "WR.A_vor.M4.same_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 960,
+   "est": 0.0173,
+   "ci90": [
+    -0.0294,
+    0.0705
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "WR.A_vor.M4.new_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 897,
+   "est": 0.0299,
+   "ci90": [
+    -0.025,
+    0.0837
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "WR.A_rate.M1",
+   "analysis": "corr(style distance, residual); closer is better if negative",
+   "n": 819,
+   "est": 0.0524,
+   "ci90": [
+    -0.0078,
+    0.1073
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "WR.A_rate.M3",
+   "analysis": "corr(change in positional usage, residual); more usage better if positive",
+   "n": 819,
+   "est": 0.0055,
+   "ci90": [
+    -0.047,
+    0.0603
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "WR.A_rate.M2",
+   "analysis": "cross-validated R^2 gain from type x system terms (qualified players)",
+   "n": 315,
+   "est": -0.0248,
+   "ci90": [
+    -0.0627,
+    0.0108
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "WR.A_rate.M4.same_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 446,
+   "est": 0.0507,
+   "ci90": [
+    -0.0204,
+    0.1256
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "WR.A_rate.M4.new_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 373,
+   "est": 0.0571,
+   "ci90": [
+    -0.0312,
+    0.1461
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "WR.B_vor.M1",
+   "analysis": "corr(style distance, residual); closer is better if negative",
+   "n": 804,
+   "est": -0.0546,
+   "ci90": [
+    -0.1083,
+    -0.0
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "WR.B_vor.M3",
+   "analysis": "corr(change in positional usage, residual); more usage better if positive",
+   "n": 804,
+   "est": -0.006,
+   "ci90": [
+    -0.0611,
+    0.0511
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "WR.B_vor.M2",
+   "analysis": "cross-validated R^2 gain from type x system terms (qualified players)",
+   "n": 195,
+   "est": -0.0566,
+   "ci90": [
+    -0.1571,
+    0.0152
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "WR.B_vor.M4.same_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 477,
+   "est": -0.1185,
+   "ci90": [
+    -0.1741,
+    -0.0616
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "WR.B_vor.M4.new_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 327,
+   "est": 0.0625,
+   "ci90": [
+    -0.0389,
+    0.1643
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "TE.A_vor.M1",
+   "analysis": "corr(style distance, residual); closer is better if negative",
+   "n": 661,
+   "est": -0.0774,
+   "ci90": [
+    -0.148,
+    0.0004
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "TE.A_vor.M3",
+   "analysis": "corr(change in positional usage, residual); more usage better if positive",
+   "n": 661,
+   "est": 0.0289,
+   "ci90": [
+    -0.0385,
+    0.0923
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "TE.A_vor.M2",
+   "analysis": "cross-validated R^2 gain from type x system terms (qualified players)",
+   "n": 69,
+   "est": 0.45,
+   "ci90": [
+    0.2494,
+    0.7158
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "TE.A_vor.M4.same_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 356,
+   "est": -0.0603,
+   "ci90": [
+    -0.1189,
+    -0.0022
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "TE.A_vor.M4.new_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 305,
+   "est": -0.1096,
+   "ci90": [
+    -0.2577,
+    0.0365
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "TE.A_rate.M1",
+   "analysis": "corr(style distance, residual); closer is better if negative",
+   "n": 146,
+   "est": -0.1578,
+   "ci90": [
+    -0.2919,
+    -0.0289
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "TE.A_rate.M3",
+   "analysis": "corr(change in positional usage, residual); more usage better if positive",
+   "n": 146,
+   "est": 0.0709,
+   "ci90": [
+    -0.0709,
+    0.2084
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "TE.A_rate.M4.same_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 87,
+   "est": -0.1406,
+   "ci90": [
+    -0.2942,
+    0.0162
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "TE.A_rate.M4.new_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 59,
+   "est": -0.19,
+   "ci90": [
+    -0.4164,
+    0.0646
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "TE.B_vor.M1",
+   "analysis": "corr(style distance, residual); closer is better if negative",
+   "n": 252,
+   "est": 0.1571,
+   "ci90": [
+    0.0485,
+    0.2716
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "TE.B_vor.M3",
+   "analysis": "corr(change in positional usage, residual); more usage better if positive",
+   "n": 252,
+   "est": -0.0904,
+   "ci90": [
+    -0.1857,
+    -0.0012
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "TE.B_vor.M4.same_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 155,
+   "est": 0.1866,
+   "ci90": [
+    0.0584,
+    0.2945
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "TE.B_vor.M4.new_coach",
+   "analysis": "M1 within destinations that kept / changed head coach",
+   "n": 97,
+   "est": 0.0975,
+   "ci90": [
+    -0.1406,
+    0.341
+   ],
+   "excludes_zero": false
+  }
+ ]
+}
