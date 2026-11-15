@@ -1,0 +1,288 @@
+{
+ "seasons": [
+  2018,
+  2025
+ ],
+ "transfers": 5378,
+ "with_prior_id": 0.9628,
+ "by_source": {
+  "id": 4932,
+  "portal": 242,
+  "reid": 204
+ },
+ "rates": {
+  "played_at_new_school": 0.7508,
+  "won_role": 0.2687,
+  "success": 0.1357
+ },
+ "by_season": {
+  "2018": {
+   "n": 168,
+   "success": 0.1548
+  },
+  "2019": {
+   "n": 220,
+   "success": 0.1636
+  },
+  "2020": {
+   "n": 202,
+   "success": 0.1188
+  },
+  "2021": {
+   "n": 412,
+   "success": 0.1456
+  },
+  "2022": {
+   "n": 788,
+   "success": 0.1485
+  },
+  "2023": {
+   "n": 942,
+   "success": 0.1274
+  },
+  "2024": {
+   "n": 1133,
+   "success": 0.1474
+  },
+  "2025": {
+   "n": 1513,
+   "success": 0.119
+  }
+ },
+ "by_group": {
+  "QB": {
+   "n": 1086,
+   "won_role": 0.4705,
+   "success": 0.2385
+  },
+  "RB": {
+   "n": 1147,
+   "won_role": 0.2528,
+   "success": 0.1255
+  },
+  "TE": {
+   "n": 816,
+   "won_role": 0.1544,
+   "success": 0.076
+  },
+  "WR": {
+   "n": 2329,
+   "won_role": 0.2224,
+   "success": 0.1138
+  }
+ },
+ "by_destination_tier": {
+  "FCS": {
+   "n": 1312,
+   "success": 0.2035
+  },
+  "G5": {
+   "n": 1314,
+   "success": 0.1788
+  },
+  "Power": {
+   "n": 1225,
+   "success": 0.1861
+  }
+ },
+ "spot_checks": [
+  {
+   "player": "Joe Burrow",
+   "season": 2018,
+   "from": "Ohio State",
+   "to": "LSU",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.547,
+   "bar": 0.393,
+   "success": true
+  },
+  {
+   "player": "Jalen Hurts",
+   "season": 2019,
+   "from": "Alabama",
+   "to": "Oklahoma",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.943,
+   "bar": 0.338,
+   "success": true
+  },
+  {
+   "player": "Joe Milton III",
+   "season": 2021,
+   "from": "Michigan",
+   "to": "Tennessee",
+   "source": "id",
+   "won_role": false,
+   "composite": -0.387,
+   "bar": 0.264,
+   "success": false
+  },
+  {
+   "player": "Hendon Hooker",
+   "season": 2021,
+   "from": "Virginia Tech",
+   "to": "Tennessee",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.626,
+   "bar": 0.264,
+   "success": true
+  },
+  {
+   "player": "Jameson Williams",
+   "season": 2021,
+   "from": "Ohio State",
+   "to": "Alabama",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.478,
+   "bar": 0.075,
+   "success": true
+  },
+  {
+   "player": "Caleb Williams",
+   "season": 2022,
+   "from": "Oklahoma",
+   "to": "USC",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.743,
+   "bar": 0.316,
+   "success": true
+  },
+  {
+   "player": "Bo Nix",
+   "season": 2022,
+   "from": "Auburn",
+   "to": "Oregon",
+   "source": "reid",
+   "won_role": true,
+   "composite": 0.775,
+   "bar": 0.316,
+   "success": true
+  },
+  {
+   "player": "Quinn Ewers",
+   "season": 2022,
+   "from": "Ohio State",
+   "to": "Texas",
+   "source": "portal",
+   "won_role": true,
+   "composite": 0.46,
+   "bar": 0.316,
+   "success": true
+  },
+  {
+   "player": "Jayden Daniels",
+   "season": 2022,
+   "from": "Arizona State",
+   "to": "LSU",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.649,
+   "bar": 0.316,
+   "success": true
+  },
+  {
+   "player": "Michael Penix Jr.",
+   "season": 2022,
+   "from": "Indiana",
+   "to": "Washington",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.682,
+   "bar": 0.316,
+   "success": true
+  },
+  {
+   "player": "Jaxson Dart",
+   "season": 2022,
+   "from": "USC",
+   "to": "Ole Miss",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.578,
+   "bar": 0.316,
+   "success": true
+  },
+  {
+   "player": "Ricky Pearsall",
+   "season": 2022,
+   "from": "Arizona State",
+   "to": "Florida",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.591,
+   "bar": 0.256,
+   "success": true
+  },
+  {
+   "player": "Kedon Slovis",
+   "season": 2022,
+   "from": "USC",
+   "to": "Pittsburgh",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.157,
+   "bar": 0.316,
+   "success": false
+  },
+  {
+   "player": "Cam Ward",
+   "season": 2022,
+   "from": "Incarnate Word",
+   "to": "Washington State",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.293,
+   "bar": 0.316,
+   "success": false
+  },
+  {
+   "player": "Tez Johnson",
+   "season": 2023,
+   "from": "Troy",
+   "to": "Oregon",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.541,
+   "bar": 0.257,
+   "success": true
+  },
+  {
+   "player": "Kedon Slovis",
+   "season": 2023,
+   "from": "Pittsburgh",
+   "to": "BYU",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.148,
+   "bar": 0.396,
+   "success": false
+  },
+  {
+   "player": "Cam Ward",
+   "season": 2024,
+   "from": "Washington State",
+   "to": "Miami",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.804,
+   "bar": 0.337,
+   "success": true
+  },
+  {
+   "player": "Dillon Gabriel",
+   "season": 2024,
+   "from": "Oklahoma",
+   "to": "Oregon",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.752,
+   "bar": 0.337,
+   "success": true
+  }
+ ]
+}
