@@ -22,10 +22,14 @@ from cfb.fit import labels as LB
 from cfb.fit import model as M
 from cfb.fit import player_types as T
 from cfb.profile import engine as G
+from cfb.proj import pit
 
 LAST_COHORT = 2024            # the vault boundary: two-year outcomes complete without 2026 (PLAN-fit, Phase 2)
 DIMS_LAST = 2025              # dimensions fit on complete seasons only
 TOP_FIT = 25
+N_BEST = 5                    # best landing spots shown per entrant
+PROJ_LAST_TRAIN = 2025        # the projection trains on outcome seasons through 2025: 2026 is the Phase 2 vault
+PROJ_CATEGORY = {"QB": "QB", "RB": "RB", "WR": "WR_rec", "TE": "TE_rec"}
 HORIZON_YEARS = 2             # the fit target: success within two seasons at the program (PLAN-fit)
 N_SIMILAR, SIMILAR_SEASONS, N_STRENGTHS = 3, 3, 3
 FEATS = {f["id"]: f for f in G.load_features()}
@@ -162,6 +166,23 @@ def build(t: int, as_of, loader: Loader | None = None) -> dict:
     head = coaches.sort_values("games").groupby(["season", "school"])["coach_id"].last()
     sysmap = dict(zip(pl["player_id"], map(tuple, origin_sys), strict=True))
     floor_ids = set(pl.loc[pl["floor"], "player_id"])
+    # Projected season-t yards if he signed at each program (cfb_player_projection, counterfactual against that
+    # program's projected room as of the board's date).
+    # Only entrants who reached last season's backup minimum (Matt, Nov 16): below it the projection rests on too little,
+    # and low-usage veterans moving down a level were projected well above what they got (cfb/proj/lowuse.py).
+    proven = pl[pl["floor"]]
+    wf = pit.whatif(L, t, as_of, proven[["player_id", "group", "team_from"]], sorted(conf_t), last_train=PROJ_LAST_TRAIN)
+    wf = wf[wf["category"] == wf["pos"].map(PROJ_CATEGORY)].sort_values(["team", "pos", "proj"], ascending=[True, True, False], kind="stable")
+    proj_lists = {(tm, g): [[k, round(float(p)), round(float(lo)), round(float(hi)), round(float(sh), 3)]
+                            for k, p, lo, hi, sh in zip(d["key"], d["proj"], d["lo80"], d["hi80"], d["share"], strict=True)][:TOP_FIT]
+                  for (tm, g), d in wf.groupby(["team", "pos"])}
+    # Per entrant, his best landing spots (the part of the projection that differs by program: the room), and his
+    # projection at every program (shown beside the fit list).
+    proj_at = {(tm, k): round(float(p)) for tm, k, p in zip(wf["team"], wf["key"], wf["proj"], strict=True)}
+    best = wf.sort_values(["key", "proj"], ascending=[True, False], kind="stable").groupby("key").head(N_BEST)
+    best = best.groupby("key").apply(lambda d: [[tm, round(float(p))] for tm, p in zip(d["team"], d["proj"], strict=True)],
+                                     include_groups=False)
+    pl["best"] = [best.get(p, []) for p in pl["player_id"]]
     programs = []
     for team in sorted(conf_t):
         row = tf.loc[team] if team in tf.index else None
@@ -170,7 +191,7 @@ def build(t: int, as_of, loader: Loader | None = None) -> dict:
                 "style": None if row is None else style_words(row["sys1"], row["sys2"], q1, q2),
                 "kept_coach": None if new is None or old is None else bool(new == old),
                 "open": {g: (None if (team, g) not in avail.index else round(float(avail[(team, g)]), 3)) for g in ("QB", "RB", "WR", "TE")},
-                "fit": {}, "fit_floor": {}}
+                "fit": {}, "fit_floor": {}, "proj": {g: proj_lists.get((team, g), []) for g in ("QB", "RB", "WR", "TE")}}
         bt = b[b["team"] == team]
         for g in ("QB", "RB", "WR", "TE"):
             ranked = bt[bt["group"] == g].sort_values("p", ascending=False, kind="stable")
@@ -179,7 +200,7 @@ def build(t: int, as_of, loader: Loader | None = None) -> dict:
                 for p in cand["player"].head(TOP_FIT):
                     o = sysmap.get(p, (np.nan, np.nan))
                     d = np.hypot(row["sys1"] - o[0], row["sys2"] - o[1]) if row is not None else np.nan
-                    lst.append([p, None if np.isnan(d) else similarity_band(d, cuts)])
+                    lst.append([p, None if np.isnan(d) else similarity_band(d, cuts), proj_at.get((team, p))])
                 prog[name][g] = lst
         programs.append(prog)
     return {"players": pl, "programs": programs, "fitted": fitted, "board": b, "as_of": as_of, "window": t}

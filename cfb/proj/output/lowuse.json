@@ -1,0 +1,357 @@
+{
+ "status": "EXPLORATORY: seasons 2021-2025 have been seen; the 2026 vault is untouched",
+ "by_position": {
+  "QB": {
+   "all_transfers": {
+    "n": 491,
+    "won_role": 0.31,
+    "actual_share": 0.327,
+    "projected_share": 0.327,
+    "projected_over_actual": 1.0
+   },
+   "low_usage_veterans": {
+    "n": 116,
+    "won_role": 0.224,
+    "actual_share": 0.256,
+    "projected_share": 0.301,
+    "projected_over_actual": 1.18
+   },
+   "other_transfers": {
+    "n": 375,
+    "won_role": 0.336,
+    "actual_share": 0.349,
+    "projected_share": 0.335,
+    "projected_over_actual": 0.96
+   },
+   "low_usage_veterans_by_direction": {
+    "down": {
+     "n": 57,
+     "won_role": 0.228,
+     "actual_share": 0.276,
+     "projected_share": 0.323,
+     "projected_over_actual": 1.17
+    },
+    "same": {
+     "n": 43,
+     "won_role": 0.302,
+     "actual_share": 0.297,
+     "projected_share": 0.291,
+     "projected_over_actual": 0.98
+    },
+    "up": {
+     "n": 16,
+     "won_role": 0.0,
+     "actual_share": 0.072,
+     "projected_share": 0.25,
+     "projected_over_actual": 3.48
+    }
+   },
+   "other_transfers_by_direction": {
+    "down": {
+     "n": 79,
+     "won_role": 0.228,
+     "actual_share": 0.243,
+     "projected_share": 0.345,
+     "projected_over_actual": 1.42
+    },
+    "same": {
+     "n": 203,
+     "won_role": 0.374,
+     "actual_share": 0.389,
+     "projected_share": 0.338,
+     "projected_over_actual": 0.87
+    },
+    "up": {
+     "n": 93,
+     "won_role": 0.344,
+     "actual_share": 0.352,
+     "projected_share": 0.321,
+     "projected_over_actual": 0.91
+    }
+   },
+   "within_low_usage_veterans": {
+    "won_role_auc": {
+     "projection": 0.665,
+     "recruiting_rating": 0.536,
+     "height": 0.529,
+     "level_drop": 0.55,
+     "experience": 0.566,
+     "last_volume": 0.654,
+     "last_efficiency": 0.704
+    },
+    "share_r": {
+     "projection": 0.249,
+     "recruiting_rating": 0.002,
+     "height": -0.032,
+     "level_drop": 0.147,
+     "experience": 0.116,
+     "last_volume": 0.234
+    }
+   }
+  },
+  "RB": {
+   "all_transfers": {
+    "n": 496,
+    "won_role": 0.29,
+    "actual_share": 0.237,
+    "projected_share": 0.213,
+    "projected_over_actual": 0.9
+   },
+   "low_usage_veterans": {
+    "n": 117,
+    "won_role": 0.222,
+    "actual_share": 0.21,
+    "projected_share": 0.169,
+    "projected_over_actual": 0.81
+   },
+   "other_transfers": {
+    "n": 379,
+    "won_role": 0.311,
+    "actual_share": 0.245,
+    "projected_share": 0.226,
+    "projected_over_actual": 0.92
+   },
+   "low_usage_veterans_by_direction": {
+    "down": {
+     "n": 61,
+     "won_role": 0.262,
+     "actual_share": 0.246,
+     "projected_share": 0.202,
+     "projected_over_actual": 0.82
+    },
+    "same": {
+     "n": 47,
+     "won_role": 0.213,
+     "actual_share": 0.186,
+     "projected_share": 0.14,
+     "projected_over_actual": 0.75
+    },
+    "up": {
+     "n": 9,
+     "won_role": 0.0,
+     "actual_share": 0.096,
+     "projected_share": 0.104,
+     "projected_over_actual": 1.08
+    }
+   },
+   "other_transfers_by_direction": {
+    "down": {
+     "n": 86,
+     "won_role": 0.279,
+     "actual_share": 0.203,
+     "projected_share": 0.201,
+     "projected_over_actual": 0.99
+    },
+    "same": {
+     "n": 170,
+     "won_role": 0.335,
+     "actual_share": 0.268,
+     "projected_share": 0.231,
+     "projected_over_actual": 0.86
+    },
+    "up": {
+     "n": 123,
+     "won_role": 0.301,
+     "actual_share": 0.242,
+     "projected_share": 0.238,
+     "projected_over_actual": 0.98
+    }
+   },
+   "within_low_usage_veterans": {
+    "won_role_auc": {
+     "projection": 0.572,
+     "recruiting_rating": 0.472,
+     "weight": 0.485,
+     "level_drop": 0.579,
+     "experience": 0.627,
+     "last_volume": 0.55,
+     "last_efficiency": null
+    },
+    "share_r": {
+     "projection": 0.153,
+     "recruiting_rating": 0.027,
+     "weight": -0.032,
+     "level_drop": 0.196,
+     "experience": 0.181,
+     "last_volume": 0.06
+    }
+   }
+  },
+  "WR": {
+   "all_transfers": {
+    "n": 1051,
+    "won_role": 0.317,
+    "actual_share": 0.09,
+    "projected_share": 0.08,
+    "projected_over_actual": 0.89
+   },
+   "low_usage_veterans": {
+    "n": 293,
+    "won_role": 0.249,
+    "actual_share": 0.077,
+    "projected_share": 0.072,
+    "projected_over_actual": 0.93
+   },
+   "other_transfers": {
+    "n": 758,
+    "won_role": 0.343,
+    "actual_share": 0.094,
+    "projected_share": 0.083,
+    "projected_over_actual": 0.88
+   },
+   "low_usage_veterans_by_direction": {
+    "down": {
+     "n": 152,
+     "won_role": 0.237,
+     "actual_share": 0.075,
+     "projected_share": 0.077,
+     "projected_over_actual": 1.02
+    },
+    "same": {
+     "n": 118,
+     "won_role": 0.254,
+     "actual_share": 0.078,
+     "projected_share": 0.065,
+     "projected_over_actual": 0.83
+    },
+    "up": {
+     "n": 23,
+     "won_role": 0.304,
+     "actual_share": 0.088,
+     "projected_share": 0.077,
+     "projected_over_actual": 0.88
+    }
+   },
+   "other_transfers_by_direction": {
+    "down": {
+     "n": 151,
+     "won_role": 0.298,
+     "actual_share": 0.085,
+     "projected_share": 0.062,
+     "projected_over_actual": 0.73
+    },
+    "same": {
+     "n": 372,
+     "won_role": 0.347,
+     "actual_share": 0.093,
+     "projected_share": 0.081,
+     "projected_over_actual": 0.86
+    },
+    "up": {
+     "n": 235,
+     "won_role": 0.366,
+     "actual_share": 0.103,
+     "projected_share": 0.1,
+     "projected_over_actual": 0.97
+    }
+   },
+   "within_low_usage_veterans": {
+    "won_role_auc": {
+     "projection": 0.578,
+     "recruiting_rating": 0.41,
+     "height": 0.438,
+     "level_drop": 0.478,
+     "experience": 0.496,
+     "last_volume": 0.581,
+     "last_efficiency": null
+    },
+    "share_r": {
+     "projection": 0.081,
+     "recruiting_rating": -0.048,
+     "height": -0.057,
+     "level_drop": -0.052,
+     "experience": -0.051,
+     "last_volume": 0.112
+    }
+   }
+  },
+  "TE": {
+   "all_transfers": {
+    "n": 395,
+    "won_role": 0.172,
+    "actual_share": 0.038,
+    "projected_share": 0.041,
+    "projected_over_actual": 1.08
+   },
+   "low_usage_veterans": {
+    "n": 164,
+    "won_role": 0.128,
+    "actual_share": 0.033,
+    "projected_share": 0.042,
+    "projected_over_actual": 1.26
+   },
+   "other_transfers": {
+    "n": 231,
+    "won_role": 0.203,
+    "actual_share": 0.041,
+    "projected_share": 0.041,
+    "projected_over_actual": 0.98
+   },
+   "low_usage_veterans_by_direction": {
+    "down": {
+     "n": 46,
+     "won_role": 0.109,
+     "actual_share": 0.029,
+     "projected_share": 0.044,
+     "projected_over_actual": 1.5
+    },
+    "same": {
+     "n": 84,
+     "won_role": 0.167,
+     "actual_share": 0.041,
+     "projected_share": 0.04,
+     "projected_over_actual": 0.97
+    },
+    "up": {
+     "n": 34,
+     "won_role": 0.059,
+     "actual_share": 0.02,
+     "projected_share": 0.045,
+     "projected_over_actual": 2.23
+    }
+   },
+   "other_transfers_by_direction": {
+    "down": {
+     "n": 56,
+     "won_role": 0.143,
+     "actual_share": 0.025,
+     "projected_share": 0.03,
+     "projected_over_actual": 1.19
+    },
+    "same": {
+     "n": 98,
+     "won_role": 0.224,
+     "actual_share": 0.043,
+     "projected_share": 0.042,
+     "projected_over_actual": 1.0
+    },
+    "up": {
+     "n": 77,
+     "won_role": 0.221,
+     "actual_share": 0.052,
+     "projected_share": 0.046,
+     "projected_over_actual": 0.89
+    }
+   },
+   "within_low_usage_veterans": {
+    "won_role_auc": {
+     "projection": 0.536,
+     "recruiting_rating": 0.644,
+     "weight": 0.505,
+     "level_drop": 0.529,
+     "experience": 0.503,
+     "last_volume": 0.538,
+     "last_efficiency": null
+    },
+    "share_r": {
+     "projection": 0.084,
+     "recruiting_rating": 0.138,
+     "weight": -0.029,
+     "level_drop": 0.052,
+     "experience": 0.04,
+     "last_volume": 0.118
+    }
+   }
+  }
+ }
+}

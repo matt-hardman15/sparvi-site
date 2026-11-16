@@ -27,6 +27,7 @@ from sparvi.io import write_json
 
 OUT = ROOT / "site" / "data" / "cfb" / "portal"
 MODEL = "cfb_system_fit"
+PROJ_MODEL = "cfb_player_projection"
 
 
 def windows(today: pd.Timestamp) -> list[tuple[int, pd.Timestamp]]:
@@ -54,17 +55,19 @@ def player_rows(pl: pd.DataFrame) -> list[dict]:
                      "ht": _r(r.height, 0), "wt": _r(r.weight, 0), "exp": int(r.exp), "share": _r(r.share, 3),
                      "epa": _r(r.epa_adj, 3), "epa_pct": _r(r.epa_pct, 0), "vor": _r(r.vor, 1), "yds": _r(r.yards, 0),
                      "tier": int(r.tier), "floor": bool(r.floor), "str": list(r.strengths), "sim": list(r.similar),
-                     "dest": None if pd.isna(r.destination) else r.destination,
+                     "dest": None if pd.isna(r.destination) else r.destination, "best": list(r.best),
                      "entered": str(pd.Timestamp(r.transferDate).date()) if pd.notna(r.transferDate) else None})
     return rows
 
 
 def export(t: int, as_of: pd.Timestamp) -> dict:
     st = require_passing(MODEL)
+    pst = require_passing(PROJ_MODEL)
     res = B.build(t, as_of)
     stamp = registry.stamp(MODEL)
     head = {"window": t, "as_of": str(as_of.date()), "model": stamp["label"], "model_state": st["state"],
-            "model_reason": st.get("reason")}
+            "model_reason": st.get("reason"), "proj_model": registry.stamp(PROJ_MODEL)["label"], "proj_state": pst["state"],
+            "proj_reason": pst.get("reason")}
     OUT.mkdir(parents=True, exist_ok=True)
     write_json(OUT / f"board_{t}.json", {**head, "tier_rules": {str(k): v for k, v in B.TIER_RULES.items()},
                                           "players": player_rows(res["players"])})
