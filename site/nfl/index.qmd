@@ -28,6 +28,8 @@ listing:
 
 ## Teams
 
+Every team has its own page; the [team index](/nfl/teams/) lists all 32 with records and ranks.
+
 ```{=html}
 <div id="team-grid" class="team-grid"><div class="loading">Loading…</div></div>
 <script>

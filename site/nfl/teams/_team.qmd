@@ -1,5 +1,4 @@
 ```{=html}
-<div class="team-head" id="head"></div>
 <div class="explorer">
   <div class="controls" id="c"></div>
   <div class="controls" id="c2"></div>
@@ -19,6 +18,7 @@
 (async () => {
   const S = Sparvi, f = S.fmt, U = S.urlState;
   const TEAM = document.getElementById("team-root").dataset.team;
+  document.getElementById("team-static")?.remove();  // the plain-HTML numbers; the charts below replace them
   const meta = await S.load("/data/nfl/meta.json");
   const SEASONS = meta.seasons.map(String);
   const season0 = SEASONS.includes(U.get("season")) ? U.get("season") : String(meta.season);
@@ -30,8 +30,7 @@
   const st = { season: season0, adj: U.get("adj") === "raw" ? "raw" : DEF.adj, gt: U.get("gt") === "all" ? "all" : DEF.gt,
                split: ["pass", "run"].includes(U.get("split")) ? U.get("split") : DEF.split, week: U.get("week") == null ? null : +U.get("week") };
   const SPLITS = { all: "All plays", pass: "Passes", run: "Runs" };
-  document.getElementById("head").innerHTML =
-    `<p class="team-sub" style="border-left:4px solid ${T.color};padding-left:.6rem">${T.division} · <a href="/nfl/tools/team-efficiency.html?team=${TEAM}">compare with every team</a></p>`;
+  // The division line, rival links, and team color are in the page itself (nfl/team_pages.py).
   const weeks = () => meta.weeks[st.season];
   const wi = () => { const w = weeks(), k = st.week == null ? w.length - 1 : w.indexOf(st.week); return k < 0 ? w.length - 1 : k; };
   const pre = () => (st.split === "all" ? "" : st.split + "_");
