@@ -226,3 +226,12 @@ def test_gate_in_every_segment():
     assert runner.gate_all(ev, g)["passed"]                                   # pooled: passes
     each = runner.gate_all(ev, {**g, "each_segment": True})
     assert not each["passed"] and each["checks"] == {"QB": True, "RB": True, "TE": False}
+
+
+def test_not_applicable_needs_a_reason_and_never_waives_timing():
+    """A card may declare label permutation not applicable only with a written reason; timing tests can't be waived."""
+    ok = leakage.not_applicable("label_permutation", {"label_permutation": "structural model: skill comes from roster composition"})
+    assert ok["passed"] is True and "roster" in ok["not_applicable"]
+    assert leakage.not_applicable("label_permutation", {"label_permutation": ""})["passed"] is False
+    assert leakage.not_applicable("future_poisoning", {"future_poisoning": "a long enough reason to pass the length check"})["passed"] is False
+    assert leakage.not_applicable("label_permutation", {}) is None
