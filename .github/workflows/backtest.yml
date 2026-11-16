@@ -1,11 +1,12 @@
 name: backtest
 
 # Backtests run on their own (PLAN-backtest §5): nobody has to remember to run one.
-#   pull request touching models or the harness -> fast backtest (latest fold) of every model with a
-#     pre-registered `backtest:` block; a comment with the metrics vs. the last recorded run; the job
+#   pull request touching models or the harness -> fast backtest (latest fold) of the models the change touches
+#     (a file in a card's `code` list or model folder; harness files run every model: backtest/ci.py --select); a comment with the metrics vs. the last recorded run; the job
 #     fails on any leakage test, a regression beyond tolerance, or a failed gate on a model that
 #     isn't flagged experimental (make this check required in the "Protect main" ruleset to block merges)
-#   push to main touching the same paths, and every Monday -> full backtests; reports and the run log
+#   push to main touching the same paths -> full backtests of the models the push touches; every Monday and by hand
+#     -> every model; reports and the run log
 #     are committed (every run is logged, passing or not)
 # Raw Statcast comes from refresh-baseball's caches; batter heights from this workflow's own cache
 # (never committed, never published).
@@ -19,8 +20,8 @@ on:
     branches: [main]
     # The full run commits its own reports and run log; those paths are excluded (the `!` patterns
     # come last and win) so that commit can't trigger another run.
-    paths: [models/**, backtest/**, baseball/pitch_quality/**, ingest/**, football/common/**,
-            nfl/team_efficiency/**, cfb/adjusted_ratings/**,
+    paths: [models/**, backtest/**, baseball/**, ingest/**, football/**, nfl/**, cfb/**, sparvi/**, sparvi.toml,
+            pyproject.toml, uv.lock, .github/workflows/backtest.yml,
             "!backtest/runs/**", "!models/*/*/backtest/**"]
   schedule:
     - cron: "30 10 * * 1"     # Mondays
@@ -47,7 +48,8 @@ jobs:
           if [ "${{ github.event_name }}" != "pull_request" ]; then echo "run=true" >> "$GITHUB_OUTPUT"; exit 0; fi
           # The files API pages up to 3,000 files; `gh pr diff` gives up past 300 (a data rebuild touches ~1,700).
           files=$(gh api --paginate "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" --jq ".[].filename")
-          if echo "$files" | grep -qE '^(models/|backtest/|baseball/pitch_quality/|ingest/|football/common/|nfl/team_efficiency/|cfb/adjusted_ratings/|\.github/workflows/backtest\.yml$)'; then
+          echo "$files" > "$RUNNER_TEMP/changed.txt"
+          if echo "$files" | grep -qE '^(models/|backtest/|baseball/|ingest/|football/|nfl/|cfb/|sparvi/|sparvi\.toml$|pyproject\.toml$|uv\.lock$|\.github/workflows/backtest\.yml$)'; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "run=false" >> "$GITHUB_OUTPUT"
@@ -58,6 +60,7 @@ jobs:
         if: steps.gate.outputs.run == 'true'
         with:
           ssh-key: ${{ github.event_name != 'pull_request' && secrets.SPARVI_DEPLOY_KEY || '' }}
+          fetch-depth: ${{ github.event_name == 'push' && 0 || 1 }}    # a push compares with the commit before it
 
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
         if: steps.gate.outputs.run == 'true'
@@ -67,8 +70,27 @@ jobs:
       - if: steps.gate.outputs.run == 'true'
         run: uv sync --frozen
 
-      - name: Raw-data cache keys (same as refresh-baseball)
+      # Which models this change touches, and so which sports' data to restore. A pull request uses its file list, a
+      # push the range it pushed (or every model when that range isn't available); Mondays and manual runs: every model.
+      - name: Select models
         if: steps.gate.outputs.run == 'true'
+        id: sel
+        run: |
+          changed=""
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            changed="$RUNNER_TEMP/changed.txt"
+          elif [ "${{ github.event_name }}" = "push" ] && git cat-file -e "${{ github.event.before }}^{commit}" 2>/dev/null; then
+            git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" > "$RUNNER_TEMP/changed.txt"
+            changed="$RUNNER_TEMP/changed.txt"
+          fi
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+          uv run python -m backtest.ci ${changed:+--changed "$changed"} --select | tee -a "$GITHUB_OUTPUT"
+          sel=$(uv run python -m backtest.ci ${changed:+--changed "$changed"} --select | grep '^models=' | cut -d= -f2)
+          if [ -n "$sel" ]; then echo "go=true" >> "$GITHUB_OUTPUT"; else
+            echo "go=false" >> "$GITHUB_OUTPUT"; echo "No model's files changed: nothing to backtest." >> "$GITHUB_STEP_SUMMARY"; fi
+
+      - name: Raw-data cache keys (same as refresh-baseball)
+        if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'baseball') }}
         id: cfg
         run: |
           season=$(uv run python -m sparvi.config baseball.season)
@@ -82,7 +104,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Restore past-season raw data
-        if: steps.gate.outputs.run == 'true'
+        if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'baseball') }}
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: ${{ steps.cfg.outputs.paths }}
@@ -91,7 +113,7 @@ jobs:
 
       # Same path list as refresh-baseball's (a cache entry only matches its exact paths).
       - name: Restore current-season raw data
-        if: steps.gate.outputs.run == 'true'
+        if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'baseball') }}
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: data/raw/*_${{ steps.cfg.outputs.season }}.parquet
@@ -102,7 +124,7 @@ jobs:
       # College football (PLAYER-ADJ): the cfb workflow's raw-data cache, including CFBD's cached responses, from which
       # the play-player links are parsed (no API calls). A miss leaves the CFB backtest without data, and it fails.
       - name: Restore CFB raw data
-        if: steps.gate.outputs.run == 'true'
+        if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'cfb') }}
         id: cfb_cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
@@ -112,7 +134,7 @@ jobs:
 
       # No CFB cache yet (the cfb workflow hasn't saved one, or it was evicted): the private R2 seed instead.
       - name: Restore CFB raw data from the R2 seed
-        if: ${{ steps.gate.outputs.run == 'true' && steps.cfb_cache.outputs.cache-matched-key == '' }}
+        if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'cfb') && steps.cfb_cache.outputs.cache-matched-key == '' }}
         env:
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
@@ -121,12 +143,12 @@ jobs:
         run: uv run python -m ingest.cfb.seed restore
 
       - name: Parse missing play-player links (from the CFB cache)
-        if: steps.gate.outputs.run == 'true'
+        if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'cfb') }}
         run: if [ -d data/raw/cfb/cache ]; then uv run python -m ingest.cfb.play_players --missing; fi
 
       # Batter heights (Location+'s zone) aren't in refresh-baseball's caches: this workflow keeps its own.
       - name: Restore batter heights
-        if: steps.gate.outputs.run == 'true'
+        if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'baseball') }}
         id: heights
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
@@ -135,11 +157,11 @@ jobs:
           restore-keys: baseball-heights-
 
       - name: Pull missing batter heights (MLB Stats API)
-        if: steps.gate.outputs.run == 'true'
+        if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'baseball') }}
         run: uv run python -c "from ingest.baseball.pull import pull_heights; pull_heights()"
 
       - name: Save batter heights
-        if: ${{ steps.gate.outputs.run == 'true' && steps.heights.outputs.cache-matched-key == '' }}
+        if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'baseball') && steps.heights.outputs.cache-matched-key == '' }}
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: data/raw/batter_heights.parquet
@@ -147,16 +169,16 @@ jobs:
 
       - name: Fast backtest (pull request)
         id: fast
-        if: ${{ steps.gate.outputs.run == 'true' && github.event_name == 'pull_request' }}
-        run: uv run python -m backtest.ci --fast --summary backtest-summary.md
+        if: ${{ steps.sel.outputs.go == 'true' && github.event_name == 'pull_request' }}
+        run: uv run python -m backtest.ci --fast --changed "${{ steps.sel.outputs.changed }}" --summary backtest-summary.md
 
       - name: Full backtest (main, weekly)
         id: full
-        if: ${{ steps.gate.outputs.run == 'true' && github.event_name != 'pull_request' }}
-        run: uv run python -m backtest.ci --write --summary backtest-summary.md
+        if: ${{ steps.sel.outputs.go == 'true' && github.event_name != 'pull_request' }}
+        run: uv run python -m backtest.ci --write ${{ steps.sel.outputs.changed && format('--changed "{0}"', steps.sel.outputs.changed) || '' }} --summary backtest-summary.md
 
       - name: Summary and PR comment
-        if: ${{ steps.gate.outputs.run == 'true' && !cancelled() && hashFiles('backtest-summary.md') != '' }}
+        if: ${{ steps.sel.outputs.go == 'true' && !cancelled() && hashFiles('backtest-summary.md') != '' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -167,7 +189,7 @@ jobs:
           fi
 
       - name: Commit reports and the run log
-        if: ${{ steps.gate.outputs.run == 'true' && !cancelled() && github.event_name != 'pull_request' && steps.full.outcome != 'skipped' }}
+        if: ${{ steps.sel.outputs.go == 'true' && !cancelled() && github.event_name != 'pull_request' && steps.full.outcome != 'skipped' }}
         run: |
           git config user.name "sparvi-bot"
           git config user.email "sparvi-bot@users.noreply.github.com"
