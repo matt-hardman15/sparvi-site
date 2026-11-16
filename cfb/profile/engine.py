@@ -41,8 +41,10 @@ def load_features(path: Path = FEATURES) -> list[dict]:
         if f["id"] in ids:
             raise ValueError(f"duplicate feature id {f['id']}")
         ids.add(f["id"])
-        if f["kind"] == "mean" and "value" not in f:
-            raise ValueError(f"feature {f['id']}: kind mean needs a value")
+        if f["kind"] in ("mean", "per_team_play") and "value" not in f:
+            raise ValueError(f"feature {f['id']}: kind {f['kind']} needs a value")
+        if f["kind"] not in ("mean", "share", "per_team_play"):
+            raise ValueError(f"feature {f['id']}: unknown kind {f['kind']}")
         if f["kind"] == "share" and "of" not in f:
             raise ValueError(f"feature {f['id']}: kind share needs `of`")
         if f["adjust"] not in ("opponent", "none") or f["better"] not in ("higher", "lower", "style"):
@@ -98,6 +100,44 @@ def _shrink(df: pd.DataFrame, noise_var: float) -> pd.DataFrame:
     return df.assign(shrunk=mu + (x - mu) * rel, reliability=rel)
 
 
+def _values(ev: pd.DataFrame, r: pd.DataFrame, f: dict, season: int) -> tuple[pd.DataFrame, np.ndarray, np.ndarray] | None:
+    """Rows, raw values, and opponent-adjusted values (each play net of what that defense allowed in the same stat)."""
+    if f["value"] not in r.columns and not _names(f["value"]) <= set(r.columns):
+        return None
+    v = r.eval(f["value"]).astype(float).to_numpy() if f["value"] not in r.columns else r[f["value"]].to_numpy(float)
+    ok = ~np.isnan(v)
+    r, v = r[ok], v[ok]
+    if not len(r):
+        return None
+    if f["adjust"] == "opponent":
+        full = _feature_rows(ev, f, season)
+        fv = full.eval(f["value"]).astype(float).to_numpy() if f["value"] not in full.columns else full[f["value"]].to_numpy(float)
+        keep = ~np.isnan(fv)
+        eff = opponent_effects(full[keep], fv[keep])
+        return r, v, v - r["defense"].map(eff).fillna(0.0).to_numpy()
+    return r, v, v
+
+
+def _per_team_play(ev: pd.DataFrame, r: pd.DataFrame, f: dict, season: int, games: pd.Series, team_of: pd.Series) -> pd.DataFrame | None:
+    """His total of `value` (e.g. receiving yards on his catches) per team pass play in the games he played
+    (RECV-MEASURES: needs only completions, which name the receiver in 99%+ of plays, where per-target stats need
+    incompletions that 2021-2024 play text mostly doesn't attribute). n = those team pass plays; shrunk toward the
+    position like the other features, with the per-team-play variance as the noise."""
+    got = _values(ev, r, f, season)
+    if got is None:
+        return None
+    r, v, a = got
+    team_game = ev[ev["kind"] == "pass"].drop_duplicates("play_id").groupby(["offense", "game_id"]).size()
+    g = pd.DataFrame({"player_id": r["player_id"].to_numpy(), "group": r["group"].to_numpy(), "v": v, "a": a, "a2": a * a})
+    agg = g.groupby(["player_id", "group"]).agg(v=("v", "sum"), a=("a", "sum"), a2=("a2", "sum")).reset_index()
+    agg["n"] = [sum(team_game.get((team_of[p], gid), 0) for gid in games[p]) for p in agg["player_id"]]
+    agg = agg[agg["n"] > 0].copy()
+    agg["raw"], agg["adj"] = agg["v"] / agg["n"], agg["a"] / agg["n"]
+    noise = float((agg["a2"] / agg["n"] - agg["adj"] ** 2).clip(lower=0).mean()) if len(agg) else 0.0
+    agg = agg.drop(columns=["v", "a", "a2"])
+    return pd.concat([_shrink(x, noise) for _, x in agg.groupby("group")], ignore_index=True)
+
+
 def season_profile(ev: pd.DataFrame, positions: pd.Series, season: int, feats: list[dict] | None = None) -> pd.DataFrame:
     """Long profile table for one season's events. positions: player_id -> roster position."""
     feats = feats or load_features()
@@ -111,7 +151,11 @@ def season_profile(ev: pd.DataFrame, positions: pd.Series, season: int, feats: l
         if r is None:
             continue
         r = r[r["group"].isin(f["group"])]
-        if f["kind"] == "mean":
+        if f["kind"] == "per_team_play":
+            agg = _per_team_play(ev, r, f, season, games, team_of)
+            if agg is None:
+                continue
+        elif f["kind"] == "mean":
             if f["value"] not in r.columns and not _names(f["value"]) <= set(r.columns):
                 continue
             v = r.eval(f["value"]).astype(float).to_numpy() if f["value"] not in r.columns else r[f["value"]].to_numpy(float)
@@ -148,6 +192,8 @@ def season_profile(ev: pd.DataFrame, positions: pd.Series, season: int, feats: l
         pct = agg.loc[q].groupby("group")["shrunk"].rank(pct=True) * 100
         agg["pct"] = np.nan
         agg.loc[q, "pct"] = (100 - pct) if f["better"] == "lower" else pct
+        if season in f.get("biased_seasons", ()):          # kept, but not ranked: the source can't support it that season
+            agg["pct"] = np.nan
         out.append(agg)
     prof = pd.concat(out, ignore_index=True)
     prof["team"] = prof["player_id"].map(team_of)

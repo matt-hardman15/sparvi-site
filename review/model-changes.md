@@ -2,6 +2,18 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-16 · CFB player profile 1.0.4 → 1.1.0 (minor: receiver measures); system fit 1.1.6, projection 1.0.3 (patch)
+RECV-MEASURES. A new feature kind, `per_team_play`: a player's total of a value per team pass play in the games he played,
+opponent-adjusted and shrunk like the others. New features: WR/TE receiving yards, receiving EPA, and catches per team
+pass play; RB receiving yards per team pass play. They need only completions, which name the receiver in 99%+ of plays;
+the per-target stats need incompletions, which 2021-2024 play text mostly doesn't attribute, so 12 target-based features
+carry `biased_seasons: [2021-2024]` (values kept, not ranked). Year-to-year r for players who stayed (FIT-STABLE): WR
+receiving yards per team pass play 0.571 and EPA 0.552 vs. EPA per target 0.279; TE 0.538 / 0.498 vs. -0.103; RB
+receiving yards 0.522 vs. EPA per target 0.220. Profile validation: movers r 0.1811 -> 0.2079 (n 505 -> 698), all
+players 0.2645 -> 0.3238, split-half 0.2952 -> 0.3261. System fit and the projection list the engine and features
+file as code but read none of the new features: their inputs are unchanged (patch). The fit model's labels still use
+EPA per target (`labels.py`, pre-registered); exploration reruns with the new measures follow.
+
 ## 2026-11-16 · CFB player projection 1.0.1 → 1.0.2, CFB system fit 1.1.4 → 1.1.5 (patch: DATA-QA part B)
 Found by DATA-QA's new range assertions and id audit (Matt, Nov 16: ML best practice):
 - Team play counts came from the event table, which only has a row when someone on the play was matched, so an unmatched
