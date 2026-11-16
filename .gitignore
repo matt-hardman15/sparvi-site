@@ -38,3 +38,7 @@ cfb/*/output/*.csv
 
 # Bagged pitch-quality boosters (v2.0.0): large and retrained every build; the model registry records their hashes.
 baseball/pitch_quality/output/models/
+
+# Generated from the model registry at render time (deploy.yml, check.yml, build.sh); never committed.
+site/_generated/models.yml
+site/data/models/registry.json
