@@ -4,8 +4,9 @@ since left FBS, whose pages open on their last FBS season).
 
 One real page per team (rather than one page with ?team=) so each has its own <title>, description,
 social preview image, and sitemap entry. The page body is the shared template site/cfb/teams/_team.qmd;
-this script writes the front matter, a one-paragraph summary from the data (so the page says something
-without JavaScript), and the preview image.
+this script writes the front matter, a summary from the data, the season's numbers as plain HTML
+(cfb/team_summary.py; the charts replace them), links to the conference's other teams, the preview image,
+and the /cfb/teams/ index (PLAN-seo S2 standard, BACKLOG SEO-2b).
 
 Reads site/data/cfb (run after cfb/export_site_data.py). Matplotlib PNGs carry no timestamp, so
 unchanged data gives identical files.
@@ -22,6 +23,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 from PIL import Image  # noqa: E402
 
+from cfb.team_summary import League, power_str, static_block, summary  # noqa: E402
+from football.common.pages import ordinal  # noqa: E402
 from sparvi import plotstyle as ps  # noqa: E402
 from sparvi.config import ROOT, cfb  # noqa: E402
 
@@ -43,14 +46,6 @@ def load(season: int):
     return week_files[season], game_files[season]
 
 
-def ordinal(r: int) -> str:
-    return f"{r}{'th' if 10 <= r % 100 <= 20 else {1: 'st', 2: 'nd', 3: 'rd'}.get(r % 10, 'th')}"
-
-
-def signed(x: float) -> str:
-    return f"{x:+.1f}".replace("-", "−")
-
-
 def fit(options: list[str], lo: int, hi: int, what: str) -> str:
     for s in options:
         if lo <= len(s) <= hi:
@@ -62,27 +57,18 @@ def yaml_str(s: str) -> str:
     return json.dumps(s, ensure_ascii=False)
 
 
-def summary(t: dict, season: int) -> tuple[str, dict]:
-    """One paragraph from the team's latest season, plus the numbers the preview image uses."""
-    wf, gf = load(season)
-    k = len(wf["weeks"]) - 1
-    me = next(x for x in wf["teams"] if x["id"] == t["id"])["series"]["no_gt"]
-    played = [g for g in gf["teams"].get(t["id"], []) if g["res"]]
-    rec = [sum(g["res"] == r for g in played) for r in "WLT"]
-    record = f"{rec[0]}–{rec[1]}" + (f"–{rec[2]}" if rec[2] else "")
-    n = sum(x["series"]["no_gt"]["power"][k] is not None for x in wf["teams"])
-    power, rank, ap = me["power"][k], me["rank"][k], me["ap"][k]
-    current = season == CFG.season
-    when = (f"Through week {wf['weeks'][k]} of {season}," if current
-            else f"In {season}" + ("" if season == meta["seasons"][-1] else ", its last FBS season,"))
-    verb = "is" if current else "went"
-    s = f"{when} {t['name']} {verb} {record}."
-    if power is not None:
-        s += f" {'Its' if current else 'Its final'} power rating, {signed(power)} points against an average FBS team, " \
-             f"{'ranks' if current else 'ranked'} {ordinal(rank)} of {n}"
-        s += (f"; the AP poll {'has' if current else 'had'} it {ordinal(ap)}." if ap else
-              f"; {'it is' if current else 'it was'} unranked in the AP poll.")
-    return s, {"record": record, "power": power, "rank": rank, "n": n, "week": wf["weeks"][k], "current": current}
+leagues: dict[int, League] = {}
+
+
+def league(season: int) -> League:
+    if season not in leagues:
+        wf, gf = load(season)
+        leagues[season] = League(wf, gf, teams)
+    return leagues[season]
+
+
+def href(t: dict) -> str:
+    return f"/cfb/teams/{t['slug']}/"
 
 
 PAGE = """---
@@ -93,10 +79,14 @@ image: preview.png
 page-layout: full
 ---
 
-{summary}
-
 ```{{=html}}
 <div id="team-root" data-team="{id}"></div>
+<p class="page-summary">{summary}</p>
+<p class="note team-sub" style="border-left:4px solid {color};padding-left:.6rem">{links}</p>
+<!-- The season's numbers as plain HTML; the interactive page below removes this once it runs. -->
+<div id="team-static">
+{static}
+</div>
 ```
 
 {{{{< include ../_team.qmd >}}}}
@@ -117,12 +107,21 @@ for t in teams:
         f"{name} power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, {span}.",
         f"{name} football: power rating, adjusted offense and defense, AP and CFP ranks, and every game result by season, {span}.",
     ], *DESC, f"description for {name}")
-    text, num = summary(t, last)
+    L = league(last)
+    current = last == CFG.season
+    text, num = summary(L, t, last, CFG.season, meta["seasons"][-1])
+    mates = [x for x in teams if x["conf"] == t["conf"] and x["id"] != t["id"] and CFG.season in x["seasons"]]
+    links = (f"{html.escape(t['conf'])}: " + " · ".join(f'<a href="{href(x)}">{html.escape(x["name"])}</a>' for x in mates) + " · "
+             if mates and current else "")
+    links += (f'<a href="/cfb/teams/">All FBS teams</a> · '
+              f'<a href="/cfb/tools/team-ratings.html?team={html.escape(t["id"], quote=True)}">Compare with every FBS team</a>')
     d = PAGES / t["slug"]
     d.mkdir(parents=True, exist_ok=True)
     (d / "index.qmd").write_text(PAGE.format(
         title=yaml_str(f"{name} {t['nick']}" if t.get("nick") else name), pagetitle=yaml_str(pagetitle),
-        description=yaml_str(description), summary=text, id=html.escape(t["id"], quote=True)), encoding="utf-8", newline="\n")
+        description=yaml_str(description), summary=html.escape(text), id=html.escape(t["id"], quote=True),
+        color=t.get("color") or "#0f5257", links=links, static=static_block(L, t, last, current, href)),
+        encoding="utf-8", newline="\n")
 
     wf, _ = load(last)
     me = next(x for x in wf["teams"] if x["id"] == t["id"])["series"]["no_gt"]
@@ -138,7 +137,7 @@ for t in teams:
     ax.set_title(f"{name} · {last} {through}", loc="left", fontsize=13, fontweight="bold")
     foot = f"Record {num['record']}"
     if num["power"] is not None:
-        foot += f" · power rating {signed(num['power'])}, {ordinal(num['rank'])} of {num['n']} FBS teams"
+        foot += f" · power rating {power_str(num['power'])}, {ordinal(num['rank'])} of {num['n']} FBS teams"
     ax.text(0.0, -0.3, foot + " · sparvi.io", transform=ax.transAxes, fontsize=9, color=ps.MUTED)
     fig.subplots_adjust(bottom=0.27, top=0.88, left=0.11, right=0.97)
     # A 64-color palette PNG: a quarter of the size, and the weekly refresh commits all of these.
@@ -148,3 +147,37 @@ for t in teams:
     Image.open(buf).convert("RGB").quantize(64, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE).save(
         d / "preview.png", optimize=True)
 print(f"{len(teams)} CFB team pages written")
+
+# The /cfb/teams/ index: this season's FBS teams by conference (record and power rank), then teams that left FBS.
+L = league(CFG.season)
+now = [t for t in teams if CFG.season in t["seasons"]]
+confs: dict[str, list] = {}
+for t in now:
+    confs.setdefault(t["conf"], []).append(t)
+item = lambda t: (f'<li><a href="{href(t)}">{html.escape(t["name"])}</a> <span class="muted">{L.record(t["id"])}'  # noqa: E731
+                  + (f' · {ordinal(L.val(t["id"], "rank"))} in power rating' if L.val(t["id"], "rank") else "") + "</span></li>")
+blocks = [f'<h2>{html.escape(c)}</h2>\n<ul class="team-index">{"".join(item(t) for t in sorted(confs[c], key=lambda t: t["name"]))}</ul>'
+          for c in sorted(confs)]
+gone = sorted((t for t in teams if CFG.season not in t["seasons"]), key=lambda t: t["name"])
+if gone:
+    blocks.append('<h2>Former FBS teams</h2>\n<ul class="team-index">' + "".join(
+        f'<li><a href="{href(t)}">{html.escape(t["name"])}</a> <span class="muted">FBS {t["seasons"][0]}–{t["seasons"][-1]}</span></li>'
+        for t in gone) + "</ul>")
+INDEX = """---
+no-chart-libs: true
+title: "College football teams"
+pagetitle: "College football team ratings: every FBS team"
+description: "Every FBS team's power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, {first}–{last}."
+page-layout: article
+---
+
+Each team page shows its power rating and opponent-adjusted offense and defense week by week, with AP and CFP ranks and every game since {first}. Records and power-rating ranks below are through week {week} of {last}. To compare every team at once, use the [team ratings tool](/cfb/tools/team-ratings.html).
+
+```{{=html}}
+{blocks}
+```
+"""
+(PAGES / "index.qmd").write_text(INDEX.format(first=meta["seasons"][0], last=CFG.season, week=L.week, blocks="\n".join(blocks)),
+                                 encoding="utf-8", newline="\n")
+print("CFB team index written")
+

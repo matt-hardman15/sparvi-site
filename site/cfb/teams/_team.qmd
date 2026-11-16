@@ -1,5 +1,4 @@
 ```{=html}
-<div class="team-head" id="head"></div>
 <div class="explorer">
   <div class="controls" id="c"></div>
   <div class="controls" id="c2"></div>
@@ -22,6 +21,7 @@
 (async () => {
   const S = Sparvi, f = S.fmt, U = S.urlState;
   const TEAM = document.getElementById("team-root").dataset.team;
+  document.getElementById("team-static")?.remove();  // the plain-HTML numbers; the charts below replace them
   const meta = await S.load("/data/cfb/meta.json");
   const teams = new Map((await S.load("/data/cfb/teams.json")).map(t => [t.id, t]));
   const T = teams.get(TEAM);
@@ -35,9 +35,7 @@
                week: U.get("week") == null ? null : +U.get("week") };
   weekFile(st.season); gameFile(st.season);  // start both requests now
   const SPLITS = { all: "All plays", pass: "Passes", run: "Runs" };
-  document.getElementById("head").innerHTML =
-    `<p class="team-sub" style="border-left:4px solid ${T.color || "#0f5257"};padding-left:.6rem">${T.conf}${T.nick ? " · " + T.nick : ""} · `
-    + `<a href="/cfb/tools/team-ratings.html?team=${encodeURIComponent(TEAM)}">compare with every FBS team</a> · <a href="/cfb/">all college football</a></p>`;
+  // The conference line, team links, and team color are in the page itself (cfb/team_pages.py).
   const weeks = () => meta.weeks[st.season];
   const lastWeek = () => Math.max(...weeks());
   const weekLabel = w => (w === lastWeek() && +st.season < meta.season ? "bowls" : `week ${w}`);

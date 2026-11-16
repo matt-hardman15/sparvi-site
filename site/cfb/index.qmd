@@ -24,7 +24,7 @@ listing:
 
 ## Teams
 
-Every FBS team has a page: its power rating and offense and defense by week, its poll ranks, and every game, for each season since {{< meta cfb.first_season >}}.
+Every FBS team has a page: its power rating and offense and defense by week, its poll ranks, and every game, for each season since {{< meta cfb.first_season >}}. The [team index](/cfb/teams/) lists them by conference with records and power-rating ranks.
 
 ```{=html}
 <div id="team-grid" class="team-grid"><div class="loading">Loading…</div></div>

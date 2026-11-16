@@ -6,8 +6,9 @@ import re
 
 import pytest
 
+from cfb import team_summary as cfbs
 from nfl.team_summary import League, static_block, summary
-from sparvi.config import ROOT, nfl
+from sparvi.config import ROOT, cfb, nfl
 
 NUM = re.compile(r"(?<![\w.])[-+]?(?:(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?|\.\d+)%?")
 NFL = ROOT / "site" / "data" / "nfl"
@@ -59,3 +60,47 @@ def test_nfl_summaries_are_plain_and_deterministic(nfl_league):
         a = summary(L, t["id"], SEASON)
         assert a == summary(L, t["id"], SEASON)
         assert not re.search(r"game-changing|unlock|dive in|leverage|elite", a, re.I)
+
+
+# ---- CFB ----------------------------------------------------------------------------------------
+CFB = ROOT / "site" / "data" / "cfb"
+
+
+@pytest.fixture(scope="module")
+def cfb_pages():
+    """(team, league for the season its page opens on, that season) for every team page."""
+    teams = json.loads((CFB / "teams.json").read_text(encoding="utf-8"))
+    meta = json.loads((CFB / "meta.json").read_text(encoding="utf-8"))
+    leagues = {}
+    out = []
+    for t in teams:
+        last = [s for s in t["seasons"] if s in meta["seasons"]][-1]
+        if last not in leagues:
+            leagues[last] = cfbs.League(json.loads((CFB / f"team_week_{last}.json").read_text(encoding="utf-8")),
+                                        json.loads((CFB / f"team_games_{last}.json").read_text(encoding="utf-8")), teams)
+        out.append((t, leagues[last], last))
+    return out, meta
+
+
+def test_cfb_summary_numbers_are_on_the_page(cfb_pages):
+    pages, meta = cfb_pages
+    season = cfb().season
+    for t, L, last in pages:
+        text, _ = cfbs.summary(L, t, last, season, meta["seasons"][-1])
+        page = text_of(cfbs.static_block(L, t, last, last == season, lambda x: f"/cfb/teams/{x['slug']}/"))
+        tokens = set(NUM.findall(page.replace("−", "-")))
+        for n in NUM.findall(text.replace(t["name"], "").replace(t["conf"], "").replace("−", "-")):   # "Pac-12" is a name
+            assert n in tokens, f"{t['name']}: {n} is in the summary but not in the page's tables"
+
+
+def test_cfb_committed_pages_match_the_generator(cfb_pages):
+    pages, meta = cfb_pages
+    season = cfb().season
+    for t, L, last in pages:
+        qmd = (ROOT / "site" / "cfb" / "teams" / t["slug"] / "index.qmd").read_text(encoding="utf-8")
+        assert html.escape(cfbs.summary(L, t, last, season, meta["seasons"][-1])[0]) in qmd, t["name"]
+        assert 'id="team-static"' in qmd and qmd.count("<table") == 2
+        for link in set(re.findall(r'href="(/cfb/teams/[a-z0-9-]+/)"', qmd)):
+            assert (ROOT / "site" / link.strip("/") / "index.qmd").exists(), link
+    idx = (ROOT / "site" / "cfb" / "teams" / "index.qmd").read_text(encoding="utf-8")
+    assert idx.count('class="team-index"') >= 10 and len(re.findall(r'href="/cfb/teams/[a-z0-9-]+/"', idx)) == len(pages)
