@@ -52,6 +52,9 @@ class Checks:
     def sql(self, q: str):
         return duckdb.sql(q).fetchone()
 
+    def sql_all(self, q: str) -> list[tuple]:
+        return duckdb.sql(q).fetchall()
+
     def table(self, name: str, path: Path, kind: str) -> bool:
         """Present, schema per the contract, rows vs. the last accepted pull, unique key, null rates.
         Returns False if the file is missing or unreadable (later checks on it are skipped)."""
