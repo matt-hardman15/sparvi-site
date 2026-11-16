@@ -235,3 +235,16 @@ def test_not_applicable_needs_a_reason_and_never_waives_timing():
     assert leakage.not_applicable("label_permutation", {"label_permutation": ""})["passed"] is False
     assert leakage.not_applicable("future_poisoning", {"future_poisoning": "a long enough reason to pass the length check"})["passed"] is False
     assert leakage.not_applicable("label_permutation", {}) is None
+
+
+def test_ci_runs_only_the_models_a_change_touches():
+    """backtest.ci --changed (Matt, Nov 16): a PR runs the backtests of the models whose code or folder it touches;
+    harness files run every model; site files and committed reports run none."""
+    pick = lambda files: ci.selected(files)  # noqa: E731
+    names = lambda files: sorted(m.name for m in pick(files))  # noqa: E731
+    assert names(["site/index.qmd", "README.md"]) == []
+    assert names(["models/cfb/system_fit/backtest/1.1.8.json", "backtest/runs/runs.jsonl"]) == []
+    assert names(["cfb/proj/pit.py"]) == ["cfb_player_projection"]
+    assert names(["baseball/pitch_quality/train.py"]) == ["stuff_plus"]
+    assert "cfb_player_profile" in names(["cfb/profile/features.yml"]) and "stuff_plus" not in names(["cfb/profile/features.yml"])
+    assert pick(["backtest/leakage.py"]) is None and pick(["uv.lock"]) is None
