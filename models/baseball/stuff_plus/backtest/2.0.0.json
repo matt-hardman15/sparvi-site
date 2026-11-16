@@ -1,10 +1,10 @@
 {
-  "run_id": "2e39ff66e42f",
+  "run_id": "305453da2e58",
   "model": "stuff_plus",
   "version": "2.0.0",
   "kind": "full",
-  "ran_at": "2026-11-16T21:16:17Z",
-  "code_sha": "02e53740a7ba133dc8cf303c1bc829b75f7ffa3b",
+  "ran_at": "2026-11-16T22:04:56Z",
+  "code_sha": "cfb8a2ed8e543767e04f989b61a422fccd9d6036",
   "lockfile": "e6f7c7528ac332cf",
   "preregistered_at": "2026-11-13",
   "spec": {
