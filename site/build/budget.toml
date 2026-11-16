@@ -1,0 +1,12 @@
+# Hosting limits the build checks docs/ against (site/build/check_budget.py, PLAN-seo S2).
+# Change `host` if the site moves; the limits for that host apply.
+host = "github-pages"
+warn_at = 0.60   # print a warning and the largest folders
+fail_at = 0.75   # fail the build
+
+[hosts.github-pages]
+max_bytes = 1_000_000_000      # published site <= 1 GB
+
+[hosts.cloudflare-pages]
+max_files = 20_000             # Free plan
+max_file_bytes = 25_000_000
