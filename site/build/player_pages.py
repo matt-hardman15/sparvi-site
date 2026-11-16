@@ -16,7 +16,7 @@ per player; the per-player JSON files are removed from the output.
   page code, not the build time.
 - /baseball/players/ (the A-Z index) gets its list here.
 
-Standard library only: the deploy job runs Quarto without the project's virtualenv.
+Standard library only (social.py is the one post-render step that needs the project's virtualenv).
 """
 from __future__ import annotations
 
@@ -33,6 +33,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import baseball_teams as bt  # noqa: E402
+import jsonld  # noqa: E402
 import summarize as sm  # noqa: E402
 
 SITE = Path(__file__).resolve().parents[1]
@@ -146,10 +147,11 @@ def body(p: dict, season: int, fin: dict, current: int | None = None) -> str:
 SLOTS = ("ZZTITLEZZ", "ZZHONEZZ", "ZZDESCRIPTIONZZ", "ZZBODYZZ")
 
 
-def fill(shell: str, title: str, h1: str, desc: str, body_html: str, canonical: str, noindex: bool) -> str:
+def fill(shell: str, title: str, h1: str, desc: str, body_html: str, canonical: str, noindex: bool, head: str = "") -> str:
     out = shell.replace("ZZTITLEZZ", e(title)).replace("ZZHONEZZ", e(h1)).replace("ZZDESCRIPTIONZZ", e(desc))
     out = out.replace("ZZBODYZZ", body_html)
-    head = f'<link rel="canonical" href="{canonical}">' + ('\n<meta name="robots" content="noindex">' if noindex else "")
+    head = f'<link rel="canonical" href="{canonical}">' + ('\n<meta name="robots" content="noindex">' if noindex else "") \
+        + (f"\n{head}" if head else "")
     out = re.sub(r'<link rel="canonical"[^>]*>\n?', "", out)
     return out.replace("</head>", head + "\n</head>", 1)
 
@@ -173,6 +175,31 @@ def git_dates() -> dict[str, str]:
         elif line.strip():
             out.setdefault(line.strip(), cur)
     return out
+
+
+# PLAN-seo S3: players above this bar get a card of their own; everyone else shares one per level.
+OG_MLB_PITCHES, OG_AAA = 500, 150
+
+
+def og_spec(p: dict, fin: dict, season: int, page: str, ok: bool) -> dict:
+    """What social.py draws for this player: a card of his own (name, team, 3 numbers) or a shared one."""
+    h, a, m = fin.get("hitter"), fin.get("AAA"), fin.get("MLB")
+    spec = None
+    if ok and m and m["pitches"] >= OG_MLB_PITCHES:
+        spec = (f"{m['team']} · MLB · {season}", [("Stuff+", sm.num(m.get("stuff_plus"), 0)), ("Pitching+", sm.num(m.get("pitching_plus"), 0)),
+                                                  ("K%", sm.pct(m.get("k_pct")))])
+    elif ok and a and (a.get("bf") or 0) >= OG_AAA:
+        spec = (f"{a['team']} · Triple-A · {season}", [("Stuff+", sm.num(a.get("stuff_plus"), 0)), ("K%", sm.pct(a.get("k_pct"))),
+                                                       ("BB%", sm.pct(a.get("bb_pct")))])
+    elif ok and h and h["pa"] >= OG_AAA:
+        spec = (f"{h['team']} · Triple-A · {season}", [("xwOBA", sm.woba(h.get("xwoba"))), ("Chase rate", sm.pct(h.get("chase_pct"))),
+                                                       ("EV90", sm.num(h.get("ev90")) + " mph")])
+    if spec:
+        return {"page": page, "title": p["name"], "kicker": spec[0], "stats": spec[1],
+                "sub": "Statcast profile: grades, percentiles, and how each moved through the season."}
+    level = "mlb" if m and not (h or a) else "aaa"
+    return {"page": page, "shared": f"player-{level}", "title": f"{'MLB' if level == 'mlb' else 'Triple-A'} player profile",
+            "kicker": "Baseball", "sub": "Pitch grades, swing decisions, league percentiles, and how each moved through the season."}
 
 
 def git_date(paths: list[str]) -> str | None:
@@ -227,6 +254,14 @@ def main() -> int:
     name_n = Counter(p["name"] for p in players)
     dates, cdate = git_dates(), code_date()
     entries, index_rows, n_noindex = [], [], 0
+    og: list[dict] = []          # social.py draws the cards (PLAN-seo S3)
+    club_names = {k: v["name"] for k, v in bt.clubs(DATA, season).items()}
+
+    def team_names(fin: dict) -> list[str]:
+        out = [club_names.get(fin[k]["team"], fin[k]["team"]) for k in ("hitter", "AAA") if k in sm.roles(fin) and fin[k].get("team")]
+        if "MLB" in sm.roles(fin) and fin["MLB"].get("team"):
+            out.append(bt.MLB.get(fin["MLB"]["team"], fin["MLB"]["team"]))
+        return list(dict.fromkeys(out))
 
     shutil.rmtree(OUT / PREFIX / "template")
     for p in players:
@@ -234,12 +269,14 @@ def main() -> int:
         path = reg[str(p["id"])][-1]
         ok = sm.indexable(fin)
         title, desc = titles(p, fin, season, name_n[p["name"]] > 1)
-        page = fill(shell, title, p["name"], desc, body(p, season, fin), url(path), noindex=not ok)
+        lm = max(x for x in (dates.get(f"site/data/baseball/players/{p['id']}.json"), cdate, "1970-01-01") if x)
+        ld = jsonld.script(jsonld.profile_page(url(path), p["name"], team_names(fin), lm))
+        page = fill(shell, title, p["name"], desc, body(p, season, fin), url(path), noindex=not ok, head=ld)
+        og.append(og_spec(p, fin, season, f"{PREFIX}{path}/index.html", ok))
         d = OUT / PREFIX / path
         d.mkdir(parents=True, exist_ok=True)
         (d / "index.html").write_text(page, encoding="utf-8", newline="\n")
         if ok:
-            lm = max(x for x in (dates.get(f"site/data/baseball/players/{p['id']}.json"), cdate, "1970-01-01") if x)
             entries.append((url(path), lm))
             label = {"hitter": "Triple-A hitter", "AAA": "Triple-A pitcher", "MLB": "MLB pitcher"}
             roles = [label[k] for k in sm.roles(fin)]
@@ -262,7 +299,9 @@ def main() -> int:
         fin, last = sm.final(p), p["season"]
         ok = sm.indexable(fin)
         title, desc = titles(p, fin, last, False)
-        page = fill(shell, title, p["name"], desc, body(p, last, fin, current=season), url(paths[-1]), noindex=not ok)
+        ld = jsonld.script(jsonld.profile_page(url(paths[-1]), p["name"], []))
+        page = fill(shell, title, p["name"], desc, body(p, last, fin, current=season), url(paths[-1]), noindex=not ok, head=ld)
+        og.append(og_spec(p, fin, last, f"{PREFIX}{paths[-1]}/index.html", False))
         d = OUT / PREFIX / paths[-1]
         d.mkdir(parents=True, exist_ok=True)
         (d / "index.html").write_text(page, encoding="utf-8", newline="\n")
@@ -317,7 +356,9 @@ def main() -> int:
         u = f"{BASE}{t['path']}/"
         d = OUT / t["path"]
         d.mkdir(parents=True, exist_ok=True)
-        (d / "index.html").write_text(fill(shell, t["title"], t["h1"], t["desc"], t["body"], u, noindex=False), encoding="utf-8", newline="\n")
+        (d / "index.html").write_text(fill(shell, t["title"], t["h1"], t["desc"], t["body"], u, noindex=False,
+                                           head=jsonld.script(t["ld"]) if t.get("ld") else ""), encoding="utf-8", newline="\n")
+        og.append({"page": f"{t['path']}/index.html", **t["og"]})
         team_entries.append((u, tdate))
     team_entries.sort()
     (OUT / "sitemap-baseball-teams.xml").write_text(
@@ -325,6 +366,7 @@ def main() -> int:
         + "".join(f"  <url>\n    <loc>{u}</loc>\n    <lastmod>{d}</lastmod>\n  </url>\n" for u, d in team_entries)
         + "</urlset>\n", encoding="utf-8", newline="\n")
     print(f"player_pages: {len(team_entries)} team pages")
+    (OUT / "_og-manifest.json").write_text(json.dumps(og, ensure_ascii=False), encoding="utf-8", newline="\n")
     return 0
 
 
