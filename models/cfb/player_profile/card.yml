@@ -3,7 +3,7 @@ name: cfb_player_profile
 title: CFB player profile
 sport: cfb
 status: champion
-version: 1.0.3
+version: 1.0.4
 owner: Matt
 spec: 'A broad, position-specific profile for college football QBs, RBs, WRs, and TEs: efficiency, risk, situational,
   usage, and style components (cfb/profile/features.yml), each normalized for the competition faced and shrunk by

@@ -71,35 +71,75 @@ def norm(s: str) -> str:
     return " ".join(re.sub(r"[^a-z ]+", " ", s).split())
 
 
+OFFENSE = {"QB", "RB", "FB", "WR", "TE", "ATH"}
+VOLUME_STATS = {"ATT", "CAR", "REC"}
+ROLE_STATS = {"passer": "passing", "rusher": "rushing", "target": "receiving"}
+ROLE_POSITIONS = {"passer": {"QB"}, "rusher": {"RB", "FB", "QB"}, "target": {"WR", "TE", "RB", "FB"}}
+
+
 class Roster:
     """One team-season's players, indexed for the matching rules."""
 
-    def __init__(self, rows: list[dict]):
+    def __init__(self, rows: list[dict], with_stats: dict[str, dict[str, float]] | None = None):
         self.full, self.init_last, self.jersey = defaultdict(set), defaultdict(set), defaultdict(set)
+        self.with_stats = with_stats or {}                    # id -> {stat category: volume (att/car/rec)} that season
+        self.pos: dict[str, str] = {}
         for r in rows:
             first, last = norm(r.get("firstName") or ""), norm(r.get("lastName") or "")
             if not last:
                 continue
             pid = str(r["id"])
+            self.pos[pid] = r.get("position") or ""
             self.full[f"{first} {last}".strip()].add(pid)
             if first:
                 self.init_last[(first[0], last)].add(pid)
+                if " " in last:                       # "Van Buren": also by the last word, as play text is looked up
+                    self.init_last[(first[0], last.split()[-1])].add(pid)
             if r.get("jersey") is not None:
                 self.jersey[int(r["jersey"])].add((pid, last))
 
-    def match(self, name: str, jersey: int | None = None) -> str | None:
+    def _one(self, ids: set[str] | None, role: str | None = None) -> str | None:
+        """The single id among candidates, or, when a name is listed more than once on the team (CFBD carries placeholder
+        entries with negative ids through 2019, and sometimes two ids for one player): the real (non-negative) id, then
+        the one with stats that season (CFB-MATCH-FIX: Iowa's passers were unmatched in 2017-2019)."""
+        if not ids:
+            return None
+        if len(ids) == 1:
+            return next(iter(ids))
+        fits = ROLE_POSITIONS.get(role, OFFENSE) if role else OFFENSE
+        cat = ROLE_STATS.get(role)
+        for keep in (lambda i: not i.startswith("-"), lambda i: i in self.with_stats, lambda i: cat in self.with_stats.get(i, {}),
+                     lambda i: self.pos.get(i) in fits, lambda i: self.pos.get(i) in OFFENSE):
+            narrowed = {i for i in ids if keep(i)}
+            if len(narrowed) == 1:
+                return next(iter(narrowed))
+            if narrowed:
+                ids = narrowed
+        # CFBD sometimes splits one player's season across two ids: the one with at least twice the volume in the role.
+        vol = sorted(((self.with_stats.get(i, {}).get(cat, 0.0), i) for i in ids), reverse=True)
+        if cat and len(vol) >= 2 and vol[0][0] > 0 and vol[0][0] >= 2 * vol[1][0]:
+            return vol[0][1]
+        return None
+
+    def match(self, name: str, jersey: int | None = None, role: str | None = None) -> str | None:
         n = norm(name)
         if not n:
             return None
-        hit = self.full.get(n)
-        if hit and len(hit) == 1:
-            return next(iter(hit))
+        hit = self._one(self.full.get(n), role)
+        if hit:
+            return hit
         parts = n.split()
         # "E.Vasko" normalizes to "e vasko"; "A.J. Little" to "a j little": initial = first letter, last = last token
         key = (parts[0][0], parts[-1])
-        hit = self.init_last.get(key)
-        if hit and len(hit) == 1:
-            return next(iter(hit))
+        hit = self._one(self.init_last.get(key), role)
+        if hit:
+            return hit
+        # A shortened hyphenated name ("Zeon Chriss" for Chriss-Gremillion): one roster name that starts with it.
+        if len(parts) >= 2:
+            pre = {i for full, ids in self.full.items() if full.startswith(n + " ") for i in ids}
+            hit = self._one(pre, role) if len(pre) <= 2 else None
+            if hit:
+                return hit
         if jersey is not None:
             cands = self.jersey.get(jersey, set())
             by_last = {p for p, last in cands if last == parts[-1] or last.endswith(parts[-1]) or parts[-1].endswith(last)}
@@ -151,7 +191,16 @@ def season(s: int) -> tuple[pd.DataFrame, dict]:
     by_team = defaultdict(list)
     for r in _load(f"roster__year-{s}*.json.gz"):
         by_team[r["team"]].append(r)
-    rosters = {t: Roster(rows) for t, rows in by_team.items()}
+    stats: dict[str, dict[str, dict[str, float]]] = defaultdict(lambda: defaultdict(dict))
+    for r in _load(f"stats_player_season__year-{s}.json.gz"):
+        cell = stats[r["team"]][str(r["playerId"])]
+        cell.setdefault(r["category"], 0.0)
+        if r["statType"] in VOLUME_STATS:
+            try:
+                cell[r["category"]] += float(r["stat"])
+            except (TypeError, ValueError):
+                pass
+    rosters = {t: Roster(rows, stats.get(t)) for t, rows in by_team.items()}
     plays = _load(f"plays__seasonType-*_year-{s}.json.gz")
     out, tried, matched = [], defaultdict(int), defaultdict(int)
     for p in plays:
@@ -161,7 +210,7 @@ def season(s: int) -> tuple[pd.DataFrame, dict]:
         for role, name, jersey in parse(p.get("playText"), pt):
             team = p["defense"] if role in ("sacked_by", "int_by", "pbu_by") else p["offense"]
             ro = rosters.get(team)
-            pid = ro.match(name, jersey) if ro else None
+            pid = ro.match(name, jersey, role) if ro else None
             tried[role] += 1
             matched[role] += pid is not None
             out.append({"season": s, "game_id": int(p["gameId"]), "play_id": str(p["id"]), "role": role, "team": team,
@@ -173,7 +222,7 @@ def season(s: int) -> tuple[pd.DataFrame, dict]:
     return pd.DataFrame(out), rates
 
 
-PARSER_VERSION = 2                # bump on any parsing change: every season's file is rebuilt on the next pull
+PARSER_VERSION = 3                # bump on any parsing change: every season's file is rebuilt on the next pull
 VERSIONS = OUT / "play_players_versions.json"
 
 

@@ -38,3 +38,30 @@ def test_parser_change_reparses_cached_seasons(tmp_path, monkeypatch):
         (tmp_path / f"play_players_{s}.parquet").write_bytes(b"x")
     PP.VERSIONS.write_text(json.dumps({"2024": PP.PARSER_VERSION, "2025": PP.PARSER_VERSION - 1}))
     assert PP.missing_or_current() == [2025, 2026]
+
+
+def _roster():
+    from ingest.cfb.play_players import Roster
+    rows = [{"id": "-1014218", "firstName": "Nate", "lastName": "Stanley", "position": "QB"},
+            {"id": "4036149", "firstName": "Nate", "lastName": "Stanley", "position": "QB"},
+            {"id": "4243485", "firstName": "Steven", "lastName": "Williams", "position": "LB"},
+            {"id": "4273883", "firstName": "Steven", "lastName": "Williams", "position": "WR"},
+            {"id": "4870518", "firstName": "Zeon", "lastName": "Chriss-Gremillion", "position": "QB"},
+            {"id": "5079620", "firstName": "Michael", "lastName": "Van Buren Jr.", "position": "QB"},
+            {"id": "4429501", "firstName": "Ray", "lastName": "Davis", "position": "RB"},
+            {"id": "5100357", "firstName": "Ray", "lastName": "Davis", "position": "RB"},
+            {"id": "1", "firstName": "Sam", "lastName": "Lee", "position": "WR"},
+            {"id": "2", "firstName": "Sam", "lastName": "Lee", "position": "WR"}]
+    stats = {"4429501": {"rushing": 12.0}, "5100357": {"rushing": 180.0}, "1": {"receiving": 10.0}, "2": {"receiving": 9.0}}
+    return Roster(rows, stats)
+
+
+def test_duplicate_names_resolve_by_id_role_and_volume():
+    """CFB-MATCH-FIX: placeholder ids, two players sharing a name, shortened and multi-word last names."""
+    r = _roster()
+    assert r.match("Nate Stanley", role="passer") == "4036149"          # the real id over the placeholder
+    assert r.match("Steven Williams", role="passer") == "4273883"       # offense over defense
+    assert r.match("Zeon Chriss", role="passer") == "4870518"           # the one roster name it starts
+    assert r.match("M.Van Buren Jr.", role="passer") == "5079620"       # initial + last word of the last name
+    assert r.match("Ray Davis", role="rusher") == "5100357"             # the id with the season's carries
+    assert r.match("Sam Lee", role="target") is None                    # too close to call: left unmatched
