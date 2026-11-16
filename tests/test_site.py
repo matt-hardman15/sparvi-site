@@ -456,6 +456,10 @@ def act_nfl_teams_index(p):
     assert p.locator("ul.team-index a").count() == 32 and p.locator("h2").count() == 8
 
 
+def act_cfb_teams_index(p):
+    assert p.locator("ul.team-index a").count() >= 130 and "Former FBS teams" in p.locator("h2").all_text_contents()
+
+
 def no_team_cards(p):
     # The hub's article listing must not pick up the generated team pages.
     hrefs = p.eval_on_selector_all("#listing-nfl-articles a, #listing-cfb-articles a", "e => e.map(a => a.getAttribute('href'))")
@@ -622,6 +626,7 @@ PAGES = [
     ("nfl-teams-index", "/nfl/teams/", act_nfl_teams_index),
     ("cfb", "/cfb/", act_cfb_index),
     ("cfb-team", "/cfb/teams/georgia/", act_cfb_team),
+    ("cfb-teams-index", "/cfb/teams/", act_cfb_teams_index),
     ("cfb-team-former", "/cfb/teams/idaho/", act_cfb_former_team),
     ("cfb-team-ratings", "/cfb/tools/team-ratings.html", act_cfb_ratings),
     ("cfb-portal", "/cfb/tools/portal-board.html", act_cfb_portal),
@@ -763,5 +768,9 @@ def test_team_page_numbers_are_in_the_html_without_javascript(browser, base_url)
         assert p.locator("#team-static .stat-row .stat").count() == 4
         assert p.locator("#team-static table.s-table").count() == 2
         assert p.locator("#team-static a[href*='nfl/teams/']").count() >= 8
+        p.goto(base_url + "/cfb/teams/georgia/")
+        assert "Georgia" in p.text_content(".page-summary")
+        assert p.locator("#team-static .stat-row .stat").count() == 5 and p.locator("#team-static table.s-table").count() == 2
+        assert p.locator(".team-sub a[href*='cfb/teams/']").count() >= 10      # SEC teams + the index
     finally:
         ctx.close()
