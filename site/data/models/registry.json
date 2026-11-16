@@ -60,6 +60,18 @@
   "experimental": "its pre-registered test (do components carry over when a player changes teams?) tied raw: edge +0.000, 90% interval -0.017 to +0.018. Secondary: more reliable within a season and nearly independent of opponent strength; team context (line, teammates, scheme) is the next layer (PROFILE-CONTEXT)"
  },
  {
+  "model": "cfb_player_projection",
+  "title": "CFB player projection",
+  "sport": "cfb",
+  "status": "champion",
+  "version": "1.0.0",
+  "registered": "2026-11-15",
+  "primary": "r_wr_dev",
+  "primary_value": 0.4997,
+  "challengers": [],
+  "experimental": "pre-registered backtest (2021-2025, strict in every position group) not yet run"
+ },
+ {
   "model": "cfb_power_rating",
   "title": "CFB power rating",
   "sport": "cfb",
