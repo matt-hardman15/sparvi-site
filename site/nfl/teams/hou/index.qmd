@@ -8,6 +8,17 @@ page-layout: full
 
 ```{=html}
 <div id="team-root" data-team="HOU"></div>
+<p class="page-summary">The Houston Texans are 3–5 through week 10 of 2026. Opponent-adjusted, the offense ranks 10th of 32 in EPA per play (+0.076) and the defense 22nd (+0.050 allowed).</p>
+<p class="note team-sub" style="border-left:4px solid #03202F;padding-left:.6rem">AFC South: <a href="/nfl/teams/ind/">Indianapolis Colts</a> · <a href="/nfl/teams/jax/">Jacksonville Jaguars</a> · <a href="/nfl/teams/ten/">Tennessee Titans</a> · <a href="/nfl/teams/">All 32 teams</a> · <a href="/nfl/tools/team-efficiency.html?team=HOU">Compare with every team</a></p>
+<!-- The season's numbers as plain HTML; the interactive page below removes this once it runs. -->
+<div id="team-static">
+<h3>2026 through week 10</h3>
+<div class="stat-row"><div class="stat"><div class="v">3–5</div><div class="k">Record</div></div><div class="stat"><div class="v">+0.076</div><div class="k">Offense EPA/play · 10th of 32</div></div><div class="stat"><div class="v">+0.050</div><div class="k">Defense EPA/play · 22nd of 32 (allowed)</div></div><div class="stat"><div class="v">+0.026</div><div class="k">Net EPA/play · 14th of 32</div></div></div>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th class=l>Opponent-adjusted EPA/play</th><th>Value</th><th>Rank</th></tr></thead><tbody><tr><td class=l>Offense · all plays</td><td>+0.076</td><td>10th of 32</td></tr><tr><td class=l>Offense · passes</td><td>+0.206</td><td>7th of 32</td></tr><tr><td class=l>Offense · runs</td><td>-0.154</td><td>24th of 32</td></tr><tr><td class=l>Defense (allowed) · all plays</td><td>+0.050</td><td>22nd of 32</td></tr><tr><td class=l>Defense (allowed) · passes</td><td>+0.129</td><td>23rd of 32</td></tr><tr><td class=l>Defense (allowed) · runs</td><td>-0.070</td><td>20th of 32</td></tr></tbody></table></div>
+<h3>Results</h3>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th>Wk</th><th class=l>Opponent</th><th class=l>Result</th><th>Off EPA/play</th><th>Def EPA/play</th><th>Off success</th></tr></thead><tbody><tr><td>1</td><td class=l>vs <a href="/nfl/teams/buf/">BUF</a></td><td class=l>L 31–36</td><td>+0.071</td><td>+0.300</td><td>48.1%</td></tr><tr><td>2</td><td class=l>vs <a href="/nfl/teams/cin/">CIN</a></td><td class=l>L 6–20</td><td>-0.179</td><td>+0.040</td><td>38.2%</td></tr><tr><td>3</td><td class=l>@ <a href="/nfl/teams/ind/">IND</a></td><td class=l>L 17–19</td><td>-0.082</td><td>-0.040</td><td>42.6%</td></tr><tr><td>4</td><td class=l>vs <a href="/nfl/teams/dal/">DAL</a></td><td class=l>L 30–34</td><td>+0.185</td><td>+0.203</td><td>47.2%</td></tr><tr><td>5</td><td class=l>@ <a href="/nfl/teams/ten/">TEN</a></td><td class=l>W 26–3</td><td>+0.154</td><td>-0.489</td><td>46.6%</td></tr><tr><td>6</td><td class=l>@ <a href="/nfl/teams/jax/">JAX</a></td><td class=l>W 34–31</td><td>+0.265</td><td>+0.155</td><td>49.2%</td></tr><tr><td>7</td><td class=l>vs <a href="/nfl/teams/nyg/">NYG</a></td><td class=l>L 21–27</td><td>-0.060</td><td>+0.250</td><td>38.3%</td></tr><tr><td>9</td><td class=l>@ <a href="/nfl/teams/lac/">LAC</a></td><td class=l>W 44–22</td><td>+0.249</td><td>-0.322</td><td>43.4%</td></tr></tbody></table></div>
+<p class="note">Single games are raw (not opponent-adjusted), garbage time removed.</p>
+</div>
 ```
 
 {{< include ../_team.qmd >}}

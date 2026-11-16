@@ -439,6 +439,8 @@ def act_nfl_efficiency(p):
 
 
 def act_nfl_team(p):
+    assert p.locator("#team-static").count() == 0, "the plain-HTML block should give way to the charts"
+    assert "Through week" in p.text_content(".page-summary") and p.locator("a[href$='nfl/teams/']").count() >= 1
     tiles = p.locator(".stat-row .stat").all_text_contents()
     assert len(tiles) == 4 and re.search(r"\d+–\d+", tiles[0]), tiles
     assert p.locator("#off svg").count() == 1 and p.locator("#def svg").count() == 1
@@ -448,6 +450,10 @@ def act_nfl_team(p):
     seg(p, "#c", "All plays")
     select(p, "#c", "Season", "2016"); assert query(p)["season"] == "2016" and rows(p, "#games") >= 16
     nfl_week_slider(p, "#cap")
+
+
+def act_nfl_teams_index(p):
+    assert p.locator("ul.team-index a").count() == 32 and p.locator("h2").count() == 8
 
 
 def no_team_cards(p):
@@ -613,6 +619,7 @@ PAGES = [
     ("nfl-offense-or-defense", "/nfl/offense-or-defense/", act_nfl_offense_defense),
     ("nfl-team-efficiency", "/nfl/tools/team-efficiency.html", act_nfl_efficiency),
     ("nfl-team", "/nfl/teams/kc/", act_nfl_team),
+    ("nfl-teams-index", "/nfl/teams/", act_nfl_teams_index),
     ("cfb", "/cfb/", act_cfb_index),
     ("cfb-team", "/cfb/teams/georgia/", act_cfb_team),
     ("cfb-team-former", "/cfb/teams/idaho/", act_cfb_former_team),
@@ -744,3 +751,17 @@ def test_player_sitemap_lists_real_pages():
 def test_build_report_within_budget():
     r = json.loads((DOCS / "_build-report.json").read_text(encoding="utf-8"))
     assert r["files"] > 2000 and all(v < 0.6 for v in r["usage"].values()), r["usage"]
+
+
+def test_team_page_numbers_are_in_the_html_without_javascript(browser, base_url):
+    """Team pages (SEO-2b) show the summary, tiles, splits, and results as plain HTML."""
+    ctx = browser.new_context(java_script_enabled=False)
+    p = ctx.new_page()
+    try:
+        p.goto(base_url + "/nfl/teams/kc/")
+        assert "Kansas City Chiefs" in p.text_content(".page-summary")
+        assert p.locator("#team-static .stat-row .stat").count() == 4
+        assert p.locator("#team-static table.s-table").count() == 2
+        assert p.locator("#team-static a[href*='nfl/teams/']").count() >= 8
+    finally:
+        ctx.close()
