@@ -55,7 +55,9 @@ def run_fold(mod, loader: Loader, fold) -> tuple[pd.DataFrame, dict]:
     return df, audit
 
 
-def evaluate(df: pd.DataFrame, spec: dict) -> dict:
+def evaluate(df: pd.DataFrame, spec: dict, segments: bool = True) -> dict:
+    """The primary metric and each baseline's paired comparison; with the spec's `segment` (a prediction column, e.g.
+    position group), the same per segment under "segments"."""
     metric = spec["primary_metric"]
     block = spec.get("block", "entity_id")
     out = {"metric": metric, "n": int(len(df)), "point": metrics.score(metric, df["point"], df["y"]), "baselines": {},
@@ -64,6 +66,8 @@ def evaluate(df: pd.DataFrame, spec: dict) -> dict:
         out["baselines"][b] = {"value": metrics.score(metric, df[b], df["y"]),
                                "paired": metrics.paired_bootstrap(df.reset_index(drop=True), metric, "point", b, "y", block,
                                                                   n=spec.get("bootstrap", 2000), seed=spec.get("seed", 7))}
+    if segments and spec.get("segment"):
+        out["segments"] = {str(k): evaluate(g.reset_index(drop=True), spec, segments=False) for k, g in df.groupby(spec["segment"])}
     return out
 
 
@@ -87,6 +91,17 @@ def gate(ev: dict, g: dict) -> dict:
             "per_baseline": {b: {"gap": x, "ci90_low": y} for b, x, y in zip(names, gaps, los, strict=True)}}
 
 
+def gate_all(ev: dict, g: dict) -> dict:
+    """The gate on the pooled rows, or with pass_gate.each_segment (Matt, CFB-PROJ: strict in every position group) on
+    every segment, each against every baseline; the overall result is the worst segment's."""
+    if not g.get("each_segment"):
+        return gate(ev, g)
+    per = {k: gate(v, g) for k, v in ev["segments"].items()}
+    worst = min(per, key=lambda k: per[k]["gap"])
+    return {"checks": {k: v["passed"] for k, v in per.items()}, "passed": all(v["passed"] for v in per.values()),
+            "gap": per[worst]["gap"], "per_segment": per}
+
+
 def run(name: str, fast: bool = False, loader: Loader | None = None, write: bool = True, leakage: bool = True) -> dict:
     m = registry.get(name)
     spec = m.card["backtest"]
@@ -99,7 +114,7 @@ def run(name: str, fast: bool = False, loader: Loader | None = None, write: bool
         audits.append({"fold": fold.test_season, **audit})
     df = pd.concat(frames, ignore_index=True)
     ev = evaluate(df, spec)
-    g = gate(ev, spec["pass_gate"])
+    g = gate_all(ev, spec["pass_gate"])
     leak = {"timestamp": {"passed": all(a["passes"] for a in audits), "folds": audits}}
     if leakage:
         from backtest import leakage as lk

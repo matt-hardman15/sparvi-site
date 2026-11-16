@@ -207,3 +207,31 @@ def test_label_permutation_over_several_seeds():
     clean = leakage.label_permutation(_toy_perm(0.0), FOLD, spec=spec)
     assert clean["passed"] is True and clean["seeds"] == 10 and len(clean["r_by_seed"]) == 10
     assert leakage.label_permutation(_toy_perm(0.5), FOLD, spec=spec)["passed"] is False
+
+
+def test_gate_in_every_segment():
+    """pass_gate.each_segment (CFB-PROJ, Matt): one weak segment fails the model even if the pooled rows pass."""
+    rng = np.random.default_rng(3)
+    rows = []
+    for seg, skill in (("QB", 0.8), ("RB", 0.8), ("TE", 0.0)):
+        y = rng.normal(size=300)
+        base = y * 0.3 + rng.normal(size=300)
+        rows.append(pd.DataFrame({"seg": seg, "y": y, "point": y * skill + rng.normal(size=300) * 0.5, "carry": base,
+                                  "player": [f"{seg}{i}" for i in range(300)], "fold": 2021}))
+    df = pd.concat(rows, ignore_index=True)
+    spec = {"primary_metric": "pearson_r", "baselines": ["carry"], "block": "player", "segment": "seg", "bootstrap": 300}
+    ev = runner.evaluate(df, spec)
+    assert set(ev["segments"]) == {"QB", "RB", "TE"}
+    g = {"beats_baseline": ["carry"], "ci_excludes_zero": True}
+    assert runner.gate_all(ev, g)["passed"]                                   # pooled: passes
+    each = runner.gate_all(ev, {**g, "each_segment": True})
+    assert not each["passed"] and each["checks"] == {"QB": True, "RB": True, "TE": False}
+
+
+def test_not_applicable_needs_a_reason_and_never_waives_timing():
+    """A card may declare label permutation not applicable only with a written reason; timing tests can't be waived."""
+    ok = leakage.not_applicable("label_permutation", {"label_permutation": "structural model: skill comes from roster composition"})
+    assert ok["passed"] is True and "roster" in ok["not_applicable"]
+    assert leakage.not_applicable("label_permutation", {"label_permutation": ""})["passed"] is False
+    assert leakage.not_applicable("future_poisoning", {"future_poisoning": "a long enough reason to pass the length check"})["passed"] is False
+    assert leakage.not_applicable("label_permutation", {}) is None

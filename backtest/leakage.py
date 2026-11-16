@@ -95,11 +95,28 @@ def _permutation_mean(mod, fold, loader, first: pd.DataFrame, seed: int, seeds: 
             "n": int(len(first))}
 
 
+NOT_APPLICABLE_OK = {"label_permutation"}        # the timestamp and future-poisoning tests can never be waived
+
+
+def not_applicable(test: str, declared: dict) -> dict | None:
+    """A test the card declares not applicable, with its written reason (Matt, 2026-11-16: for structural models such as
+    the CFB projection, whose skill comes from roster composition rather than from what it learns from targets, label
+    permutation can't reach zero; timestamp and future poisoning still check that no later data is read)."""
+    if test not in declared:
+        return None
+    reason = str(declared[test] or "").strip()
+    if test not in NOT_APPLICABLE_OK or len(reason) < 20:
+        return {"passed": False, "reason": f"{test} can't be declared not applicable" if test not in NOT_APPLICABLE_OK
+                else "not_applicable needs a written reason"}
+    return {"passed": True, "not_applicable": reason}
+
+
 def run_all(name: str, mod, spec: dict, fold, scored: pd.DataFrame) -> dict:
     loader = Loader()
     clean = mod.predict(mod.fit(loader, fold), loader, fold)
+    na = spec.get("not_applicable") or {}
     out = {"future_poisoning": future_poisoning(mod, fold, clean),
-           "label_permutation": label_permutation(mod, fold, spec=spec)}
+           "label_permutation": not_applicable("label_permutation", na) or label_permutation(mod, fold, spec=spec)}
     metric = spec.get("primary_metric", "pearson_r")
     if metric == "pearson_r":
         ceiling = spec.get("too_good_r", 0.9)

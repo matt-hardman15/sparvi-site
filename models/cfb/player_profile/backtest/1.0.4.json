@@ -1,0 +1,197 @@
+{
+  "run_id": "3fc79c346f74",
+  "model": "cfb_player_profile",
+  "version": "1.0.4",
+  "kind": "full",
+  "ran_at": "2026-11-16T03:44:55Z",
+  "code_sha": "8d16f3c22d23195ec8025aa5dde6ec854d9a07b6",
+  "lockfile": "e6f7c7528ac332cf",
+  "preregistered_at": "2026-11-14",
+  "spec": {
+    "preregistered_at": "2026-11-14",
+    "module": "models/cfb/player_profile/backtest.py",
+    "target": "For every opponent-adjusted feature: the season-t opponent-adjusted value of players who changed teams (movers), standardized within feature; players with the feature minimum in seasons t-1 and t",
+    "decision_dates": "February 1 of the outcome season (after the bowls and the January portal window)",
+    "splits": {
+      "type": "walk_forward",
+      "first_test": 2021,
+      "last_test": 2025,
+      "train_window": 1,
+      "predictor_lag": 1,
+      "decision": "02-01",
+      "fast_folds": 1
+    },
+    "group_by": "none: the profile has no fitted weights; each season's values come from that season's plays alone",
+    "block": "player",
+    "permutation_seeds": 10,
+    "baselines": [
+      "last_season"
+    ],
+    "primary_metric": "pearson_r",
+    "bootstrap": 2000,
+    "seed": 7,
+    "pass_gate": {
+      "beats_baseline": "last_season",
+      "min_skill": 0.0,
+      "ci_excludes_zero": true
+    },
+    "gate_decided": "Matt, 2026-11-14: strict (the 90% interval of the edge over the raw season t-1 values must exclude zero), same as Stuff+",
+    "secondary": "Reported, not gating: the same test on every player (stayers and movers); per-feature results; raw target instead of adjusted; split-half reliability (odd vs. even games), adjusted vs. raw; correlation of player-game values with the opponent's allowed level, raw vs. adjusted (closer to zero is better).",
+    "reproduction": "Exact on the same machine (deterministic sparse solves). Official runs happen in CI.",
+    "vault": {
+      "seasons": [
+        2026
+      ],
+      "note": "Season 2026 outcomes are sealed; scored once after the season completes (January 2027).",
+      "accesses": 0
+    }
+  },
+  "folds": [
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "evaluation": {
+    "metric": "pearson_r",
+    "n": 3789,
+    "point": 0.18105726547186893,
+    "baselines": {
+      "last_season": {
+        "value": 0.18101370016873974,
+        "paired": {
+          "est": 4.356530312918383e-05,
+          "ci90": [
+            -0.016613344978074426,
+            0.017450755422415944
+          ],
+          "n": 3789,
+          "blocks": 505,
+          "bootstrap": 2000,
+          "seed": 7
+        }
+      }
+    },
+    "by_fold": {
+      "2021": 0.18842843701984985,
+      "2022": 0.18776598730967337,
+      "2023": 0.11507037291700514,
+      "2024": 0.23655203110930434,
+      "2025": 0.16802943591564692
+    }
+  },
+  "gate": {
+    "checks": {
+      "beats_baseline": true,
+      "min_skill": true,
+      "ci_excludes_zero": false
+    },
+    "passed": false,
+    "gap": 4.356530312918383e-05,
+    "per_baseline": {
+      "last_season": {
+        "gap": 4.356530312918383e-05,
+        "ci90_low": -0.016613344978074426
+      }
+    }
+  },
+  "leakage": {
+    "timestamp": {
+      "passed": true,
+      "folds": [
+        {
+          "fold": 2021,
+          "fit_max_available_at": null,
+          "train_until": "2019-12-31 23:59:59",
+          "predict_max_available_at": "2021-01-13 00:00:00",
+          "decision_date": "2021-02-01 00:00:00",
+          "passes": true
+        },
+        {
+          "fold": 2022,
+          "fit_max_available_at": null,
+          "train_until": "2020-12-31 23:59:59",
+          "predict_max_available_at": "2022-01-12 00:00:00",
+          "decision_date": "2022-02-01 00:00:00",
+          "passes": true
+        },
+        {
+          "fold": 2023,
+          "fit_max_available_at": null,
+          "train_until": "2021-12-31 23:59:59",
+          "predict_max_available_at": "2023-01-11 00:00:00",
+          "decision_date": "2023-02-01 00:00:00",
+          "passes": true
+        },
+        {
+          "fold": 2024,
+          "fit_max_available_at": null,
+          "train_until": "2022-12-31 23:59:59",
+          "predict_max_available_at": "2024-01-10 00:00:00",
+          "decision_date": "2024-02-01 00:00:00",
+          "passes": true
+        },
+        {
+          "fold": 2025,
+          "fit_max_available_at": null,
+          "train_until": "2023-12-31 23:59:59",
+          "predict_max_available_at": "2025-02-01 00:00:00",
+          "decision_date": "2025-02-01 00:00:00",
+          "passes": true
+        }
+      ]
+    },
+    "future_poisoning": {
+      "passed": true,
+      "cutoff": "2025-02-01 00:00:00",
+      "n": 7308
+    },
+    "label_permutation": {
+      "passed": true,
+      "r": -0.008093364809048561,
+      "ci90": [
+        -0.05171408870795124,
+        0.03552735908985411
+      ],
+      "seeds": 10,
+      "r_by_seed": [
+        -0.1335,
+        -0.1083,
+        0.0122,
+        0.0862,
+        0.0686,
+        0.0047,
+        -0.0815,
+        0.0191,
+        -0.0006,
+        0.0523
+      ],
+      "n": 1095
+    },
+    "too_good": {
+      "passed": true,
+      "r": 0.18105726547186893,
+      "ceiling": 0.9
+    },
+    "entity_overlap": {
+      "passed": true,
+      "not_applicable": "group_by: none: the profile has no fitted weights; each season's values come from that season's plays alone"
+    },
+    "universe": {
+      "passed": true,
+      "predicted": 7308,
+      "scored": 1096,
+      "no_outcome": 6212,
+      "note": "entities without an outcome (retired, injured, too few pitches) can't be scored; they're counted here so survivorship is visible"
+    }
+  },
+  "passed": false,
+  "primary": {
+    "metric": "pearson_r",
+    "point": 0.18105726547186893,
+    "last_season": 0.18101370016873974
+  },
+  "revision_safe": false,
+  "approximate_tables": []
+}
