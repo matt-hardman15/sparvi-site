@@ -38,6 +38,7 @@ if [ -d data/raw/nfl ]; then ./nfl/build.sh; fi
 # College football: rebuilt when its raw data is here (python ingest/cfb/pull.py); otherwise the committed
 # site/data/cfb is rendered as-is.
 if [ -d data/raw/cfb ]; then ./cfb/build.sh; fi
+python -m sparvi.registry export        # site/_generated/models.yml, site/data/models/registry.json (not committed)
 (cd site && quarto render)
 # Quarto renders a missing prose number as "?meta:..." instead of failing. Fail here instead.
 if grep -rl "?meta:" docs --include=*.html; then echo "ERROR: unresolved prose numbers (see files above)"; exit 1; fi

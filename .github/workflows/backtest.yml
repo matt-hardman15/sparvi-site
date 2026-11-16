@@ -171,8 +171,8 @@ jobs:
         run: |
           git config user.name "sparvi-bot"
           git config user.email "sparvi-bot@users.noreply.github.com"
-          uv run python -m sparvi.registry export      # the method boxes quote the latest report
-          git add models/*/*/backtest backtest/runs site/_generated/models.yml site/data/models
+          # Reports and the run log only; the site's model files are generated at render time (deploy.yml).
+          git add models/*/*/backtest backtest/runs
           if git diff --cached --quiet; then echo "Nothing new."; exit 0; fi
           git commit -m "Backtest run $(date -u +%Y-%m-%d)"
           git pull --rebase --autostash origin main
