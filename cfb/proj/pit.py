@@ -74,7 +74,9 @@ def season(L, s: int) -> dict:
     team["pass_pg"], team["run_pg"] = team["pass"] / team["games"], team["run"] / team["games"]
     team["pass_rate"] = team["pass"] / (team["pass"] + team["run"]).clip(lower=1)
     team["rb_frac"] = team["rb_carries"] / team["runs"].clip(lower=1)
-    team["rec_ypd"] = team["rec_yards"] / team["dropbacks"].clip(lower=1)
+    # Per pass play (counted from every credited pass play), not per matched dropback: a team whose passers went
+    # unmatched (UL Monroe 2022: 1 matched dropback, 192 pass plays) otherwise produced 1,980 yards per dropback (1.0.1).
+    team["rec_ypd"] = team["rec_yards"] / team["pass"].clip(lower=1)
     cache[s] = {"p": p, "team": team, "conf": conf, "work": S.work(ev, pos), "eff": S.efficiency(ev, pos),
                 "roster": L.load(f"players_roster_{s}", as_of),
                 "played": ev.groupby("player_id")["offense"].agg(lambda x: x.mode().iloc[0]).to_dict()}
