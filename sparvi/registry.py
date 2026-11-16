@@ -14,6 +14,7 @@ data under the same specification (e.g. season rollover); PATCH = a bug fix.
     python -m sparvi.registry register <name> <version> [--challenger] [--note "..."]
     python -m sparvi.registry promote <name> <version>  # challenger -> champion, if it earns it
     python -m sparvi.registry export                    # site/_generated/models.yml + site/data/models/registry.json
+                                                        # (generated at render time; not committed)
 
 Promotion requires both (PLAN-scout A2): the challenger beats the champion on the same frozen eval
 set (primary metric), and it doesn't lose on live ledger forecasts over the minimum window. Until the
@@ -267,6 +268,8 @@ def export(root: Path = ROOT) -> None:
 
 
 def _stale_site_files(root: Path = ROOT) -> list[str]:
+    """Unused since the site's model files stopped being committed (they're generated at render time); kept for a
+    local comparison."""
     import tempfile
 
     from sparvi import io
@@ -311,8 +314,6 @@ def check(root: Path = ROOT) -> list[str]:
         for ch in c.get("challengers", []):
             if not m.record_path(ch["version"]).exists():
                 problems.append(f"{m.name}: challenger {ch['version']} has no record")
-    if root == ROOT and not problems:
-        problems += _stale_site_files(root)
     return problems
 
 

@@ -37,8 +37,17 @@ jobs:
         with:
           version: ${{ env.QUARTO_VERSION }}
 
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        with:
+          enable-cache: true
+
+      - run: uv sync --frozen
+
       - name: Render
         run: |
+          # Generated from the model registry at render time, never committed (a committed copy conflicted with every
+          # open PR that registered a version whenever the backtest bot rewrote it).
+          uv run python -m sparvi.registry export
           cd site && quarto render
           # A missing prose number renders as "?meta:..." instead of failing; fail here instead.
           if grep -rl "?meta:" ../docs --include=*.html; then echo "::error::unresolved prose numbers"; exit 1; fi
