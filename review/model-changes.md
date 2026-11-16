@@ -15,6 +15,15 @@ Woody Marks) and a player CFBD split evenly across two ids (UL Monroe's Chandler
 movers r 0.1795 -> 0.1811 (n 494 -> 505), all players 0.2651 -> 0.2645, split-half 0.2958 -> 0.2952. Found by CFB-PROJ
 P4 (team pass totals near zero for Iowa and Kansas State). System fit's backtest was not rerun.
 
+## 2026-11-15 · Backtest harness: label permutation over several seeds (CFB player profile)
+No model changed. The player profile's fast backtest failed its label-permutation leakage test on sparvi-site #62
+(r -0.134, row-bootstrap 90% CI -0.18 to -0.09) though nothing leaks: across 10 seeds the shuffled-label model averages
+r -0.008 with a seed-to-seed sd of 0.071, wider than any bootstrap of one shuffle shows (about 150 players, ~7
+correlated features each), so a single seed fails about 40% of the time. Matt (2026-11-15): average 10 seeds. The spec's
+new `permutation_seeds` (default 1) runs that many shuffles and passes when the 90% interval of their mean (t, n-1 df)
+includes zero; a leak present in every seed still fails (tests/test_backtest.py). The profile card sets 10. Stuff+ keeps 1:
+each shuffle retrains its bagged model.
+
 ## 2026-11-15 · CFB player profile 1.0.2 → 1.0.3, CFB system fit 1.1.2 → 1.1.3 (patch: re-parse trigger)
 `ingest/cfb/play_players.py` records a PARSER_VERSION per season and re-parses any cached season parsed by an older
 one, so CI's cached 2025 file picks up the receiver fix. Parsing and every output are identical to 1.0.2 / 1.1.2;
