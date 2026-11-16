@@ -183,3 +183,27 @@ def test_model_code_reads_data_only_through_the_loader():
             if re.search(pat, text):
                 bad.append(f"{p.relative_to(ROOT)}: {pat}")
     assert not bad, "read through backtest.asof.Loader instead:\n" + "\n".join(bad)
+
+
+def _toy_perm(signal: float):
+    """A model whose shuffled-label predictions correlate with the outcome by `signal` (a leak) plus seed noise."""
+    ids = [f"e{i}" for i in range(200)]
+    y = np.random.default_rng(0).normal(size=200)
+
+    def fit(loader, fold, permute_seed=None):
+        return {"seed": permute_seed}
+
+    def predict(fitted, loader, fold):
+        noise = np.random.default_rng(fitted["seed"] or 0).normal(size=200)
+        return pd.DataFrame({"entity_id": ids, "point": signal * y + noise})
+
+    return SimpleNamespace(fit=fit, predict=predict, outcome=lambda loader, fold: pd.DataFrame({"entity_id": ids, "y": y}))
+
+
+def test_label_permutation_over_several_seeds():
+    """permutation_seeds (Matt, Nov 15): the mean shuffled-label r across seeds must include zero; a leak present in
+    every seed still fails."""
+    spec = {"primary_metric": "pearson_r", "permutation_seeds": 10}
+    clean = leakage.label_permutation(_toy_perm(0.0), FOLD, spec=spec)
+    assert clean["passed"] is True and clean["seeds"] == 10 and len(clean["r_by_seed"]) == 10
+    assert leakage.label_permutation(_toy_perm(0.5), FOLD, spec=spec)["passed"] is False
