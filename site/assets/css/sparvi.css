@@ -150,3 +150,9 @@ figure h2, .plot-host h2 { font-family: var(--sans); font-size: .95rem; font-wei
 .article-cards .card-stat-v { font-family: var(--serif); font-weight: 700; font-size: 1.65rem; line-height: 1.1; color: var(--ink); }
 .article-cards .card-stat-l { font-size: .85rem; color: var(--ink-2); line-height: 1.3; }
 .article-cards .card-title { margin-bottom: .1rem; }
+
+/* Player pages (PLAN-seo S2): summary under the name, and the A-Z index. */
+.player-summary { font-size: 1.05rem; line-height: 1.55; margin: .6rem 0 .4rem; }
+.letter-nav { display: flex; flex-wrap: wrap; gap: .35rem .7rem; font-weight: 600; }
+ul.player-index { columns: 2 260px; column-gap: 2rem; padding-left: 0; list-style: none; }
+ul.player-index li { break-inside: avoid; margin: .15rem 0; }
