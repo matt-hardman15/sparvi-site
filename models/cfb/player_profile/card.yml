@@ -74,6 +74,7 @@ backtest:
     fast_folds: 1
   group_by: 'none: the profile has no fitted weights; each season''s values come from that season''s plays alone'
   block: player
+  permutation_seeds: 10
   baselines:
   - last_season
   primary_metric: pearson_r

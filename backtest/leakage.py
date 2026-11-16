@@ -4,7 +4,8 @@
   its train_until / decision date.
 - future_poisoning: rerun the fold with every row available after the decision date corrupted
   (numbers shuffled and noised). Predictions must be bit-identical; any path to future data shows up.
-- label_permutation: train on shuffled targets (the model's `fit(..., permute_seed=)` hook). The model
+- label_permutation: train on shuffled targets (the model's `fit(..., permute_seed=)` hook; the spec's `permutation_seeds`
+  averages several shuffles, for models whose single shuffle is noisy). The model
   must then have no skill: the 90% interval of its correlation with the outcome includes zero. For metrics
   other than correlation (board recall), the 90% interval of its edge over the spec's `null_baseline` (random)
   includes zero.
@@ -65,12 +66,33 @@ def label_permutation(mod, fold, seed: int = 1, n_boot: int = 1000, spec: dict |
         p = metrics.paired_bootstrap(df, metric, "point", null, "y", spec.get("block"), n=n_boot, seed=seed)
         lo, hi = p["ci90"]
         return {"passed": lo <= 0 <= hi, "edge_over": null, "est": p["est"], "ci90": [lo, hi], "n": int(len(df))}
+    seeds = int((spec or {}).get("permutation_seeds", 1))
+    if seeds > 1:
+        return _permutation_mean(mod, fold, loader, df, seed, seeds)
     rng = np.random.default_rng(seed)
     r = metrics.pearson(df["point"], df["y"])
     draws = [metrics.pearson(*(df.loc[idx, c] for c in ("point", "y"))) for idx in
              (rng.integers(0, len(df), len(df)) for _ in range(n_boot))]
     lo, hi = float(np.percentile(draws, 5)), float(np.percentile(draws, 95))
     return {"passed": lo <= 0 <= hi, "r": r, "ci90": [lo, hi], "n": int(len(df))}
+
+
+def _permutation_mean(mod, fold, loader, first: pd.DataFrame, seed: int, seeds: int) -> dict:
+    """Shuffled-label correlation over `seeds` permutations (the spec's `permutation_seeds`; Matt 2026-11-15). One
+    permutation of a model whose rows cluster by player (the profile: ~7 features per player) swings far more than a
+    bootstrap of that permutation shows, so a single seed fails often with nothing wrong. A leak shows in every seed:
+    pass when the 90% interval of the mean across seeds (t, seeds - 1 df) includes zero."""
+    from scipy import stats
+    rs = [metrics.pearson(first["point"], first["y"])]
+    for k in range(1, seeds):
+        pred = mod.predict(mod.fit(loader, fold, permute_seed=seed + k), loader, fold)
+        df = pred.merge(mod.outcome(loader, fold), on="entity_id")
+        rs.append(metrics.pearson(df["point"], df["y"]))
+    m, sd = float(np.mean(rs)), float(np.std(rs, ddof=1))
+    half = float(stats.t.ppf(0.95, seeds - 1)) * sd / np.sqrt(seeds)
+    lo, hi = m - half, m + half
+    return {"passed": bool(lo <= 0 <= hi), "r": m, "ci90": [float(lo), float(hi)], "seeds": seeds, "r_by_seed": [round(r, 4) for r in rs],
+            "n": int(len(first))}
 
 
 def run_all(name: str, mod, spec: dict, fold, scored: pd.DataFrame) -> dict:
