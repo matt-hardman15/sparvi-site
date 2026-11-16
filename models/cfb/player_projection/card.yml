@@ -119,6 +119,11 @@ backtest:
     the 90% interval of the correlation edge (bootstrap by player) must be above zero. A position that fails ships
     experimental.'
   too_good_r: 0.9
+  not_applicable:
+    label_permutation: 'Structural model (Matt, 2026-11-16): its skill comes from roster composition (who is on the
+      roster, experience, returning vs. new, who played), not from what it learns from targets, so shuffled targets
+      or shuffled input plays can''t bring it to zero (development season 2020: play-shuffled inputs r 0.48-0.52 vs.
+      0.56 real). The timestamp and future-poisoning tests check that no data after May 1 is read.'
   secondary: 'Reported, not gating: by status (returner, transfer, freshman), per fold, MAE, 80% interval coverage,
     RB receiving yards, and the count of season-t players who were outside the projected rosters.'
   limits: 'Free data only: no snaps, routes, depth charts, injuries, or NIL; usage is a share of team plays, not
