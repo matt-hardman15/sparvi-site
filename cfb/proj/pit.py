@@ -25,8 +25,10 @@ from cfb.fit import labels as LB
 from cfb.fit import model as M
 from cfb.fit.portal import link
 from cfb.profile import engine as G
+from cfb.profile import events as EV
 from cfb.proj import efficiency as E
 from cfb.proj import shares as S
+from football.common.filters import cfb_garbage_time
 
 TRAIN_FIRST = 2016                  # first outcome season used for training (inputs from 2014)
 FIRST_INPUT = 2014
@@ -64,11 +66,17 @@ def season(L, s: int) -> dict:
     db = ev[ev["opp"] == "dropback"].drop_duplicates("play_id")
     rb = ev[(ev["opp"] == "carry") & (grp == "RB")].drop_duplicates("play_id")
     rec = ev[comp].drop_duplicates("play_id")
-    tp = LB.team_plays(ev).unstack(fill_value=0)
-    team = pd.DataFrame({"games": plays.groupby("offense")["game_id"].nunique(), "pass": tp.get("pass"), "run": tp.get("run"),
+    # Team play counts straight from the play-by-play, same garbage-time rule, whether or not anyone on the play was
+    # matched to a roster (DATA-QA: Mississippi State's unmatched lead back left it 8 run plays a game in 2020-2022).
+    raw = L.load(f"plays_{s}", as_of, columns=["gameId", "offense", "playType", "period", "offenseScore", "defenseScore"])
+    raw = raw[raw["playType"].isin(EV.PASS_TYPES | EV.RUN_TYPES)]
+    raw = raw[~cfb_garbage_time(raw["period"].to_numpy(), (raw["offenseScore"] - raw["defenseScore"]).abs().to_numpy())]
+    is_pass = raw["playType"].isin(EV.PASS_TYPES)
+    team = pd.DataFrame({"games": raw.groupby("offense")["gameId"].nunique(), "pass": raw[is_pass].groupby("offense").size(),
+                         "run": raw[~is_pass].groupby("offense").size(),
                          "off_epa": plays.groupby("offense")["epa"].mean(), "def_epa": plays.groupby("defense")["epa"].mean(),
                          "dropbacks": db.groupby("offense").size(), "pass_yards": db.groupby("offense")["yards"].sum(),
-                         "runs": plays[plays["kind"] == "run"].groupby("offense").size(), "rb_carries": rb.groupby("offense").size(),
+                         "runs": raw[~is_pass].groupby("offense").size(), "rb_carries": rb.groupby("offense").size(),
                          "rb_yards": rb.groupby("offense")["yards"].sum(), "rec_yards": rec.groupby("offense")["yards"].sum()}).fillna(0)
     team = team[team.index.isin(conf)].rename_axis("team").reset_index().assign(season=s)
     team["pass_pg"], team["run_pg"] = team["pass"] / team["games"], team["run"] / team["games"]
@@ -77,10 +85,45 @@ def season(L, s: int) -> dict:
     # Per pass play (counted from every credited pass play), not per matched dropback: a team whose passers went
     # unmatched (UL Monroe 2022: 1 matched dropback, 192 pass plays) otherwise produced 1,980 yards per dropback (1.0.1).
     team["rec_ypd"] = team["rec_yards"] / team["pass"].clip(lower=1)
+    validate_season(s, team, p, S.work(ev, pos))
     cache[s] = {"p": p, "team": team, "conf": conf, "work": S.work(ev, pos), "eff": S.efficiency(ev, pos),
                 "roster": L.load(f"players_roster_{s}", as_of),
                 "played": ev.groupby("player_id")["offense"].agg(lambda x: x.mode().iloc[0]).to_dict()}
     return cache[s]
+
+
+# ---- range assertions (DATA-QA, Matt Nov 16): a value outside these fails the build instead of reaching a model ---------
+# pass plays per game down to 3: the service academies' option offenses (Army 2017: 4.8)
+TEAM_BOUNDS = {"pass_pg": (3, 70), "run_pg": (10, 70), "rec_ypd": (2, 15), "rb_frac": (0, 1), "games": (1, 17)}
+RATE_BOUNDS = {"QB": (-5, 20), "RB": (-5, 20), "REC": (0, 40)}          # per play, players with RATE_MIN_N plays
+RATE_MIN_N = {"QB": 50, "RB": 30, "REC": 20}
+PROJ_MAX = {"QB": 7000, "RB": 3500, "REC": 3000}                        # season yards
+
+
+def validate_season(s: int, team: pd.DataFrame, p: pd.DataFrame, work: pd.DataFrame) -> None:
+    bad = []
+    full = team[team["games"] >= 5]
+    for col, (lo, hi) in TEAM_BOUNDS.items():
+        x = full[(full[col] < lo) | (full[col] > hi)]
+        bad += [f"{s} {r.team}: {col} {getattr(r, col):.2f} outside [{lo}, {hi}]" for r in x.itertuples()]
+    for g, (lo, hi) in RATE_BOUNDS.items():
+        x = p[(p["group"] == g) & (p["n"] >= RATE_MIN_N[g]) & ((p["rate"] < lo) | (p["rate"] > hi))]
+        bad += [f"{s} {r.team} {r.player_id}: {g} rate {r.rate:.2f} outside [{lo}, {hi}]" for r in x.itertuples()]
+    tot = work.groupby(["team", "group"])["share"].sum()
+    bad += [f"{s} {t} {g}: shares sum to {v:.3f}" for (t, g), v in tot[tot > 1 + 1e-6].items()]
+    if bad:
+        raise ValueError(f"season {s} failed range checks:\n" + "\n".join(bad[:20]))
+
+
+def validate_projection(c: pd.DataFrame) -> None:
+    bad = []
+    tot = c.groupby(["team", "group"])["share"].sum()
+    bad += [f"{t} {g}: projected shares sum to {v:.3f}" for (t, g), v in tot[tot > 1 + 1e-6].items()]
+    for g, hi in PROJ_MAX.items():
+        x = c[(c["group"] == g) & ((c["proj"] > hi) | (c["proj"] < -100))]
+        bad += [f"{r.team} {r.key}: {g} projection {r.proj:.0f}" for r in x.itertuples()]
+    if bad:
+        raise ValueError("projection failed range checks:\n" + "\n".join(bad[:20]))
 
 
 def _recruits(L, last: int, as_of) -> pd.DataFrame:
@@ -300,6 +343,7 @@ def project(L, t: int, as_of, permute_seed: int | None = None) -> pd.DataFrame:
     team_prev = [teams[col[g]].get((t - 1, tm), np.nan) for tm, g in zip(cte["team"], cte["group"], strict=True)]
     cte["share_only"] = np.where(cte["status"] == "freshman", 0.0, cte["last_share"] * np.nan_to_num(np.array(team_prev, float)))
     cte = cte[cte["proj"].notna()].reset_index(drop=True)
+    validate_projection(cte)
     return _intervals(cte, _interval_bins())
 
 
