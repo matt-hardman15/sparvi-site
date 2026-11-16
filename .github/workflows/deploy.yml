@@ -48,7 +48,8 @@ jobs:
           # Generated from the model registry at render time, never committed (a committed copy conflicted with every
           # open PR that registered a version whenever the backtest bot rewrote it).
           uv run python -m sparvi.registry export
-          cd site && quarto render
+          # uv run: post-render steps use the project's Python (site/build/social.py needs Pillow).
+          cd site && uv run quarto render
           # A missing prose number renders as "?meta:..." instead of failing; fail here instead.
           if grep -rl "?meta:" ../docs --include=*.html; then echo "::error::unresolved prose numbers"; exit 1; fi
 

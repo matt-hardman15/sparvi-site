@@ -812,3 +812,55 @@ def test_team_page_numbers_are_in_the_html_without_javascript(browser, base_url)
         assert p.locator(".team-sub a[href*='cfb/teams/']").count() >= 10      # SEC teams + the index
     finally:
         ctx.close()
+
+
+# ---- structured data and preview images (PLAN-seo S3) ---------------------------------------------
+def _ld_types(rel):
+    h = (DOCS / rel).read_text(encoding="utf-8")
+    types = []
+    for b in re.findall(r'<script type="application/ld\+json"[^>]*>(.*?)</script>', h, re.S):
+        d = json.loads(b)
+        types += [x["@type"] for x in d.get("@graph", [d])]
+    return h, types
+
+
+@pytest.mark.parametrize("rel,want", [
+    ("index.html", {"WebSite", "Organization"}),
+    ("baseball/stuff-plus/index.html", {"BreadcrumbList", "Article"}),
+    ("baseball/tools/stuff-leaderboard.html", {"BreadcrumbList", "Dataset"}),
+    ("nfl/tools/team-efficiency.html", {"BreadcrumbList", "Dataset"}),
+    ("nfl/teams/kc/index.html", {"BreadcrumbList", "SportsTeam"}),
+    ("cfb/teams/georgia/index.html", {"BreadcrumbList", "SportsTeam"}),
+    ("baseball/players/ryan-ramsey-687547/index.html", {"BreadcrumbList", "ProfilePage"}),
+    ("baseball/teams/aaa/oma/index.html", {"BreadcrumbList", "SportsTeam"}),
+    ("glossary.html", {"BreadcrumbList"}),
+])
+def test_structured_data_by_page_type(rel, want):
+    _, types = _ld_types(rel)
+    assert want <= set(types), types
+
+
+def test_breadcrumb_links_resolve():
+    for rel in ["baseball/players/ryan-ramsey-687547/index.html", "baseball/teams/aaa/oma/index.html", "cfb/teams/georgia/index.html"]:
+        h = (DOCS / rel).read_text(encoding="utf-8")
+        for b in re.findall(r'<script type="application/ld\+json"[^>]*>(.*?)</script>', h, re.S):
+            d = json.loads(b)
+            for x in d.get("@graph", [d]):
+                if x["@type"] == "BreadcrumbList":
+                    names = [i["name"] for i in x["itemListElement"]]
+                    assert names[0] == "Sparvi" and len(names) >= 3, names
+                    for i in x["itemListElement"]:
+                        p = i["item"].removeprefix("https://sparvi.io/")
+                        assert (DOCS / (p + "index.html" if p.endswith("/") or not p else p)).exists(), i["item"]
+
+
+@pytest.mark.parametrize("rel", ["baseball/stuff-plus/index.html", "baseball/tools/triple-a.html", "baseball/index.html",
+                                 "baseball/players/ryan-ramsey-687547/index.html", "baseball/teams/mlb/kc/index.html",
+                                 "nfl/teams/kc/index.html"])
+def test_preview_image_exists_and_is_1200x630(rel):
+    from PIL import Image
+    h = (DOCS / rel).read_text(encoding="utf-8")
+    og = re.search(r'<meta property="og:image" content="https://sparvi.io/([^"]+)"', h)[1]
+    tw = re.search(r'<meta name="twitter:image" content="https://sparvi.io/([^"]+)"', h)[1]
+    assert og == tw and Image.open(DOCS / og).size == (1200, 630)
+    assert "og-default.png" not in og

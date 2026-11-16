@@ -19,6 +19,7 @@ import json
 from collections.abc import Callable
 from pathlib import Path
 
+import jsonld
 import summarize as sm
 
 MLB = {"ATH": "Athletics", "ATL": "Atlanta Braves", "AZ": "Arizona Diamondbacks", "BAL": "Baltimore Orioles",
@@ -175,14 +176,23 @@ def build(players: list[dict], data: Path, season: int, href: Callable[[dict], s
         org = info["org"]
         link = f'Affiliate of the <a href="/{path("MLB", org)}/">{e(MLB.get(org, org))}</a>'
         title, desc = titles("AAA", info["name"], season)
+        u = f"{jsonld.BASE}{path('AAA', club)}/"
         pages.append({"path": path("AAA", club), "title": title, "h1": info["name"], "desc": desc, "hit": hit, "pit": pit,
+                      "ld": jsonld.sports_team(u, info["name"], "Baseball", "Triple-A", MLB.get(org, org)),
+                      "og": {"title": info["name"], "kicker": f"Triple-A · {season}", "sub": f"Affiliate of the {MLB.get(org, org)}",
+                             "stats": [("Hitters", str(len(hit))), ("Pitchers", str(len(pit)))]},
                       "body": page_body("AAA", club, info, season, hit, pit, players, href, sm_short(dates["AAA"]), link)})
     for org, name in sorted(MLB.items()):
         _, pit = roster(players, "MLB", org)
         club = aff.get(org)
         link = (f'Triple-A affiliate: <a href="/{path("AAA", club)}/">{e(cl[club]["name"])}</a>' if club else "")
         title, desc = titles("MLB", name, season)
+        u = f"{jsonld.BASE}{path('MLB', org)}/"
         pages.append({"path": path("MLB", org), "title": title, "h1": name, "desc": desc, "hit": [], "pit": pit,
+                      "ld": jsonld.sports_team(u, name, "Baseball", "MLB"),
+                      "og": {"title": name, "kicker": f"MLB pitching staff · {season}",
+                             "sub": f"Stuff+, Location+, and Pitching+ for every pitcher with {sm.MIN_MLB_PITCHES}+ pitches",
+                             "stats": [("Pitchers", str(len(pit)))]},
                       "body": page_body("MLB", org, {"name": name}, season, [], pit, players, href, sm_short(dates["MLB"]), link)})
     rows = "".join(
         f'<li><a href="/{path("MLB", org)}/">{e(name)}</a>'
@@ -191,7 +201,8 @@ def build(players: list[dict], data: Path, season: int, href: Callable[[dict], s
     pages.append({"path": PREFIX.rstrip("/"), "title": f"Baseball teams {season}: MLB and Triple-A rosters", "h1": "Baseball teams",
                   "desc": f"Every MLB club's {season} pitching staff and its Triple-A affiliate's roster, with Stuff+, swing decisions, "
                           "and links to every player profile.",
-                  "hit": [], "pit": [],
+                  "hit": [], "pit": [], "og": {"title": "Baseball teams", "kicker": f"Baseball · {season}",
+                                               "sub": "Every MLB pitching staff and every Triple-A roster, with links to each player."},
                   "body": f'<p>Each MLB club links to its pitching staff; its Triple-A affiliate links to that club\'s hitters and pitchers. '
                           f'Every player links to a full profile; see also the <a href="/baseball/players/">list of player profiles</a>.</p>'
                           f'<ul class="team-index">{rows}</ul>'})
