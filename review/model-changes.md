@@ -13,6 +13,9 @@ receiving yards 0.522 vs. EPA per target 0.220. Profile validation: movers r 0.1
 players 0.2645 -> 0.3238, split-half 0.2952 -> 0.3261. System fit and the projection list the engine and features
 file as code but read none of the new features: their inputs are unchanged (patch). The fit model's labels still use
 EPA per target (`labels.py`, pre-registered); exploration reruns with the new measures follow.
+The profile's label-permutation hook now also shuffles who got each play (models/cfb/player_profile/backtest.py, not
+model code): per-team-play features carry usage, which an outcome-only shuffle keeps, so the 10-seed test failed with
+nothing leaking. With both shuffled: mean shuffled-label r +0.014 (90% CI -0.016 to +0.044), passes.
 
 ## 2026-11-16 · CFB player projection 1.0.1 → 1.0.2, CFB system fit 1.1.4 → 1.1.5 (patch: DATA-QA part B)
 Found by DATA-QA's new range assertions and id audit (Matt, Nov 16: ML best practice):
