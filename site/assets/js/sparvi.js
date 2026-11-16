@@ -292,7 +292,11 @@
     host.replaceChildren(grid);
   };
 
-  S.playerLink = (id, name) => `<a href="/baseball/player.html?id=${id}">${name ?? id}</a>`;
+  // Baseball player pages are static: /baseball/players/<slug>-<id>/ (PLAN-seo S2). S.slug is the twin of
+  // sparvi/urls.py slug(); tests/test_site.py checks they agree on every name in player_urls.json.
+  S.slug = (name) => String(name).normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "player";
+  S.playerHref = (id, name, qs = "") => `/baseball/players/${S.slug(name)}-${id}/${qs ? "?" + qs : ""}`;
+  S.playerLink = (id, name) => `<a href="${S.playerHref(id, name)}">${name ?? id}</a>`;
   // NFL team pages are static, one per team: /nfl/teams/kc/ (query string carries the view state).
   S.nflTeamHref = (id, qs = "") => `/nfl/teams/${String(id).toLowerCase()}/${qs ? "?" + qs : ""}`;
   S.nflTeamLink = (id, label, qs = "") => `<a href="${S.nflTeamHref(id, qs)}">${label ?? id}</a>`;

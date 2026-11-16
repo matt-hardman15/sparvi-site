@@ -343,6 +343,12 @@ def player_pitcher():
     return first_id("aaa_pitchers.json", "player_id", lambda r: r["bf"] >= 300)
 
 
+def player_url(pid, qs=""):
+    """A player's static page (PLAN-seo S2), from the URL registry."""
+    reg = json.loads((DATA / "baseball" / "player_urls.json").read_text(encoding="utf-8"))
+    return f"/baseball/players/{reg[str(pid)][-1]}/{qs}"
+
+
 def act_player(*sections, role_tag=False):
     def check(p):
         h2 = p.locator("#root h2").all_text_contents()
@@ -371,7 +377,7 @@ def act_player(*sections, role_tag=False):
 
 def act_free_agents(p):
     assert "Pitching+" in p.text_content(".finding")
-    assert rows(p, "#t") == 25 and p.locator("#t a[href*='player.html?id=']").count() >= 20
+    assert rows(p, "#t") == 25 and p.locator("#t a[href^='/baseball/players/']").count() >= 20
     assert p.locator("#scatter svg circle").count() >= 50
     seg(p, "#c", "Starters"); assert query(p)["role"] == "SP" and "starters" in p.text_content("#scap")
     n_sp = rows(p, "#t")
@@ -576,6 +582,13 @@ def act_home(p):
     assert p.locator('a[href="https://x.com/SparviAnalytics"]').count() >= 1
 
 
+def act_players_index(p):
+    links = p.locator("ul.player-index a")
+    assert links.count() > 1500
+    href = links.first.evaluate("a => a.pathname")
+    assert re.fullmatch(r"/baseball/players/[a-z0-9-]+-\d+/", href), href
+
+
 PAGES = [
     ("home", "/", act_home),
     ("baseball", "/baseball/", None),
@@ -591,9 +604,10 @@ PAGES = [
     ("aaa-translation", "/baseball/aaa-translation/", act_translation),
     ("rule-5-board", "/baseball/tools/rule-5.html", act_rule5),
     ("rule-5-article", "/baseball/rule-5/", act_rule5_article),
-    ("player-hitter", lambda: f"/baseball/player.html?id={player_hitter()}", act_player("Hitting · Triple-A")),
-    ("player-pitcher", lambda: f"/baseball/player.html?id={player_pitcher()}", act_player("Pitching · Triple-A", role_tag=True)),
-    ("player-missing", "/baseball/player.html?id=1", lambda p: "No " in p.text_content("#root")),
+    ("player-hitter", lambda: player_url(player_hitter()), act_player("Hitting · Triple-A")),
+    ("player-pitcher", lambda: player_url(player_pitcher()), act_player("Pitching · Triple-A", role_tag=True)),
+    ("player-old-url-missing", "/baseball/player.html?id=1", lambda p: "No profile" in p.text_content("#root")),
+    ("players-index", "/baseball/players/", act_players_index),
     ("nfl", "/nfl/", act_nfl_index),
     ("nfl-jax-article", "/nfl/is-jacksonville-the-best/", act_nfl_jax),
     ("nfl-offense-or-defense", "/nfl/offense-or-defense/", act_nfl_offense_defense),
@@ -666,3 +680,67 @@ def test_slider_axes_are_stable(browser, base_url, name, path):
         assert start == ticks() == end, "the axes changed when the slider moved"
     finally:
         ctx.close()
+
+
+# ---- static player pages (PLAN-seo S2) ----------------------------------------------------------
+def test_old_player_url_redirects_with_view_state(browser, base_url):
+    ctx = browser.new_context()
+    p = ctx.new_page()
+    try:
+        pid = player_pitcher()
+        p.goto(f"{base_url}/baseball/player.html?id={pid}&window=last30", wait_until="networkidle")
+        wait(p, 500)
+        assert p.url == base_url + player_url(pid, "?window=last30")
+        assert query(p).get("window") == "last30"
+    finally:
+        ctx.close()
+
+
+def test_player_page_numbers_are_in_the_html_without_javascript(browser, base_url):
+    """Crawlers and no-JS readers get the season's numbers as plain HTML."""
+    ctx = browser.new_context(java_script_enabled=False)
+    p = ctx.new_page()
+    try:
+        pid = player_pitcher()
+        p.goto(base_url + player_url(pid))
+        row = next(r for r in json.loads((DATA / "baseball" / "aaa_pitchers.json").read_text(encoding="utf-8")) if r["player_id"] == pid)
+        assert p.locator("h1").count() == 1 and row["name"] in p.locator("h1").text_content()
+        assert str(row["bf"]) in p.locator(".player-summary").text_content()
+        assert f"{100 * row['k_pct']:.1f}%" in p.text_content("#root")
+        assert p.locator("#root table.s-table tbody tr").count() >= 5
+        assert p.locator("link[rel=canonical]").get_attribute("href") == "https://sparvi.io" + player_url(pid)
+    finally:
+        ctx.close()
+
+
+def test_js_slug_matches_python_on_every_name(browser, base_url):
+    """Sparvi.slug (tools' player links) must give the same path as sparvi/urls.py for every player."""
+    from sparvi.urls import slug
+    names = sorted({json.loads(f.read_text(encoding="utf-8"))["name"] for f in (DATA / "baseball" / "players").glob("*.json")})
+    ctx = browser.new_context()
+    p = ctx.new_page()
+    try:
+        p.goto(base_url + "/baseball/tools/stuff-leaderboard.html", wait_until="networkidle")
+        js = p.evaluate("names => names.map(n => Sparvi.slug(n))", names)
+        bad = [(n, a, slug(n)) for n, a in zip(names, js, strict=True) if a != slug(n)]
+        assert not bad, bad[:5]
+    finally:
+        ctx.close()
+
+
+def test_player_sitemap_lists_real_pages():
+    idx = (DOCS / "sitemap-index.xml").read_text(encoding="utf-8")
+    assert "https://sparvi.io/sitemap-baseball-players.xml" in idx
+    locs = re.findall(r"<loc>(.*?)</loc>", (DOCS / "sitemap-baseball-players.xml").read_text(encoding="utf-8"))
+    assert len(locs) > 1500
+    for loc in locs[::97]:
+        h = (DOCS / loc.removeprefix("https://sparvi.io/") / "index.html").read_text(encoding="utf-8")
+        assert 'name="robots" content="noindex"' not in h and f'<link rel="canonical" href="{loc}">' in h
+    assert not (DOCS / "baseball" / "players" / "template").exists()
+    assert "players/template" not in (DOCS / "sitemap.xml").read_text(encoding="utf-8")
+    assert "baseball/player.html" not in (DOCS / "sitemap.xml").read_text(encoding="utf-8")
+
+
+def test_build_report_within_budget():
+    r = json.loads((DOCS / "_build-report.json").read_text(encoding="utf-8"))
+    assert r["files"] > 2000 and all(v < 0.6 for v in r["usage"].values()), r["usage"]

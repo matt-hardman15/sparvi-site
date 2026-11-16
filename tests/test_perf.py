@@ -56,7 +56,7 @@ def base_url():
     ("/baseball/tools/triple-a.html?side=pitchers", "#t table tbody tr"),   # the largest file
     ("/baseball/tools/triple-a.html", "#t table tbody tr"),
     ("/baseball/tools/stuff-leaderboard.html", "#t table tbody tr"),
-    ("/baseball/player.html?id=691769", "#root .stat-row"),
+    ("/baseball/players/philip-abner-691769/", "#root .controls"),
     ("/baseball/farm-systems/", "#t3 table tbody tr"),
     ("/nfl/tools/team-efficiency.html", "#t table tbody tr"),
     ("/cfb/tools/team-ratings.html", "#t table tbody tr"),
