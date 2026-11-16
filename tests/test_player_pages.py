@@ -127,7 +127,8 @@ def test_embedded_data_cannot_close_its_script_tag():
     p = {**PLAYERS[0], "name": "</script><script>alert(1)</script>"}
     b = pp.body(p, 2026, sm.final(p))
     data = b[b.index('id="page-data">'):]
-    assert data.count("</script>") == 1
+    data = data[:data.index("</script>")]
+    assert "</" not in data      # only a closing tag can end the JSON block early
 
 
 # ---- hosting budget ------------------------------------------------------------------------------
@@ -139,3 +140,74 @@ def test_budget_thresholds():
     assert warn and not fail
     warn, fail, _ = budget.check(m(10, 8), cfg)
     assert fail and "files" in fail[0]
+
+
+# ---- season rollover: pages from the archive (SEO-2b) ---------------------------------------------
+def test_archive_keeps_what_the_static_page_needs():
+    from sparvi.player_archive import slim
+    for p in PLAYERS:
+        a = slim(p)
+        assert sm.final(a) == sm.final(p), p["name"]
+        assert sm.summary(a, 2026) == sm.summary(p, 2026)
+
+
+def test_committed_archive_matches_the_player_files():
+    from sparvi.player_archive import archive, path_for
+    assert json.loads(path_for(DATA, META["season"]).read_text(encoding="utf-8")) == json.loads(json.dumps(archive(PLAYERS)))
+
+
+def test_archived_page_is_static_and_says_which_season():
+    from sparvi.player_archive import slim
+    p = slim(next(x for x in PLAYERS if sm.indexable(sm.final(x))))
+    b = pp.body(p, 2026, sm.final(p), current=2027)
+    assert "No 2027 data" in b and "these are his 2026 numbers" in b
+    assert 'id="page-data"' not in b and "player.js" not in b and "<table" in b
+    assert "/baseball/teams/" not in b          # last season's club isn't this season's team page
+
+
+# ---- team pages ----------------------------------------------------------------------------------
+TEAMS = None
+
+
+def team_pages():
+    global TEAMS
+    if TEAMS is None:
+        bt = load("baseball_teams")
+        TEAMS = bt.build(PLAYERS, DATA, META["season"], lambda p: f"/baseball/players/{player_path(p['id'], p['name'])}/")
+    return TEAMS
+
+
+def test_sixty_teams_plus_index():
+    pages = team_pages()
+    assert len(pages) == 61 and len({t["path"] for t in pages}) == 61
+    assert sum(t["path"].startswith("baseball/teams/aaa/") for t in pages) == 30
+
+
+def test_team_summary_numbers_are_on_the_page():
+    for t in team_pages()[:-1]:
+        text = html.unescape(re.sub(r"<[^>]+>", " ", t["body"]))
+        summary = re.search(r'<p class="page-summary">(.*?)</p>', t["body"]).group(1)
+        names = {p["name"] for p, _ in t["hit"] + t["pit"]}
+        s = html.unescape(summary)
+        for n in names | {t["h1"]}:
+            s = s.replace(n, "")
+        tokens = set(NUM.findall(text.replace(html.unescape(summary), "")))
+        for n in NUM.findall(s):
+            assert n in tokens or n in {"100", "500", str(META["season"])}, f"{t['h1']}: {n}"
+
+
+def test_every_profiled_player_is_on_his_team_page():
+    pages = {t["path"]: t for t in team_pages()}
+    for p in PLAYERS:
+        fin = sm.final(p)
+        for k, lvl in (("hitter", "aaa"), ("AAA", "aaa"), ("MLB", "mlb")):
+            if k in sm.roles(fin):
+                body = pages[f"baseball/teams/{lvl}/{fin[k]['team'].lower()}"]["body"]
+                assert f"/{player_path(p['id'], p['name'])}/" in body, (p["name"], k)
+
+
+def test_team_titles_and_descriptions_fit_and_are_unique():
+    pages = team_pages()
+    assert all(len(t["title"]) + len(" – Sparvi") <= 60 and 120 <= len(t["desc"]) <= 155 for t in pages), \
+        [(t["title"], len(t["desc"])) for t in pages if not 120 <= len(t["desc"]) <= 155][:3]
+    assert len({t["title"] for t in pages}) == len(pages) and len({t["desc"] for t in pages}) == len(pages)

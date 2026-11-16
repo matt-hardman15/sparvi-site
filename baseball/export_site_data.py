@@ -23,6 +23,7 @@ import yaml
 from backtest.gate import require_passing
 from sparvi.config import ROOT, baseball, section
 from sparvi.io import write_json, write_numbers, write_records
+from sparvi.player_archive import archive, path_for
 from sparvi.urls import update_registry
 
 CFG = baseball()
@@ -329,6 +330,8 @@ for pid in ids:
 write_json(OUT / "players_index.json", ids)
 # Every page path each player has had (PLAN-seo S2): only grows, so old URLs keep redirecting.
 write_json(OUT / "player_urls.json", update_registry(OUT / "player_urls.json", {pid: names.get(pid, str(pid)) for pid in ids}))
+# This season's final numbers per player, so pages survive the rollover (sparvi/player_archive.py).
+write_json(path_for(OUT, SEASON), archive([json.loads((PLAYERS / f"{pid}.json").read_text(encoding="utf-8")) for pid in ids]))
 sizes = sorted(f.stat().st_size for f in PLAYERS.glob("*.json"))
 print(f"players/*.json {len(sizes):>14,} files, median {sizes[len(sizes) // 2] / 1024:.0f} KB, "
       f"max {sizes[-1] / 1024:.0f} KB, total {sum(sizes) / 1e6:.1f} MB")

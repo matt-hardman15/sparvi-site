@@ -9,8 +9,9 @@ per player; the per-player JSON files are removed from the output.
 - Indexed pages: players at or above the PLAN-seo S2 thresholds (summarize.indexable). The rest keep a
   page, since tools link to every player, but it is noindex and left out of the sitemap.
 - Old paths (site/data/baseball/player_urls.json, which only grows): a noindex redirect to the current
-  page. A player with no data this season redirects to the players index for now (BACKLOG SEO-2b gives
-  them their last season's page).
+  page. A player in the registry with no data this season keeps his page, built from his last season in
+  site/data/baseball/archive/players_<season>.json (sparvi/player_archive.py): static numbers, no charts.
+- Team pages (baseball_teams.py): /baseball/teams/, 30 Triple-A rosters, 30 MLB staffs; sitemap-baseball-teams.xml.
 - sitemap-baseball-players.xml: lastmod is the last commit that changed the player's data file or the
   page code, not the build time.
 - /baseball/players/ (the A-Z index) gets its list here.
@@ -31,6 +32,7 @@ from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import baseball_teams as bt  # noqa: E402
 import summarize as sm  # noqa: E402
 
 SITE = Path(__file__).resolve().parents[1]
@@ -43,7 +45,7 @@ BASE = "https://sparvi.io/"
 PREFIX = "baseball/players/"
 SHELL = OUT / PREFIX / "template" / "index.html"
 CODE = ["site/baseball/players/template/index.qmd", "site/assets/js/player.js", "site/build/summarize.py",
-        "site/build/player_pages.py"]
+        "site/build/player_pages.py", "site/build/baseball_teams.py"]
 MONTHS = ["Jan.", "Feb.", "March", "April", "May", "June", "July", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."]
 TITLE_BUDGET = 60 - len(" – Sparvi")
 DESC_MIN, DESC_MAX = 120, 155
@@ -116,19 +118,27 @@ def through(p: dict) -> dict[str, str]:
     return {lvl: short(tl[lvl]["dates"][-1]) for lvl in ("AAA", "MLB") if (tl.get(lvl) or {}).get("dates")}
 
 
-def body(p: dict, season: int, fin: dict) -> str:
+def body(p: dict, season: int, fin: dict, current: int | None = None) -> str:
+    """The page body. With `current` (an archived player with no data that season): static numbers only."""
     th = through(p)
     latest = max((p["timeline"][lvl]["dates"][-1] for lvl in th), default=None)
-    links = " · ".join(f'<a href="{h}">{t}</a>' for h, t in [
+    # The player's team pages (baseball_teams.py), then the tools.
+    team_links = [(f"/{bt.path(lvl, fin[k]['team'])}/", f"{fin[k]['team']} ({'Triple-A' if lvl == 'AAA' else 'MLB'})")
+                  for k, lvl in (("hitter", "AAA"), ("AAA", "AAA"), ("MLB", "MLB")) if k in sm.roles(fin) and fin[k].get("team")
+                  and not current]   # an archived season's clubs are not this season's team pages
+    links = " · ".join(f'<a href="{h}">{e(t)}</a>' for h, t in list(dict.fromkeys(team_links)) + [
         ("/baseball/tools/stuff-leaderboard.html", "Pitch-grade leaderboard"), ("/baseball/tools/triple-a.html", "Triple-A explorer"),
         ("/baseball/players/", "All player profiles"), ("/glossary.html", "Glossary")])
     data = json.dumps(p, ensure_ascii=False, separators=(",", ":"), allow_nan=False).replace("</", "<\\/")
-    return "\n".join([
-        f'<p class="kicker">{e(kicker(p, season))}</p>',
-        f'<p class="player-summary">{e(sm.summary(p, season))}</p>',
-        f'<p class="note">{"Data through " + e(ap(latest)) + ". " if latest else ""}Compare: {links}</p>',
-        '<div id="root">', sm.static_body(p, th), "</div>",
-        f'<script type="application/json" id="page-data">{data}</script>'])
+    when = (f"No {current} data for him yet: these are his {season} numbers, his latest season in this site's data. "
+            if current else ("Data through " + e(ap(latest)) + ". " if latest else ""))
+    out = [f'<p class="kicker">{e(kicker(p, season))}</p>',
+           f'<p class="player-summary">{e(sm.summary(p, season))}</p>',
+           f'<p class="note">{when}See also: {links}</p>',
+           '<div id="root">', sm.static_body(p, th), "</div>"]
+    if not current:   # the interactive version needs the full season's timeline, which the archive doesn't keep
+        out += [f'<script type="application/json" id="page-data">{data}</script>', '<script src="/assets/js/player.js"></script>']
+    return "\n".join(out)
 
 
 # Slots in the shell (site/baseball/players/template/index.qmd). Letters only: Pandoc would read
@@ -165,9 +175,13 @@ def git_dates() -> dict[str, str]:
     return out
 
 
-def code_date() -> str | None:
-    r = subprocess.run(["git", "log", "-1", "--format=%cs", "--", *CODE], cwd=REPO, capture_output=True, text=True)
+def git_date(paths: list[str]) -> str | None:
+    r = subprocess.run(["git", "log", "-1", "--format=%cs", "--", *paths], cwd=REPO, capture_output=True, text=True)
     return r.stdout.strip() or None
+
+
+def code_date() -> str | None:
+    return git_date(CODE)
 
 
 def last_name(name: str) -> str:
@@ -194,6 +208,8 @@ def main() -> int:
     if os.environ.get("QUARTO_PROJECT_RENDER_ALL") not in (None, "1") or not SHELL.exists():
         return 0                                        # quarto preview / single-file renders
     shell = SHELL.read_text(encoding="utf-8")
+    # Root-relative links, so the shell works at any depth (team pages sit one level deeper than player pages).
+    shell = re.sub(r'((?:href|src)=")(?:\.\./)+', r"\1/", shell)
     lost = [s for s in SLOTS if s not in shell]
     if lost:
         print(f"player_pages: the rendered shell lost its slots {lost}", file=sys.stderr)
@@ -232,6 +248,29 @@ def main() -> int:
         else:
             n_noindex += 1
     current = {str(p["id"]) for p in players}
+    # Players with no data this season: their last season's page, from the newest archive that has them.
+    archives = sorted(DATA.glob("archive/players_*.json"), key=lambda f: -int(f.stem.split("_")[1]))
+    loaded = {f: json.loads(f.read_text(encoding="utf-8")) for f in archives}
+    n_archived = 0
+    for pid, paths in reg.items():
+        if pid in current:
+            continue
+        f = next((f for f in archives if pid in loaded[f] and int(f.stem.split("_")[1]) < season), None)
+        if f is None:
+            continue
+        p = loaded[f][pid]
+        fin, last = sm.final(p), p["season"]
+        ok = sm.indexable(fin)
+        title, desc = titles(p, fin, last, False)
+        page = fill(shell, title, p["name"], desc, body(p, last, fin, current=season), url(paths[-1]), noindex=not ok)
+        d = OUT / PREFIX / paths[-1]
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "index.html").write_text(page, encoding="utf-8", newline="\n")
+        current.add(pid)
+        n_archived += 1
+        if ok:
+            entries.append((url(paths[-1]), max(x for x in (git_date([f.relative_to(REPO).as_posix()]), cdate, "1970-01-01") if x)))
+            index_rows.append((p["name"], paths[-1], f"{last} season"))
     n_redirects = 0
     for pid, paths in reg.items():
         target = url(paths[-1]) if pid in current else f"{BASE}{PREFIX}"
@@ -243,6 +282,7 @@ def main() -> int:
 
     # One file per player page: the per-player JSON is embedded, so it isn't published separately.
     shutil.rmtree(OUT / "data" / "baseball" / "players", ignore_errors=True)
+    shutil.rmtree(OUT / "data" / "baseball" / "archive", ignore_errors=True)
     (OUT / "data" / "baseball" / "players_index.json").unlink(missing_ok=True)
 
     # The A-Z index, sorted by last name then first.
@@ -266,7 +306,25 @@ def main() -> int:
         '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
         + "".join(f"  <url>\n    <loc>{u}</loc>\n    <lastmod>{d}</lastmod>\n  </url>\n" for u, d in entries)
         + "</urlset>\n", encoding="utf-8", newline="\n")
-    print(f"player_pages: {len(players)} pages ({len(entries)} indexed, {n_noindex} noindex), {n_redirects} redirects")
+    print(f"player_pages: {len(players)} pages ({len(entries)} indexed, {n_noindex} noindex), {n_archived} from last season, "
+          f"{n_redirects} redirects")
+
+    # Team pages: same shell, their own sitemap.
+    by_id = {str(p["id"]): reg[str(p["id"])][-1] for p in players}
+    team_entries = []
+    tdate = max(x for x in (git_date(["site/data/baseball"]), cdate, "1970-01-01") if x)
+    for t in bt.build(players, DATA, season, lambda p: f"/{PREFIX}{by_id[str(p['id'])]}/"):
+        u = f"{BASE}{t['path']}/"
+        d = OUT / t["path"]
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "index.html").write_text(fill(shell, t["title"], t["h1"], t["desc"], t["body"], u, noindex=False), encoding="utf-8", newline="\n")
+        team_entries.append((u, tdate))
+    team_entries.sort()
+    (OUT / "sitemap-baseball-teams.xml").write_text(
+        '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + "".join(f"  <url>\n    <loc>{u}</loc>\n    <lastmod>{d}</lastmod>\n  </url>\n" for u, d in team_entries)
+        + "</urlset>\n", encoding="utf-8", newline="\n")
+    print(f"player_pages: {len(team_entries)} team pages")
     return 0
 
 

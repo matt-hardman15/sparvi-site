@@ -6,7 +6,7 @@ description: "Every MLB pitcher and Triple-A player with a Sparvi profile this s
 page-layout: article
 ---
 
-Each profile shows a player's season to date: pitch grades and arsenal for pitchers, swing decisions and contact quality for Triple-A hitters, league percentiles, and how each number moved through the season. Players are listed by last name with their team and level. To compare players instead, use the [pitch-grade leaderboard](/baseball/tools/stuff-leaderboard.html) or the [Triple-A explorer](/baseball/tools/triple-a.html).
+Each profile shows a player's season to date: pitch grades and arsenal for pitchers, swing decisions and contact quality for Triple-A hitters, league percentiles, and how each number moved through the season. Players are listed by last name with their team and level. To browse by club, start from the [team pages](/baseball/teams/); to compare players, use the [pitch-grade leaderboard](/baseball/tools/stuff-leaderboard.html) or the [Triple-A explorer](/baseball/tools/triple-a.html).
 
 ```{=html}
 <!-- Filled by site/build/player_pages.py after render. -->
