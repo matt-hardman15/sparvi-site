@@ -2,6 +2,20 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-16 · CFB player projection 1.0.1 → 1.0.2, CFB system fit 1.1.4 → 1.1.5 (patch: DATA-QA part B)
+Found by DATA-QA's new range assertions and id audit (Matt, Nov 16: ML best practice):
+- Team play counts came from the event table, which only has a row when someone on the play was matched, so an unmatched
+  lead back removed his team's runs (Mississippi State 8 run plays a game in 2020-2022). Counts now come straight from the
+  play-by-play (same garbage-time rule): Mississippi State 2021 16 run and 51 pass plays a game.
+- Receiving shares used a team total that wasn't clipped like each player's, so a team's shares summed to as much as 1.8.
+- Roster positions of '?' (all of 2014) or blank (many FCS rosters) dropped players from every position pool (2-5% of FBS
+  touches in 2014-2017, starters such as Javorius Allen and Nick Chubb). `cfb/fit/data.py` now infers the group from the
+  role he played most when the listed position is unusable: lost FBS touches 5.1% -> 1.2% in 2014.
+- Range assertions on team and player tables and on the projection fail the build; every season 2014-2025 passes.
+- Convergence asserted: the share logit and the fit model's logistic regressions raise instead of warning.
+Projection, 2021-2025 rerun locally (seen data; the official run is in CI on merge): QB 0.534, RB 0.511, WR 0.486, TE
+0.438 (1.0.1: 0.534, 0.508, 0.487, 0.438); same gate outcome. System fit's backtest reruns in CI.
+
 ## 2026-11-16 · CFB player projection 1.0.0 → 1.0.1 (patch: receiving rate)
 1.0.0's official pre-registered run (2021-2025): QB r 0.534 and RB 0.508 passed the strict per-position gate; WR 0.025
 and TE 0.038 failed, near zero in the 2023 and 2024 folds. Cause: team receiving yards per dropback divided by matched

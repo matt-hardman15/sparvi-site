@@ -62,7 +62,9 @@ def work(ev: pd.DataFrame, pos: pd.Series) -> pd.DataFrame:
         tot_src = {"QB": ev[ev["opp"] == "dropback"], "RB": ev[(ev["opp"] == "carry") & (grp == "RB")]}.get(g, ev[comp])
         if amt:
             n = r.groupby(["offense", "player_id"])["yards"].sum().clip(lower=0)
-            tot = tot_src.groupby("offense")["yards"].sum().clip(lower=1)
+            # The team total clipped the same way as each player's (DATA-QA: shares summed to as much as 1.8 when some
+            # receivers' season totals were negative).
+            tot = tot_src.groupby(["offense", "player_id"])["yards"].sum().clip(lower=0).groupby(level=0).sum().clip(lower=1)
         else:
             n = r.groupby(["offense", "player_id"]).size()
             tot = tot_src.groupby("offense").size()
@@ -209,7 +211,10 @@ def fit(X: np.ndarray, keys: np.ndarray, y: np.ndarray, y0: dict) -> np.ndarray:
         g_u = -(y - tot[inv] * p)
         grad = np.append(X.T @ g_u + 2 * L2 * b[:-1], -(y0v - tot * p0).sum())
         return val, grad
-    return minimize(loss, np.zeros(X.shape[1] + 1), jac=True, method="L-BFGS-B").x
+    res = minimize(loss, np.zeros(X.shape[1] + 1), jac=True, method="L-BFGS-B", options={"maxiter": 5000})
+    if not res.success:                                # DATA-QA: never hide a fit that didn't converge
+        raise RuntimeError(f"share model did not converge: {res.message} after {res.nit} iterations")
+    return res.x
 
 
 def _starts(inv: np.ndarray) -> np.ndarray:

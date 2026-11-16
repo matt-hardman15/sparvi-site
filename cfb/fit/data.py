@@ -25,7 +25,25 @@ def season_events(loader, s: int, as_of) -> tuple[pd.DataFrame, pd.Series]:
     ev = E.plays(plays, loader.load(f"play_players_{s}", as_of))
     ros = loader.load(f"players_roster_{s}", as_of, columns=["id", "position"])
     pos = ros.assign(id=ros["id"].astype(str)).drop_duplicates("id").set_index("id")["position"]
-    return ev, pos
+    return ev, infer_positions(pos, ev)
+
+
+UNUSABLE_POSITIONS = {"?", "ATH", ""}
+USAGE_POSITION = {"dropback": "QB", "carry": "RB", "target": "WR"}
+
+
+def infer_positions(pos: pd.Series, ev: pd.DataFrame, min_plays: int = 10) -> pd.Series:
+    """Roster positions, with the unusable ones ('?' throughout 2014, blank on many FCS rosters, 'ATH') replaced by the
+    role he played most that season (dropbacks -> QB, carries -> RB, targets -> WR) when he has at least `min_plays`
+    (DATA-QA, Nov 16: 2-5% of FBS touches in 2014-2017, including starters such as Javorius Allen and Nick Chubb in 2014,
+    had no position group and fell out of every model). A listed position, including a defensive one, is kept."""
+    pos = pos.copy()
+    bad = pos.isna() | pos.astype(str).str.strip().isin(UNUSABLE_POSITIONS)
+    counts = ev[ev["opp"].isin(USAGE_POSITION)].groupby(["player_id", "opp"]).size().unstack(fill_value=0)
+    counts = counts[counts.sum(axis=1) >= min_plays]
+    usage = counts.idxmax(axis=1).map(USAGE_POSITION)
+    fix = usage[usage.index.isin(pos.index[bad]) | ~usage.index.isin(pos.index)]
+    return pd.concat([pos[~pos.index.isin(fix.index)], fix])
 
 
 def experience(s: int, rosters: dict[int, pd.DataFrame], recruits: pd.DataFrame) -> pd.Series:

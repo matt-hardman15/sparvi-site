@@ -299,6 +299,16 @@ def _standardize(X: pd.DataFrame, ref: pd.DataFrame) -> np.ndarray:
     return ((X - ref.mean()) / sd).fillna(0.0).to_numpy(float)
 
 
+def _fit_logistic(C: float, X, y) -> LogisticRegression:
+    """A fit that doesn't converge raises (DATA-QA: warnings were being filtered, so non-convergence would pass silently)."""
+    import warnings
+
+    from sklearn.exceptions import ConvergenceWarning
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", ConvergenceWarning)
+        return LogisticRegression(C=C, max_iter=5000).fit(X, y)
+
+
 def fit_group(d: pd.DataFrame, cols: list[str]) -> dict:
     """L2 logistic regression; C by leave-one-cohort-out log loss (ties: the smaller C)."""
     Xdf, y, coh = d[cols], d["y"].to_numpy(float), d["cohort"].to_numpy()
@@ -310,12 +320,12 @@ def fit_group(d: pd.DataFrame, cols: list[str]) -> dict:
             if len(np.unique(y[tr])) < 2:
                 tot = np.inf
                 break
-            m = LogisticRegression(C=C, max_iter=5000).fit(_standardize(Xdf[tr], Xdf[tr]), y[tr])
+            m = _fit_logistic(C, _standardize(Xdf[tr], Xdf[tr]), y[tr])
             p = np.clip(m.predict_proba(_standardize(Xdf[te], Xdf[tr]))[:, 1], 1e-9, 1 - 1e-9)
             tot += float(-(y[te] * np.log(p) + (1 - y[te]) * np.log(1 - p)).sum())
         loss[C] = tot
     best = min(C_GRID, key=lambda C: (loss[C], C))
-    m = LogisticRegression(C=best, max_iter=5000).fit(_standardize(Xdf, Xdf), y)
+    m = _fit_logistic(best, _standardize(Xdf, Xdf), y)
     return {"model": m, "ref": Xdf, "cols": cols, "C": best, "cv_logloss": loss, "n": int(len(d)), "rate": float(y.mean()),
             "coef": dict(zip(cols, m.coef_[0].tolist(), strict=True))}
 
