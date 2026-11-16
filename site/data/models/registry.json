@@ -64,12 +64,12 @@
   "title": "CFB player projection",
   "sport": "cfb",
   "status": "champion",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "registered": "2026-11-15",
   "primary": "r_wr_dev",
   "primary_value": 0.4997,
   "challengers": [],
-  "experimental": "pre-registered backtest (2021-2025, strict in every position group) not yet run"
+  "experimental": "1.0.0's pre-registered run failed WR and TE (a receiving-rate bug, fixed in 1.0.1). 1.0.1's 2021-2025 numbers were seen while debugging, so it stays experimental until the 2026 vault; TE ties both baselines"
  },
  {
   "model": "cfb_power_rating",

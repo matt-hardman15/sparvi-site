@@ -2,6 +2,18 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-16 · CFB player projection 1.0.0 → 1.0.1 (patch: receiving rate)
+1.0.0's official pre-registered run (2021-2025): QB r 0.534 and RB 0.508 passed the strict per-position gate; WR 0.025
+and TE 0.038 failed, near zero in the 2023 and 2024 folds. Cause: team receiving yards per dropback divided by matched
+dropbacks, and UL Monroe 2022 (passers 3% matched; CFB-MATCH-FIX) had 1 matched dropback against 1,980 receiving yards,
+so its rate was 1,980 and it corrupted the receiving-rate regression for every team in the folds that train on 2022.
+1.0.1 divides by the team's pass plays (192 for UL Monroe 2022), independent of passer matching. QB and RB projections
+are unchanged (they don't use the rate). Local rerun of 1.0.1 (the official one runs in CI on merge): QB 0.534, RB
+0.508, WR 0.487 (vs. last-season yards 0.430, gain 90% CI +0.040 to +0.073), TE 0.438 (vs. 0.445, CI -0.045 to +0.031).
+These seasons were looked at while debugging, so 1.0.1's 2021-2025 numbers are not a clean test; the 2026 vault is.
+Tried while debugging and not adopted (both lowered QB and RB): training rosters built the May 1 way in the portal era,
+and the roster's class year in experience (inconsistent with the departure rates' experience count).
+
 ## 2026-11-16 · CFB player projection 1.0.0 (new, pre-registered)
 CFB-PROJ (PLAN-fit). Season yards for every QB, RB, WR, TE on an FBS team's projected roster as of May 1: team volume x
 share x efficiency, with 80% intervals. Developed on 2016-2020 only (leave one season out): projected-yards r QB 0.531,
