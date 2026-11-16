@@ -16,7 +16,9 @@ echo "cfb seasons $FIRST-$SEASON"
   --vars "{nfl_season: $NFL_SEASON, nfl_first_season: $NFL_FIRST, cfb_season: $SEASON, cfb_first_season: $FIRST}")
 python cfb/adjusted_ratings/adjusted.py
 python cfb/adjusted_ratings/polls.py
+python cfb/carousel/analysis.py
 python cfb/export_site_data.py
 python cfb/thumb.py
+python cfb/carousel/thumb.py
 python cfb/team_pages.py
 python cfb/portal/export.py

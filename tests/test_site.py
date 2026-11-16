@@ -570,6 +570,19 @@ def act_cfb_loss_cost(p):
     assert ticks() == before, "both views share one y scale"
 
 
+def act_cfb_carousel(p):
+    """CFB-CAROUSEL: the scatter and table follow the filters; the in-progress table lists this season's new coaches."""
+    assert "points per game" in p.text_content(".finding")
+    assert p.locator("#scatter svg circle").count() >= 100 and rows(p, "#t") == 15
+    ticks = lambda: p.eval_on_selector_all("#scatter svg [aria-label='x-axis tick label'] text", "e => e.map(t => t.textContent).join('|')")  # noqa: E731
+    before = ticks()
+    seg(p, "#c", "Left for another job"); assert query(p)["why"] == "left" and "These" in p.text_content("#scap")
+    assert ticks() == before, "filters keep one scale"
+    seg(p, "#c", "Group of Five"); assert query(p)["lvl"] == "G5"
+    seg(p, "#c", "First-time"); assert query(p)["coach"] == "first" and rows(p, "#t") >= 1
+    assert rows(p, "#cur") >= 1 and "first-year head coach" in p.text_content("#ccap")
+
+
 def act_nfl_offense_defense(p):
     assert "times as closely" in p.text_content(".finding")
     assert rows(p, "#games") >= 2 or "No regular-season games" in p.text_content("#games")
@@ -656,6 +669,7 @@ PAGES = [
     ("cfb-portal", "/cfb/tools/portal-board.html", act_cfb_portal),
     ("cfb-ranked-vs-good", "/cfb/ranked-vs-good/", act_cfb_article),
     ("cfb-what-a-loss-costs", "/cfb/what-a-loss-costs/", act_cfb_loss_cost),
+    ("cfb-coaching-changes", "/cfb/coaching-changes/", act_cfb_carousel),
     ("glossary", "/glossary.html", None),
     ("about", "/about.html", None),
     ("status", "/status.html", act_status),
