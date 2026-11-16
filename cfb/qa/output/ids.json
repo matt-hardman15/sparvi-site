@@ -1,0 +1,428 @@
+{
+ "rosters": {
+  "2014": {
+   "rows": 16164,
+   "placeholder_ids": 6765,
+   "name_twice_on_a_team": 87,
+   "id_on_two_teams": 2
+  },
+  "2015": {
+   "rows": 16399,
+   "placeholder_ids": 5890,
+   "name_twice_on_a_team": 97,
+   "id_on_two_teams": 3,
+   "ids_carried_from_last_season": 10513,
+   "carried_id_last_name_changed": 0
+  },
+  "2016": {
+   "rows": 18041,
+   "placeholder_ids": 3951,
+   "name_twice_on_a_team": 162,
+   "id_on_two_teams": 7,
+   "ids_carried_from_last_season": 10496,
+   "carried_id_last_name_changed": 0
+  },
+  "2017": {
+   "rows": 17894,
+   "placeholder_ids": 3166,
+   "name_twice_on_a_team": 161,
+   "id_on_two_teams": 7,
+   "ids_carried_from_last_season": 11528,
+   "carried_id_last_name_changed": 0
+  },
+  "2018": {
+   "rows": 17902,
+   "placeholder_ids": 2208,
+   "name_twice_on_a_team": 262,
+   "id_on_two_teams": 7,
+   "ids_carried_from_last_season": 11626,
+   "carried_id_last_name_changed": 0
+  },
+  "2019": {
+   "rows": 18732,
+   "placeholder_ids": 520,
+   "name_twice_on_a_team": 387,
+   "id_on_two_teams": 1,
+   "ids_carried_from_last_season": 11132,
+   "carried_id_last_name_changed": 0
+  },
+  "2020": {
+   "rows": 16423,
+   "placeholder_ids": 0,
+   "name_twice_on_a_team": 56,
+   "id_on_two_teams": 39,
+   "ids_carried_from_last_season": 11139,
+   "carried_id_last_name_changed": 0
+  },
+  "2021": {
+   "rows": 18633,
+   "placeholder_ids": 0,
+   "name_twice_on_a_team": 95,
+   "id_on_two_teams": 195,
+   "ids_carried_from_last_season": 12007,
+   "carried_id_last_name_changed": 0
+  },
+  "2022": {
+   "rows": 30388,
+   "placeholder_ids": 0,
+   "name_twice_on_a_team": 32,
+   "id_on_two_teams": 2,
+   "ids_carried_from_last_season": 12554,
+   "carried_id_last_name_changed": 0
+  },
+  "2023": {
+   "rows": 22365,
+   "placeholder_ids": 0,
+   "name_twice_on_a_team": 80,
+   "id_on_two_teams": 1,
+   "ids_carried_from_last_season": 15686,
+   "carried_id_last_name_changed": 0
+  },
+  "2024": {
+   "rows": 22794,
+   "placeholder_ids": 0,
+   "name_twice_on_a_team": 71,
+   "id_on_two_teams": 6,
+   "ids_carried_from_last_season": 14736,
+   "carried_id_last_name_changed": 0
+  },
+  "2025": {
+   "rows": 30031,
+   "placeholder_ids": 0,
+   "name_twice_on_a_team": 67,
+   "id_on_two_teams": 4,
+   "ids_carried_from_last_season": 15163,
+   "carried_id_last_name_changed": 0
+  },
+  "2026": {
+   "rows": 31579,
+   "placeholder_ids": 0,
+   "name_twice_on_a_team": 37,
+   "id_on_two_teams": 1,
+   "ids_carried_from_last_season": 20016,
+   "carried_id_last_name_changed": 0
+  }
+ },
+ "play_text": {
+  "2014": {
+   "rows": 171229,
+   "passer_matched": 0.9974,
+   "rusher_matched": 0.9847,
+   "target_matched": 0.997,
+   "passer_position_fits": 0.9749,
+   "rusher_position_fits": 0.9096,
+   "target_position_fits": 0.95,
+   "unmatched_still_ambiguous": 0,
+   "unmatched_rows": 1234
+  },
+  "2015": {
+   "rows": 173083,
+   "passer_matched": 0.9979,
+   "rusher_matched": 0.981,
+   "target_matched": 0.9939,
+   "passer_position_fits": 0.9612,
+   "rusher_position_fits": 0.9211,
+   "target_position_fits": 0.9523,
+   "unmatched_still_ambiguous": 127,
+   "unmatched_rows": 1614
+  },
+  "2016": {
+   "rows": 171319,
+   "passer_matched": 0.9978,
+   "rusher_matched": 0.9838,
+   "target_matched": 0.997,
+   "passer_position_fits": 0.9793,
+   "rusher_position_fits": 0.9359,
+   "target_position_fits": 0.9659,
+   "unmatched_still_ambiguous": 18,
+   "unmatched_rows": 1283
+  },
+  "2017": {
+   "rows": 170745,
+   "passer_matched": 0.9979,
+   "rusher_matched": 0.9827,
+   "target_matched": 0.9968,
+   "passer_position_fits": 0.9719,
+   "rusher_position_fits": 0.9397,
+   "target_position_fits": 0.9673,
+   "unmatched_still_ambiguous": 7,
+   "unmatched_rows": 1349
+  },
+  "2018": {
+   "rows": 173628,
+   "passer_matched": 0.9971,
+   "rusher_matched": 0.9817,
+   "target_matched": 0.9957,
+   "passer_position_fits": 0.9781,
+   "rusher_position_fits": 0.964,
+   "target_position_fits": 0.9791,
+   "unmatched_still_ambiguous": 2,
+   "unmatched_rows": 1534
+  },
+  "2019": {
+   "rows": 173613,
+   "passer_matched": 0.9971,
+   "rusher_matched": 0.9816,
+   "target_matched": 0.9964,
+   "passer_position_fits": 0.9795,
+   "rusher_position_fits": 0.9826,
+   "target_position_fits": 0.982,
+   "unmatched_still_ambiguous": 10,
+   "unmatched_rows": 1484
+  },
+  "2020": {
+   "rows": 111461,
+   "passer_matched": 0.9978,
+   "rusher_matched": 0.9811,
+   "target_matched": 0.9937,
+   "passer_position_fits": 0.969,
+   "rusher_position_fits": 0.9828,
+   "target_position_fits": 0.9835,
+   "unmatched_still_ambiguous": 0,
+   "unmatched_rows": 1028
+  },
+  "2021": {
+   "rows": 162966,
+   "passer_matched": 0.9979,
+   "rusher_matched": 0.9829,
+   "target_matched": 0.985,
+   "passer_position_fits": 0.971,
+   "rusher_position_fits": 0.98,
+   "target_position_fits": 0.9849,
+   "unmatched_still_ambiguous": 9,
+   "unmatched_rows": 1792
+  },
+  "2022": {
+   "rows": 253116,
+   "passer_matched": 0.99,
+   "rusher_matched": 0.9891,
+   "target_matched": 0.9928,
+   "passer_position_fits": 0.9725,
+   "rusher_position_fits": 0.9722,
+   "target_position_fits": 0.976,
+   "unmatched_still_ambiguous": 931,
+   "unmatched_rows": 2382
+  },
+  "2023": {
+   "rows": 250720,
+   "passer_matched": 0.9971,
+   "rusher_matched": 0.9923,
+   "target_matched": 0.9919,
+   "passer_position_fits": 0.9699,
+   "rusher_position_fits": 0.9637,
+   "target_position_fits": 0.9637,
+   "unmatched_still_ambiguous": 2,
+   "unmatched_rows": 1487
+  },
+  "2024": {
+   "rows": 269024,
+   "passer_matched": 0.9993,
+   "rusher_matched": 0.9958,
+   "target_matched": 0.995,
+   "passer_position_fits": 0.9501,
+   "rusher_position_fits": 0.95,
+   "target_position_fits": 0.9576,
+   "unmatched_still_ambiguous": 27,
+   "unmatched_rows": 818
+  },
+  "2025": {
+   "rows": 313892,
+   "passer_matched": 0.9997,
+   "rusher_matched": 0.997,
+   "target_matched": 0.9951,
+   "passer_position_fits": 0.9771,
+   "rusher_position_fits": 0.9779,
+   "target_position_fits": 0.976,
+   "unmatched_still_ambiguous": 50,
+   "unmatched_rows": 825
+  },
+  "2026": {
+   "rows": 248506,
+   "passer_matched": 0.9994,
+   "rusher_matched": 0.9975,
+   "target_matched": 0.9971,
+   "passer_position_fits": 0.9688,
+   "rusher_position_fits": 0.975,
+   "target_position_fits": 0.9705,
+   "unmatched_still_ambiguous": 0,
+   "unmatched_rows": 473
+  }
+ },
+ "portal": {
+  "2021": {
+   "entries": 1770,
+   "linked": 0.9175,
+   "by_method": {
+    "origin_t1": 1459,
+    "unlinked": 146,
+    "origin_t2": 85,
+    "initial_last": 73,
+    "any_t1": 7
+   },
+   "origin_agrees": 0.9901,
+   "position_group_agrees": 0.9576,
+   "one_id_two_entries": 1
+  },
+  "2022": {
+   "entries": 2273,
+   "linked": 0.8773,
+   "by_method": {
+    "origin_t1": 1827,
+    "unlinked": 279,
+    "initial_last": 95,
+    "origin_t2": 42,
+    "any_t1": 30
+   },
+   "origin_agrees": 0.9774,
+   "position_group_agrees": 0.9639,
+   "one_id_two_entries": 1
+  },
+  "2023": {
+   "entries": 2502,
+   "linked": 0.9524,
+   "by_method": {
+    "origin_t1": 2197,
+    "unlinked": 119,
+    "initial_last": 84,
+    "origin_t2": 71,
+    "any_t1": 31
+   },
+   "origin_agrees": 0.9853,
+   "position_group_agrees": 0.9635,
+   "one_id_two_entries": 1
+  },
+  "2024": {
+   "entries": 3378,
+   "linked": 0.939,
+   "by_method": {
+    "origin_t1": 2872,
+    "unlinked": 206,
+    "origin_t2": 142,
+    "initial_last": 93,
+    "any_t1": 65
+   },
+   "origin_agrees": 0.9795,
+   "position_group_agrees": 0.9718,
+   "one_id_two_entries": 4
+  },
+  "2025": {
+   "entries": 4499,
+   "linked": 0.8958,
+   "by_method": {
+    "origin_t1": 3718,
+    "unlinked": 469,
+    "any_t1": 130,
+    "initial_last": 92,
+    "origin_t2": 90
+   },
+   "origin_agrees": 0.9667,
+   "position_group_agrees": 0.9813,
+   "one_id_two_entries": 4
+  },
+  "2026": {
+   "entries": 4484,
+   "linked": 0.9275,
+   "by_method": {
+    "origin_t1": 3988,
+    "unlinked": 325,
+    "initial_last": 95,
+    "any_t1": 40,
+    "origin_t2": 36
+   },
+   "origin_agrees": 0.9894,
+   "position_group_agrees": 0.9911,
+   "one_id_two_entries": 1
+  }
+ },
+ "recruits": {
+  "2015": {
+   "signees_with_id": 1289,
+   "on_a_roster": 1.0,
+   "on_a_roster_within_a_season": 1.0,
+   "skill_position_group_agrees": 0.7679,
+   "one_id_two_signees": 0
+  },
+  "2016": {
+   "signees_with_id": 1655,
+   "on_a_roster": 0.9994,
+   "on_a_roster_within_a_season": 0.9994,
+   "skill_position_group_agrees": 0.7752,
+   "one_id_two_signees": 0
+  },
+  "2017": {
+   "signees_with_id": 1539,
+   "on_a_roster": 1.0,
+   "on_a_roster_within_a_season": 1.0,
+   "skill_position_group_agrees": 0.7942,
+   "one_id_two_signees": 0
+  },
+  "2018": {
+   "signees_with_id": 2065,
+   "on_a_roster": 0.9956,
+   "on_a_roster_within_a_season": 0.9956,
+   "skill_position_group_agrees": 0.8333,
+   "one_id_two_signees": 0
+  },
+  "2019": {
+   "signees_with_id": 2650,
+   "on_a_roster": 0.9996,
+   "on_a_roster_within_a_season": 0.9996,
+   "skill_position_group_agrees": 0.8263,
+   "one_id_two_signees": 0
+  },
+  "2020": {
+   "signees_with_id": 2611,
+   "on_a_roster": 1.0,
+   "on_a_roster_within_a_season": 1.0,
+   "skill_position_group_agrees": 0.8318,
+   "one_id_two_signees": 0
+  },
+  "2021": {
+   "signees_with_id": 2252,
+   "on_a_roster": 0.9996,
+   "on_a_roster_within_a_season": 0.9991,
+   "skill_position_group_agrees": 0.8329,
+   "one_id_two_signees": 0
+  },
+  "2022": {
+   "signees_with_id": 2728,
+   "on_a_roster": 1.0,
+   "on_a_roster_within_a_season": 1.0,
+   "skill_position_group_agrees": 0.8699,
+   "one_id_two_signees": 0
+  },
+  "2023": {
+   "signees_with_id": 2672,
+   "on_a_roster": 1.0,
+   "on_a_roster_within_a_season": 0.9996,
+   "skill_position_group_agrees": 0.8783,
+   "one_id_two_signees": 0
+  },
+  "2024": {
+   "signees_with_id": 2668,
+   "on_a_roster": 1.0,
+   "on_a_roster_within_a_season": 0.9993,
+   "skill_position_group_agrees": 0.924,
+   "one_id_two_signees": 0
+  },
+  "2025": {
+   "signees_with_id": 3253,
+   "on_a_roster": 0.9997,
+   "on_a_roster_within_a_season": 0.9997,
+   "skill_position_group_agrees": 0.9313,
+   "one_id_two_signees": 0
+  },
+  "2026": {
+   "signees_with_id": 2740,
+   "on_a_roster": 0.9956,
+   "on_a_roster_within_a_season": 0.9956,
+   "skill_position_group_agrees": 0.9728,
+   "one_id_two_signees": 0
+  }
+ },
+ "coordinators": {
+  "team_seasons": 1310,
+  "with_coordinator": 1134,
+  "head_coach_matches_cfbd": 0.9834
+ }
+}

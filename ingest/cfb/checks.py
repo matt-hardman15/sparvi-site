@@ -30,6 +30,7 @@ MAX_MISSING_PLAYS = 0.02
 BIG_GAP = 9
 STALE_DAYS = 3
 MIN_STATS_IN_ROSTER = 0.95     # player stats whose player id is on that season's roster
+TEAM_MIN_MATCH, TEAM_MIN_ROWS = 0.8, 100           # per FBS team-season and role (DATA-QA)
 MIN_PORTAL_ENTRIES = 1000      # a finished portal year (2021-25 had ~2,500-4,500)
 
 
@@ -72,6 +73,16 @@ def player_checks(c: Checks, d, cfg) -> None:
                     f"where role = 'target') t on t.play_id = p.id::varchar")
                 c.add(f"play_players_{s}: completions name a receiver", (comp or 0) >= MIN_TARGET,
                       f"{(comp or 0):.1%} (want >= {MIN_TARGET:.0%}); incompletions {(inc or 0):.1%} (source text often omits him)")
+            # Per FBS team-season (DATA-QA, Matt Nov 16): a league-wide rate hid whole teams going unmatched (Iowa's passers
+            # 1-3% in 2017-2019). The current season gates; past seasons list what's below the bar (their data is final).
+            teams = d.parent / f"teams_{s}.parquet"
+            if teams.exists():
+                low = c.sql_all(
+                    f"select p.team, p.role, avg((p.player_id is not null)::int) m, count(*) n from read_parquet('{f.as_posix()}') p "
+                    f"join read_parquet('{teams.as_posix()}') t on t.school = p.team where p.role in ('passer', 'rusher', 'target') "
+                    f"group by 1, 2 having count(*) >= {TEAM_MIN_ROWS} and avg((p.player_id is not null)::int) < {TEAM_MIN_MATCH} order by 3")
+                detail = ", ".join(f"{t} {r} {m:.0%}" for t, r, m, _ in low) or f"every FBS team >= {TEAM_MIN_MATCH:.0%}"
+                c.add(f"play_players_{s}: each FBS team's passers, rushers, receivers matched", s != cfg.season or not low, detail)
     for s in ss["portal"]:
         if c.table(f"portal_{s}", d / f"portal_{s}.parquet", "portal") and players.portal_done(s):
             n = c.rows[f"portal_{s}"]
