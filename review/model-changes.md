@@ -2,6 +2,19 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-15 · CFB player profile 1.0.3 → 1.0.4, CFB system fit 1.1.3 → 1.1.4 (patch: roster matching)
+CFB-MATCH-FIX. `ingest/cfb/play_players.py` gave up whenever a name matched several roster entries. CFBD lists
+placeholder entries (negative ids) through 2019 and sometimes two ids for one player, so whole teams went unmatched
+(Iowa's passers 1-3% matched in 2017-2019, Kansas State 2% in 2019). Now, among same-name candidates: the real id,
+then the one with stats that season, then with stats in the role's category, then a position that fits the role, then
+offense, then the one with at least twice the role's volume; plus a shortened hyphenated name ("Zeon Chriss") and the
+last word of a multi-word last name ("M.Van Buren Jr."). PARSER_VERSION 3 re-parses every cached season. Matched,
+2014-2019: passers 97.8-99.7% -> 99.5-99.8%, rushers 95.4-97.2% -> 97.9-98.5%, targets 95.9-98.2% -> 99.2-99.7%.
+FBS team-seasons with under 80% of passers matched: 17 -> 2 (2015-2025). Left unmatched: nicknames (Jo'quavious vs.
+Woody Marks) and a player CFBD split evenly across two ids (UL Monroe's Chandler Rogers, 2022). Profile validation:
+movers r 0.1795 -> 0.1811 (n 494 -> 505), all players 0.2651 -> 0.2645, split-half 0.2958 -> 0.2952. Found by CFB-PROJ
+P4 (team pass totals near zero for Iowa and Kansas State). System fit's backtest was not rerun.
+
 ## 2026-11-15 · Backtest harness: label permutation over several seeds (CFB player profile)
 No model changed. The player profile's fast backtest failed its label-permutation leakage test on sparvi-site #62
 (r -0.134, row-bootstrap 90% CI -0.18 to -0.09) though nothing leaks: across 10 seeds the shuffled-label model averages
