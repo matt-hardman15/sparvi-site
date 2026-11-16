@@ -174,7 +174,9 @@ def design(c: pd.DataFrame) -> pd.DataFrame:
     x["transfer"], x["freshman"] = (c["status"] == "transfer").astype(float), (c["status"] == "freshman").astype(float)
     x["log_stay"], x["dlvl"] = c["log_stay"], c["dlvl"]
     x["no_hs"] = c["hs"].isna().astype(float)
-    x["hs"] = c["hs"].fillna(c["hs"].min())
+    # Missing ratings take the lowest rating in the scored set; a counterfactual row is given the projection's value
+    # ("hs_fill"), so the same player scores the same against any room.
+    x["hs"] = c["hs"].fillna(c["hs_fill"].iloc[0] if "hs_fill" in c else c["hs"].min())
     x["no_eff"] = c["eff"].isna().astype(float)
     x["eff"] = c["eff"].fillna(0.0)
     x["sq_x_transfer"] = x["sq_share"] * x["transfer"]
@@ -186,6 +188,8 @@ def design(c: pd.DataFrame) -> pd.DataFrame:
     ret = c["status"] == "returner"
     kept = (c["last_share"] * np.exp(c["log_stay"])).where(ret, 0.0).groupby([c["season"], c["team"], c["group"]]).transform("sum")
     x["open"] = (1 - kept).clip(0, 1)
+    if "open_given" in c:                              # a counterfactual row scored against another team's room
+        x["open"] = c["open_given"].fillna(x["open"])
     x["open_x_transfer"], x["open_x_freshman"] = x["open"] * x["transfer"], x["open"] * x["freshman"]
     for f in ("dlvl", "eff", "no_eff", "hs", "exp"):
         x[f"tr_{f}"] = x[f] * x["transfer"]

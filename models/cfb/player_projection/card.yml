@@ -3,7 +3,7 @@ name: cfb_player_projection
 title: CFB player projection
 sport: cfb
 status: champion
-version: 1.0.3
+version: 1.2.0
 owner: Matt
 spec: 'For every QB, RB, WR, and TE on an FBS team''s projected roster as of May 1, his season yards at that team:
   QB passing yards on dropbacks, RB rushing yards, WR and TE receiving yards (RB receiving is projected as well),
@@ -67,7 +67,8 @@ eval:
 live_window:
   unit: seasons
   min: 1
-published_in: []
+published_in:
+- site/cfb/tools/portal-board.qmd
 backtest:
   preregistered_at: '2026-11-16'
   module: models/cfb/player_projection/backtest.py
@@ -135,5 +136,6 @@ backtest:
     - 2026
     note: Season 2026 outcomes are sealed until the season completes (January 2027).
     accesses: 0
-experimental: 1.0.0's pre-registered run failed WR and TE (a receiving-rate bug, fixed in 1.0.1). 1.0.1's 2021-2025
-  numbers were seen while debugging, so it stays experimental until the 2026 vault; TE ties both baselines
+experimental: its QB, RB and WR projections beat both simple baselines (last season's yards; last season's share)
+  in a 2021-2025 backtest, but those seasons were also used to find and fix bugs, so the clean test is the 2026
+  season (scored in January 2027); its TE projections tied the baselines

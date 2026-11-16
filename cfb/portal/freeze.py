@@ -26,6 +26,8 @@ from sparvi.config import cfb
 
 SPORT = "cfb"
 TARGET = "transfer_success_2y"
+PROJ_MODEL = "cfb_player_projection"
+PROJ_TARGET = "season_yards"         # QB passing on dropbacks, RB rushing, WR/TE receiving, at that program
 
 
 def _slug(s: str) -> str:
@@ -46,31 +48,43 @@ def baselines(b: pd.DataFrame, top: int = B.TOP_FIT) -> dict[str, dict[str, list
     return out
 
 
-def records(res: dict, version: str, existing: list[dict], day: pd.Timestamp) -> list[dict]:
+def records(res: dict, version: str, existing: list[dict], day: pd.Timestamp, proj_version: str | None = None) -> list[dict]:
+    """Ranking records for each program and position: the fit list (cfb_system_fit) and, with proj_version, the
+    projected-yards list (cfb_player_projection, with each player's projection and 80% interval). Each list is
+    written only when it or its baselines changed since that model's last record for it."""
     t = res["window"]
     base = baselines(res["board"])
     last = {}
     for r in existing:
         d = r.get("detail") or {}
         if d.get("kind") == "ranking" and d.get("window") == t:
-            last[(d["program"], d["position"])] = (d["list"], r.get("baselines"))
+            last[(r.get("model", X.MODEL), d["program"], d["position"])] = (d["list"], r.get("baselines"))
     out = []
     for prog in res["programs"]:
-        for g, lst in prog["fit"].items():
-            ids = [p for p, _ in lst]
+        lists = [(X.MODEL, version, "fit", g, lst) for g, lst in prog["fit"].items()]
+        if proj_version:
+            lists += [(PROJ_MODEL, proj_version, "proj", g, lst) for g, lst in prog.get("proj", {}).items()]
+        for model, ver, kind, g, lst in lists:
+            ids = [x[0] for x in lst]
             if not ids:
                 continue
             bl = base.get(g, {})
-            if last.get((prog["team"], g)) == (ids, bl):
+            if last.get((model, prog["team"], g)) == (ids, bl):
                 continue
+            detail = {"kind": "ranking", "window": t, "program": prog["team"], "position": g, "as_of": str(day.date()),
+                      "top": B.TOP_FIT, "list": ids}
+            if kind == "proj":
+                detail["projections"] = [[x[0], x[1], x[2], x[3]] for x in lst]   # id, yards, lo80, hi80
             out.append({
-                "forecast_id": f"cfb-portal-{t}-{_slug(prog['team'])}-{g.lower()}-{day:%Y%m%d}",
-                "model": X.MODEL, "model_version": version, "entity_type": "program_board",
-                "entity_id": f"{t}:{prog['team']}:{g}", "entity_name": f"{prog['team']} {g} board, {t} window",
-                "target": TARGET, "horizon": f"seasons {t}-{t + 1}", "resolves_after": f"{t + 2}-03-01", "min_sample": None,
+                "forecast_id": f"cfb-{'portal' if kind == 'fit' else 'proj'}-{t}-{_slug(prog['team'])}-{g.lower()}-{day:%Y%m%d}",
+                "model": model, "model_version": ver, "entity_type": "program_board",
+                "entity_id": f"{t}:{prog['team']}:{g}" + ("" if kind == "fit" else ":proj"),
+                "entity_name": f"{prog['team']} {g} {'board' if kind == 'fit' else 'projected yards'}, {t} window",
+                "target": TARGET if kind == "fit" else PROJ_TARGET,
+                "horizon": f"seasons {t}-{t + 1}" if kind == "fit" else f"season {t}",
+                "resolves_after": f"{t + 2}-03-01" if kind == "fit" else f"{t + 1}-03-01", "min_sample": None,
                 "prob": None, "point": None, "lo80": None, "hi80": None, "baselines": bl, "deserved_target": None,
-                "detail": {"kind": "ranking", "window": t, "program": prog["team"], "position": g, "as_of": str(day.date()),
-                           "top": B.TOP_FIT, "list": ids}})
+                "detail": detail})
     return out
 
 
@@ -86,7 +100,7 @@ def main() -> int:
     X.write_index([done])
     res = done["result"]
     existing, _ = ledger.read(SPORT, t)
-    recs = records(res, registry.get(X.MODEL).version, existing, day)
+    recs = records(res, registry.get(X.MODEL).version, existing, day, registry.get(PROJ_MODEL).version)
     n = ledger.append_forecasts(SPORT, t, recs) if recs else 0
     print(f"{t} window, {day.date()}: {n} ranking records written ({len(res['programs'])} programs)")
     return 0

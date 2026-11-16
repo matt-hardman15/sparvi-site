@@ -58,3 +58,22 @@ def test_site_data_has_no_recruiting_ratings():
     for f in d.glob("board_*.json"):
         players = json.loads(f.read_text(encoding="utf-8"))["players"]
         assert players and not ({"stars", "rating", "hs_stars"} & set(players[0]))
+
+
+def test_freeze_writes_projection_lists_separately(tmp_path):
+    """Projected-yards lists (cfb_player_projection) are frozen beside the fit lists, each changing on its own."""
+    day = pd.Timestamp("2027-01-03")
+    res = _res()
+    res["programs"][0]["proj"] = {"QB": [["a", 2100, 900, 3300, 0.6], ["c", 1500, 400, 2700, 0.4]]}
+    recs = F.records(res, "1.1.0", [], day, proj_version="1.1.0")
+    proj = [r for r in recs if r["model"] == F.PROJ_MODEL]
+    assert [r["forecast_id"] for r in proj] == ["cfb-proj-2027-x-qb-20270103"]
+    assert proj[0]["detail"]["projections"] == [["a", 2100, 900, 3300], ["c", 1500, 400, 2700]]
+    assert proj[0]["target"] == "season_yards" and proj[0]["resolves_after"] == "2028-03-01"
+    gate = lambda m: {"model": m, "version": "1.1.0", "state": "experimental", "reason": "test"}  # noqa: E731
+    ledger.append_forecasts("cfb", 2027, recs, root=tmp_path, gate=gate)
+    existing, _ = ledger.read("cfb", 2027, tmp_path)
+    assert F.records(res, "1.1.0", existing, day + pd.Timedelta(days=1), proj_version="1.1.0") == []
+    res["programs"][0]["proj"]["QB"].reverse()
+    again = F.records(res, "1.1.0", existing, day + pd.Timedelta(days=1), proj_version="1.1.0")
+    assert [(r["model"], r["entity_id"]) for r in again] == [(F.PROJ_MODEL, "2027:X:QB:proj")]

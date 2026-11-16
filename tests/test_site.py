@@ -488,7 +488,7 @@ def act_cfb_article(p):
 
 
 def act_cfb_portal(p):
-    """SC-3a: position tabs, filters, search, and a program's experimental fit list with its summary."""
+    """SC-3a: position tabs, filters, search, best landing spots, and a program's projected-yards and fit lists."""
     assert rows(p, "#t") == 25 and "Value over repl." in p.text_content("#t thead")
     assert "quarterbacks in the" in p.text_content("#tcap")
     assert "Tier 1" in p.text_content("#tier-rules") and p.locator("[data-n]").first.text_content().strip()
@@ -501,9 +501,15 @@ def act_cfb_portal(p):
     name = p.locator("#t tbody tr td strong").first.text_content()
     search(p, "#c2", name); assert rows(p, "#t") >= 1 and name in p.text_content("#t tbody")
     search(p, "#c2", "")
+    assert "Best landing spots" in p.text_content("#t thead")
     select(p, "#c", "Program", "Ohio State"); wait(p, 400)
     assert query(p)["prog"] == "Ohio State" and "Ohio State" in p.text_content("#prog") and "experimental" in p.text_content("#prog")
-    assert "Fit" in p.text_content("#t thead") and 1 <= rows(p, "#t") <= 25
+    # CFB-PROJ: the projected-yards list is the default program view; the fit list is a toggle.
+    assert "Projected yards (80%)" in p.text_content("#t thead") and 1 <= rows(p, "#t") <= 25
+    assert "projected yards at Ohio State" in p.text_content("#tcap")
+    seg(p, "#c", "System fit"); wait(p, 300)
+    assert query(p)["list"] == "fit"
+    assert "Fit" in p.text_content("#t thead") and "Projected here" in p.text_content("#t thead") and 1 <= rows(p, "#t") <= 25
     assert "frozen in the forecast record" in p.text_content("#tcap")
     seg(p, "#c2", "Backup minimum"); wait(p, 300)
     assert query(p)["min"] == "floor" and "ranked among entrants with at least" in p.text_content("#tcap")

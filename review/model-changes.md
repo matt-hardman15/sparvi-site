@@ -2,6 +2,24 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-16 · CFB player projection 1.0.3 → 1.1.0 → 1.2.0; CFB system fit 1.1.6 → 1.1.7 → 1.1.8 (portal board)
+1.1.0 (minor: a new output). `pit.whatif`: any entrant's projected season yards at any program, scored against that
+program's projected room (returners, committed transfers, signees; himself removed if already projected there). For
+committed transfers it reproduces project() exactly (share and yards differences 0.0). The board's projection trains on
+outcome seasons through 2025 only (2026 is the Phase 2 vault). A program's room scales every entrant's share equally,
+so the order at each program is nearly the same; the board shows each entrant's best landing spots as well (Matt).
+1.2.0 (minor: training data). The board showed fourth-year backups near the top of program lists (Cole Gonzales, 1.9% of
+Pitt's dropbacks, 9th at Boise State). Research (`cfb/proj/lowuse.py`, exploratory, seen seasons 2021-2025): low-usage
+veterans win roles 13-25% of the time (other transfers 20-34%); moving down a level doesn't help except slightly at RB;
+recruiting rating and size don't separate them (AUC 0.41-0.54; TE recruiting 0.64 on a small sample); last-season
+efficiency and volume do (QB AUC 0.70, 0.65). The specific failure: QBs and TEs moving down a level were projected
+1.25-1.57x the share they got, in the portal era only (development 2016-2020: QB down 0.92x). A transfer-experience x
+last-share term didn't help in development and was dropped. 1.2.0 builds portal-era training seasons (2021 on) the May 1
+way, like the projection itself (Matt), chosen with seen seasons; the 2026 vault confirms. Effect (seen data): QB r 0.532
+(1.1.0 0.534), RB 0.514 (0.511), WR 0.489 (0.486), TE 0.441 (0.438); QB low-usage veterans moving down 1.28x -> 1.17x.
+System fit 1.1.7 / 1.1.8 (patch): `board.py` adds projected yards beside the fit list (1.1.7), then shows projections and
+best landing spots only for entrants who reached last season's backup minimum (1.1.8, Matt). Fit lists are unchanged.
+
 ## 2026-11-16 · CFB player profile 1.0.4 → 1.1.0 (minor: receiver measures); system fit 1.1.6, projection 1.0.3 (patch)
 RECV-MEASURES. A new feature kind, `per_team_play`: a player's total of a value per team pass play in the games he played,
 opponent-adjusted and shrunk like the others. New features: WR/TE receiving yards, receiving EPA, and catches per team

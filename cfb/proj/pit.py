@@ -143,9 +143,18 @@ def _p_leave(L, t: int, rosters: dict, recruits: pd.DataFrame) -> dict[int, floa
     return pd.concat(hist).groupby("exp")["gone"].mean().to_dict()
 
 
+PORTAL_FIRST = 2021                 # CFBD's portal records start with the 2021 window
+
+
 def candidates(L, t: int, as_of, live: bool) -> pd.DataFrame:
-    """Projected-roster rows for season t. live=True: as of the decision date (portal filed by then, the signing class);
-    live=False: a past season for training, its movers from the September rosters (public long before as_of)."""
+    """Projected-roster rows for season t. live=True: the season being projected, as of the decision date. live=False:
+    a past season for training, with its actual shares. In the portal era (PORTAL_FIRST on) a training season's roster
+    is built the same way as the projected one, as of May 1 of that season: portal entries filed by then leave, those
+    whose destination is an FBS team arrive (1.2.0, Matt Nov 16: QBs and TEs moving down a level in the portal era were
+    projected ~1.3-1.5x the share they got, which hindsight September rosters didn't teach). Before the portal: movers
+    from the September rosters."""
+    may1 = live or t >= PORTAL_FIRST
+    dec = pd.Timestamp(as_of) if live else pd.Timestamp(f"{t}-05-01")
     seasons_ = range(FIRST_INPUT, t + (0 if live else 1))
     data = {s: season(L, s) for s in seasons_}
     rosters = {s: d["roster"] for s, d in data.items()}
@@ -164,9 +173,9 @@ def candidates(L, t: int, as_of, live: bool) -> pd.DataFrame:
     eff = data[t - 1]["eff"]
     lvl = LEVEL
     rows = []
-    if live:
-        pt = M.portal(L, t, as_of).assign(season=t)
-        filed = pd.to_datetime(pt["transferDate"], utc=True, errors="coerce").dt.tz_localize(None) <= pd.Timestamp(as_of)
+    if may1:
+        pt = M.portal(L, t, dec).assign(season=t)
+        filed = pd.to_datetime(pt["transferDate"], utc=True, errors="coerce").dt.tz_localize(None) <= dec
         pt = pt[filed]
         pt = link(pt, {s: rosters[s] for s in (t - 2, t - 1) if s in rosters}) if len(pt) else pt.assign(player_id=pd.Series(dtype=object))
         pt = pt[pt["player_id"].notna()]
@@ -178,6 +187,11 @@ def candidates(L, t: int, as_of, live: bool) -> pd.DataFrame:
                                   incoming["position"].map(G.POSITION_GROUP))})
         moves = moves[moves["group"].notna()].drop_duplicates("prev_id")
         moves["out_key"] = moves["prev_id"]
+        if not live:                                   # training: follow a transfer whose id changed (his season-t id)
+            played = {s: data[s]["played"] for s in (t - 1, t)}
+            tr = LB.transfers(rosters, t, M.portal(L, t, M.done(t)).assign(season=t), played)
+            new_id = dict(zip(tr["prev_id"].dropna().astype(str), tr.loc[tr["prev_id"].notna(), "player_id"].astype(str), strict=True))
+            moves["out_key"] = moves["prev_id"].map(lambda k: new_id.get(k, k))
     else:
         played = {s: data[s]["played"] for s in (t - 1, t)}
         tr = LB.transfers(rosters, t, None, played)
@@ -271,13 +285,14 @@ def _perm(v: np.ndarray, rng) -> np.ndarray:
     return v[rng.permutation(len(v))] if rng is not None else v
 
 
-def project(L, t: int, as_of, permute_seed: int | None = None) -> pd.DataFrame:
+def project(L, t: int, as_of, permute_seed: int | None = None, last_train: int | None = None) -> pd.DataFrame:
     """Projected season-t yards per (player, category) as of `as_of`, with 80% intervals and the two baselines.
-    permute_seed shuffles every training target (the harness's label-permutation test)."""
+    permute_seed shuffles every training target (the harness's label-permutation test). last_train caps the outcome
+    seasons used for training (the live board: 2025 until the Phase 2 vault opens)."""
     as_of = pd.Timestamp(as_of)
     L.__dict__["_proj_as_of"] = as_of
     rng = np.random.default_rng(permute_seed) if permute_seed is not None else None
-    train = list(range(TRAIN_FIRST, t))
+    train = list(range(TRAIN_FIRST, t if last_train is None else min(t, last_train + 1)))
     L.__dict__["_proj_outcome_ok"] = set(train)
     # P1: team volume.
     vtr, vte = _volume_rows(L, train), _volume_rows(L, [t])
@@ -296,6 +311,7 @@ def project(L, t: int, as_of, permute_seed: int | None = None) -> pd.DataFrame:
             ctr.loc[m, "actual"] = _perm(ctr.loc[m, "actual"].to_numpy(), rng)
     Xtr, Xte = S.design(ctr), S.design(cte)
     cte["share"] = np.nan
+    state = {"t": t, "betas": {}, "lam": {}}
     for g in S.GROUPS:
         tr, te = (ctr["group"] == g).to_numpy(), (cte["group"] == g).to_numpy()
         mu, sd = Xtr[tr].mean(), Xtr[tr].std().replace(0, 1)
@@ -303,6 +319,8 @@ def project(L, t: int, as_of, permute_seed: int | None = None) -> pd.DataFrame:
         y0 = ctr[tr].groupby(keys_tr)["unprojected"].first().to_dict()
         b = S.fit(((Xtr[tr] - mu) / sd).to_numpy(), keys_tr, ctr.loc[tr, "actual"].to_numpy(), y0)
         cte.loc[te, "share"] = S.predict(((Xte[te] - mu) / sd).to_numpy(), cte.loc[te, "team"].to_numpy(), b)
+        cte.loc[te, "utility"] = ((Xte[te] - mu) / sd).to_numpy() @ b[:-1]
+        state["betas"][g] = (mu, sd, b)
     # P3: efficiency (players), with the supporting-cast weight fit on the training seasons.
     p = pd.concat([season(L, s)["p"] for s in range(FIRST_INPUT, t)], ignore_index=True)
     pq = p[p["group"].isin(["QB", "RB"])]
@@ -313,6 +331,7 @@ def project(L, t: int, as_of, permute_seed: int | None = None) -> pd.DataFrame:
         dev_tr = E.team_dev(pq, d_tr["season"], d_tr["team_t"], d_tr["group"])
         resid = _perm((d_tr["actual"].to_numpy() - base_tr), rng)
         lam = float((dev_tr * resid).sum() / max((dev_tr * dev_tr).sum(), 1e-9))
+        state["lam"][g] = lam
         m = (cte["group"] == g).to_numpy()
         d_te = _history(cte[m], pq, t)
         base = E.project_players(d_te, pq, K[g], list(range(FIRST_INPUT, t)))
@@ -342,9 +361,128 @@ def project(L, t: int, as_of, permute_seed: int | None = None) -> pd.DataFrame:
     col = {"QB": "pass_yards", "RB": "rb_yards", "REC": "rec_yards"}
     team_prev = [teams[col[g]].get((t - 1, tm), np.nan) for tm, g in zip(cte["team"], cte["group"], strict=True)]
     cte["share_only"] = np.where(cte["status"] == "freshman", 0.0, cte["last_share"] * np.nan_to_num(np.array(team_prev, float)))
+    state.update(vol=vol, ctx=ctx_te, pq=pq, cte=cte.copy(), open=_room_open(cte), hs_fill=float(cte["hs"].min()))
+    L.__dict__.setdefault("_proj_state", {})[(t, as_of, permute_seed, last_train)] = state
     cte = cte[cte["proj"].notna()].reset_index(drop=True)
     validate_projection(cte)
     return _intervals(cte, _interval_bins())
+
+# ---- counterfactual: an entrant at any program (the portal board) -------------------------------------------------------
+def _room_open(c: pd.DataFrame) -> pd.Series:
+    """(team, pool) -> the opening shares.design gives a newcomer: 1 - the returners' expected share."""
+    ret = c["status"] == "returner"
+    kept = (c["last_share"] * np.exp(c["log_stay"])).where(ret, 0.0).groupby([c["team"], c["group"]]).sum()
+    return (1 - kept).clip(0, 1)
+
+
+def counterfactual_share(u: np.ndarray, room_lse: np.ndarray) -> np.ndarray:
+    """His share if added to a room whose log-sum-exp of utilities (its candidates and the outside option) is room_lse."""
+    m = np.maximum(u, room_lse)
+    return np.exp(u - m) / (np.exp(u - m) + np.exp(room_lse - m))
+
+
+def validate_counterfactual(c: pd.DataFrame) -> None:
+    bad = [f"{r.team} {r.key}: {r.group} counterfactual {r.proj:.0f}" for r in c.itertuples()
+           if r.proj > PROJ_MAX[r.group] or r.proj < -100 or not 0 <= r.share <= 1]
+    if bad:
+        raise ValueError("counterfactual projection failed range checks:\n" + "\n".join(bad[:20]))
+
+
+def whatif(L, t: int, as_of, entrants: pd.DataFrame, programs: list[str], last_train: int | None = None) -> pd.DataFrame:
+    """Projected season-t yards for each entrant (columns player_id = his season t-1 id, group = QB/RB/WR/TE,
+    team_from) if he joined each program, scored against that program's projected room as of `as_of` (its returners,
+    committed transfers, and signing class; himself removed if he's already projected there). Same model and
+    intervals as project(); one row per entrant x program x category."""
+    as_of = pd.Timestamp(as_of)
+    key = (t, as_of, None, last_train)
+    if key not in L.__dict__.get("_proj_state", {}):
+        project(L, t, as_of, last_train=last_train)
+    st = L.__dict__["_proj_state"][key]
+    data = {s: season(L, s) for s in range(FIRST_INPUT, t)}
+    rosters = {s: d["roster"] for s, d in data.items()}
+    recruits = _recruits(L, t, as_of)
+    exp = D.experience(t - 1, rosters, recruits)
+    wk = data[t - 1]["work"]
+    any_w = wk.sort_values("share", ascending=False).drop_duplicates(["player_id", "group"]).set_index(["player_id", "group"])["share"]
+    eff = data[t - 1]["eff"]
+    hs = (recruits[recruits["athleteId"].notna()].assign(pid=lambda d: d["athleteId"].astype(str))
+          .sort_values(["year", "rating"], ascending=[True, False]).drop_duplicates("pid").set_index("pid")["rating"])
+    teams_t = L.load(f"teams_{t}", as_of, columns=["school", "conference"])
+    conf_t = dict(zip(teams_t["school"], teams_t["conference"], strict=True))
+    conf_prev = data[t - 1]["conf"]
+    e = entrants.assign(player_id=entrants["player_id"].astype(str)).drop_duplicates("player_id")
+    e = e.assign(pool=e["group"].map(S.POOLS_OF)).explode("pool").reset_index(drop=True)
+    progs = [p for p in programs if p in conf_t and p in st["vol"].index]
+    rows = e.loc[e.index.repeat(len(progs))].reset_index(drop=True)
+    rows["team"] = np.tile(progs, len(e))
+    c = pd.DataFrame({"team": rows["team"], "player_id": rows["player_id"], "key": rows["player_id"], "pos": rows["group"],
+                      "group": rows["pool"], "status": "transfer", "log_stay": 0.0, "season": t})
+    c["exp"] = [int(np.clip(exp.get(p, 2), 1, 6)) for p in c["player_id"]]
+    lvl_from = {f: LEVEL[LB.tier(f, t - 1, conf_prev)] for f in rows["team_from"].dropna().unique()}
+    lvl_to = {p: LEVEL[LB.tier(p, t, conf_t)] for p in progs}
+    c["level_t"] = rows["team"].map(lvl_to).to_numpy()
+    c["dlvl"] = c["level_t"] - rows["team_from"].map(lvl_from).fillna(0).to_numpy()
+    c["last_share"] = [any_w.get((p, g), 0.0) for p, g in zip(c["player_id"], c["group"], strict=True)]
+    c["any_last"] = c["last_share"]
+    c["eff"] = [eff.get((p, g), np.nan) for p, g in zip(c["player_id"], c["group"], strict=True)]
+    c["hs"] = c["player_id"].map(hs)
+    c["open_given"] = [st["open"].get((tm, g), 1.0) for tm, g in zip(c["team"], c["group"], strict=True)]
+    c["hs_fill"] = st["hs_fill"]
+    room = st["cte"]
+    c["share"] = np.nan
+    for g in S.GROUPS:
+        m = (c["group"] == g).to_numpy()
+        if not m.any():
+            continue
+        mu, sd, b = st["betas"][g]
+        u = ((S.design(c[m]) - mu) / sd).to_numpy() @ b[:-1]
+        r = room[room["group"] == g]
+        # Each room's log-sum-exp once (its candidates and the outside option); an entrant already projected in that
+        # room is taken out of it exactly (computed without him), so he isn't counted twice.
+        out_u = float(b[-1])
+        total = r.groupby("team")["utility"].apply(lambda v, o=out_u: float(np.logaddexp.reduce(np.append(v.to_numpy(), o))))
+        own = {(tm, k): float(np.logaddexp.reduce(np.append(q.loc[q["key"] != k, "utility"].to_numpy(), b[-1])))
+               for tm, q in r.groupby("team") for k in set(q["key"]) & set(c.loc[m, "key"])}
+        teams_m, keys_m = c.loc[m, "team"].to_numpy(), c.loc[m, "key"].to_numpy()
+        lse = np.array([own.get((tm, k), total.get(tm, b[-1])) for tm, k in zip(teams_m, keys_m, strict=True)])
+        c.loc[m, "share"] = counterfactual_share(u, lse)
+    pq = st["pq"]
+    c["rate"] = np.nan
+    for g in ("QB", "RB"):
+        m = (c["group"] == g).to_numpy()
+        if m.any():
+            d = _history_fast(c[m], pq, t)
+            c.loc[m, "rate"] = (E.project_players(d, pq, K[g], list(range(FIRST_INPUT, t)))
+                                + st["lam"][g] * E.team_dev(pq, d["season"], d["team_t"], d["group"]))
+    vol, ctx = st["vol"], st["ctx"]
+    games = c["team"].map(vol["games"]).to_numpy()
+    dropbacks = c["team"].map(vol["pass_pg"]).to_numpy() * games
+    runs = c["team"].map(vol["run_pg"]).to_numpy() * games
+    c["proj"] = np.select([c["group"] == "QB", c["group"] == "RB"],
+                          [c["share"] * dropbacks * c["rate"], c["share"] * runs * c["team"].map(ctx["rb_frac_hat"]).to_numpy() * c["rate"]],
+                          c["share"] * dropbacks * c["team"].map(ctx["rec_ypd_hat"]).to_numpy())
+    c["category"] = np.where(c["group"] == "REC", c["pos"] + "_rec", c["pos"])
+    c = c[c["proj"].notna()].reset_index(drop=True)
+    validate_counterfactual(c)
+    return _intervals(c, _interval_bins())
+
+
+
+def _history_fast(c: pd.DataFrame, pq: pd.DataFrame, t: int) -> pd.DataFrame:
+    """_history for many rows of the same players (the counterfactual: each entrant at every program): each player's
+    two previous seasons looked up once, then joined; the destination fields come from each row."""
+    k = pq.set_index(["season", "player_id", "group"])
+    uniq = c[["player_id", "group"]].drop_duplicates()
+    h = []
+    for r in uniq.itertuples():
+        h1 = k.loc[(t - 1, r.player_id, r.group)] if r.player_id and (t - 1, r.player_id, r.group) in k.index else None
+        h2 = k.loc[(t - 2, r.player_id, r.group)] if r.player_id and (t - 2, r.player_id, r.group) in k.index else None
+        h.append({"player_id": r.player_id, "group": r.group, "n1": 0 if h1 is None else h1["n"], "y1": 0.0 if h1 is None else h1["yards"],
+                  "lvl1": np.nan if h1 is None else h1["level"], "n2": 0 if h2 is None else h2["n"], "y2": 0.0 if h2 is None else h2["yards"]})
+    d = c[["player_id", "group", "team", "level_t"]].reset_index().merge(pd.DataFrame(h), on=["player_id", "group"], how="left")
+    d = d.set_index("index").loc[c.index]
+    return pd.DataFrame({"season": t, "group": d["group"], "team_t": d["team"], "level_t": d["level_t"], "n1": d["n1"], "y1": d["y1"],
+                         "lvl1": d["lvl1"], "n2": d["n2"], "y2": d["y2"]}, index=c.index)
 
 
 def _rate_rows(pq: pd.DataFrame, g: str, seasons_) -> pd.DataFrame:
