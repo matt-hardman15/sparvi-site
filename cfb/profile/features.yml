@@ -56,21 +56,27 @@ features:
   - {id: rb_short, label: "Short-yardage conversion", group: [RB], opp: carry, filter: "short_yardage == 1", value: first_down, kind: mean, adjust: opponent, better: higher, min_n: 10}
   - {id: rb_goal_line, label: "Goal-line carries (share of his carries)", group: [RB], opp: carry, value: goal_line, kind: mean, adjust: none, better: style, min_n: 40}
   - {id: rb_carry_share, label: "Share of team carries", group: [RB], opp: carry, kind: share, of: carry, adjust: none, better: style, min_n: 40}
-  - {id: rb_target_share, label: "Targets per team dropback", group: [RB], opp: target, kind: share, of: dropback, adjust: none, better: style, min_n: 40}
-  - {id: rb_rec_epa, label: "EPA per target", group: [RB], opp: target, value: epa, kind: mean, adjust: opponent, better: higher, min_n: 15}
+  - {id: rb_target_share, label: "Targets per team dropback", group: [RB], opp: target, kind: share, of: dropback, adjust: none, better: style, min_n: 40, biased_seasons: [2021, 2022, 2023, 2024]}
+  - {id: rb_rec_epa, label: "EPA per target", group: [RB], opp: target, value: epa, kind: mean, adjust: opponent, better: higher, min_n: 15, biased_seasons: [2021, 2022, 2023, 2024]}
+  - {id: rb_rec_yptp, label: "Receiving yards per team pass play", group: [RB], opp: target, filter: "complete == 1", value: yards, kind: per_team_play, adjust: opponent, better: higher, min_n: 150}
   - {id: rb_middle, label: "Runs up the middle", group: [RB], opp: carry, filter: "dir_middle == dir_middle", value: dir_middle, kind: mean, adjust: none, better: style, min_n: 40, from: 2025}
 
   # ---------------- receivers (WR and TE) ----------------
-  - {id: rec_epa, label: "EPA per target", group: [WR, TE], opp: target, value: epa, kind: mean, adjust: opponent, better: higher, min_n: 25}
-  - {id: rec_success, label: "Success rate when targeted", group: [WR, TE], opp: target, value: success, kind: mean, adjust: opponent, better: higher, min_n: 25}
-  - {id: rec_catch, label: "Catch rate", group: [WR, TE], opp: target, value: complete, kind: mean, adjust: opponent, better: higher, min_n: 25}
-  - {id: rec_ypt, label: "Yards per target", group: [WR, TE], opp: target, value: yards, kind: mean, adjust: opponent, better: higher, min_n: 25}
+  - {id: rec_epa, label: "EPA per target", group: [WR, TE], opp: target, value: epa, kind: mean, adjust: opponent, better: higher, min_n: 25, biased_seasons: [2021, 2022, 2023, 2024]}
+  - {id: rec_success, label: "Success rate when targeted", group: [WR, TE], opp: target, value: success, kind: mean, adjust: opponent, better: higher, min_n: 25, biased_seasons: [2021, 2022, 2023, 2024]}
+  - {id: rec_catch, label: "Catch rate", group: [WR, TE], opp: target, value: complete, kind: mean, adjust: opponent, better: higher, min_n: 25, biased_seasons: [2021, 2022, 2023, 2024]}
+  - {id: rec_ypt, label: "Yards per target", group: [WR, TE], opp: target, value: yards, kind: mean, adjust: opponent, better: higher, min_n: 25, biased_seasons: [2021, 2022, 2023, 2024]}
   - {id: rec_ypr, label: "Yards per catch", group: [WR, TE], opp: target, filter: "complete == 1", value: yards, kind: mean, adjust: opponent, better: higher, min_n: 15}
-  - {id: rec_explosive, label: "20+ yard catch rate", group: [WR, TE], opp: target, value: explosive, kind: mean, adjust: opponent, better: higher, min_n: 25}
-  - {id: rec_td, label: "Touchdown rate", group: [WR, TE], opp: target, value: td, kind: mean, adjust: opponent, better: higher, min_n: 25}
-  - {id: rec_third, label: "3rd-down conversion when targeted", group: [WR, TE], opp: target, filter: "third_down == 1", value: first_down, kind: mean, adjust: opponent, better: higher, min_n: 10}
-  - {id: rec_target_share, label: "Targets per team dropback", group: [WR, TE], opp: target, kind: share, of: dropback, adjust: none, better: style, min_n: 25}
-  - {id: rec_redzone_share, label: "Red-zone targets (share of his targets)", group: [WR, TE], opp: target, value: red_zone, kind: mean, adjust: none, better: style, min_n: 25}
-  - {id: rec_third_share, label: "3rd-down targets (share of his targets)", group: [WR, TE], opp: target, value: third_down, kind: mean, adjust: none, better: style, min_n: 25}
+  - {id: rec_explosive, label: "20+ yard catch rate", group: [WR, TE], opp: target, value: explosive, kind: mean, adjust: opponent, better: higher, min_n: 25, biased_seasons: [2021, 2022, 2023, 2024]}
+  - {id: rec_td, label: "Touchdown rate", group: [WR, TE], opp: target, value: td, kind: mean, adjust: opponent, better: higher, min_n: 25, biased_seasons: [2021, 2022, 2023, 2024]}
+  - {id: rec_third, label: "3rd-down conversion when targeted", group: [WR, TE], opp: target, filter: "third_down == 1", value: first_down, kind: mean, adjust: opponent, better: higher, min_n: 10, biased_seasons: [2021, 2022, 2023, 2024]}
+  # Per team pass play (RECV-MEASURES): from completions only, comparable in every season; the per-target stats above
+  # need incompletions, which 2021-2024 play text mostly doesn't attribute (biased_seasons: values kept, not ranked).
+  - {id: rec_yptp, label: "Receiving yards per team pass play", group: [WR, TE], opp: target, filter: "complete == 1", value: yards, kind: per_team_play, adjust: opponent, better: higher, min_n: 150}
+  - {id: rec_epa_tp, label: "Receiving EPA per team pass play", group: [WR, TE], opp: target, filter: "complete == 1", value: epa, kind: per_team_play, adjust: opponent, better: higher, min_n: 150}
+  - {id: rec_catch_tp, label: "Catches per team pass play", group: [WR, TE], opp: target, filter: "complete == 1", value: complete, kind: per_team_play, adjust: none, better: style, min_n: 150}
+  - {id: rec_target_share, label: "Targets per team dropback", group: [WR, TE], opp: target, kind: share, of: dropback, adjust: none, better: style, min_n: 25, biased_seasons: [2021, 2022, 2023, 2024]}
+  - {id: rec_redzone_share, label: "Red-zone targets (share of his targets)", group: [WR, TE], opp: target, value: red_zone, kind: mean, adjust: none, better: style, min_n: 25, biased_seasons: [2021, 2022, 2023, 2024]}
+  - {id: rec_third_share, label: "3rd-down targets (share of his targets)", group: [WR, TE], opp: target, value: third_down, kind: mean, adjust: none, better: style, min_n: 25, biased_seasons: [2021, 2022, 2023, 2024]}
   - {id: rec_deep_rate, label: "Deep targets (share)", group: [WR, TE], opp: target, filter: "deep == deep", value: deep, kind: mean, adjust: none, better: style, min_n: 20, from: 2025}
   - {id: rec_middle, label: "Targets over the middle", group: [WR, TE], opp: target, filter: "dir_middle == dir_middle", value: dir_middle, kind: mean, adjust: none, better: style, min_n: 20, from: 2025}

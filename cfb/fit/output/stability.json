@@ -1,0 +1,2503 @@
+{
+ "status": "EXPLORATORY (FIT-STABLE): seen data only, no 2026 outcome",
+ "stable_r": 0.3,
+ "by_position": {
+  "QB": {
+   "stayer_pairs": 727,
+   "transfer_pairs": 1030,
+   "components": [
+    {
+     "feature": "qb_rush_share",
+     "label": "Runs per dropback",
+     "better": "style",
+     "stayers": {
+      "n": 42,
+      "r": 0.9687,
+      "ci90": [
+       0.9475,
+       0.9814
+      ]
+     },
+     "transfers": {
+      "n": 7,
+      "r": 0.9096,
+      "ci90": [
+       0.606,
+       0.9819
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 20,
+      "r": -0.1719,
+      "ci90": [
+       -0.5172,
+       0.2216
+      ]
+     },
+     "predicts_won_role": {
+      "n": 20,
+      "auc": null
+     },
+     "predicts_success2": {
+      "n": 13,
+      "auc": null
+     }
+    },
+    {
+     "feature": "qb_success",
+     "label": "Success rate",
+     "better": "higher",
+     "stayers": {
+      "n": 596,
+      "r": 0.4907,
+      "ci90": [
+       0.4378,
+       0.5403
+      ]
+     },
+     "transfers": {
+      "n": 157,
+      "r": 0.4519,
+      "ci90": [
+       0.3404,
+       0.5509
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 278,
+      "r": 0.303,
+      "ci90": [
+       0.2104,
+       0.3902
+      ]
+     },
+     "predicts_won_role": {
+      "n": 278,
+      "auc": 0.6052
+     },
+     "predicts_success2": {
+      "n": 206,
+      "auc": 0.5781
+     }
+    },
+    {
+     "feature": "qb_ypa",
+     "label": "Yards per attempt",
+     "better": "higher",
+     "stayers": {
+      "n": 580,
+      "r": 0.4838,
+      "ci90": [
+       0.4296,
+       0.5345
+      ]
+     },
+     "transfers": {
+      "n": 152,
+      "r": 0.3574,
+      "ci90": [
+       0.2347,
+       0.4689
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 273,
+      "r": 0.2415,
+      "ci90": [
+       0.1453,
+       0.3333
+      ]
+     },
+     "predicts_won_role": {
+      "n": 273,
+      "auc": 0.5471
+     },
+     "predicts_success2": {
+      "n": 201,
+      "auc": 0.5577
+     }
+    },
+    {
+     "feature": "qb_epa",
+     "label": "EPA per dropback",
+     "better": "higher",
+     "stayers": {
+      "n": 593,
+      "r": 0.4825,
+      "ci90": [
+       0.4289,
+       0.5328
+      ]
+     },
+     "transfers": {
+      "n": 155,
+      "r": 0.4144,
+      "ci90": [
+       0.2981,
+       0.5185
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 277,
+      "r": 0.2976,
+      "ci90": [
+       0.2046,
+       0.3853
+      ]
+     },
+     "predicts_won_role": {
+      "n": 277,
+      "auc": 0.5994
+     },
+     "predicts_success2": {
+      "n": 205,
+      "auc": 0.5912
+     }
+    },
+    {
+     "feature": "qb_comp",
+     "label": "Completion rate",
+     "better": "higher",
+     "stayers": {
+      "n": 580,
+      "r": 0.4693,
+      "ci90": [
+       0.4142,
+       0.5209
+      ]
+     },
+     "transfers": {
+      "n": 152,
+      "r": 0.2697,
+      "ci90": [
+       0.1409,
+       0.3896
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 273,
+      "r": 0.1563,
+      "ci90": [
+       0.0574,
+       0.2521
+      ]
+     },
+     "predicts_won_role": {
+      "n": 273,
+      "auc": 0.5906
+     },
+     "predicts_success2": {
+      "n": 201,
+      "auc": 0.5546
+     }
+    },
+    {
+     "feature": "qb_sack",
+     "label": "Sack rate",
+     "better": "lower",
+     "stayers": {
+      "n": 596,
+      "r": 0.4501,
+      "ci90": [
+       0.3947,
+       0.5023
+      ]
+     },
+     "transfers": {
+      "n": 157,
+      "r": 0.4596,
+      "ci90": [
+       0.3489,
+       0.5576
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 278,
+      "r": 0.1595,
+      "ci90": [
+       0.0616,
+       0.2544
+      ]
+     },
+     "predicts_won_role": {
+      "n": 278,
+      "auc": 0.5414
+     },
+     "predicts_success2": {
+      "n": 206,
+      "auc": 0.5532
+     }
+    },
+    {
+     "feature": "qb_rush_explosive",
+     "label": "Explosive run rate (10+)",
+     "better": "higher",
+     "stayers": {
+      "n": 436,
+      "r": 0.4324,
+      "ci90": [
+       0.366,
+       0.4944
+      ]
+     },
+     "transfers": {
+      "n": 99,
+      "r": 0.2557,
+      "ci90": [
+       0.0933,
+       0.4048
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 184,
+      "r": 0.2361,
+      "ci90": [
+       0.1178,
+       0.3477
+      ]
+     },
+     "predicts_won_role": {
+      "n": 184,
+      "auc": 0.6148
+     },
+     "predicts_success2": {
+      "n": 130,
+      "auc": 0.6172
+     }
+    },
+    {
+     "feature": "qb_early",
+     "label": "Early-down success",
+     "better": "higher",
+     "stayers": {
+      "n": 652,
+      "r": 0.3994,
+      "ci90": [
+       0.3438,
+       0.4523
+      ]
+     },
+     "transfers": {
+      "n": 169,
+      "r": 0.3276,
+      "ci90": [
+       0.2094,
+       0.4365
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 296,
+      "r": 0.2707,
+      "ci90": [
+       0.1796,
+       0.3573
+      ]
+     },
+     "predicts_won_role": {
+      "n": 296,
+      "auc": 0.6037
+     },
+     "predicts_success2": {
+      "n": 220,
+      "auc": 0.5704
+     }
+    },
+    {
+     "feature": "qb_explosive",
+     "label": "Explosive pass rate (20+)",
+     "better": "higher",
+     "stayers": {
+      "n": 580,
+      "r": 0.38,
+      "ci90": [
+       0.3199,
+       0.437
+      ]
+     },
+     "transfers": {
+      "n": 152,
+      "r": 0.2434,
+      "ci90": [
+       0.1132,
+       0.3655
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 273,
+      "r": 0.1268,
+      "ci90": [
+       0.0273,
+       0.2237
+      ]
+     },
+     "predicts_won_role": {
+      "n": 273,
+      "auc": 0.5227
+     },
+     "predicts_success2": {
+      "n": 201,
+      "auc": 0.5223
+     }
+    },
+    {
+     "feature": "qb_rush_epa",
+     "label": "EPA per run",
+     "better": "higher",
+     "stayers": {
+      "n": 435,
+      "r": 0.3587,
+      "ci90": [
+       0.2879,
+       0.4257
+      ]
+     },
+     "transfers": {
+      "n": 98,
+      "r": 0.2338,
+      "ci90": [
+       0.0693,
+       0.3859
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 183,
+      "r": 0.2848,
+      "ci90": [
+       0.1687,
+       0.3931
+      ]
+     },
+     "predicts_won_role": {
+      "n": 183,
+      "auc": 0.6253
+     },
+     "predicts_success2": {
+      "n": 129,
+      "auc": 0.5774
+     }
+    },
+    {
+     "feature": "qb_td",
+     "label": "Touchdown rate",
+     "better": "higher",
+     "stayers": {
+      "n": 580,
+      "r": 0.3413,
+      "ci90": [
+       0.2794,
+       0.4003
+      ]
+     },
+     "transfers": {
+      "n": 152,
+      "r": 0.2513,
+      "ci90": [
+       0.1215,
+       0.3727
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 273,
+      "r": 0.2112,
+      "ci90": [
+       0.1138,
+       0.3046
+      ]
+     },
+     "predicts_won_role": {
+      "n": 273,
+      "auc": 0.5214
+     },
+     "predicts_success2": {
+      "n": 201,
+      "auc": 0.5503
+     }
+    },
+    {
+     "feature": "qb_dropback_share",
+     "label": "Share of team dropbacks",
+     "better": "style",
+     "stayers": {
+      "n": 596,
+      "r": 0.2639,
+      "ci90": [
+       0.2,
+       0.3256
+      ]
+     },
+     "transfers": {
+      "n": 157,
+      "r": 0.1567,
+      "ci90": [
+       0.0255,
+       0.2827
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 278,
+      "r": 0.1872,
+      "ci90": [
+       0.0899,
+       0.2808
+      ]
+     },
+     "predicts_won_role": {
+      "n": 278,
+      "auc": 0.5869
+     },
+     "predicts_success2": {
+      "n": 206,
+      "auc": 0.5637
+     }
+    },
+    {
+     "feature": "qb_third",
+     "label": "3rd-down conversion",
+     "better": "higher",
+     "stayers": {
+      "n": 560,
+      "r": 0.2518,
+      "ci90": [
+       0.1855,
+       0.3158
+      ]
+     },
+     "transfers": {
+      "n": 146,
+      "r": 0.2902,
+      "ci90": [
+       0.1598,
+       0.4106
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 270,
+      "r": 0.2397,
+      "ci90": [
+       0.1428,
+       0.332
+      ]
+     },
+     "predicts_won_role": {
+      "n": 270,
+      "auc": 0.5458
+     },
+     "predicts_success2": {
+      "n": 200,
+      "auc": 0.5935
+     }
+    },
+    {
+     "feature": "qb_int",
+     "label": "Interception rate",
+     "better": "lower",
+     "stayers": {
+      "n": 580,
+      "r": 0.2298,
+      "ci90": [
+       0.164,
+       0.2935
+      ]
+     },
+     "transfers": {
+      "n": 152,
+      "r": 0.1442,
+      "ci90": [
+       0.0105,
+       0.2729
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 273,
+      "r": 0.1054,
+      "ci90": [
+       0.0057,
+       0.2031
+      ]
+     },
+     "predicts_won_role": {
+      "n": 273,
+      "auc": 0.5821
+     },
+     "predicts_success2": {
+      "n": 201,
+      "auc": 0.5595
+     }
+    },
+    {
+     "feature": "qb_long",
+     "label": "3rd/4th-and-long conversion",
+     "better": "higher",
+     "stayers": {
+      "n": 548,
+      "r": 0.154,
+      "ci90": [
+       0.0845,
+       0.2219
+      ]
+     },
+     "transfers": {
+      "n": 142,
+      "r": 0.2354,
+      "ci90": [
+       0.1001,
+       0.3622
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 267,
+      "r": 0.1717,
+      "ci90": [
+       0.0721,
+       0.268
+      ]
+     },
+     "predicts_won_role": {
+      "n": 267,
+      "auc": 0.5359
+     },
+     "predicts_success2": {
+      "n": 198,
+      "auc": 0.5513
+     }
+    },
+    {
+     "feature": "qb_redzone",
+     "label": "Red-zone touchdown rate",
+     "better": "higher",
+     "stayers": {
+      "n": 383,
+      "r": -0.0803,
+      "ci90": [
+       -0.1634,
+       0.0039
+      ]
+     },
+     "transfers": {
+      "n": 87,
+      "r": 0.0091,
+      "ci90": [
+       -0.1688,
+       0.1863
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 179,
+      "r": 0.0704,
+      "ci90": [
+       -0.0534,
+       0.1921
+      ]
+     },
+     "predicts_won_role": {
+      "n": 179,
+      "auc": 0.4769
+     },
+     "predicts_success2": {
+      "n": 132,
+      "auc": 0.5558
+     }
+    }
+   ],
+   "composites": {
+    "stable": {
+     "features": [
+      "qb_success",
+      "qb_ypa",
+      "qb_epa",
+      "qb_comp",
+      "qb_sack",
+      "qb_rush_explosive",
+      "qb_early",
+      "qb_explosive",
+      "qb_rush_epa",
+      "qb_td"
+     ],
+     "stayers": {
+      "n": 717,
+      "r": 0.5114,
+      "ci90": [
+       0.4645,
+       0.5554
+      ]
+     },
+     "transfers": {
+      "n": 190,
+      "r": 0.3814,
+      "ci90": [
+       0.2742,
+       0.4792
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 322,
+      "r": 0.293,
+      "ci90": [
+       0.2067,
+       0.3747
+      ]
+     },
+     "predicts_won_role": {
+      "n": 322,
+      "auc": 0.6158
+     },
+     "predicts_success2": {
+      "n": 237,
+      "auc": 0.5799
+     }
+    },
+    "current_efficiency": {
+     "features": [
+      "qb_epa",
+      "qb_success"
+     ],
+     "stayers": {
+      "n": 596,
+      "r": 0.51,
+      "ci90": [
+       0.4583,
+       0.5582
+      ]
+     },
+     "transfers": {
+      "n": 157,
+      "r": 0.4579,
+      "ci90": [
+       0.3471,
+       0.5562
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 278,
+      "r": 0.3152,
+      "ci90": [
+       0.2233,
+       0.4016
+      ]
+     },
+     "predicts_won_role": {
+      "n": 278,
+      "auc": 0.6073
+     },
+     "predicts_success2": {
+      "n": 206,
+      "auc": 0.5868
+     }
+    },
+    "share_last_season": {
+     "predicts_A_vor": {
+      "n": 1030,
+      "r": 0.2528,
+      "ci90": [
+       0.2042,
+       0.3002
+      ]
+     },
+     "predicts_won_role": {
+      "n": 1030,
+      "auc": 0.6536
+     },
+     "predicts_success2": {
+      "n": 779,
+      "auc": 0.6384
+     }
+    }
+   }
+  },
+  "RB": {
+   "stayer_pairs": 1840,
+   "transfer_pairs": 1088,
+   "components": [
+    {
+     "feature": "rb_target_share",
+     "label": "Targets per team dropback",
+     "better": "style",
+     "stayers": {
+      "n": 17,
+      "r": 0.6985,
+      "ci90": [
+       0.4008,
+       0.8627
+      ]
+     },
+     "transfers": {
+      "n": 2,
+      "r": null,
+      "ci90": [
+       NaN,
+       NaN
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 9,
+      "r": -0.1422,
+      "ci90": [
+       -0.6722,
+       0.4841
+      ]
+     },
+     "predicts_won_role": {
+      "n": 9,
+      "auc": null
+     },
+     "predicts_success2": {
+      "n": 6,
+      "auc": null
+     }
+    },
+    {
+     "feature": "rb_rec_yptp",
+     "label": "Receiving yards per team pass play",
+     "better": "higher",
+     "stayers": {
+      "n": 1645,
+      "r": 0.522,
+      "ci90": [
+       0.4918,
+       0.5509
+      ]
+     },
+     "transfers": {
+      "n": 288,
+      "r": 0.4282,
+      "ci90": [
+       0.3455,
+       0.5044
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 437,
+      "r": 0.0239,
+      "ci90": [
+       -0.055,
+       0.1025
+      ]
+     },
+     "predicts_won_role": {
+      "n": 437,
+      "auc": 0.5845
+     },
+     "predicts_success2": {
+      "n": 300,
+      "auc": 0.6187
+     }
+    },
+    {
+     "feature": "rb_carry_share",
+     "label": "Share of team carries",
+     "better": "style",
+     "stayers": {
+      "n": 1304,
+      "r": 0.4505,
+      "ci90": [
+       0.4134,
+       0.4861
+      ]
+     },
+     "transfers": {
+      "n": 231,
+      "r": 0.2125,
+      "ci90": [
+       0.1064,
+       0.3138
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 385,
+      "r": 0.1016,
+      "ci90": [
+       0.0178,
+       0.184
+      ]
+     },
+     "predicts_won_role": {
+      "n": 385,
+      "auc": 0.6146
+     },
+     "predicts_success2": {
+      "n": 264,
+      "auc": 0.639
+     }
+    },
+    {
+     "feature": "rb_stuff",
+     "label": "Stuff rate (stopped at or behind the line)",
+     "better": "lower",
+     "stayers": {
+      "n": 1304,
+      "r": 0.425,
+      "ci90": [
+       0.3869,
+       0.4616
+      ]
+     },
+     "transfers": {
+      "n": 231,
+      "r": 0.2485,
+      "ci90": [
+       0.1439,
+       0.3476
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 385,
+      "r": -0.0057,
+      "ci90": [
+       -0.0896,
+       0.0783
+      ]
+     },
+     "predicts_won_role": {
+      "n": 385,
+      "auc": 0.4771
+     },
+     "predicts_success2": {
+      "n": 264,
+      "auc": 0.4617
+     }
+    },
+    {
+     "feature": "rb_success",
+     "label": "Success rate",
+     "better": "higher",
+     "stayers": {
+      "n": 1304,
+      "r": 0.4101,
+      "ci90": [
+       0.3714,
+       0.4473
+      ]
+     },
+     "transfers": {
+      "n": 231,
+      "r": 0.3002,
+      "ci90": [
+       0.1982,
+       0.3958
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 385,
+      "r": 0.0188,
+      "ci90": [
+       -0.0653,
+       0.1026
+      ]
+     },
+     "predicts_won_role": {
+      "n": 385,
+      "auc": 0.5048
+     },
+     "predicts_success2": {
+      "n": 264,
+      "auc": 0.553
+     }
+    },
+    {
+     "feature": "rb_epa",
+     "label": "EPA per carry",
+     "better": "higher",
+     "stayers": {
+      "n": 1301,
+      "r": 0.3833,
+      "ci90": [
+       0.3436,
+       0.4215
+      ]
+     },
+     "transfers": {
+      "n": 231,
+      "r": 0.2428,
+      "ci90": [
+       0.138,
+       0.3423
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 385,
+      "r": 0.0618,
+      "ci90": [
+       -0.0223,
+       0.145
+      ]
+     },
+     "predicts_won_role": {
+      "n": 385,
+      "auc": 0.5089
+     },
+     "predicts_success2": {
+      "n": 264,
+      "auc": 0.5601
+     }
+    },
+    {
+     "feature": "rb_ypc",
+     "label": "Yards per carry",
+     "better": "higher",
+     "stayers": {
+      "n": 1304,
+      "r": 0.3621,
+      "ci90": [
+       0.3218,
+       0.401
+      ]
+     },
+     "transfers": {
+      "n": 231,
+      "r": 0.3019,
+      "ci90": [
+       0.2,
+       0.3974
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 385,
+      "r": 0.0782,
+      "ci90": [
+       -0.0058,
+       0.1611
+      ]
+     },
+     "predicts_won_role": {
+      "n": 385,
+      "auc": 0.5093
+     },
+     "predicts_success2": {
+      "n": 264,
+      "auc": 0.5593
+     }
+    },
+    {
+     "feature": "rb_run10",
+     "label": "10+ yard run rate",
+     "better": "higher",
+     "stayers": {
+      "n": 1304,
+      "r": 0.3463,
+      "ci90": [
+       0.3055,
+       0.3858
+      ]
+     },
+     "transfers": {
+      "n": 231,
+      "r": 0.2326,
+      "ci90": [
+       0.1273,
+       0.3328
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 385,
+      "r": 0.0706,
+      "ci90": [
+       -0.0135,
+       0.1536
+      ]
+     },
+     "predicts_won_role": {
+      "n": 385,
+      "auc": 0.5299
+     },
+     "predicts_success2": {
+      "n": 264,
+      "auc": 0.5784
+     }
+    },
+    {
+     "feature": "rb_goal_line",
+     "label": "Goal-line carries (share of his carries)",
+     "better": "style",
+     "stayers": {
+      "n": 1304,
+      "r": 0.2511,
+      "ci90": [
+       0.2079,
+       0.2933
+      ]
+     },
+     "transfers": {
+      "n": 231,
+      "r": 0.1679,
+      "ci90": [
+       0.0605,
+       0.2715
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 385,
+      "r": -0.0193,
+      "ci90": [
+       -0.1031,
+       0.0648
+      ]
+     },
+     "predicts_won_role": {
+      "n": 385,
+      "auc": 0.5
+     },
+     "predicts_success2": {
+      "n": 264,
+      "auc": 0.5398
+     }
+    },
+    {
+     "feature": "rb_short",
+     "label": "Short-yardage conversion",
+     "better": "higher",
+     "stayers": {
+      "n": 218,
+      "r": 0.248,
+      "ci90": [
+       0.1401,
+       0.35
+      ]
+     },
+     "transfers": {
+      "n": 29,
+      "r": 0.4491,
+      "ci90": [
+       0.1596,
+       0.6675
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 95,
+      "r": 0.0679,
+      "ci90": [
+       -0.1031,
+       0.2351
+      ]
+     },
+     "predicts_won_role": {
+      "n": 95,
+      "auc": 0.5382
+     },
+     "predicts_success2": {
+      "n": 58,
+      "auc": 0.5958
+     }
+    },
+    {
+     "feature": "rb_run20",
+     "label": "20+ yard run rate",
+     "better": "higher",
+     "stayers": {
+      "n": 1304,
+      "r": 0.2419,
+      "ci90": [
+       0.1985,
+       0.2844
+      ]
+     },
+     "transfers": {
+      "n": 231,
+      "r": 0.1855,
+      "ci90": [
+       0.0785,
+       0.2882
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 385,
+      "r": 0.0615,
+      "ci90": [
+       -0.0226,
+       0.1447
+      ]
+     },
+     "predicts_won_role": {
+      "n": 385,
+      "auc": 0.5029
+     },
+     "predicts_success2": {
+      "n": 264,
+      "auc": 0.5533
+     }
+    },
+    {
+     "feature": "rb_rec_epa",
+     "label": "EPA per target",
+     "better": "higher",
+     "stayers": {
+      "n": 412,
+      "r": 0.2202,
+      "ci90": [
+       0.1416,
+       0.2961
+      ]
+     },
+     "transfers": {
+      "n": 67,
+      "r": 0.0484,
+      "ci90": [
+       -0.1559,
+       0.2488
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 140,
+      "r": -0.1134,
+      "ci90": [
+       -0.2491,
+       0.0266
+      ]
+     },
+     "predicts_won_role": {
+      "n": 140,
+      "auc": 0.5106
+     },
+     "predicts_success2": {
+      "n": 96,
+      "auc": 0.5288
+     }
+    }
+   ],
+   "composites": {
+    "stable": {
+     "features": [
+      "rb_rec_yptp",
+      "rb_stuff",
+      "rb_success",
+      "rb_epa",
+      "rb_ypc",
+      "rb_run10"
+     ],
+     "stayers": {
+      "n": 1834,
+      "r": 0.4555,
+      "ci90": [
+       0.4245,
+       0.4854
+      ]
+     },
+     "transfers": {
+      "n": 326,
+      "r": 0.4167,
+      "ci90": [
+       0.3383,
+       0.4893
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 477,
+      "r": 0.0606,
+      "ci90": [
+       -0.0148,
+       0.1354
+      ]
+     },
+     "predicts_won_role": {
+      "n": 477,
+      "auc": 0.5229
+     },
+     "predicts_success2": {
+      "n": 331,
+      "auc": 0.587
+     }
+    },
+    "current_efficiency": {
+     "features": [
+      "rb_epa",
+      "rb_success"
+     ],
+     "stayers": {
+      "n": 1304,
+      "r": 0.4265,
+      "ci90": [
+       0.3885,
+       0.4631
+      ]
+     },
+     "transfers": {
+      "n": 231,
+      "r": 0.2906,
+      "ci90": [
+       0.188,
+       0.3869
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 385,
+      "r": 0.0428,
+      "ci90": [
+       -0.0413,
+       0.1263
+      ]
+     },
+     "predicts_won_role": {
+      "n": 385,
+      "auc": 0.5075
+     },
+     "predicts_success2": {
+      "n": 264,
+      "auc": 0.5594
+     }
+    },
+    "share_last_season": {
+     "predicts_A_vor": {
+      "n": 1088,
+      "r": 0.0528,
+      "ci90": [
+       0.0029,
+       0.1024
+      ]
+     },
+     "predicts_won_role": {
+      "n": 1088,
+      "auc": 0.6395
+     },
+     "predicts_success2": {
+      "n": 788,
+      "auc": 0.6043
+     }
+    }
+   }
+  },
+  "WR": {
+   "stayer_pairs": 2813,
+   "transfer_pairs": 2201,
+   "components": [
+    {
+     "feature": "rec_catch_tp",
+     "label": "Catches per team pass play",
+     "better": "style",
+     "stayers": {
+      "n": 2703,
+      "r": 0.5815,
+      "ci90": [
+       0.5602,
+       0.6021
+      ]
+     },
+     "transfers": {
+      "n": 531,
+      "r": 0.1999,
+      "ci90": [
+       0.1303,
+       0.2675
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 795,
+      "r": 0.0102,
+      "ci90": [
+       -0.0482,
+       0.0685
+      ]
+     },
+     "predicts_won_role": {
+      "n": 795,
+      "auc": 0.5907
+     },
+     "predicts_success2": {
+      "n": 542,
+      "auc": 0.5495
+     }
+    },
+    {
+     "feature": "rec_yptp",
+     "label": "Receiving yards per team pass play",
+     "better": "higher",
+     "stayers": {
+      "n": 2703,
+      "r": 0.5714,
+      "ci90": [
+       0.5497,
+       0.5924
+      ]
+     },
+     "transfers": {
+      "n": 531,
+      "r": 0.1402,
+      "ci90": [
+       0.0694,
+       0.2096
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 795,
+      "r": 0.0439,
+      "ci90": [
+       -0.0145,
+       0.1021
+      ]
+     },
+     "predicts_won_role": {
+      "n": 795,
+      "auc": 0.58
+     },
+     "predicts_success2": {
+      "n": 542,
+      "auc": 0.5334
+     }
+    },
+    {
+     "feature": "rec_epa_tp",
+     "label": "Receiving EPA per team pass play",
+     "better": "higher",
+     "stayers": {
+      "n": 2703,
+      "r": 0.5522,
+      "ci90": [
+       0.5298,
+       0.5739
+      ]
+     },
+     "transfers": {
+      "n": 531,
+      "r": 0.1617,
+      "ci90": [
+       0.0913,
+       0.2305
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 795,
+      "r": 0.0561,
+      "ci90": [
+       -0.0023,
+       0.1141
+      ]
+     },
+     "predicts_won_role": {
+      "n": 795,
+      "auc": 0.5712
+     },
+     "predicts_success2": {
+      "n": 542,
+      "auc": 0.5303
+     }
+    },
+    {
+     "feature": "rec_target_share",
+     "label": "Targets per team dropback",
+     "better": "style",
+     "stayers": {
+      "n": 1564,
+      "r": 0.4782,
+      "ci90": [
+       0.4455,
+       0.5097
+      ]
+     },
+     "transfers": {
+      "n": 268,
+      "r": 0.0644,
+      "ci90": [
+       -0.0365,
+       0.1641
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 499,
+      "r": -0.009,
+      "ci90": [
+       -0.0826,
+       0.0648
+      ]
+     },
+     "predicts_won_role": {
+      "n": 499,
+      "auc": 0.5613
+     },
+     "predicts_success2": {
+      "n": 343,
+      "auc": 0.5099
+     }
+    },
+    {
+     "feature": "rec_ypr",
+     "label": "Yards per catch",
+     "better": "higher",
+     "stayers": {
+      "n": 1891,
+      "r": 0.3826,
+      "ci90": [
+       0.3498,
+       0.4145
+      ]
+     },
+     "transfers": {
+      "n": 362,
+      "r": 0.1457,
+      "ci90": [
+       0.0598,
+       0.2294
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 620,
+      "r": 0.0891,
+      "ci90": [
+       0.0231,
+       0.1543
+      ]
+     },
+     "predicts_won_role": {
+      "n": 620,
+      "auc": 0.5314
+     },
+     "predicts_success2": {
+      "n": 413,
+      "auc": 0.5152
+     }
+    },
+    {
+     "feature": "rec_catch",
+     "label": "Catch rate",
+     "better": "higher",
+     "stayers": {
+      "n": 1564,
+      "r": 0.3126,
+      "ci90": [
+       0.2745,
+       0.3497
+      ]
+     },
+     "transfers": {
+      "n": 268,
+      "r": -0.2437,
+      "ci90": [
+       -0.3361,
+       -0.1466
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 499,
+      "r": -0.029,
+      "ci90": [
+       -0.1026,
+       0.0448
+      ]
+     },
+     "predicts_won_role": {
+      "n": 499,
+      "auc": 0.5414
+     },
+     "predicts_success2": {
+      "n": 343,
+      "auc": 0.5327
+     }
+    },
+    {
+     "feature": "rec_ypt",
+     "label": "Yards per target",
+     "better": "higher",
+     "stayers": {
+      "n": 1564,
+      "r": 0.3035,
+      "ci90": [
+       0.2652,
+       0.3408
+      ]
+     },
+     "transfers": {
+      "n": 268,
+      "r": -0.1088,
+      "ci90": [
+       -0.2072,
+       -0.0082
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 499,
+      "r": 0.0386,
+      "ci90": [
+       -0.0352,
+       0.112
+      ]
+     },
+     "predicts_won_role": {
+      "n": 499,
+      "auc": 0.5386
+     },
+     "predicts_success2": {
+      "n": 343,
+      "auc": 0.4916
+     }
+    },
+    {
+     "feature": "rec_success",
+     "label": "Success rate when targeted",
+     "better": "higher",
+     "stayers": {
+      "n": 1564,
+      "r": 0.283,
+      "ci90": [
+       0.2443,
+       0.3208
+      ]
+     },
+     "transfers": {
+      "n": 268,
+      "r": -0.2403,
+      "ci90": [
+       -0.3329,
+       -0.143
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 499,
+      "r": 0.0021,
+      "ci90": [
+       -0.0716,
+       0.0759
+      ]
+     },
+     "predicts_won_role": {
+      "n": 499,
+      "auc": 0.5493
+     },
+     "predicts_success2": {
+      "n": 343,
+      "auc": 0.5273
+     }
+    },
+    {
+     "feature": "rec_epa",
+     "label": "EPA per target",
+     "better": "higher",
+     "stayers": {
+      "n": 1558,
+      "r": 0.2794,
+      "ci90": [
+       0.2405,
+       0.3174
+      ]
+     },
+     "transfers": {
+      "n": 264,
+      "r": -0.1949,
+      "ci90": [
+       -0.2906,
+       -0.0953
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 495,
+      "r": 0.0291,
+      "ci90": [
+       -0.0451,
+       0.1029
+      ]
+     },
+     "predicts_won_role": {
+      "n": 495,
+      "auc": 0.5336
+     },
+     "predicts_success2": {
+      "n": 341,
+      "auc": 0.5217
+     }
+    },
+    {
+     "feature": "rec_explosive",
+     "label": "20+ yard catch rate",
+     "better": "higher",
+     "stayers": {
+      "n": 1564,
+      "r": 0.2437,
+      "ci90": [
+       0.2042,
+       0.2825
+      ]
+     },
+     "transfers": {
+      "n": 268,
+      "r": -0.0274,
+      "ci90": [
+       -0.1277,
+       0.0735
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 499,
+      "r": 0.0413,
+      "ci90": [
+       -0.0325,
+       0.1147
+      ]
+     },
+     "predicts_won_role": {
+      "n": 499,
+      "auc": 0.5255
+     },
+     "predicts_success2": {
+      "n": 343,
+      "auc": 0.49
+     }
+    },
+    {
+     "feature": "rec_third_share",
+     "label": "3rd-down targets (share of his targets)",
+     "better": "style",
+     "stayers": {
+      "n": 1564,
+      "r": 0.2405,
+      "ci90": [
+       0.2009,
+       0.2793
+      ]
+     },
+     "transfers": {
+      "n": 268,
+      "r": -0.0096,
+      "ci90": [
+       -0.1102,
+       0.0912
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 499,
+      "r": -0.0517,
+      "ci90": [
+       -0.1249,
+       0.0221
+      ]
+     },
+     "predicts_won_role": {
+      "n": 499,
+      "auc": 0.4909
+     },
+     "predicts_success2": {
+      "n": 343,
+      "auc": 0.4861
+     }
+    },
+    {
+     "feature": "rec_redzone_share",
+     "label": "Red-zone targets (share of his targets)",
+     "better": "style",
+     "stayers": {
+      "n": 1564,
+      "r": 0.1736,
+      "ci90": [
+       0.133,
+       0.2137
+      ]
+     },
+     "transfers": {
+      "n": 268,
+      "r": 0.0151,
+      "ci90": [
+       -0.0857,
+       0.1157
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 499,
+      "r": 0.0334,
+      "ci90": [
+       -0.0404,
+       0.1069
+      ]
+     },
+     "predicts_won_role": {
+      "n": 499,
+      "auc": 0.461
+     },
+     "predicts_success2": {
+      "n": 343,
+      "auc": 0.498
+     }
+    },
+    {
+     "feature": "rec_third",
+     "label": "3rd-down conversion when targeted",
+     "better": "higher",
+     "stayers": {
+      "n": 817,
+      "r": 0.1543,
+      "ci90": [
+       0.0975,
+       0.21
+      ]
+     },
+     "transfers": {
+      "n": 122,
+      "r": -0.4447,
+      "ci90": [
+       -0.5573,
+       -0.3161
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 284,
+      "r": 0.0539,
+      "ci90": [
+       -0.0442,
+       0.1509
+      ]
+     },
+     "predicts_won_role": {
+      "n": 284,
+      "auc": 0.5513
+     },
+     "predicts_success2": {
+      "n": 193,
+      "auc": 0.519
+     }
+    },
+    {
+     "feature": "rec_td",
+     "label": "Touchdown rate",
+     "better": "higher",
+     "stayers": {
+      "n": 1564,
+      "r": 0.1453,
+      "ci90": [
+       0.1043,
+       0.1858
+      ]
+     },
+     "transfers": {
+      "n": 268,
+      "r": -0.3309,
+      "ci90": [
+       -0.4177,
+       -0.2381
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 499,
+      "r": -0.0372,
+      "ci90": [
+       -0.1106,
+       0.0367
+      ]
+     },
+     "predicts_won_role": {
+      "n": 499,
+      "auc": 0.5298
+     },
+     "predicts_success2": {
+      "n": 343,
+      "auc": 0.4904
+     }
+    }
+   ],
+   "composites": {
+    "stable": {
+     "features": [
+      "rec_yptp",
+      "rec_epa_tp",
+      "rec_ypr",
+      "rec_catch",
+      "rec_ypt"
+     ],
+     "stayers": {
+      "n": 2812,
+      "r": 0.4361,
+      "ci90": [
+       0.4106,
+       0.4609
+      ]
+     },
+     "transfers": {
+      "n": 553,
+      "r": 0.1021,
+      "ci90": [
+       0.0323,
+       0.1709
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 816,
+      "r": 0.0435,
+      "ci90": [
+       -0.0142,
+       0.1009
+      ]
+     },
+     "predicts_won_role": {
+      "n": 816,
+      "auc": 0.5716
+     },
+     "predicts_success2": {
+      "n": 560,
+      "auc": 0.5334
+     }
+    },
+    "current_efficiency": {
+     "features": [
+      "rec_epa",
+      "rec_success"
+     ],
+     "stayers": {
+      "n": 1564,
+      "r": 0.2856,
+      "ci90": [
+       0.2469,
+       0.3233
+      ]
+     },
+     "transfers": {
+      "n": 268,
+      "r": -0.234,
+      "ci90": [
+       -0.327,
+       -0.1365
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 499,
+      "r": 0.0169,
+      "ci90": [
+       -0.0569,
+       0.0905
+      ]
+     },
+     "predicts_won_role": {
+      "n": 499,
+      "auc": 0.5415
+     },
+     "predicts_success2": {
+      "n": 343,
+      "auc": 0.5234
+     }
+    },
+    "share_last_season": {
+     "predicts_A_vor": {
+      "n": 2201,
+      "r": 0.0615,
+      "ci90": [
+       0.0265,
+       0.0964
+      ]
+     },
+     "predicts_won_role": {
+      "n": 2201,
+      "auc": 0.6433
+     },
+     "predicts_success2": {
+      "n": 1582,
+      "auc": 0.5904
+     }
+    }
+   }
+  },
+  "TE": {
+   "stayer_pairs": 773,
+   "transfer_pairs": 759,
+   "components": [
+    {
+     "feature": "rec_ypr",
+     "label": "Yards per catch",
+     "better": "higher",
+     "stayers": {
+      "n": 313,
+      "r": 0.696,
+      "ci90": [
+       0.6446,
+       0.7411
+      ]
+     },
+     "transfers": {
+      "n": 53,
+      "r": 0.7233,
+      "ci90": [
+       0.5928,
+       0.8168
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 100,
+      "r": 0.1128,
+      "ci90": [
+       -0.0537,
+       0.2732
+      ]
+     },
+     "predicts_won_role": {
+      "n": 100,
+      "auc": 0.5515
+     },
+     "predicts_success2": {
+      "n": 60,
+      "auc": 0.3852
+     }
+    },
+    {
+     "feature": "rec_yptp",
+     "label": "Receiving yards per team pass play",
+     "better": "higher",
+     "stayers": {
+      "n": 758,
+      "r": 0.538,
+      "ci90": [
+       0.4941,
+       0.5791
+      ]
+     },
+     "transfers": {
+      "n": 106,
+      "r": 0.2657,
+      "ci90": [
+       0.1097,
+       0.4089
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 180,
+      "r": -0.1935,
+      "ci90": [
+       -0.3092,
+       -0.0722
+      ]
+     },
+     "predicts_won_role": {
+      "n": 180,
+      "auc": 0.6961
+     },
+     "predicts_success2": {
+      "n": 117,
+      "auc": 0.5857
+     }
+    },
+    {
+     "feature": "rec_catch_tp",
+     "label": "Catches per team pass play",
+     "better": "style",
+     "stayers": {
+      "n": 758,
+      "r": 0.5138,
+      "ci90": [
+       0.4684,
+       0.5565
+      ]
+     },
+     "transfers": {
+      "n": 106,
+      "r": 0.2924,
+      "ci90": [
+       0.1382,
+       0.4328
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 180,
+      "r": -0.2163,
+      "ci90": [
+       -0.3305,
+       -0.0959
+      ]
+     },
+     "predicts_won_role": {
+      "n": 180,
+      "auc": 0.6953
+     },
+     "predicts_success2": {
+      "n": 117,
+      "auc": 0.5348
+     }
+    },
+    {
+     "feature": "rec_epa_tp",
+     "label": "Receiving EPA per team pass play",
+     "better": "higher",
+     "stayers": {
+      "n": 758,
+      "r": 0.498,
+      "ci90": [
+       0.4517,
+       0.5417
+      ]
+     },
+     "transfers": {
+      "n": 106,
+      "r": 0.2976,
+      "ci90": [
+       0.1438,
+       0.4373
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 180,
+      "r": -0.1922,
+      "ci90": [
+       -0.308,
+       -0.0709
+      ]
+     },
+     "predicts_won_role": {
+      "n": 180,
+      "auc": 0.7066
+     },
+     "predicts_success2": {
+      "n": 117,
+      "auc": 0.5483
+     }
+    },
+    {
+     "feature": "rec_target_share",
+     "label": "Targets per team dropback",
+     "better": "style",
+     "stayers": {
+      "n": 194,
+      "r": 0.4966,
+      "ci90": [
+       0.4018,
+       0.5809
+      ]
+     },
+     "transfers": {
+      "n": 31,
+      "r": 0.1718,
+      "ci90": [
+       -0.1365,
+       0.4497
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 71,
+      "r": -0.0107,
+      "ci90": [
+       -0.2071,
+       0.1866
+      ]
+     },
+     "predicts_won_role": {
+      "n": 71,
+      "auc": 0.5722
+     },
+     "predicts_success2": {
+      "n": 51,
+      "auc": 0.5727
+     }
+    },
+    {
+     "feature": "rec_third",
+     "label": "3rd-down conversion when targeted",
+     "better": "higher",
+     "stayers": {
+      "n": 63,
+      "r": 0.3153,
+      "ci90": [
+       0.1136,
+       0.4921
+      ]
+     },
+     "transfers": {
+      "n": 8,
+      "r": -0.333,
+      "ci90": [
+       -0.7939,
+       0.3709
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 35,
+      "r": -0.0238,
+      "ci90": [
+       -0.3046,
+       0.2609
+      ]
+     },
+     "predicts_won_role": {
+      "n": 35,
+      "auc": 0.5967
+     },
+     "predicts_success2": {
+      "n": 24,
+      "auc": null
+     }
+    },
+    {
+     "feature": "rec_third_share",
+     "label": "3rd-down targets (share of his targets)",
+     "better": "style",
+     "stayers": {
+      "n": 194,
+      "r": 0.2757,
+      "ci90": [
+       0.1626,
+       0.3817
+      ]
+     },
+     "transfers": {
+      "n": 31,
+      "r": 0.1187,
+      "ci90": [
+       -0.1893,
+       0.4054
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 71,
+      "r": -0.1122,
+      "ci90": [
+       -0.3024,
+       0.0865
+      ]
+     },
+     "predicts_won_role": {
+      "n": 71,
+      "auc": 0.5937
+     },
+     "predicts_success2": {
+      "n": 51,
+      "auc": 0.4432
+     }
+    },
+    {
+     "feature": "rec_td",
+     "label": "Touchdown rate",
+     "better": "higher",
+     "stayers": {
+      "n": 194,
+      "r": 0.1601,
+      "ci90": [
+       0.0424,
+       0.2734
+      ]
+     },
+     "transfers": {
+      "n": 31,
+      "r": -0.1086,
+      "ci90": [
+       -0.3969,
+       0.1991
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 71,
+      "r": -0.158,
+      "ci90": [
+       -0.3442,
+       0.0401
+      ]
+     },
+     "predicts_won_role": {
+      "n": 71,
+      "auc": 0.5103
+     },
+     "predicts_success2": {
+      "n": 51,
+      "auc": 0.4523
+     }
+    },
+    {
+     "feature": "rec_redzone_share",
+     "label": "Red-zone targets (share of his targets)",
+     "better": "style",
+     "stayers": {
+      "n": 194,
+      "r": 0.1426,
+      "ci90": [
+       0.0245,
+       0.2567
+      ]
+     },
+     "transfers": {
+      "n": 31,
+      "r": 0.093,
+      "ci90": [
+       -0.2143,
+       0.3835
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 71,
+      "r": -0.035,
+      "ci90": [
+       -0.2303,
+       0.163
+      ]
+     },
+     "predicts_won_role": {
+      "n": 71,
+      "auc": 0.5492
+     },
+     "predicts_success2": {
+      "n": 51,
+      "auc": 0.5455
+     }
+    },
+    {
+     "feature": "rec_explosive",
+     "label": "20+ yard catch rate",
+     "better": "higher",
+     "stayers": {
+      "n": 194,
+      "r": 0.1338,
+      "ci90": [
+       0.0156,
+       0.2484
+      ]
+     },
+     "transfers": {
+      "n": 31,
+      "r": -0.2276,
+      "ci90": [
+       -0.4949,
+       0.079
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 71,
+      "r": 0.0392,
+      "ci90": [
+       -0.1589,
+       0.2343
+      ]
+     },
+     "predicts_won_role": {
+      "n": 71,
+      "auc": 0.4746
+     },
+     "predicts_success2": {
+      "n": 51,
+      "auc": 0.5727
+     }
+    },
+    {
+     "feature": "rec_catch",
+     "label": "Catch rate",
+     "better": "higher",
+     "stayers": {
+      "n": 194,
+      "r": 0.1249,
+      "ci90": [
+       0.0066,
+       0.2399
+      ]
+     },
+     "transfers": {
+      "n": 31,
+      "r": -0.2683,
+      "ci90": [
+       -0.527,
+       0.0358
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 71,
+      "r": -0.1309,
+      "ci90": [
+       -0.3195,
+       0.0678
+      ]
+     },
+     "predicts_won_role": {
+      "n": 71,
+      "auc": 0.5008
+     },
+     "predicts_success2": {
+      "n": 51,
+      "auc": 0.5977
+     }
+    },
+    {
+     "feature": "rec_success",
+     "label": "Success rate when targeted",
+     "better": "higher",
+     "stayers": {
+      "n": 194,
+      "r": 0.1109,
+      "ci90": [
+       -0.0076,
+       0.2264
+      ]
+     },
+     "transfers": {
+      "n": 31,
+      "r": -0.3094,
+      "ci90": [
+       -0.5585,
+       -0.009
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 71,
+      "r": -0.1209,
+      "ci90": [
+       -0.3104,
+       0.0778
+      ]
+     },
+     "predicts_won_role": {
+      "n": 71,
+      "auc": 0.4516
+     },
+     "predicts_success2": {
+      "n": 51,
+      "auc": 0.6091
+     }
+    },
+    {
+     "feature": "rec_epa",
+     "label": "EPA per target",
+     "better": "higher",
+     "stayers": {
+      "n": 194,
+      "r": -0.1027,
+      "ci90": [
+       -0.2185,
+       0.016
+      ]
+     },
+     "transfers": {
+      "n": 31,
+      "r": -0.38,
+      "ci90": [
+       -0.6113,
+       -0.089
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 70,
+      "r": -0.1363,
+      "ci90": [
+       -0.3258,
+       0.0637
+      ]
+     },
+     "predicts_won_role": {
+      "n": 70,
+      "auc": 0.5319
+     },
+     "predicts_success2": {
+      "n": 51,
+      "auc": 0.6
+     }
+    },
+    {
+     "feature": "rec_ypt",
+     "label": "Yards per target",
+     "better": "higher",
+     "stayers": {
+      "n": 194,
+      "r": -0.2803,
+      "ci90": [
+       -0.386,
+       -0.1674
+      ]
+     },
+     "transfers": {
+      "n": 31,
+      "r": -0.6851,
+      "ci90": [
+       -0.8176,
+       -0.4838
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 71,
+      "r": -0.1506,
+      "ci90": [
+       -0.3375,
+       0.0477
+      ]
+     },
+     "predicts_won_role": {
+      "n": 71,
+      "auc": 0.504
+     },
+     "predicts_success2": {
+      "n": 51,
+      "auc": 0.65
+     }
+    }
+   ],
+   "composites": {
+    "stable": {
+     "features": [
+      "rec_ypr",
+      "rec_yptp",
+      "rec_epa_tp",
+      "rec_third"
+     ],
+     "stayers": {
+      "n": 773,
+      "r": 0.4708,
+      "ci90": [
+       0.4234,
+       0.5157
+      ]
+     },
+     "transfers": {
+      "n": 109,
+      "r": 0.1744,
+      "ci90": [
+       0.0164,
+       0.3239
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 182,
+      "r": -0.1518,
+      "ci90": [
+       -0.2692,
+       -0.03
+      ]
+     },
+     "predicts_won_role": {
+      "n": 182,
+      "auc": 0.7014
+     },
+     "predicts_success2": {
+      "n": 117,
+      "auc": 0.5652
+     }
+    },
+    "current_efficiency": {
+     "features": [
+      "rec_epa",
+      "rec_success"
+     ],
+     "stayers": {
+      "n": 194,
+      "r": -0.0129,
+      "ci90": [
+       -0.1312,
+       0.1057
+      ]
+     },
+     "transfers": {
+      "n": 31,
+      "r": -0.3585,
+      "ci90": [
+       -0.5954,
+       -0.0642
+      ]
+     },
+     "predicts_A_vor": {
+      "n": 71,
+      "r": -0.1304,
+      "ci90": [
+       -0.3191,
+       0.0682
+      ]
+     },
+     "predicts_won_role": {
+      "n": 71,
+      "auc": 0.4873
+     },
+     "predicts_success2": {
+      "n": 51,
+      "auc": 0.625
+     }
+    },
+    "share_last_season": {
+     "predicts_A_vor": {
+      "n": 759,
+      "r": -0.1607,
+      "ci90": [
+       -0.2183,
+       -0.1019
+      ]
+     },
+     "predicts_won_role": {
+      "n": 759,
+      "auc": 0.7189
+     },
+     "predicts_success2": {
+      "n": 517,
+      "auc": 0.6581
+     }
+    }
+   }
+  }
+ }
+}

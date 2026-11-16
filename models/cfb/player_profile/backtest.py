@@ -33,6 +33,10 @@ def _events(loader, s: int, as_of, permute_seed: int | None = None) -> tuple[pd.
             perm = rng.permutation(idx)
             cols = [c for c in OUTCOME_COLS if c in ev]
             ev.loc[idx, cols] = ev.loc[perm, cols].to_numpy()
+            # Who got each play is shuffled too (1.1.0): per-team-play features carry usage (a receiver's catch count
+            # survives an outcome-only shuffle), so with real player assignments a shuffled-outcome season still
+            # predicts the next. With both shuffled, no real player information is left.
+            ev.loc[idx, "player_id"] = ev["player_id"].to_numpy()[rng.permutation(idx)]
     ros = loader.load(f"players_roster_{s}", as_of, columns=["id", "position"])
     pos = ros.assign(id=ros["id"].astype(str)).drop_duplicates("id").set_index("id")["position"]
     return ev, pos
