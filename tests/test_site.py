@@ -605,6 +605,21 @@ def act_players_index(p):
     assert re.fullmatch(r"/baseball/players/[a-z0-9-]+-\d+/", href), href
 
 
+def act_baseball_teams_index(p):
+    assert p.locator("ul.team-index > li").count() == 30
+    assert p.locator("ul.team-index a[href*='teams/aaa/']").count() == 30
+
+
+def act_baseball_team_aaa(p):
+    assert "Omaha Storm Chasers" in p.locator("h1").text_content() and "Triple-A team" in p.text_content(".page-summary")
+    assert p.locator("table.s-table").count() == 2 and p.locator("table.s-table a[href*='/baseball/players/']").count() >= 40
+    assert p.locator("a[href*='teams/mlb/kc/']").count() == 1
+
+
+def act_baseball_team_mlb(p):
+    assert p.locator("table.s-table tbody tr").count() >= 15 and p.locator("a[href*='teams/aaa/oma/']").count() == 1
+
+
 PAGES = [
     ("home", "/", act_home),
     ("baseball", "/baseball/", None),
@@ -624,6 +639,9 @@ PAGES = [
     ("player-pitcher", lambda: player_url(player_pitcher()), act_player("Pitching · Triple-A", role_tag=True)),
     ("player-old-url-missing", "/baseball/player.html?id=1", lambda p: "No profile" in p.text_content("#root")),
     ("players-index", "/baseball/players/", act_players_index),
+    ("baseball-teams", "/baseball/teams/", act_baseball_teams_index),
+    ("baseball-team-aaa", "/baseball/teams/aaa/oma/", act_baseball_team_aaa),
+    ("baseball-team-mlb", "/baseball/teams/mlb/kc/", act_baseball_team_mlb),
     ("nfl", "/nfl/", act_nfl_index),
     ("nfl-jax-article", "/nfl/is-jacksonville-the-best/", act_nfl_jax),
     ("nfl-offense-or-defense", "/nfl/offense-or-defense/", act_nfl_offense_defense),
