@@ -1,0 +1,13 @@
+---
+# Page shell for the generated player pages (site/build/player_pages.py). Quarto renders it like any
+# page; the generator fills the ZZ...ZZ slots for each player, then deletes this page and its sitemap entry.
+title: "ZZHONEZZ"
+pagetitle: "ZZTITLEZZ"
+description: "ZZDESCRIPTIONZZ"
+page-layout: article
+---
+
+```{=html}
+ZZBODYZZ
+<script src="/assets/js/player.js"></script>
+```

@@ -7,7 +7,9 @@ project:
     - CNAME
   # Canonical URLs, sitemap lastmod from git, sitemap index, robots.txt, and metadata checks.
   post-render:
+    - build/player_pages.py   # static player pages (PLAN-seo S2); before seo.py, which checks them
     - build/seo.py
+    - build/check_budget.py   # hosting budget: file count and size of docs/
 
 # Numbers quoted in article prose, written by each sport's export_site_data.py.
 # Use them as {{< meta baseball.<key> >}}; never hand-type a number into an article.

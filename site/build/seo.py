@@ -4,7 +4,8 @@
    (https://sparvi.io/x/ rather than .../x/index.html), and the sitemap lists the same URLs.
 2. lastmod: from the last git commit that touched the page's inputs (its source, plus the sport's
    data and prose numbers for data pages), not the build time, so it changes only when content does.
-3. sitemap-index.xml and robots.txt pointing at it.
+3. sitemap-index.xml (sitemap.xml plus each generated sitemap-*.xml) and robots.txt pointing at it.
+   Pages marked noindex (redirects such as the old player.html) are left out of sitemap.xml.
 4. Listing thumbnails get alt="" (decorative: the headline is right next to them).
 5. Checks that fail the build: every sitemap page has a title <= 60 characters, a description of
    120-155 characters, both unique across the site, a canonical URL, exactly one <h1>, an og:image,
@@ -98,6 +99,35 @@ def tag(h: str, pattern: str) -> str | None:
     return html.unescape(m[1].strip()) if m else None
 
 
+NOINDEX = '<meta name="robots" content="noindex">'
+
+
+def check_page(h: str, url: str, titles: dict, descs: dict) -> list[str]:
+    """The S1 metadata rules for one page; also records its title and description for the duplicate check."""
+    title = tag(h, r"<title>(.*?)</title>") or ""
+    desc = tag(h, r'<meta name="description" content="(.*?)"') or ""
+    titles[title].append(url)
+    descs[desc].append(url)
+    p = []
+    if not title or len(title) > TITLE_MAX:
+        p.append(f"title {len(title)} chars (max {TITLE_MAX}): {title!r}")
+    if not DESC_MIN <= len(desc) <= DESC_MAX:
+        p.append(f"description {len(desc)} chars (want {DESC_MIN}-{DESC_MAX})")
+    n_h1 = len(re.findall(r"<h1[\s>]", h))
+    if n_h1 != 1:
+        p.append(f"{n_h1} <h1> elements (want 1)")
+    if 'property="og:image"' not in h:
+        p.append("no og:image")
+    if f'<link rel="canonical" href="{url}">' not in h:
+        p.append("canonical URL missing or not this page")
+    if NOINDEX in h:
+        p.append("in a sitemap but marked noindex")
+    bad_img = [m for m in re.findall(r"<img\b[^>]*>", h) if not re.search(r"\balt=", m)]
+    if bad_img:
+        p.append(f"{len(bad_img)} <img> without alt")
+    return [f"{url}: {x}" for x in p]
+
+
 def main() -> int:
     if os.environ.get("QUARTO_PROJECT_RENDER_ALL") not in (None, "1"):
         return 0                                       # quarto preview / single-file renders
@@ -107,7 +137,7 @@ def main() -> int:
     titles, descs = defaultdict(list), defaultdict(list)
     numbers = prose_numbers()
 
-    for loc in sorted(set(locs)):
+    for loc in sorted({clean_url(x) for x in locs}):   # partial renders can list a page twice
         f = html_path(loc)
         rel = f.relative_to(OUT).as_posix()
         url = clean_url(loc)
@@ -122,26 +152,18 @@ def main() -> int:
         # decorative listing thumbnails
         h = re.sub(r'<img (?![^>]*\balt=)([^>]*class="thumbnail-image[^"]*")', r'<img alt="" \1', h)
         f.write_text(h, encoding="utf-8", newline="\n")
-
-        title = tag(h, r"<title>(.*?)</title>") or ""
-        desc = tag(h, r'<meta name="description" content="(.*?)"') or ""
-        titles[title].append(url)
-        descs[desc].append(url)
-        p = []
-        if not title or len(title) > TITLE_MAX:
-            p.append(f"title {len(title)} chars (max {TITLE_MAX}): {title!r}")
-        if not DESC_MIN <= len(desc) <= DESC_MAX:
-            p.append(f"description {len(desc)} chars (want {DESC_MIN}-{DESC_MAX})")
-        n_h1 = len(re.findall(r"<h1[\s>]", h))
-        if n_h1 != 1:
-            p.append(f"{n_h1} <h1> elements (want 1)")
-        if 'property="og:image"' not in h:
-            p.append("no og:image")
-        bad_img = [m for m in re.findall(r"<img\b[^>]*>", h) if not re.search(r"\balt=", m)]
-        if bad_img:
-            p.append(f"{len(bad_img)} <img> without alt")
-        problems += [f"{url}: {x}" for x in p]
+        if NOINDEX in h:                               # redirect pages (the old player.html) stay out of the sitemap
+            continue
+        problems += check_page(h, url, titles, descs)
         entries.append((url, lastmod(rel)))
+
+    # Generated pages (site/build/player_pages.py) come with their own sitemap, canonical URL, and lastmod.
+    extra = sorted(x for x in OUT.glob("sitemap-*.xml") if x.name != "sitemap-index.xml")
+    n_extra = 0
+    for x in extra:
+        for loc in re.findall(r"<loc>(.*?)</loc>", x.read_text(encoding="utf-8")):
+            problems += check_page(html_path(loc).read_text(encoding="utf-8"), loc, titles, descs)
+            n_extra += 1
 
     problems += [f"duplicate title {t!r}: {', '.join(u)}" for t, u in titles.items() if len(u) > 1]
     problems += [f"duplicate description on: {', '.join(u)}" for d, u in descs.items() if len(u) > 1 and d]
@@ -150,15 +172,17 @@ def main() -> int:
     sm.write_text('<?xml version="1.0" encoding="UTF-8"?>\n'
                   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + body + "</urlset>\n",
                   encoding="utf-8", newline="\n")
-    newest = max(d for _, d in entries)
+    maps = [("sitemap.xml", max(d for _, d in entries))]
+    maps += [(x.name, max(re.findall(r"<lastmod>(.*?)</lastmod>", x.read_text(encoding="utf-8")), default=maps[0][1]))
+             for x in extra]
     (OUT / "sitemap-index.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-        f"  <sitemap>\n    <loc>{BASE}sitemap.xml</loc>\n    <lastmod>{newest}</lastmod>\n  </sitemap>\n"
-        "</sitemapindex>\n", encoding="utf-8", newline="\n")
+        + "".join(f"  <sitemap>\n    <loc>{BASE}{n}</loc>\n    <lastmod>{d}</lastmod>\n  </sitemap>\n" for n, d in maps)
+        + "</sitemapindex>\n", encoding="utf-8", newline="\n")
     (OUT / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {BASE}sitemap-index.xml\n",
                                     encoding="utf-8", newline="\n")
-    print(f"seo: {len(entries)} pages, canonical + lastmod set, sitemap-index.xml and robots.txt written")
+    print(f"seo: {len(entries)} pages + {n_extra} generated, canonical + lastmod set, sitemap-index.xml and robots.txt written")
 
     if problems:
         print("seo: page metadata problems (see PLAN-seo S1):", file=sys.stderr)
