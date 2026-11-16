@@ -306,4 +306,42 @@ if not LC["by_opp"]["unranked"]["drop"] > LC["by_opp"]["ranked"]["drop"]:
     raise StaleProse("CFB loss article: 'losing to an unranked team costs more than losing to a ranked one' no longer holds.")
 if not all(b["fell_out"] < 0.05 for b in LC["by_rank"] if b["hi"] <= LC["top"]):
     raise StaleProse("CFB loss article: 'a top-12 team almost never falls out of the ranking after one loss' no longer holds.")
+# ---- CFB-CAROUSEL: what a head-coaching change does in year 1 (cfb/carousel/analysis.py) ---------------------------------
+CA = json.loads((ROOT / "cfb" / "carousel" / "output" / "results.json").read_text(encoding="utf-8"))
+write_json(OUT / "carousel.json", {k: CA[k] for k in ("seasons", "current_season", "summary", "changes")})
+cs = CA["summary"]
+ci = lambda k: f"{cs[k]['ci90'][0]:+.1f} to {cs[k]['ci90'][1]:+.1f}"  # noqa: E731
+N.update({
+    "ca_first_season": str(CA["seasons"][0]), "ca_last_season": str(CA["seasons"][1]), "ca_n": str(CA["n_changes"]),
+    "ca_n_team_seasons": f"{CA['n_team_seasons']:,}", "ca_all": f"{-cs['all']['mean']:.1f}", "ca_all_ci": ci("all"),
+    "ca_all_beat": f"{100 * cs['all']['share_beat']:.0f}%",
+    "ca_left": f"{-cs['left_for_job']['mean']:.1f}", "ca_left_ci": ci("left_for_job"), "ca_left_n": str(cs["left_for_job"]["n"]),
+    "ca_stay": f"{-cs['did_not_leave_for_job']['mean']:.1f}", "ca_stay_ci": ci("did_not_leave_for_job"),
+    "ca_stay_n": str(cs["did_not_leave_for_job"]["n"]),
+    "ca_bad": f"{cs['bad_last_year']['mean']:+.1f}", "ca_bad_ci": ci("bad_last_year"), "ca_bad_n": str(cs["bad_last_year"]["n"]),
+    "ca_bad_beat": f"{100 * cs['bad_last_year']['share_beat']:.0f}%",
+    "ca_notbad": f"{-cs['not_bad_last_year']['mean']:.1f}", "ca_notbad_ci": ci("not_bad_last_year"),
+    "ca_g5": f"{-cs['g5']['mean']:.1f}", "ca_g5_ci": ci("g5"), "ca_power": f"{-cs['power']['mean']:.1f}", "ca_power_ci": ci("power"),
+    "ca_first": f"{-cs['first_time']['mean']:.1f}", "ca_first_ci": ci("first_time"),
+    "ca_exp": f"{-cs['experienced']['mean']:.1f}", "ca_exp_ci": ci("experienced"),
+    "ca_sd": f"{CA['kept_effect_sd']:.1f}",
+    "ca_style_r": f"{CA['style_carryover']['D1']['r_with_his_old_team']:.2f}",
+    "ca_style_r_prog": f"{CA['style_carryover']['D1']['r_with_program_last_year']:.2f}",
+    "ca_spread_r": f"{CA['style_carryover']['D2']['r_with_his_old_team']:.2f}",
+    "ca_style_n": str(CA["style_carryover"]["coaches_who_moved"]),
+    "ca_n_current": str(sum(r["in_progress"] for r in CA["changes"])),
+})
+# Claims the article makes. If one stops holding, rewrite the sentence.
+if not cs["all"]["ci90"][1] < 0:
+    raise StaleProse("CFB carousel: 'a coaching change costs a team in year 1' (interval below zero) no longer holds.")
+if not (cs["left_for_job"]["mean"] < cs["did_not_leave_for_job"]["mean"] and cs["left_for_job"]["ci90"][1] < 0):
+    raise StaleProse("CFB carousel: 'the drop is biggest when the coach left for another head job' no longer holds.")
+if not cs["bad_last_year"]["ci90"][0] < 0 < cs["bad_last_year"]["ci90"][1]:
+    raise StaleProse("CFB carousel: 'after a bottom-third season, the new coach's team lands about where expected' no longer holds.")
+if not cs["g5"]["mean"] < cs["power"]["mean"]:
+    raise StaleProse("CFB carousel: 'Group of Five teams lose more in year 1 than Power teams' no longer holds.")
+if not cs["first_time"]["mean"] < cs["experienced"]["mean"]:
+    raise StaleProse("CFB carousel: 'first-time head coaches' teams drop more than experienced coaches'' no longer holds.")
+if not CA["style_carryover"]["D1"]["r_with_his_old_team"] > CA["style_carryover"]["D1"]["r_with_program_last_year"]:
+    raise StaleProse("CFB carousel: 'a moving coach's pass-heaviness follows him more than it stays with the program' no longer holds.")
 write_numbers("cfb", N, "cfb/export_site_data.py")

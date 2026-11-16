@@ -1,0 +1,153 @@
+---
+title: "A new head coach usually means a step back in year 1"
+pagetitle: "What a coaching change does to a team in year 1"
+description: "Teams with a new head coach finished below what their last two seasons predicted, most of all when the old coach left for another job."
+date: 2026-11-16
+categories: [College football, Coaching]
+image: thumb.png
+card-key: cfb.ca_all
+card-prefix: "−"
+card-suffix: " pts"
+card-label: "per game vs. expected, in a new coach's first season"
+---
+
+::: {.finding}
+In a new head coach's first season, FBS teams finished {{< meta cfb.ca_all >}} points per game worse than their last two seasons predicted (90% interval {{< meta cfb.ca_all_ci >}}; {{< meta cfb.ca_n >}} coaching changes, {{< meta cfb.ca_first_season >}}–{{< meta cfb.ca_last_season >}}). The drop was biggest when the old coach had left for another head-coaching job ({{< meta cfb.ca_left >}} points), and after a bottom-third season the new coach's team landed about where expected ({{< meta cfb.ca_bad >}} points, interval {{< meta cfb.ca_bad_ci >}}).
+:::
+
+::: {.so-what}
+- **If your coach just left for a better job, expect year 1 to be rough:** about {{< meta cfb.ca_left >}} points per game below the team's recent form, against {{< meta cfb.ca_stay >}} when a school made the change itself.
+- **Firing a coach after a bad season isn't a quick fix, but it isn't a setback either:** the new coach's first team usually plays about as well as the last two seasons said it would.
+- **A coach's offense comes with him.** How pass-heavy his new team is tracks his old team (correlation {{< meta cfb.ca_style_r >}}) more than the program's own last season ({{< meta cfb.ca_style_r_prog >}}), so plan the roster around his system, not the old one.
+:::
+
+## Every coaching change since {{< meta cfb.ca_first_season >}}
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c"></div>
+  <div id="scatter" class="plot-host"></div>
+  <p class="caption" id="scap"></p>
+  <div id="t"><div class="loading">Loading…</div></div>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt, U = S.urlState;
+  const [A, teamList] = await Promise.all([S.load("/data/cfb/carousel.json"), S.load("/data/cfb/teams.json")]);
+  const teams = new Map(teamList.map(t => [t.id, t]));
+  const link = name => (teams.has(name) ? S.cfbTeamLink(teams.get(name), name) : name);
+  const vs = v => `<strong style="color:${v < 0 ? "#2a78d6" : "#eb6834"}">${f.signed(v, 1)}</strong>`;
+  const done = A.changes.filter(r => !r.in_progress);
+  const DEF = { why: "all", lvl: "all", coach: "all" };
+  const st = { why: ["left", "other"].includes(U.get("why")) ? U.get("why") : DEF.why,
+               lvl: ["Power", "G5"].includes(U.get("lvl")) ? U.get("lvl") : DEF.lvl,
+               coach: ["first", "exp"].includes(U.get("coach")) ? U.get("coach") : DEF.coach };
+  const c = document.getElementById("c"), sc = document.getElementById("scatter");
+  const keep = r => (st.why === "all" || (st.why === "left") === !!r.left_for) && (st.lvl === "all" || r.level === st.lvl)
+    && (st.coach === "all" || (st.coach === "exp") === r.experienced);
+  const dom = S.stableDomain(done.flatMap(r => [r.expected, r.actual]), { q: [0.005, 0.995] });
+  const pin = v => Math.max(dom[0], Math.min(dom[1], v));
+  function controls() {
+    c.replaceChildren(
+      S.el("label", {}, "Why the coach changed", S.seg([["all", "All"], ["left", "Left for another job"], ["other", "Fired or other"]], st.why, v => { st.why = v; draw(); })),
+      S.el("label", {}, "Level", S.seg([["all", "All"], ["Power", "Power"], ["G5", "Group of Five"]], st.lvl, v => { st.lvl = v; draw(); })),
+      S.el("label", {}, "New coach", S.seg([["all", "All"], ["first", "First-time"], ["exp", "Had been an FBS head coach"]], st.coach, v => { st.coach = v; draw(); })));
+  }
+  const table = S.table(document.getElementById("t"), [
+    { key: "season", label: "Season", fmt: v => String(v) },
+    { key: "team", label: "Team", align: "l", html: r => link(r.team), sortVal: r => r.team },
+    { key: "coach", label: "New coach", align: "l" },
+    { key: "prev_coach", label: "Previous coach", align: "l", html: r => r.prev_coach + (r.left_for ? `<br><span class="muted">left for ${r.left_for}</span>` : "") },
+    { key: "expected", label: "Exp.", fmt: v => f.signed(v, 1), title: "Power rating predicted from the team's last two seasons (teams that kept their coach set the relationship)" },
+    { key: "actual", label: "Actual", fmt: v => f.signed(v, 1), title: "End-of-season power rating: points better than an average FBS team on a neutral field" },
+    { key: "effect", label: "vs. expected", html: r => vs(r.effect), sortVal: r => r.effect,
+      title: "Actual minus expected, in points per game (orange better than expected, blue worse)" },
+  ], { sortKey: "effect", desc: false, pageSize: 15 });
+  function draw() {
+    const rows = done.filter(keep);
+    const data = rows.map(r => ({ ...r, x: pin(r.expected), y: pin(r.actual), _off: pin(r.expected) !== r.expected || pin(r.actual) !== r.actual }));
+    S.plot(sc, w => Plot.plot({ ...S.plotDefaults(w), height: Math.min(460, Math.max(340, w * 0.6)), grid: true, clip: true,
+      x: { label: "Expected power rating (from the last two seasons) →", domain: dom },
+      y: { label: "↑ Actual power rating in the new coach's first season", domain: dom },
+      marks: [
+        Plot.line([[dom[0], dom[0]], [dom[1], dom[1]]], { stroke: "#8a8b8f", strokeDasharray: "4,3" }),
+        Plot.dot(data, { x: "x", y: "y", r: 3.5, fill: d => (d.effect < 0 ? "#2a78d6" : "#eb6834"), fillOpacity: 0.6,
+                         stroke: d => (d._off ? "#16181d" : "none") }),
+        Plot.tip(data, Plot.pointer({ x: "x", y: "y", title: d => `${d.team} ${d.season}: ${d.prev_coach} → ${d.coach}${d.left_for ? ` (left for ${d.left_for})` : ""}\n`
+          + `Expected ${f.signed(d.expected, 1)} · actual ${f.signed(d.actual, 1)} · ${f.signed(d.effect, 1)} vs. expected` })),
+      ] }));
+    const mean = rows.length ? rows.reduce((a, r) => a + r.effect, 0) / rows.length : NaN;
+    const beat = rows.length ? rows.filter(r => r.effect > 0).length / rows.length : NaN;
+    document.getElementById("scap").textContent = `Each dot is a team in its new head coach's first season, ${A.seasons[0]}–${A.seasons[1]}, `
+      + `placed by the power rating its last two seasons predicted and the one it finished with. Dots below the dashed line did worse than expected (blue), above it better (orange). `
+      + (rows.length ? `These ${rows.length} teams averaged ${f.signed(mean, 1)} points per game against expectation; ${f.pct(beat)} beat it. ` : "No changes match. ")
+      + `Hover a dot for the team and coaches; the table below lists the same teams.`;
+    table.update(rows);
+    U.set(st, DEF);
+  }
+  controls(); draw();
+
+})();
+</script>
+```
+
+## Why the reason for the change matters
+
+When a school fires a coach after a bad season, the team's recent results already include whatever went wrong, and the next season tends to look like them: teams coming off a bottom-third season landed {{< meta cfb.ca_bad >}} points per game against expectation ({{< meta cfb.ca_bad_n >}} changes, interval {{< meta cfb.ca_bad_ci >}}), and {{< meta cfb.ca_bad_beat >}} beat it. A coach who leaves for another head-coaching job usually leaves a good team behind, and often takes assistants and players with him; those teams fell {{< meta cfb.ca_left >}} points short ({{< meta cfb.ca_left_n >}} changes, interval {{< meta cfb.ca_left_ci >}}). Changes that weren't a departure for another FBS head job fell {{< meta cfb.ca_stay >}} short ({{< meta cfb.ca_stay_n >}}, interval {{< meta cfb.ca_stay_ci >}}).
+
+The drop is larger in the Group of Five ({{< meta cfb.ca_g5 >}} points, interval {{< meta cfb.ca_g5_ci >}}) than in the Power conferences ({{< meta cfb.ca_power >}}, {{< meta cfb.ca_power_ci >}}), and larger for first-time head coaches ({{< meta cfb.ca_first >}}, {{< meta cfb.ca_first_ci >}}) than for coaches who had run an FBS program before ({{< meta cfb.ca_exp >}}, {{< meta cfb.ca_exp_ci >}}). For scale, teams that kept their coach missed their own expectation by {{< meta cfb.ca_sd >}} points per game in a typical season, so a coaching change shifts the odds without deciding anything.
+
+## This season's first-year coaches
+
+```{=html}
+<div class="explorer">
+  <div id="cur"><div class="loading">Loading…</div></div>
+  <p class="caption" id="ccap"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt;
+  const [A, teamList] = await Promise.all([S.load("/data/cfb/carousel.json"), S.load("/data/cfb/teams.json")]);
+  const teams = new Map(teamList.map(t => [t.id, t]));
+  const link = name => (teams.has(name) ? S.cfbTeamLink(teams.get(name), name) : name);
+  const vs = v => `<strong style="color:${v < 0 ? "#2a78d6" : "#eb6834"}">${f.signed(v, 1)}</strong>`;
+
+  // This season's first-year head coaches, as a season in progress.
+  const cur = A.changes.filter(r => r.in_progress);
+  const host = document.getElementById("cur");
+  S.table(host, [
+    { key: "team", label: "Team", align: "l", html: r => link(r.team), sortVal: r => r.team },
+    { key: "coach", label: "New coach", align: "l" },
+    { key: "prev_coach", label: "Previous coach", align: "l", html: r => r.prev_coach + (r.left_for ? `<br><span class="muted">left for ${r.left_for}</span>` : "") },
+    { key: "expected", label: "Exp.", fmt: v => f.signed(v, 1), title: "Expected power rating from the team's last two seasons" },
+    { key: "actual", label: "So far", fmt: v => f.signed(v, 1), title: "Current power rating, with the season still going" },
+    { key: "effect", label: "vs. expected", html: r => vs(r.effect), sortVal: r => r.effect },
+  ], { sortKey: "effect", desc: true, pageSize: 40 }).update(cur);
+  document.getElementById("ccap").textContent = `${cur.length} FBS teams have a first-year head coach in ${A.current_season}. `
+    + `"So far" is each team's current power rating with the season still in progress, so these will move; the expectation is the same one used above.`;
+})();
+</script>
+```
+
+## The offense moves with the coach
+
+Of {{< meta cfb.ca_style_n >}} head coaches who moved from one FBS program to another, the new team's pass-heaviness lined up with the coach's old team (correlation {{< meta cfb.ca_style_r >}}) more than with the program's own previous season ({{< meta cfb.ca_style_r_prog >}}). How a team spreads the ball between receivers, tight ends and backs travels less ({{< meta cfb.ca_spread_r >}}). For a roster, that means the quarterback and receivers who fit last year's offense may not fit next year's. The [transfer portal board](/cfb/tools/portal-board.html) shows each program's offense in plain words.
+
+<details class="method" id="method">
+<summary>Method, data, and limits</summary>
+
+**Data.** Head coaches, games and play-by-play from [CollegeFootballData.com](https://collegefootballdata.com); power ratings are Sparvi's ([how they're built](/cfb/tools/team-ratings.html)): how many points better than an average FBS team a team should be on a neutral field, at the end of each season. {{< meta cfb.ca_n_team_seasons >}} FBS team-seasons, {{< meta cfb.ca_first_season >}}–{{< meta cfb.ca_last_season >}}, with ratings in the two seasons before.
+
+**Coaching changes.** A season's head coach is the coach with the most games that season, so an interim who finished a season counts toward whoever coached most of it. A change is a season whose head coach differs from the season before. "Left for another job" means the previous coach was a head coach at another FBS school the next season. "Had been an FBS head coach" counts jobs since 2014, where the coaching data start, so a few returning veterans count as first-time.
+
+**Expected rating.** A straight-line fit of the end-of-season power rating on the two previous seasons' ratings, estimated only on teams that kept their coach and leaving out the season being predicted. The effect of a change is the actual rating minus that expectation. Intervals are 90%, from 2,000 bootstrap resamples of teams.
+
+**Offense.** Pass-heaviness and target spread are the first two dimensions of Sparvi's team-system analysis (run/pass mix by situation, and how passes are spread between positions), compared for head coaches who moved directly from one FBS head job to another.
+
+**What it can't tell you.** Why a coach changed beyond the categories above (health, scandal, a buyout), roster turnover that came with the change (the transfer portal moves fast after a hire), or assistants who moved with the coach. Changes are not random: a school that fires its coach after a bad year differs from one whose coach was hired away, which is why the article compares them separately. A season of {{< meta cfb.ca_sd >}} points of noise per team means single teams say little; the averages are what hold up.
+
+Code: [`cfb/carousel/`](https://github.com/matt-hardman15/sparvi-site/tree/main/cfb/carousel) · Data provided by CollegeFootballData.com. Sparvi is not affiliated with the NCAA, any conference, or any school.
+
+**Model version.** [{{< meta models.cfb_power_rating >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/cfb/power_rating/card.yml) ({{< meta models.cfb_power_rating_status >}}).
+
+</details>
