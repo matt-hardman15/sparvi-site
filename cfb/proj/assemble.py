@@ -146,6 +146,20 @@ def intervals(c: pd.DataFrame) -> pd.DataFrame:
     return c
 
 
+def interval_bins(c: pd.DataFrame) -> dict:
+    """For the backtest and the board: per category, projected-yards bin edges and the 10th / 90th residual percentiles
+    over every development season's leave-one-season-out projections."""
+    out = {}
+    for cat, d in c.groupby("category"):
+        edges = np.unique(np.quantile(d["proj"], np.linspace(0, 1, N_BINS + 1)))
+        b = np.clip(np.searchsorted(edges, d["proj"], side="right") - 1, 0, len(edges) - 2)
+        res = (d["actual"] - d["proj"]).to_numpy()
+        out[cat] = {"edges": [round(float(e), 3) for e in edges[:-1]],
+                    "q10": [round(float(np.quantile(res[b == i], 0.10)), 3) for i in range(len(edges) - 1)],
+                    "q90": [round(float(np.quantile(res[b == i], 0.90)), 3) for i in range(len(edges) - 1)]}
+    return out
+
+
 def _boot(d: pd.DataFrame, a: str, b: str) -> dict:
     rng = np.random.default_rng(SEED)
     keys = d["out_id"].to_numpy()
@@ -175,6 +189,7 @@ def main() -> None:
                                                       for m in ("proj", "carry", "share_only")}} for st, q in d.groupby("status")}
         res["categories"][cat] = out
     OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "interval_bins.json").write_text(json.dumps(interval_bins(c), indent=1) + "\n", encoding="utf-8", newline="\n")
     (OUT / "assemble_dev.json").write_text(json.dumps(res, indent=1) + "\n", encoding="utf-8", newline="\n")
     for cat, v in res["categories"].items():
         print(f"{cat:<7} n={v['rows']:<6} proj r {v['proj']['r']:.3f}  carry {v['carry']['r']:.3f}  share_only {v['share_only']['r']:.3f}  "

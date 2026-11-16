@@ -2,6 +2,15 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-16 · CFB player projection 1.0.0 (new, pre-registered)
+CFB-PROJ (PLAN-fit). Season yards for every QB, RB, WR, TE on an FBS team's projected roster as of May 1: team volume x
+share x efficiency, with 80% intervals. Developed on 2016-2020 only (leave one season out): projected-yards r QB 0.531,
+RB 0.550, WR 0.500, TE 0.488, each beating last-season yards and share-only with 90% intervals above zero. The
+pre-registered backtest (2021-2025, strict in every position group, Matt) runs once in CI when this merges; until it
+passes the model is experimental. Change from development: team receiving yards per dropback no longer uses the
+projected QBs (changed development receiving r by under 0.001; the point-in-time version would need projected QBs for
+every training season).
+
 ## 2026-11-15 · CFB player profile 1.0.3 → 1.0.4, CFB system fit 1.1.3 → 1.1.4 (patch: roster matching)
 CFB-MATCH-FIX. `ingest/cfb/play_players.py` gave up whenever a name matched several roster entries. CFBD lists
 placeholder entries (negative ids) through 2019 and sometimes two ids for one player, so whole teams went unmatched
