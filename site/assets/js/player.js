@@ -26,6 +26,7 @@
   const isFinal = () => iso() === allDates[LAST] && st.window === "std";
 
   const out = [];
+  const later = (fn) => setTimeout(fn, 0);
   const lv = (l) => (l === "AAA" ? "Triple-A" : "MLB");
   const ctl = S.el("div", { class: "controls" });
   const slider = S.dateSlider(allDates, allDates.indexOf(iso()), k => { st.asof = allDates[k]; render(); });
@@ -63,7 +64,10 @@
   function timelineSection(lvl, charts) {
     const grid = S.el("div", { class: "small-multiples" });
     const draws = charts.map(([field, title, fmt, ser]) => { const host = S.el("div", { class: "plot-host" }); grid.append(host); return timelineChart(host, tl[lvl].dates, ser, field, title, fmt); });
-    return { el: [S.el("h3", {}, "Season timeline"), grid], draw: () => draws.forEach(d => d()) };
+    // Each small multiple draws in its own task (PERF-1): one long task drawing every chart blocked the main
+    // thread for ~0.6 s on a mid-range phone. They read the current state when they run, so rapid slider moves
+    // still end on the right picture.
+    return { el: [S.el("h3", {}, "Season timeline"), grid], draw: () => draws.forEach(d => later(d)) };
   }
   const empty = (lvl, what) => S.el("p", { class: "note" }, `No ${lv(lvl)} ${what} through ${S.dateLabel(iso())}.`);
 
@@ -202,7 +206,7 @@
             S.asOfMark(T.dates[i]),
             Plot.tip(g, Plot.pointer({ x: "date", y: "velo", title: d => `${d.d}: ${f.num(d.velo)} mph (${d.pt}, ${d.n} thrown)` }))] }));
       }
-      tline.draw(); drawLines();
+      tline.draw(); later(drawLines);
     });
   }
   if (p && p.bf >= 25 && tl.AAA?.pitcher) pitchingSection("AAA");

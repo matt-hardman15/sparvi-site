@@ -10,6 +10,7 @@ project:
     - build/player_pages.py   # static player and team pages (PLAN-seo S2); before seo.py, which checks them
     - build/social.py         # 1200x630 preview images (PLAN-seo S3); needs Pillow, so render with `uv run`
     - build/mentions.py       # first-mention entity links in articles + "Mentioned in" lists (PLAN-seo S5)
+    - build/perf.py           # Quarto's own scripts load with defer (PERF-1)
     - build/seo.py            # canonical URLs, sitemaps, JSON-LD, metadata checks
     - build/linkcheck.py      # every internal link resolves; no orphan pages (PLAN-seo S5)
     - build/check_budget.py   # hosting budget: file count and size of docs/
@@ -24,6 +25,9 @@ metadata-files:
 
 website:
   title: "Sparvi"
+  # No site search (PERF-1, Matt Nov 17): its three scripts blocked every page's first paint, and its index
+  # covered Quarto pages only, not the generated player and team pages.
+  search: false
   site-url: "https://sparvi.io"
   description: "Free sports analytics: findings you can act on, with the data out in the open so you can check them."
   favicon: assets/favicon.svg

@@ -138,7 +138,7 @@ def body(p: dict, season: int, fin: dict, current: int | None = None) -> str:
            f'<p class="note">{when}See also: {links}</p>',
            '<div id="root">', sm.static_body(p, th), "</div>"]
     if not current:   # the interactive version needs the full season's timeline, which the archive doesn't keep
-        out += [f'<script type="application/json" id="page-data">{data}</script>', '<script src="/assets/js/player.js"></script>']
+        out += [f'<script type="application/json" id="page-data">{data}</script>', '<script defer src="/assets/js/player.js"></script>']
     return "\n".join(out)
 
 
@@ -147,8 +147,21 @@ def body(p: dict, season: int, fin: dict, current: int | None = None) -> str:
 SLOTS = ("ZZTITLEZZ", "ZZHONEZZ", "ZZDESCRIPTIONZZ", "ZZBODYZZ")
 
 
+CHART_LIBS = ('<script src="/assets/js/d3.min.js"></script>', '<script src="/assets/js/plot.umd.min.js"></script>',
+              '<script src="/assets/js/sparvi.js"></script>')
+
+
+def libs(shell: str, team: bool) -> str:
+    """PERF-1: player pages arrive with their numbers as HTML, so the chart libraries load deferred (in order,
+    before player.js, which is deferred too); team pages have no charts and don't load them at all."""
+    for tag in CHART_LIBS:
+        shell = shell.replace(tag, "" if team else tag.replace("<script src", "<script defer src"))
+    return shell
+
+
 def fill(shell: str, title: str, h1: str, desc: str, body_html: str, canonical: str, noindex: bool, head: str = "") -> str:
-    out = shell.replace("ZZTITLEZZ", e(title)).replace("ZZHONEZZ", e(h1)).replace("ZZDESCRIPTIONZZ", e(desc))
+    out = libs(shell, team=canonical.startswith(f"{BASE}baseball/teams/"))
+    out = out.replace("ZZTITLEZZ", e(title)).replace("ZZHONEZZ", e(h1)).replace("ZZDESCRIPTIONZZ", e(desc))
     out = out.replace("ZZBODYZZ", body_html)
     head = f'<link rel="canonical" href="{canonical}">' + ('\n<meta name="robots" content="noindex">' if noindex else "") \
         + (f"\n{head}" if head else "")
