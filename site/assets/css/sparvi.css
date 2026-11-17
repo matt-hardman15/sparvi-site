@@ -30,6 +30,11 @@ a { color: var(--accent); text-underline-offset: 2px; }
 .navbar .navbar-brand, .navbar .nav-link { color: var(--ink) !important; }
 .navbar-brand { font-family: var(--serif); font-weight: 700; font-size: 1.45rem; letter-spacing: -0.02em; }
 .navbar .nav-link:hover { color: var(--accent) !important; }
+/* Mobile menu button: Quarto draws it in its light-navbar gray, which washed out on our paper background.
+   Ink-colored bars and a visible outline (WCAG non-text contrast). */
+.navbar-toggler { border: 1px solid var(--ink-2); border-radius: 6px; padding: .3rem .45rem; }
+.navbar-toggler:focus { box-shadow: 0 0 0 2px var(--accent); }
+.navbar-toggler-icon { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%2316181d' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2.4' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important; }
 .nav-footer { background: var(--paper); border-top: 1px solid var(--rule); color: var(--muted); font-size: .85rem; }
 .quarto-title-meta-heading { color: var(--muted); }
 .subtitle, .description { color: var(--ink-2); font-size: 1.15rem; }
