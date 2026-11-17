@@ -51,3 +51,37 @@ $else$
 <script src="/assets/js/plot.umd.min.js"></script>
 <script src="/assets/js/sparvi.js"></script>
 $endif$
+
+<!-- Umami analytics (cookieless; see the About page's Privacy section). Loads only on sparvi.io, so local
+     builds and CI never call it, and honors Do Not Track. Besides page views it records, as totals:
+     which tool control was used and the option picked (never what's typed into a search box), and
+     clicks on links that leave the site. Pandoc template: write a dollar sign as two. -->
+<script>
+  (function () {
+    if (location.hostname !== "sparvi.io") return;
+    var s = document.createElement("script");
+    s.defer = true; s.src = "https://cloud.umami.is/script.js";
+    s.setAttribute("data-website-id", "946fd54c-2dd9-4728-998a-c974eb444efa");
+    s.setAttribute("data-domains", "sparvi.io");
+    s.setAttribute("data-do-not-track", "true");
+    document.head.appendChild(s);
+    var track = function (name, data) { if (window.umami && umami.track) umami.track(name, data); };
+    var labelOf = function (el) {
+      var l = el.closest("label"), t = l && l.firstChild && l.firstChild.nodeType === 3 ? l.firstChild.textContent : "";
+      return (t || el.getAttribute("aria-label") || el.name || "control").trim().slice(0, 60);
+    };
+    document.addEventListener("click", function (e) {
+      var b = e.target.closest && e.target.closest(".seg button");
+      if (b) { track("control", { control: labelOf(b.parentNode), value: b.textContent.trim().slice(0, 60) }); return; }
+      var a = e.target.closest && e.target.closest("a[href]");
+      if (a && a.host && a.host !== location.host) track("outbound", { host: a.host, url: (a.host + a.pathname).slice(0, 200) });
+    }, true);
+    document.addEventListener("change", function (e) {
+      var el = e.target;
+      if (el.tagName === "SELECT") track("control", { control: labelOf(el), value: (el.options[el.selectedIndex] || {}).text || "" });
+      else if (el.type === "search") track("search", { control: labelOf(el) });
+      else if (el.type === "number" || el.type === "range" || el.type === "checkbox")
+        track("control", { control: labelOf(el), value: el.type === "checkbox" ? String(el.checked) : String(el.value) });
+    }, true);
+  })();
+</script>
