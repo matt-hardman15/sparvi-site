@@ -11,6 +11,7 @@ import http.server
 import json
 import os
 import re
+import sys
 import threading
 
 import pytest
@@ -864,3 +865,19 @@ def test_preview_image_exists_and_is_1200x630(rel):
     tw = re.search(r'<meta name="twitter:image" content="https://sparvi.io/([^"]+)"', h)[1]
     assert og == tw and Image.open(DOCS / og).size == (1200, 630)
     assert "og-default.png" not in og
+
+
+# ---- first-mention links and "Mentioned in" (PLAN-seo S5) ----------------------------------------------
+def test_articles_link_first_mentions_and_entity_pages_list_them():
+    h = (DOCS / "baseball" / "stuff-or-command" / "index.html").read_text(encoding="utf-8")
+    links = re.findall(r'<a href="(/baseball/players/[a-z0-9-]+-\d+/)" class="entity-link">', h)
+    assert len(links) >= 5 and len(links) == len(set(links)), "each player linked once"
+    for path in links:
+        page = (DOCS / path.strip("/") / "index.html").read_text(encoding="utf-8")
+        assert '<section class="mentioned-in">' in page and 'href="/baseball/stuff-or-command/"' in page, path
+
+
+def test_build_has_no_broken_internal_links():
+    import subprocess
+    r = subprocess.run([sys.executable, str(ROOT / "site" / "build" / "linkcheck.py")], capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr[-2000:]

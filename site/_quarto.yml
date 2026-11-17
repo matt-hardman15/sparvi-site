@@ -9,7 +9,9 @@ project:
   post-render:
     - build/player_pages.py   # static player and team pages (PLAN-seo S2); before seo.py, which checks them
     - build/social.py         # 1200x630 preview images (PLAN-seo S3); needs Pillow, so render with `uv run`
+    - build/mentions.py       # first-mention entity links in articles + "Mentioned in" lists (PLAN-seo S5)
     - build/seo.py            # canonical URLs, sitemaps, JSON-LD, metadata checks
+    - build/linkcheck.py      # every internal link resolves; no orphan pages (PLAN-seo S5)
     - build/check_budget.py   # hosting budget: file count and size of docs/
 
 # Numbers quoted in article prose, written by each sport's export_site_data.py.
