@@ -55,9 +55,12 @@ def test_freeze_writes_rankings_only_when_a_list_changes(tmp_path):
 def test_site_data_has_no_recruiting_ratings():
     """Matt, Nov 15: 247Sports stars and ratings feed the market tier only; the public files never carry them."""
     d = ROOT / "site" / "data" / "cfb" / "portal"
-    for f in d.glob("board_*.json"):
-        players = json.loads(f.read_text(encoding="utf-8"))["players"]
-        assert players and not ({"stars", "rating", "hs_stars"} & set(players[0]))
+    seen = 0
+    for f in d.glob("board_*.json"):          # a coming window has no entrants yet; the check must not be vacuous overall
+        for pl in json.loads(f.read_text(encoding="utf-8"))["players"]:
+            assert not ({"stars", "rating", "hs_stars"} & set(pl)), f.name
+            seen += 1
+    assert seen > 0
 
 
 def test_freeze_writes_projection_lists_separately(tmp_path):
@@ -77,3 +80,56 @@ def test_freeze_writes_projection_lists_separately(tmp_path):
     res["programs"][0]["proj"]["QB"].reverse()
     again = F.records(res, "1.1.0", existing, day + pd.Timedelta(days=1), proj_version="1.1.0")
     assert [(r["model"], r["entity_id"]) for r in again] == [(F.PROJ_MODEL, "2027:X:QB:proj")]
+
+
+# ---- best landing spots by relative fit (Matt, Nov 17) -------------------------------------------------------------
+def _fit_board():
+    import pandas as pd
+    # Two entrants, four programs. "Easy" scores high for everyone (a program-wide effect); the entrants differ in where
+    # they fit better than the other does.
+    rows = []
+    p = {("A", "Easy"): .9, ("A", "X"): .6, ("A", "Y"): .3, ("A", "Closed"): .8,
+         ("B", "Easy"): .9, ("B", "X"): .3, ("B", "Y"): .6, ("B", "Closed"): .8}
+    for (pl, tm), v in p.items():
+        rows.append({"player": pl, "team": tm, "group": "WR", "p": v})
+    return pd.DataFrame(rows)
+
+
+def test_best_spots_rank_by_relative_fit_not_program_wide_scores():
+    import pandas as pd
+    b = _fit_board()
+    avail = pd.Series({("Easy", "WR"): .5, ("X", "WR"): .5, ("Y", "WR"): .5, ("Closed", "WR"): .01})
+    intake = pd.Series({"Easy": 10, "X": 10, "Y": 10, "Closed": 10})
+    best = B.best_spots(b, avail, intake, {("X", "A"): 812}, n=1)
+    assert best["A"] == [["X", 812]] and best["B"] == [["Y", None]]       # each his own program, not "Easy"
+    assert "Closed" not in {s[0] for v in B.best_spots(b, avail, intake, {}).values() for s in v}   # below-median opening
+
+
+def test_best_spots_skip_programs_that_dont_take_transfers():
+    import pandas as pd
+    b = _fit_board()
+    avail = pd.Series({(t, "WR"): .5 for t in ("Easy", "X", "Y", "Closed")})
+    best = B.best_spots(b, avail, pd.Series({"Easy": 10, "Y": 10, "Closed": 10, "X": 0}), {})
+    assert "X" not in {s[0] for s in best["A"]}
+
+
+def test_ledger_freeze_waits_for_entries_but_the_site_shows_the_coming_window(monkeypatch):
+    import pandas as pd
+
+    from cfb.portal import export as X
+    from sparvi.config import cfb
+    monkeypatch.setattr(X.M, "portal", lambda *a, **k: pd.DataFrame())     # no entries yet
+    nxt = cfb().season + 1
+    day = pd.Timestamp("2026-11-17")
+    assert nxt in dict(X.windows(day)) and nxt not in dict(X.windows(day, require_entries=True))
+
+
+def test_freeze_refreshes_the_board_but_records_nothing_before_entries(monkeypatch):
+    from cfb.portal import export as X
+    calls = {"export": 0, "ledger": 0}
+    monkeypatch.setattr(X, "windows", lambda day, require_entries=False: [] if require_entries else [(2027, day)])
+    monkeypatch.setattr(X, "export", lambda t, d: calls.__setitem__("export", calls["export"] + 1) or {"window": t, "result": {}})
+    monkeypatch.setattr(X, "write_index", lambda done: None)
+    monkeypatch.setattr(F.ledger, "append_forecasts", lambda *a, **k: calls.__setitem__("ledger", calls["ledger"] + 1))
+    monkeypatch.setattr(F, "cfb", lambda: SimpleNamespace(season=2026))
+    assert F.main() == 0 and calls == {"export": 1, "ledger": 0}

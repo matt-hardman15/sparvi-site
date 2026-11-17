@@ -28,6 +28,11 @@ LAST_COHORT = 2024            # the vault boundary: two-year outcomes complete w
 DIMS_LAST = 2025              # dimensions fit on complete seasons only
 TOP_FIT = 25
 N_BEST = 5                    # best landing spots shown per entrant
+# Best landing spots (Matt, Nov 17): ranked by relative fit, among programs with a real opening that take transfers.
+# Ranking by projected yards (or by raw fit) gave nearly everyone the same schools: both carry program-wide terms
+# (volume, level, "easy to succeed" systems) that are the same for every entrant.
+INTAKE_WINDOWS = 3            # windows of portal intake counted for "takes transfers"
+MIN_INTAKE = 3                # QB/RB/WR/TE transfers signed over those windows
 PROJ_LAST_TRAIN = 2025        # the projection trains on outcome seasons through 2025: 2026 is the Phase 2 vault
 PROJ_CATEGORY = {"QB": "QB", "RB": "RB", "WR": "WR_rec", "TE": "TE_rec"}
 HORIZON_YEARS = 2             # the fit target: success within two seasons at the program (PLAN-fit)
@@ -111,12 +116,59 @@ def similarity_band(d: float, cuts: tuple[float, float]) -> str:
 
 
 # ---- the board -------------------------------------------------------------------------------------------------------
-def build(t: int, as_of, loader: Loader | None = None) -> dict:
-    as_of = pd.Timestamp(as_of)
-    L = M.live(loader or Loader())
-    fitted = M.fit_fold(L, t, as_of, last_cohort=LAST_COHORT, dims_last=DIMS_LAST)
-    b = M.board(fitted, L, t, as_of)
-    e = M.entrants(L, t, as_of)
+def relative_fit(b: pd.DataFrame) -> pd.Series:
+    """His fit logit minus the program's mean logit for his position over all entrants: the part of the fit that is
+    about him, not about how easy the program is for anyone."""
+    q = b["p"].clip(1e-6, 1 - 1e-6)
+    lg = np.log(q / (1 - q))
+    return lg - lg.groupby([b["team"], b["group"]]).transform("mean")
+
+
+def transfer_intake(L, t: int, as_of) -> pd.Series:
+    """QB/RB/WR/TE portal transfers each program signed in the INTAKE_WINDOWS windows before season t."""
+    n = []
+    for s in range(t - INTAKE_WINDOWS, t):
+        p = M.portal(L, s, as_of)
+        n.append(p.loc[p["position"].isin(["QB", "RB", "WR", "TE"]) & p["destination"].notna(), "destination"])
+    return pd.concat(n).value_counts() if n else pd.Series(dtype=int)
+
+
+def best_spots(b: pd.DataFrame, avail: pd.Series, intake: pd.Series, proj_at: dict, n: int = N_BEST) -> dict[str, list]:
+    """Per entrant: up to n programs by relative fit, among those with at least the median open share at his position
+    and MIN_INTAKE transfers signed; each [program, his projected yards there or None]."""
+    x = b[["player", "team", "group"]].copy()
+    x["rel"] = relative_fit(b).to_numpy()
+    x["open"] = [avail.get((tm, g), 0.0) for tm, g in zip(x["team"], x["group"], strict=True)]
+    med = x.drop_duplicates(["team", "group"]).groupby("group")["open"].median()
+    keep = (x["open"] >= x["group"].map(med)) & (x["team"].map(intake).fillna(0) >= MIN_INTAKE)
+    top = x[keep].sort_values(["player", "rel", "team"], ascending=[True, False, True], kind="stable").groupby("player").head(n)
+    return {p: [[tm, proj_at.get((tm, p))] for tm in d["team"]] for p, d in top.groupby("player")}
+
+
+class UpcomingLoader(Loader):
+    """For a window whose season CFBD hasn't published teams for yet (the coming window, before its season): reads
+    teams_<t> as teams_<t-1>, so the board can show programs before the window opens. `membership_from` records it."""
+    def __init__(self, t: int, **kw):
+        super().__init__(**kw)
+        self.window, self.membership_from = t, None
+
+    def load(self, table, as_of, columns=None):
+        if table == f"teams_{self.window}" and table not in self.tables:
+            self.membership_from = self.window - 1
+            table = f"teams_{self.window - 1}"
+        return super().load(table, as_of, columns)
+
+
+PLAYER_COLS = ["player_id", "group", "origin", "stars", "rating", "transferDate", "firstName", "lastName", "destination", "name",
+               "team_from", "level", "share", "epa_adj", "epa_shrunk", "vor", "won_role", "above_average", "composite", "volume",
+               "epa_pct", "height", "weight", "exp", "hs_stars", "power_bar", "tier", "strengths", "similar", "yards", "floor"]
+
+
+def entrant_frame(L, t: int, as_of, e: pd.DataFrame) -> pd.DataFrame:
+    """Every entrant with last season's production, size, experience, market tier, strengths, and similar players. A
+    window shown before it opens has no entrants yet: an empty frame with the same columns."""
+    if e.empty:
+        return pd.DataFrame({c: pd.Series(dtype=bool if c == "floor" else object) for c in PLAYER_COLS})
     prev = M.season(L, t - 1, as_of)
     rosters = {s: M.season(L, s, as_of)["roster"] for s in range(M.FIRST_SEASON, t)}
     rec = M.recruits(L, t - 1, as_of)
@@ -152,15 +204,25 @@ def build(t: int, as_of, loader: Loader | None = None) -> dict:
     pl["similar"] = [sim.get(p, []) for p in pid]
     pl["yards"] = pid.map(prev["yards"]).fillna(0.0)
     pl["floor"] = pl["volume"] >= pl["group"].map(LB.BACKUP_MIN)        # reached last season's backup minimum
+    return pl
+
+
+def build(t: int, as_of, loader: Loader | None = None) -> dict:
+    as_of = pd.Timestamp(as_of)
+    L = M.live(loader or UpcomingLoader(t))
+    fitted = M.fit_fold(L, t, as_of, last_cohort=LAST_COHORT, dims_last=DIMS_LAST)
+    b = M.board(fitted, L, t, as_of)
+    e = M.entrants(L, t, as_of)
+    pl = entrant_frame(L, t, as_of, e)
     # Programs.
     teams_t = L.load(f"teams_{t}", as_of, columns=["school", "conference"])
     conf_t = dict(zip(teams_t["school"], teams_t["conference"], strict=True))
     tf = M.team_frame(L, t, as_of, fitted["dims"], conf_t)
     fbs = tf.loc[tf.index.isin(conf_t)]
     q1, q2 = tuple(np.quantile(fbs["sys1"], [1 / 3, 2 / 3])), tuple(np.quantile(fbs["sys2"], [1 / 3, 2 / 3]))
-    origin_sys = tf.reindex(pl["team_from"])[["sys1", "sys2"]].to_numpy()
+    origin_sys = tf.reindex(pl["team_from"])[["sys1", "sys2"]].to_numpy().reshape(-1, 2)
     dist_all = np.hypot(fbs["sys1"].to_numpy()[:, None] - origin_sys[None, :, 0], fbs["sys2"].to_numpy()[:, None] - origin_sys[None, :, 1])
-    cuts = tuple(np.nanquantile(dist_all, [1 / 3, 2 / 3]))
+    cuts = tuple(np.nanquantile(dist_all, [1 / 3, 2 / 3])) if dist_all.size else (np.nan, np.nan)
     avail = M.availability(L, t, as_of).set_index(["team", "group"])["open_share"]
     coaches = L.load("coaches", as_of)
     head = coaches.sort_values("games").groupby(["season", "school"])["coach_id"].last()
@@ -170,18 +232,20 @@ def build(t: int, as_of, loader: Loader | None = None) -> dict:
     # program's projected room as of the board's date).
     # Only entrants who reached last season's backup minimum (Matt, Nov 16): below it the projection rests on too little,
     # and low-usage veterans moving down a level were projected well above what they got (cfb/proj/lowuse.py).
-    proven = pl[pl["floor"]]
-    wf = pit.whatif(L, t, as_of, proven[["player_id", "group", "team_from"]], sorted(conf_t), last_train=PROJ_LAST_TRAIN)
-    wf = wf[wf["category"] == wf["pos"].map(PROJ_CATEGORY)].sort_values(["team", "pos", "proj"], ascending=[True, True, False], kind="stable")
+    proven = pl[pl["floor"].astype(bool)]
+    if proven.empty:
+        wf = pd.DataFrame(columns=["team", "key", "pos", "proj", "lo80", "hi80", "share", "category"])
+    else:
+        wf = pit.whatif(L, t, as_of, proven[["player_id", "group", "team_from"]], sorted(conf_t), last_train=PROJ_LAST_TRAIN)
+        wf = wf[wf["category"] == wf["pos"].map(PROJ_CATEGORY)].sort_values(["team", "pos", "proj"], ascending=[True, True, False],
+                                                                             kind="stable")
     proj_lists = {(tm, g): [[k, round(float(p)), round(float(lo)), round(float(hi)), round(float(sh), 3)]
                             for k, p, lo, hi, sh in zip(d["key"], d["proj"], d["lo80"], d["hi80"], d["share"], strict=True)][:TOP_FIT]
                   for (tm, g), d in wf.groupby(["team", "pos"])}
-    # Per entrant, his best landing spots (the part of the projection that differs by program: the room), and his
-    # projection at every program (shown beside the fit list).
+    # His projection at every program (shown beside the fit list and his best landing spots), and his best landing
+    # spots: by relative fit among programs with an opening that take transfers (best_spots).
     proj_at = {(tm, k): round(float(p)) for tm, k, p in zip(wf["team"], wf["key"], wf["proj"], strict=True)}
-    best = wf.sort_values(["key", "proj"], ascending=[True, False], kind="stable").groupby("key").head(N_BEST)
-    best = best.groupby("key").apply(lambda d: [[tm, round(float(p))] for tm, p in zip(d["team"], d["proj"], strict=True)],
-                                     include_groups=False)
+    best = best_spots(b, avail, transfer_intake(L, t, as_of), proj_at)
     pl["best"] = [best.get(p, []) for p in pl["player_id"]]
     programs = []
     for team in sorted(conf_t):
@@ -203,4 +267,5 @@ def build(t: int, as_of, loader: Loader | None = None) -> dict:
                     lst.append([p, None if np.isnan(d) else similarity_band(d, cuts), proj_at.get((team, p))])
                 prog[name][g] = lst
         programs.append(prog)
-    return {"players": pl, "programs": programs, "fitted": fitted, "board": b, "as_of": as_of, "window": t}
+    return {"players": pl, "programs": programs, "fitted": fitted, "board": b, "as_of": as_of, "window": t,
+            "membership_from": getattr(L, "membership_from", None)}

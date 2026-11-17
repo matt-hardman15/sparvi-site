@@ -2,6 +2,21 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-17 · CFB system fit 1.1.8 → 1.1.9; CFB player projection 1.2.0 → 1.2.1 (patch: portal board)
+Best landing spots ranked by projected yards gave nearly every entrant the same programs (2026 window: every WR and TE had
+San José State · Old Dominion · Troy; UTSA was in every QB's top 3). Projected yards are his share × the program's volume
+× his rate, and volume and the level/development terms are the same for every entrant, so the order is the program's,
+not his. Ranking by the fit probability instead had the same problem (Air Force/Army/Navy in most WR, TE, and RB lists:
+programs where anyone "succeeds", and which signed no QB/RB/WR/TE transfers in 2023-2025). 1.1.9 ranks by relative fit:
+his fit logit minus the program's mean logit at his position over all entrants, among programs with at least the median
+open share at his position that signed 3+ skill-position transfers in the last three windows (Matt, Nov 17). Distinct
+top-3 sets, 2026 window, all entrants: QB 38/245, RB 57/298, WR 83/588, TE 35/221 (before, among entrants at the
+backup minimum: 9/88, 5/142, 1/249, 1/66). Players of a similar type still share many spots: fit sees a player through
+a few style dimensions. Fit scores, program fit lists, and projections are unchanged (byte-identical program files).
+Also: the coming window (2027) is shown before it opens, with programs' openings, styles, and coaching and no entrants
+(Matt, Nov 17); teams_2027 falls back to 2026 membership until CFBD lists it. The ledger freeze still records lists
+only once the window has entries. 1.2.1: `cfb/fit/portal.link` handles an empty portal; no output change.
+
 ## 2026-11-16 · CFB player projection 1.0.3 → 1.1.0 → 1.2.0; CFB system fit 1.1.6 → 1.1.7 → 1.1.8 (portal board)
 1.1.0 (minor: a new output). `pit.whatif`: any entrant's projected season yards at any program, scored against that
 program's projected room (returners, committed transfers, signees; himself removed if already projected there). For
