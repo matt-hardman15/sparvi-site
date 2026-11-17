@@ -25,6 +25,11 @@ $endif$
 
 <title>$pagetitle$$if(title-prefix)$ – $title-prefix$$endif$</title>
 
+<!-- The two fonts every page uses above the fold (body text and headings), fetched with the HTML rather than after
+     sparvi.css, so text doesn't reflow when they arrive (PERF-1: up to 0.23 layout shift on the leaderboard). -->
+<link rel="preload" href="/assets/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/serif-700.woff2" as="font" type="font/woff2" crossorigin>
+
 <!-- In this partial, a literal $$ is written $$$$ (Pandoc template syntax). -->
 <script>
   // Start each data page's first downloads now, in parallel with d3 and Plot, instead of after

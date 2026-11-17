@@ -13,15 +13,15 @@ Model versions: [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman
 
 ```{=html}
 <div class="explorer">
-  <div class="controls" id="c"></div>
-  <div class="controls" id="c2"></div>
-  <div id="scatter" class="plot-host"></div>
+  <div class="controls" id="c" style="min-height:64px"></div>
+  <div class="controls" id="c2" style="min-height:64px"></div>
+  <div id="scatter" class="plot-host" style="min-height:360px"></div>
   <p class="caption" id="scap"></p>
-  <div id="t"><div class="loading">Loading…</div></div>
+  <div id="t"><div class="loading" style="min-height:760px">Loading…</div></div>
 </div>
 <div class="explorer">
   <h3>The league over the season</h3>
-  <div id="season" class="plot-host"></div>
+  <div id="season" class="plot-host" style="min-height:290px"></div>
   <p class="caption" id="seasoncap"></p>
 </div>
 <script>
@@ -106,6 +106,10 @@ Model versions: [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman
     { key: "delta", label: `Δ ${gl()}`, fmt: v => f.signed(v, 1), title: "Change since the date in 'Change since'" },
   ];
   const table = { pitchers: null, pitches: null };
+  // PERF-1: the table draws first; the scatter and the season chart wait a task each, so the first paint and
+  // input aren't held behind ~1 s of chart work.
+  let drawGen = 0;
+  const nextTask = () => new Promise(r => setTimeout(r, 0));
   const host = document.getElementById("scatter");
   const baseIndex = (i) => st.since === "prev" ? Math.max(0, i - 1) : Math.min(i, Math.max(0, S.snapIndex(dates(), st.since)));
 
@@ -114,12 +118,16 @@ Model versions: [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman
   function seasonSeries(file) {
     const key = st.level + st.window + st.grade, g = gk();
     if (seasonCache[key]) return seasonCache[key];
-    const out = [];
+    const out = [], series = file.players.map(p => p.series[st.window]).filter(Boolean);
     file.dates.forEach((d, i) => {
       const fac = S.prorate(meta, st.level, i, st.window);
       for (const role of ["SP", "RP"]) {
-        const v = S.snapRows(file, st.window, i, "pitches").filter(r => r.role === role && r[g] != null
-          && S.qualifies(Q, st.level, null, r.pitches, role, fac)).map(r => r[g]).sort(d3.ascending);
+        const v = [];
+        for (const s of series) {
+          const n = s.pitches?.[i], x = s[g]?.[i];
+          if (n != null && x != null && s.role?.[i] === role && S.qualifies(Q, st.level, null, n, role, fac)) v.push(x);
+        }
+        v.sort(d3.ascending);
         if (v.length >= 10) out.push({ date: new Date(d + "T12:00:00"), role, n: v.length,
           q1: d3.quantileSorted(v, 0.25), med: d3.quantileSorted(v, 0.5), q3: d3.quantileSorted(v, 0.75) });
       }
@@ -133,11 +141,13 @@ Model versions: [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman
   function pitcherDomains(wf, win, sx, sy) {
     const key = [st.level, st.window, sx, sy].join("|");
     if (domCache[key]) return domCache[key];
-    const xs = [], ys = [];
-    wf.dates.forEach((_, k) => {
+    const xs = [], ys = [], series = wf.players.map(p => p.series[win]).filter(Boolean);
+    wf.dates.forEach((_, k) => {   // same points as S.snapRows over every date, read straight from the columns
       const fk = S.prorate(meta, st.level, k, st.window);
-      for (const r of S.snapRows(wf, win, k, "pitches"))
-        if (r[sx] != null && r[sy] != null && S.qualifies(Q, st.level, null, r.pitches, r.role, fk)) { xs.push(r[sx]); ys.push(r[sy]); }
+      for (const s of series) {
+        const n = s.pitches?.[k], x = s[sx]?.[k], y = s[sy]?.[k];
+        if (n != null && x != null && y != null && S.qualifies(Q, st.level, null, n, s.role?.[k], fk)) { xs.push(x); ys.push(y); }
+      }
     });
     return (domCache[key] = [S.stableDomain(xs, { include: [100] }), S.stableDomain(ys, { include: [100] })]);
   }
@@ -177,6 +187,9 @@ Model versions: [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman
             chart: st.view === "pitchers" ? st.chart : DEF.chart }, DEF);
     const split = st.chart === "split";
     const sx = split ? "stuff_plus" : g, sy = split ? "loc_plus" : "rv_plus";
+    const gen = ++drawGen;   // a later draw supersedes this one's pending tasks
+    await nextTask();
+    if (gen !== drawGen) return;
     const [xd, yd] = st.view === "pitchers" ? pitcherDomains(wf, win, sx, sy) : [null, null];
     const pts = S.onScale(rows.filter(d => d[sx] != null && d[sy] != null), sx, sy, xd, yd);
     const hits = S.onScale(shown.filter(d => d[sx] != null && d[sy] != null), sx, sy, xd, yd);
@@ -206,6 +219,8 @@ Model versions: [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman
         : `Upper left: results better than the ${G} grade. Lower right: the grade better than the results.`)
       : `${when}: ${rows.length} pitches by movement shape${who ? ` from${who}` : ""}, colored by ${G}. Qualifier: ${st.min ?? PITCH_MIN}+ of that pitch.`) + since + (rows.length === 0 && st.role === "SP" ? ` No pitcher has ${meta.role_rules.role_sp_min_starts}+ starts yet, the minimum for the starter role; early-season starters show as Swing.` : "") + " Hover for details; search to highlight.";
 
+    await nextTask();
+    if (gen !== drawGen) return;
     const ss = seasonSeries(wf);
     S.plot(document.getElementById("season"), w => Plot.plot({ ...S.plotDefaults(w), height: 260, grid: true,
       x: { type: "time", label: null }, y: { label: `↑ ${G} (median, middle 50%)`, nice: true },
