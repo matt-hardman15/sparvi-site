@@ -92,9 +92,13 @@ def main() -> int:
     from sparvi import registry
     t = cfb().season + 1
     day = pd.Timestamp.now(tz="UTC").tz_localize(None).normalize()
-    wins = dict(X.windows(day))
+    wins = dict(X.windows(day, require_entries=True))   # the ledger records lists only once entrants exist
     if t not in wins:
-        print(f"no live window: the {t} portal has no entries yet")
+        # Before the window opens, the board still refreshes daily (programs' rooms and openings), with no ledger records.
+        site = dict(X.windows(day))
+        if t in site:
+            X.write_index([{k: v for k, v in X.export(t, site[t]).items() if k != "result"}])
+        print(f"no live window: the {t} portal has no entries yet (board refreshed, nothing recorded)")
         return 0
     done = X.export(t, wins[t])
     X.write_index([done])

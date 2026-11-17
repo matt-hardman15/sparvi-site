@@ -22,7 +22,8 @@ Every quarterback, running back, wide receiver and tight end in the transfer por
   const index = await S.load("/data/cfb/portal/index.json");
   const teams = new Map((await S.load("/data/cfb/teams.json")).map(t => [t.id, t]));
   const WINDOWS = index.windows.map(w => String(w.window));
-  const DEF = { win: WINDOWS[0], pos: "QB", lvl: "all", tier: "all", prog: "", q: "", min: "any", list: "proj" };
+  // Default: the newest window with entrants (the coming window is listed before it opens, with programs only).
+  const DEF = { win: String((index.windows.find(w => w.players !== 0) || index.windows[0]).window), pos: "QB", lvl: "all", tier: "all", prog: "", q: "", min: "any", list: "proj" };
   const st = { win: WINDOWS.includes(U.get("win")) ? U.get("win") : DEF.win, pos: ["QB", "RB", "WR", "TE"].includes(U.get("pos")) ? U.get("pos") : DEF.pos,
                lvl: ["Power", "G5", "FCS"].includes(U.get("lvl")) ? U.get("lvl") : DEF.lvl, tier: ["1", "2", "3", "4"].includes(U.get("tier")) ? U.get("tier") : DEF.tier,
                prog: U.get("prog") || DEF.prog, q: "", min: U.get("min") === "floor" ? "floor" : DEF.min,
@@ -71,8 +72,9 @@ Every quarterback, running back, wide receiver and tight end in the transfer por
     { key: "sim", label: "Similar players", align: "l", sortVal: r => r.sim.length,
       html: r => r.sim.map(s => `${esc(s.name)} (${esc(s.team)} ${s.season})`).join("; ") || "—" },
     { key: "dest", label: "Destination", align: "l", sortVal: r => r.dest ?? "", html: r => (r.dest ? team(r.dest) : "—") },
-    { key: "best", label: "Best landing spots", align: "l", sortVal: r => (r.best[0] || [null, 0])[1],
-      html: r => r.best.slice(0, 3).map(([t, y]) => `${esc(t)} ${f.int(y)}`).join(" · ") || (r.floor ? "—" : `<span class="muted">not enough last season</span>`),
+    { key: "best", label: "Best landing spots", align: "l", sortVal: r => (r.best[0] || [null, null])[1] ?? -1,
+      title: "Programs where he fits the system better than a typical entrant at his position does, among programs with an opening there that take transfers; his projected yards beside each",
+      html: r => r.best.slice(0, 3).map(([t, y]) => y == null ? esc(t) : `${esc(t)} ${f.int(y)}`).join(" · ") || "—",
       title: "The FBS programs where he projects the most yards next season (experimental projection): his share of each program's room x its volume x his efficiency" },
   ];
   const yds = r => `${f.int(r.proj)} <span class="muted">(${f.int(r.lo)}–${f.int(r.hi)})</span>`;
@@ -129,7 +131,11 @@ Every quarterback, running back, wide receiver and tight end in the transfer por
     U.set({ win: st.win, pos: st.pos, lvl: st.lvl, tier: st.tier, prog: st.prog, min: st.min, list: st.list }, DEF);
     const bm = programs.numbers.backup_min[st.pos];
     const w = index.windows.find(x => String(x.window) === st.win);
-    document.getElementById("tcap").textContent = (P
+    const none = board.players.length === 0
+      ? `No entrants yet: the ${st.win} portal window hasn't opened. Pick a program to see its openings, style, and coaching; entrants appear here as they enter`
+        + (board.membership_from ? ` (conferences are as of ${board.membership_from} until the ${st.win} lists are out)` : "") + ". "
+      : "";
+    document.getElementById("tcap").textContent = none + (P
       ? (st.list === "proj"
         ? `${rows.length} of the top ${programs.top} ${st.pos} entrants by projected yards at ${P.team}. The order is nearly the same at every program; the yards change with the room. `
         : `${rows.length} of ${P.team}'s top ${programs.top} at ${st.pos}` + (st.min === "floor"
@@ -155,7 +161,7 @@ Every quarterback, running back, wide receiver and tight end in the transfer por
 
 <ul id="tier-rules"></ul>
 
-**Projected yards are experimental.** For any entrant and any program, the projection estimates his yards there next season (QB passing, RB rushing, WR and TE receiving): his projected share of the program's work at the position, competing with its returners, committed transfers and signees, times the offense's volume, times his efficiency, with an 80% range. A program's room changes how many yards an entrant would get there, not how entrants compare with each other, so the program list's order is nearly the same everywhere; **best landing spots** on each player show where his yards would be highest. Projections are shown only for players who reached last season's backup minimum: below it there's too little to go on, and in past portal windows veterans with little playing time were projected well above what they got. Quarterbacks and tight ends moving down a level (say, from a Power conference school to a Group of Five one) are still projected somewhat above what they've gotten in past windows. Its status: {{< meta models.cfb_player_projection_status >}}. It doesn't know about health, makeup, or money, and it treats a player who hasn't committed as if he could land anywhere.
+**Projected yards are experimental.** For any entrant and any program, the projection estimates his yards there next season (QB passing, RB rushing, WR and TE receiving): his projected share of the program's work at the position, competing with its returners, committed transfers and signees, times the offense's volume, times his efficiency, with an 80% range. A program's room changes how many yards an entrant would get there, not how entrants compare with each other, so the program list's order is nearly the same everywhere. **Best landing spots** on each player are ranked by fit, not yards: the programs where he fits the system better than a typical entrant at his position does, among programs with at least a typical opening at his position that have signed transfers at the skill positions in recent windows (the service academies, for example, haven't). Ranking by projected yards sent nearly every entrant to the same few high-volume offenses. Players of a similar type still share many of the same spots, since fit sees a player through a few dimensions of style. His projected yards are shown beside each spot when he reached last season's backup minimum. Projections are shown only for players who reached last season's backup minimum: below it there's too little to go on, and in past portal windows veterans with little playing time were projected well above what they got. Quarterbacks and tight ends moving down a level (say, from a Power conference school to a Group of Five one) are still projected somewhat above what they've gotten in past windows. Its status: {{< meta models.cfb_player_projection_status >}}. It doesn't know about health, makeup, or money, and it treats a player who hasn't committed as if he could land anywhere.
 
 **The fit list is experimental.** For a program, it ranks entrants by a model of how likely each one is to win the job and play above his level's starters within <span data-n="horizon_years"></span> seasons there, from his production, his playing style, the program's offense, and the jump in competition. Its status: {{< meta models.cfb_system_fit_status >}}. So treat it as a starting point for a conversation, not a recommendation. From the January portal window on, every program's list and the simple rankings beside it are frozen each day in Sparvi's [public forecast record](https://github.com/matt-hardman15/sparvi-site/tree/main/forecasts), so how the fit list actually does will be on the record.
 

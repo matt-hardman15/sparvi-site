@@ -5,7 +5,9 @@ value over replacement, yards), size, experience, market tier, top components, s
 247Sports stars or ratings (Matt, Nov 15: used only inside the tier). Per program: its experimental fit top 25 by
 position (ranks only, no probabilities), role availability, style in words, whether it kept its head coach.
 
-Windows: the last completed window (as of May 1, after the spring window) and the current one once CFBD has entries.
+Windows: the last completed window (as of May 1, after the spring window) and the coming one, shown before it opens
+(Matt, Nov 17: programs, rooms, and openings first; entrants as CFBD records them). The ledger freeze still waits for
+entries (freeze.py: windows(require_entries=True)).
 
     python cfb/portal/export.py                       # every window the board shows
     python cfb/portal/export.py --window 2027 --as-of 2027-01-05
@@ -30,16 +32,15 @@ MODEL = "cfb_system_fit"
 PROJ_MODEL = "cfb_player_projection"
 
 
-def windows(today: pd.Timestamp) -> list[tuple[int, pd.Timestamp]]:
-    """The completed window (season = cfb().season: its board as of May 1) and, if it has entries, the next one as of
-    today."""
+def windows(today: pd.Timestamp, require_entries: bool = False) -> list[tuple[int, pd.Timestamp]]:
+    """The completed window (season = cfb().season: its board as of May 1) and the next one as of today: always for the
+    site, only once it has entries for the ledger (require_entries)."""
     cur = cfb().season
     out = [(cur, pd.Timestamp(f"{cur}-05-01"))]
     nxt = cur + 1
     if nxt in seasons()["portal"]:
         from backtest.asof import Loader
-        p = M.portal(Loader(), nxt, today)
-        if len(p):
+        if not require_entries or len(M.portal(Loader(), nxt, today)):
             out.append((nxt, today.normalize()))
     return out
 
@@ -67,7 +68,8 @@ def export(t: int, as_of: pd.Timestamp) -> dict:
     stamp = registry.stamp(MODEL)
     head = {"window": t, "as_of": str(as_of.date()), "model": stamp["label"], "model_state": st["state"],
             "model_reason": st.get("reason"), "proj_model": registry.stamp(PROJ_MODEL)["label"], "proj_state": pst["state"],
-            "proj_reason": pst.get("reason")}
+            "proj_reason": pst.get("reason"), "entrants": int(len(res["players"])),
+            "membership_from": res.get("membership_from")}
     OUT.mkdir(parents=True, exist_ok=True)
     write_json(OUT / f"board_{t}.json", {**head, "tier_rules": {str(k): v for k, v in B.TIER_RULES.items()},
                                           "players": player_rows(res["players"])})

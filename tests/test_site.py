@@ -461,6 +461,16 @@ def act_cfb_teams_index(p):
     assert p.locator("ul.team-index a").count() >= 130 and "Former FBS teams" in p.locator("h2").all_text_contents()
 
 
+def act_cfb_portal_coming(p):
+    """The coming window is listed before it opens (Matt, Nov 17): no entrants yet, programs' openings shown."""
+    import json
+    idx = json.loads((DATA / "cfb" / "portal" / "index.json").read_text(encoding="utf-8"))["windows"]
+    if not any(w["window"] == 2027 and w["players"] == 0 for w in idx):
+        return                                         # entrants have arrived: the regular test covers it
+    assert "No entrants yet" in p.text_content("#tcap")
+    assert rows(p, "#t") == 0
+
+
 def no_team_cards(p):
     # The hub's article listing must not pick up the generated team pages.
     hrefs = p.eval_on_selector_all("#listing-nfl-articles a, #listing-cfb-articles a", "e => e.map(a => a.getAttribute('href'))")
@@ -668,6 +678,7 @@ PAGES = [
     ("cfb-team-former", "/cfb/teams/idaho/", act_cfb_former_team),
     ("cfb-team-ratings", "/cfb/tools/team-ratings.html", act_cfb_ratings),
     ("cfb-portal", "/cfb/tools/portal-board.html", act_cfb_portal),
+    ("cfb-portal-coming-window", "/cfb/tools/portal-board.html?win=2027", act_cfb_portal_coming),
     ("cfb-ranked-vs-good", "/cfb/ranked-vs-good/", act_cfb_article),
     ("cfb-what-a-loss-costs", "/cfb/what-a-loss-costs/", act_cfb_loss_cost),
     ("cfb-coaching-changes", "/cfb/coaching-changes/", act_cfb_carousel),

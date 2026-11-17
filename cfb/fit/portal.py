@@ -47,4 +47,6 @@ def link(portal: pd.DataFrame, rosters: dict[int, pd.DataFrame]) -> pd.DataFrame
                     pid, how = c[0], method
                     break
             out.append({**r._asdict(), "player_id": pid, "link_method": how})
+    if not out:                       # no entries yet (a window shown before it opens)
+        return portal.assign(player_id=pd.Series(dtype=object), link_method=pd.Series(dtype=object))
     return pd.DataFrame(out).drop(columns=["Index"])
