@@ -14,12 +14,14 @@ ORG = {"@type": "Organization", "@id": f"{BASE}#org", "name": "Sparvi", "url": B
        "logo": {"@type": "ImageObject", "url": f"{BASE}assets/logo.png", "width": 512, "height": 512}}
 
 # What each sport's tools are built on (Dataset.isBasedOn) and the license where the source grants one.
+# Sources are CreativeWork, not Dataset: Google validates any nested Dataset as a dataset of its own (and fails
+# it for having no description), which made every tool page's Dataset result invalid in the Rich Results Test.
 SOURCES = {
-    "baseball": ([{"@type": "Dataset", "name": "Statcast (Baseball Savant)", "url": "https://baseballsavant.mlb.com"},
-                  {"@type": "WebAPI", "name": "MLB Stats API", "url": "https://statsapi.mlb.com"}], None),
-    "nfl": ([{"@type": "Dataset", "name": "nflverse play-by-play", "url": "https://github.com/nflverse"}],
+    "baseball": ([{"@type": "CreativeWork", "name": "Statcast (Baseball Savant)", "url": "https://baseballsavant.mlb.com"},
+                  {"@type": "CreativeWork", "name": "MLB Stats API", "url": "https://statsapi.mlb.com"}], None),
+    "nfl": ([{"@type": "CreativeWork", "name": "nflverse play-by-play", "url": "https://github.com/nflverse"}],
             "https://creativecommons.org/licenses/by/4.0/"),
-    "cfb": ([{"@type": "Dataset", "name": "CollegeFootballData.com", "url": "https://collegefootballdata.com"}], None),
+    "cfb": ([{"@type": "CreativeWork", "name": "CollegeFootballData.com", "url": "https://collegefootballdata.com"}], None),
 }
 
 

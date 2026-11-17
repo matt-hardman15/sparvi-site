@@ -56,3 +56,18 @@ def test_set_image_points_both_tags_at_the_card():
     out = social.set_image(h, "https://sparvi.io/x/og.png")
     assert out.count("https://sparvi.io/x/og.png") == 2 and "old.png" not in out
     assert 'content="summary_large_image"' in out and 'og:image:width" content="1200"' in out
+
+
+def test_only_the_tool_itself_is_a_dataset():
+    """A nested Dataset (e.g. in isBasedOn) is validated by Google as its own dataset and fails without a description."""
+    def types(x):
+        if isinstance(x, dict):
+            yield x.get("@type")
+            for v in x.values():
+                yield from types(v)
+        elif isinstance(x, list):
+            for v in x:
+                yield from types(v)
+    for sport in jsonld.SOURCES:
+        d = jsonld.dataset("u", "n", "d", sport, "2026", "2026-11-01")
+        assert list(types(d)).count("Dataset") == 1, sport
