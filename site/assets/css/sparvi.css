@@ -158,3 +158,8 @@ ul.player-index { columns: 2 260px; column-gap: 2rem; padding-left: 0; list-styl
 ul.player-index li { break-inside: avoid; margin: .15rem 0; }
 ul.team-index { columns: 2 260px; column-gap: 2rem; padding-left: 0; list-style: none; }
 ul.team-index li { margin: .15rem 0; }
+
+/* "Mentioned in" on player and team pages (site/build/mentions.py). */
+.mentioned-in { margin-top: 2.5rem; border-top: 1px solid var(--rule); padding-top: 1rem; }
+.mentioned-in h2 { font-size: 1.15rem; }
+.mentioned-in ul { padding-left: 1.1rem; }
