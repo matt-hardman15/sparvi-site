@@ -1,0 +1,96 @@
+# SYSTEM-FIT Phase 2 pre-registration (FIT-P2; PLAN-fit "Phase 1 and 2"). Written Nov 17, 2026 from the Phase 1 leads;
+# hypotheses chosen by Matt Nov 17. LOCKED once merged: tests/test_phase2.py pins this file's hash. Do not edit; a
+# mistake found later is recorded as an amendment below the lock line in review/model-changes.md, with the reason,
+# before the vault opens (never after).
+#
+# Scored once, on the 2026 vault, by VAULT-1 after the 2026 season is complete (after the CFP final, mid-January 2027),
+# together with CFB-PROJ's own vault score. No 2026 outcome is read before then, by any code.
+
+status: pre-registered
+written: 2026-11-17
+vault:
+  season: 2026                       # the only season read for outcomes
+  opened_by: VAULT-1                 # BACKLOG; one opening for every hypothesis below
+  inputs_as_of: '2026-05-01'         # player and program inputs as of the board's decision date, as in Phase 1
+sources:
+  leads: [cfb/fit/output/oc.json, cfb/fit/output/recv_rerun.json, cfb/fit/output/explore.json]
+  code: [cfb/fit/explore.py, cfb/fit/oc_report.py, cfb/fit/recv_rerun.py, cfb/fit/audit.py]
+selection: >-
+  The three hypotheses were chosen after about 181 exploratory analyses on seen data (explore 118, FIT-OC 47, receiver
+  rerun 16), of which about 18 would clear a 90% interval by chance and 51 did. Expect smaller effects on the vault.
+
+common:
+  style_distance: >-
+    M1_distance (explore.frame): Euclidean distance between the origin and destination programs' systems on F1
+    dimensions D1-D2 (cfb/fit/output/team_styles.csv, dimensions fit on 2014-2025 team-seasons), each in the season
+    before the move. Closer is the hypothesized better.
+  baseline: >-
+    The quality-only model (explore.BASE: previous season's shrunk adjusted EPA per play, value over replacement, share,
+    no-prior flag, recruiting rating and no-rating flag, experience, origin level, destination level, level change):
+    ridge (alpha 1.0), features standardized on the training rows, fit per position group on every seen cohort for that
+    outcome and frozen before any vault outcome is read; the vault rows are predicted from it. residual = outcome -
+    prediction.
+  statistic: Pearson correlation of style_distance with residual
+  interval: 90% percentile bootstrap, resampling players (explore._boot), 1000 draws, seed 7
+  passes_if: the whole 90% interval is below zero
+  multiplicity: >-
+    Three hypotheses, each judged on its own 90% interval (about a 5% one-sided error each; about 14% that at least
+    one passes by chance if none is real). Reported as such; no hypothesis is promoted on the strength of another.
+  if_it_passes: >-
+    The fit term may enter the product only as a new model version with its own pre-registered backtest (PLAN-backtest);
+    a pass is evidence, not a model change.
+  if_it_fails: >-
+    The lead is recorded as not confirmed; the board keeps showing fit as experimental. The 2021-2025 windows are not
+    reused as a confirmation test (PLAN-fit).
+
+hypotheses:
+  - id: H-A1
+    model: A (immediate impact)
+    question: >-
+      For quarterback and running back transfers to programs that kept an offensive coordinator, does a closer style
+      match go with more year-1 value than the quality-only model predicts?
+    lead: [OC.QB.A_vor.kept_oc (n 231, -0.102, ci90 -0.184 to -0.016), OC.RB.A_vor.kept_oc (n 243, -0.088, -0.170 to -0.012)]
+    population: >-
+      QB and RB portal transfers of the 2026 window (spring and winter entries, destination recorded) with a previous-
+      season id, whose destination kept at least one offensive coordinator from 2025 to 2026 (oc_report.continuity:
+      any coordinator name shared; Wikipedia infoboxes, current revisions). QBs and RBs pooled.
+    outcome: A_vor, value over replacement in the 2026 season at the new school (0 if he didn't play)
+    residual_within: position group (QB and RB baselines fit separately; residuals pooled)
+    training_cohorts: 2018-2025
+    expected_vault_n: about 80
+    expected_ci90_halfwidth: about 0.18
+    power_note: about 25% to pass if the true correlation equals the seen estimate
+  - id: H-B1
+    model: B (development)
+    question: >-
+      For wide receiver transfers to programs that kept their head coach, does a closer style match go with more
+      development value than the quality-only model predicts?
+    lead: [WR.B_tp.M1.kept_coach (n 477, -0.117, ci90 -0.180 to -0.049)]
+    population: >-
+      WR portal transfers of the 2024 and 2025 windows with a previous-season id, whose destination kept its head coach
+      from the season before the move to the season of it (explore.frame same_coach; CFBD coaches).
+    outcome: >-
+      B_tp (recv_rerun): the best receiver value over replacement on receiving EPA per team pass play in years 2-3 at
+      the school (0 if he left or didn't play). 2024 window: years 2 (2025) and 3 (2026); 2025 window: year 2 (2026).
+    training_cohorts: 2018-2023
+    expected_vault_n: about 160
+    expected_ci90_halfwidth: about 0.13
+    power_note: about 50% to pass if the true correlation equals the seen estimate
+  - id: H-P1
+    model: CFB-PROJ (does fit add to the projection?)
+    question: >-
+      For transfers in the 2026 season, does a closer style match go with beating the player projection, at programs
+      whose system was most likely to persist?
+    lead: the H-A1 and H-B1 leads, carried to the projection framing (PLAN-fit CFB-PROJ)
+    population: >-
+      Every QB, RB, WR, and TE portal transfer of the 2026 window projected by CFB-PROJ (the champion 1.2.x version,
+      as of May 1, 2026) at the program he joined: QBs and RBs where the destination kept an offensive coordinator, WRs
+      and TEs where it kept its head coach (the conditions the leads were found under).
+    outcome: >-
+      projection residual: actual 2026 yards (QB passing on dropbacks, RB rushing, WR/TE receiving; 0 if he didn't
+      play) minus projected yards, divided by the standard deviation of that position's transfer residuals in the
+      CFB-PROJ 2021-2025 backtest (fixed before the vault opens), so positions pool on one scale. The projection is
+      the baseline here; explore.BASE is not used.
+    expected_vault_n: about 300
+    expected_ci90_halfwidth: about 0.10
+    power_note: unknown (no seen estimate on this outcome); reported with its interval either way
