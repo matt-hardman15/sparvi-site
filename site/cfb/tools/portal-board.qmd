@@ -79,6 +79,17 @@ Every quarterback, running back, wide receiver and tight end in the transfer por
   ];
   const yds = r => `${f.int(r.proj)} <span class="muted">(${f.int(r.lo)}–${f.int(r.hi)})</span>`;
 
+  // How much of last season's work at the position is expected to open up: portal entries filed so far (certain) plus
+  // players past their third season on a roster, at the rate such players have left before (mostly eligibility running
+  // out), weighted by share. Underclassmen who haven't entered the portal count as returning (cfb/fit/model.availability).
+  const openText = (open, portal) => {
+    const what = `${OPP[st.pos]} at ${st.pos}`;
+    const usual = "players in their fourth season or later, at the rate such players have left before (mostly eligibility running out), weighted by each player's share. Underclassmen count only if they enter the portal; early NFL entries aren't predicted";
+    if (portal == null) return `Expected to open up: about ${f.pct(open)} of last season's ${what}, from portal entries filed so far plus ${usual}.`;
+    if (portal < 0.005) return open < 0.005 ? `No one at ${st.pos} has entered the portal so far, and last season's ${what} went to underclassmen, who count as returning.`
+      : `No one at ${st.pos} has entered the portal so far. Expected to open up anyway: about ${f.pct(open)} of last season's ${what}, from ${usual}.`;
+    return `Expected to open up: about ${f.pct(open)} of last season's ${what}: ${f.pct(portal)} from portal entries filed so far, the rest from ${usual}.`;
+  };
   let table = null, tableKey = "";
   function draw() {
     const players = board.players.filter(r => r.pos === st.pos);
@@ -120,7 +131,7 @@ Every quarterback, running back, wide receiver and tight end in the transfer por
         S.el("p", {}, S.el("strong", {}, P.team), ` (${P.conf}). `,
           P.style ? `Last season's offense: ${P.style.run_pass}, with a ${P.style.spread}. ` : "No offensive style on record. ",
           P.kept_coach == null ? "" : P.kept_coach ? "Kept its head coach. " : "New head coach. ",
-          open == null ? "" : `About ${f.pct(open)} of last season's ${OPP[st.pos]} at ${st.pos} are leaving (portal entries filed so far, plus expected exits by experience).`),
+          open == null ? "" : openText(open, (P.open_portal || {})[st.pos])),
         S.el("p", { class: "muted" }, st.list === "proj"
           ? `The list below is the top ${programs.top} entrants at ${st.pos} by projected yards here next season. The projection is ${board.proj_state}: ${board.proj_reason}.`
           : `The list below is the experimental fit model's top ${programs.top} at ${st.pos} for this program. It is ${board.model_state}: ${board.model_reason}.`)));

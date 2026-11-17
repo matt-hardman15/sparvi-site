@@ -246,10 +246,37 @@ def cohort_outcomes(loader, t: int, last: int) -> pd.DataFrame:
     return lab
 
 
+LEAVE_SEASONS, LEAVE_MIN_N = 5, 40      # leave rates: the five transitions before t; a position x experience cell needs 40
+# Underclassmen (this many seasons on a roster or fewer) count as returning unless they enter the portal (Matt, Nov 17).
+# Their historical "didn't return" rate is mostly not departures: checked on FBS starting QBs in their second or third
+# year (2021-2024, 32 of 147 "gone"): about 9 left early for the NFL draft (elite prospects only), about 8 were in fact
+# seniors whose earlier seasons were at schools outside our rosters, about 6 stayed but lost the job or were hurt or
+# suspended, about 5 transferred under a portal record that didn't link. Early NFL entries aren't predicted; they count
+# once they happen.
+UNDERCLASS = 3
+
+
+def leave_rates_by_group(d: pd.DataFrame) -> dict[tuple[str, int], float]:
+    """P(gone next season, not via the portal | position group, experience); a thin cell falls back to experience only."""
+    pooled = d.groupby("exp")["gone"].mean()
+    cell = d.groupby(["group", "exp"])["gone"].agg(["mean", "size"])
+    by_cell = {(g, e): float(r["mean"] if r["size"] >= LEAVE_MIN_N else pooled[e]) for (g, e), r in cell.iterrows()}
+    return by_cell | {("*", int(e)): float(v) for e, v in pooled.items()}
+
+
 def availability(loader, t: int, as_of) -> pd.DataFrame:
     """Role availability per program and position group as of a decision date in season t (F0, data.role_availability):
-    last season's workload share leaving through the portal (entries filed by as_of) or expected to leave otherwise,
-    with leave rates by experience from the two seasons before."""
+    last season's workload share leaving through the portal (entries filed by as_of, certain) or, for players past their
+    third season on a roster (UNDERCLASS), expected to leave otherwise (mostly eligibility running out), at rates by
+    position group and experience from the five seasons before (leave_rates_by_group). Underclassmen who haven't entered
+    the portal count as returning. Columns: open_share (both), from_portal, expected.
+
+    Leave rates come from FBS programs in both seasons only (Nov 17): play-by-play also names players of FCS, Division II
+    and NAIA teams in the one game they play an FBS team, and they "disappear" the next season, which nearly doubled
+    the rates (a third-year player 0.46 instead of 0.27)."""
+    def fbs(s):
+        return set(loader.load(f"teams_{s}", as_of, columns=["school"])["school"])
+
     def links(s):
         p = portal(loader, s, min(pd.Timestamp(as_of), done(s))).assign(season=s)
         if p.empty:                                   # no portal records before 2021
@@ -257,19 +284,32 @@ def availability(loader, t: int, as_of) -> pd.DataFrame:
         return link(p, {y: season(loader, y, as_of)["roster"] for y in (s - 2, s - 1)})
     def exp(s):
         return D.experience(s, {y: season(loader, y, as_of)["roster"] for y in range(FIRST_SEASON, s + 1)}, recruits(loader, s, as_of))
-    hist = []
-    for h in (t - 2, t - 1):
+    rows = []
+    for h in range(t - LEAVE_SEASONS, t):
+        if h - 1 < FIRST_SEASON:
+            continue
         lk = links(h)
-        hist.append((season(loader, h - 1, as_of)["workload"], set(lk["player_id"].dropna()), exp(h - 1), season(loader, h, as_of)["played_pairs"]))
-    p_leave = D.leave_rates(hist)
+        wh = season(loader, h - 1, as_of)["workload"]
+        x = wh[wh["team"].isin(fbs(h - 1) & fbs(h)) & ~wh["player_id"].isin(set(lk["player_id"].dropna())) & (wh["share"] >= 0.05)]
+        eh, nxt = exp(h - 1), season(loader, h, as_of)["played_pairs"]
+        rows.append(pd.DataFrame({"group": x["group"].to_numpy(), "exp": x["player_id"].map(eh).fillna(1).clip(1, 6).astype(int).to_numpy(),
+                                  "gone": [(tm, p) not in nxt for tm, p in zip(x["team"], x["player_id"], strict=True)]}))
+    p_leave = leave_rates_by_group(pd.concat(rows, ignore_index=True))
     w = season(loader, t - 1, as_of)["workload"].copy()
     lk = links(t)
     filed = lk[pd.to_datetime(lk["transferDate"], utc=True, errors="coerce").dt.tz_localize(None) <= pd.Timestamp(as_of)]
     w["portal"] = w["player_id"].isin(set(filed["player_id"].dropna()))
     e = exp(t - 1)
-    w["p_leave"] = np.where(w["portal"], 1.0, w["player_id"].map(e).fillna(1).clip(1, 6).astype(int).map(p_leave).fillna(0.2))
+    ex = w["player_id"].map(e).fillna(1).clip(1, 6).astype(int)
+    rate = [0.0 if x <= UNDERCLASS else p_leave.get((g, x), p_leave.get(("*", x), 0.2)) for g, x in zip(w["group"], ex, strict=True)]
+    w["p_leave"] = np.where(w["portal"], 1.0, rate)
     w["leaving"] = w["share"] * w["p_leave"]
-    return w.groupby(["team", "group"])["leaving"].sum().clip(0, 1).rename("open_share").reset_index()
+    w["from_portal"] = w["share"].where(w["portal"], 0.0)
+    out = w.groupby(["team", "group"])[["leaving", "from_portal"]].sum().reset_index()
+    out["open_share"] = out["leaving"].clip(0, 1)
+    out["from_portal"] = out["from_portal"].clip(0, 1)
+    out["expected"] = (out["open_share"] - out["from_portal"]).clip(0, 1)
+    return out[["team", "group", "open_share", "from_portal", "expected"]]
 
 
 def live(loader):
