@@ -2,6 +2,14 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-18 · NFL opponent adjustment 1.0.0 → 1.0.1 (patch: lambda grid, NFL-LAMBDA)
+The chosen lambda (3200) was the largest value in the search grid, so the search didn't show it was a minimum. The grid
+now runs to 12800. Next-week margin MAE, 2,160 games: 1600 10.3797, 3200 10.3789, 6400 10.3814, 12800 10.3839 (an
+exploratory sweep to 1e8 levels off at 10.3876). Lambda stays 3200; `adjusted_team_week.csv` is byte-identical and no
+published number changes. The curve is nearly flat (0.009 points from 800 up), and at 3200 the adjustment moves a
+team's offense by 0.0025 EPA per play on average: in the NFL the opponent adjustment is close to off, as the method
+note already says.
+
 ## 2026-11-18 · NFL win probability and net punt 1.0.0 → 1.0.1 (leakage test only; the models are unchanged)
 The first CI run (fast fold, 2025) failed both models' shuffled-label test, one seed, in the better-than-null direction
 (Brier -0.0034, 90% -0.0062 to -0.0006; punt MAE -0.025 yd, -0.041 to -0.009). No leak behind it: (1) win
