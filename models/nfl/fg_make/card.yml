@@ -92,4 +92,7 @@ backtest:
     - 2026
     note: Season 2026 plays are sealed until the season completes (February 2027).
     accesses: 0
-experimental: pre-registered Nov 18, 2026; the backtest hasn't run yet
+experimental: 'failed its pre-registered calibration gate (2020-2025, 6,609 kicks): pooled calibration error 0.026
+  against a noise bar of 0.014. It predicts too few makes from long range (50-54 yards: 65% predicted, 73% made; 55+:
+  51% vs. 59%) and the gap grows by season (0.024 in 2020, 0.043 in 2024): the model is linear in distance and has no
+  era term while long kicks kept improving. Next version: F4-V2'
