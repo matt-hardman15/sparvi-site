@@ -46,7 +46,7 @@ def _fingerprint(season: int, boot: int) -> str:
     """Code and raw inputs behind one season's file: the engine and model code, and the raw files it reads."""
     h = hashlib.sha256(f"{season}|{boot}".encode())
     here = Path(__file__).resolve().parent
-    for f in [here / "decide.py", here / "decisions.py", here / "models.py", here / "data.py"]:
+    for f in [here / "decide.py", here / "decisions.py", here / "models.py", here / "data.py", here / "fg.py"]:
         h.update(f.read_bytes().replace(b"\r\n", b"\n"))
     for s in range(FIRST_SEASON, season + 1):
         for f in (RAW / "nfl" / f"pbp_{s}.parquet", RAW / "nfl" / "state" / f"pbp_state_{s}.parquet"):
@@ -97,7 +97,7 @@ def season_decisions(loader: Loader, season: int, boot: int, today: pd.Timestamp
     wrong = ((out["call"] == "go") & (out["choice"] != "go")) | ((out["call"] == "kick") & (out["choice"] == "go"))
     out["cost"] = np.where(wrong, (np.maximum(out["wp_go"], out["wp_kick"]) - out["wp_actual"]).clip(lower=0), 0.0)
     info = {"train_seasons": list(eng.seasons), "decisions": int(len(out)), "bootstrap": boot,
-            "p_block": eng.p_block, "fg_snap": eng.fg_snap, "runoff": eng.runoff, "kick_start": eng.kick_start,
+            "p_block": eng.p_block, "fg_snap": eng.fg_snap, "fg_max_yardline": eng.fg_max, "runoff": eng.runoff, "kick_start": eng.kick_start,
             "calls": {k: int(v) for k, v in out["call"].value_counts().sort_index().items()}}
     return out, info, grid_rows
 

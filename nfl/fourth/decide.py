@@ -8,7 +8,8 @@ probability is not linear in field position, and the punt model predicts the med
     go     P(convert) x E[WP | converted, yards gained] + (1 - P) x E[WP | failed, yards gained]
            yards gained beyond the line to gain (or short of it) from the training seasons' 4th-down plays, by
            yards-to-go bucket; a gain to the goal line is a touchdown
-    kick   P(good) x WP(after the kickoff, up 3) + (1 - P) x WP(opponent's ball at the spot of the kick, or its 20)
+    kick   P(good) x WP(after the kickoff, up 3) + (1 - P) x WP(opponent's ball at the spot of the kick, or its 20);
+           offered only up to the distances teams actually try (FG_SUPPORT)
     punt   (1 - P(block)) x E[WP | net yards] + P(block) x WP(opponent's ball BLOCK_YARDS behind the line)
            net yards = the punt model's prediction plus the training punts' residuals by field position (quantiles)
 
@@ -31,6 +32,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
+from nfl.fourth import fg as F
 from nfl.fourth import models as M
 from nfl.fourth.data import load_plays, scrimmage
 
@@ -38,7 +40,8 @@ TD_POINTS, FG_POINTS = 7, 3
 BLOCK_YARDS = 10             # a blocked punt: the opponent's ball this far behind the line of scrimmage
 TOUCHBACK = 20               # punts into the end zone, and missed kicks from inside it
 PUNT_MIN_YARDLINE = 30       # no punt option closer than this to the goal line (teams almost never punt there)
-FG_MAX_YARDLINE = 50         # no field-goal option from farther out (a 68-yard kick)
+FG_SUPPORT = 0.99            # no field-goal option beyond this quantile of the distances teams tried (training kicks):
+                             # past it the make model is extrapolating, and its curve bends the wrong way
 QUANTILES = np.linspace(0.025, 0.975, 20)      # outcome nodes: 20 equal-weight quantiles of each distribution
 YTG_BUCKETS = (1, 2, 3, 5, 10, 99)             # upper edges: 1, 2, 3, 4-5, 6-10, 11+
 FP_BUCKETS = (40, 50, 60, 70, 80, 100)         # punts by yards from the goal line: <=40, 41-50, ...
@@ -66,7 +69,8 @@ def _nodes(values: pd.Series, by: np.ndarray, n_buckets: int) -> np.ndarray:
 class Engine:
     wp: object
     conv: pd.Series              # conversion rate by yards to go (the registered table)
-    fg: object                   # field-goal logistic on distance
+    fg: object                   # field-goal model (fg.py: distance and its square, last three seasons)
+    fg_max: float                # longest kick offered, as yards from the goal line (FG_SUPPORT)
     punt: object                 # net punt model (median)
     extra: np.ndarray            # converted: yards gained beyond the line to gain, (ytg bucket, quantile)
     short: np.ndarray            # failed: yards gained (below the line to gain), (ytg bucket, quantile)
@@ -134,14 +138,14 @@ class Engine:
         return p * won / n + (1 - p) * lost / n, p
 
     def kick(self, s: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
-        """(win probability if it kicks, make probability); NaN beyond FG_MAX_YARDLINE."""
+        """(win probability if it kicks, make probability); NaN beyond the longest kick offered."""
         y = s["yardline_100"].to_numpy(float)
-        p = M.predict_fg_baseline(self.fg, pd.DataFrame({"kick_distance": y + self.fg_snap}))
+        p = F.predict(self.fg, y + self.fg_snap)
         no = np.zeros(len(s), bool)
         good = self._after(s, self.kick_start, FG_POINTS, no, self.runoff["fg"])
         spot = np.maximum(y + self.fg_snap - 10, TOUCHBACK)          # the spot of the kick, or the 20
         miss = self._after(s, 100 - spot, 0, no, self.runoff["fg"])
-        return np.where(y <= FG_MAX_YARDLINE, p * good + (1 - p) * miss, np.nan), p
+        return np.where(y <= self.fg_max, p * good + (1 - p) * miss, np.nan), p
 
     def punt_wp(self, s: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
         """(win probability if it punts, expected net yards); NaN inside PUNT_MIN_YARDLINE."""
@@ -179,7 +183,7 @@ class Engine:
         the engine doesn't offer that option."""
         s = s.reset_index(drop=True)
         y = s["yardline_100"].to_numpy(float)
-        far, near = s.assign(yardline_100=np.minimum(y, FG_MAX_YARDLINE)), s.assign(yardline_100=np.maximum(y, PUNT_MIN_YARDLINE))
+        far, near = s.assign(yardline_100=np.minimum(y, self.fg_max)), s.assign(yardline_100=np.maximum(y, PUNT_MIN_YARDLINE))
         fg = np.where(np.isnan(r["wp_fg"]), self.kick(far)[0], r["wp_fg"])          # valued at the nearest offered spot
         punt = np.where(np.isnan(r["wp_punt"]), self.punt_wp(near)[0], r["wp_punt"])
         return np.select([s["choice"] == "go", s["choice"] == "fg"], [r["wp_go"], fg], punt)
@@ -206,13 +210,16 @@ def fit(d: pd.DataFrame) -> Engine:
     dt = (g["game_seconds_remaining"] - nxt["game_seconds_remaining"]).clip(lower=0)
     last = g["season"] == g["season"].max()
     start = nxt.loc[(g["kickoff_attempt"] == 1) & (nxt["down"] == 1) & last, "yardline_100"]
+    recent = fgs[fgs["season"] > fgs["season"].max() - F.WINDOW]
+    snap = float((fgs["kick_distance"] - fgs["yardline_100"]).median())
     return Engine(
-        wp=M.fit_wp(scrimmage(d)), conv=M.fit_conv_baseline(d[d["converted"].notna()]), fg=M.fit_fg_baseline(fgs), punt=pm,
+        wp=M.fit_wp(scrimmage(d)), conv=M.fit_conv_baseline(d[d["converted"].notna()]), fg=F.fit(fgs), punt=pm,
+        fg_max=float(np.floor(recent["kick_distance"].quantile(FG_SUPPORT)) - snap),
         extra=_nodes((ok["yards_gained"] - ok["ydstogo"]).clip(lower=0), _bucket(ok["ydstogo"], YTG_BUCKETS), len(YTG_BUCKETS)),
         short=_nodes(bad["yards_gained"], _bucket(bad["ydstogo"], YTG_BUCKETS), len(YTG_BUCKETS)),
         punt_resid=_nodes(pd.Series(resid), _bucket(punts["yardline_100"], FP_BUCKETS), len(FP_BUCKETS)),
         p_block=float((all_punts["punt_blocked"] == 1).mean()),
-        fg_snap=float((fgs["kick_distance"] - fgs["yardline_100"]).median()),
+        fg_snap=snap,
         runoff={"go": float(dt[g["converted"].notna()].median()), "fg": float(dt[g["fg_made"].notna()].median()),
                 "punt": float(dt[g["punt_net"].notna()].median())},
         kick_start=float(start.mean()), seasons=tuple(sorted(int(x) for x in d["season"].unique())))

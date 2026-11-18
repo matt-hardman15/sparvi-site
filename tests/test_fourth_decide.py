@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 
 from nfl.fourth import decide as D
+from nfl.fourth import fg as F
 from nfl.fourth import models as M
 
 N = len(D.QUANTILES)
@@ -19,9 +20,9 @@ def _wp(_model, st):
 @pytest.fixture()
 def eng(monkeypatch):
     monkeypatch.setattr(M, "predict_wp", _wp)
-    monkeypatch.setattr(M, "predict_fg_baseline", lambda m, d: np.full(len(d), m))
+    monkeypatch.setattr(F, "predict", lambda m, d: np.full(len(d), m))
     monkeypatch.setattr(M, "predict_punt", lambda m, d: np.full(len(d), m))
-    return D.Engine(wp=None, conv=pd.Series({k: 0.5 for k in range(1, 12)}), fg=0.8, punt=40.0,
+    return D.Engine(wp=None, conv=pd.Series({k: 0.5 for k in range(1, 12)}), fg=0.8, fg_max=45.0, punt=40.0,
                     extra=np.zeros((len(D.YTG_BUCKETS), N)), short=np.zeros((len(D.YTG_BUCKETS), N)),
                     punt_resid=np.zeros((len(D.FP_BUCKETS), N)), p_block=0.0, fg_snap=18.0,
                     runoff={"go": 6.0, "fg": 4.0, "punt": 9.0}, kick_start=70.0, seasons=(2024,))
@@ -108,3 +109,19 @@ def test_punts_include_touchbacks_and_blocks(eng):
     eng.p_block = 1.0                               # always blocked: the opponent's ball 10 yards behind the line
     v = _wp(None, pd.DataFrame({"score_differential": [0.0], "yardline_100": [100 - 45.0]}))[0]
     assert eng.punt_wp(s)[0][0] == pytest.approx(1 - v)
+
+
+def test_field_goal_model_bends_and_uses_recent_seasons():
+    rng = np.random.default_rng(0)
+    rows = []
+    for season, lift in ((2019, -1.5), (2020, -1.5), (2021, 0.0), (2022, 0.0), (2023, 0.0)):
+        d = rng.integers(20, 62, 4000)
+        p = 1 / (1 + np.exp(-(5.5 - 0.1 * d + lift)))
+        rows.append(pd.DataFrame({"season": season, "kick_distance": d, "fg_made": (rng.random(4000) < p).astype(float)}))
+    k = pd.concat(rows, ignore_index=True)
+    recent, everything = F.fit(k), F.fit(k, window=None)
+    truth = 1 / (1 + np.exp(-(5.5 - 0.1 * 50)))
+    assert abs(F.predict(recent, [50])[0] - truth) < 0.03                 # the last three seasons only
+    assert F.predict(everything, [50])[0] < F.predict(recent, [50])[0] - 0.05   # older, worse seasons pull it down
+    p = F.predict(recent, np.arange(20, 62))
+    assert (np.diff(p) < 0).all()                                         # longer is harder across the range it saw
