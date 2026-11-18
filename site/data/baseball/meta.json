@@ -428,7 +428,7 @@
   "bootstrap_samples": 2000
  },
  "rule5": {
-  "snapshot_date": "2026-11-11",
+  "snapshot_date": "2026-11-18",
   "statuses": [
    "Eligible",
    "Likely eligible",
