@@ -3,7 +3,7 @@ name: cfb_player_projection
 title: CFB player projection
 sport: cfb
 status: champion
-version: 1.2.1
+version: 1.2.2
 owner: Matt
 spec: 'For every QB, RB, WR, and TE on an FBS team''s projected roster as of May 1, his season yards at that team:
   QB passing yards on dropbacks, RB rushing yards, WR and TE receiving yards (RB receiving is projected as well),

@@ -223,7 +223,8 @@ def build(t: int, as_of, loader: Loader | None = None) -> dict:
     origin_sys = tf.reindex(pl["team_from"])[["sys1", "sys2"]].to_numpy().reshape(-1, 2)
     dist_all = np.hypot(fbs["sys1"].to_numpy()[:, None] - origin_sys[None, :, 0], fbs["sys2"].to_numpy()[:, None] - origin_sys[None, :, 1])
     cuts = tuple(np.nanquantile(dist_all, [1 / 3, 2 / 3])) if dist_all.size else (np.nan, np.nan)
-    avail = M.availability(L, t, as_of).set_index(["team", "group"])["open_share"]
+    av = M.availability(L, t, as_of).set_index(["team", "group"])
+    avail, from_portal = av["open_share"], av["from_portal"]
     coaches = L.load("coaches", as_of)
     head = coaches.sort_values("games").groupby(["season", "school"])["coach_id"].last()
     sysmap = dict(zip(pl["player_id"], map(tuple, origin_sys), strict=True))
@@ -255,6 +256,8 @@ def build(t: int, as_of, loader: Loader | None = None) -> dict:
                 "style": None if row is None else style_words(row["sys1"], row["sys2"], q1, q2),
                 "kept_coach": None if new is None or old is None else bool(new == old),
                 "open": {g: (None if (team, g) not in avail.index else round(float(avail[(team, g)]), 3)) for g in ("QB", "RB", "WR", "TE")},
+                "open_portal": {g: (None if (team, g) not in from_portal.index else round(float(from_portal[(team, g)]), 3))
+                                for g in ("QB", "RB", "WR", "TE")},
                 "fit": {}, "fit_floor": {}, "proj": {g: proj_lists.get((team, g), []) for g in ("QB", "RB", "WR", "TE")}}
         bt = b[b["team"] == team]
         for g in ("QB", "RB", "WR", "TE"):

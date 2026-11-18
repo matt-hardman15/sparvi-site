@@ -2,6 +2,22 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-17 · CFB system fit 1.1.9 → 1.1.10; CFB player projection 1.2.1 → 1.2.2 (patch: board openings)
+Matt: the 2027 board said about 48% of Kansas's QB dropbacks were leaving with no portal entries; its starter (Isaiah
+Marshall, 86% of dropbacks) is an underclassman who hasn't entered. `model.availability` (F0 role availability; the
+board's "open" figure and its best-spots filter only, not the fit model or the projection) applied a leave rate by
+experience alone, estimated from players in play-by-play who didn't play for the same team the next season. Two
+problems: (1) the history included FCS, Division II and NAIA players who appear only in their one game against an FBS
+team, nearly doubling the rates (third-year 0.46 vs. 0.27 on FBS programs); (2) for underclassmen the remaining
+"departures" are mostly not departures. FBS starting QBs in their second or third year who skipped the portal, 2021-2024:
+32 of 147 "gone", of whom about 9 left early for the NFL (elite prospects), about 8 were seniors whose earlier seasons
+were outside our rosters, about 6 stayed but lost the job, were hurt or suspended, and about 5 transferred under an
+unlinked portal record. Now: rates from FBS programs in both seasons, by position group and experience over the five
+seasons before (a cell under 40 falls back to experience only); players in their first three seasons on a roster who
+haven't entered the portal count as returning; early NFL entries aren't predicted. Kansas QB 0.483 -> 0.045 (its
+fourth-year backup). FBS QB rooms, median open share 0.36 -> 0.12. The roster's class-year field can't replace our count
+(2026: 20,030 players listed as year 1). Fit scores and projections unchanged; best landing spots shift with the filter.
+
 ## 2026-11-17 · CFB system fit 1.1.8 → 1.1.9; CFB player projection 1.2.0 → 1.2.1 (patch: portal board)
 Best landing spots ranked by projected yards gave nearly every entrant the same programs (2026 window: every WR and TE had
 San José State · Old Dominion · Troy; UTSA was in every QB's top 3). Projected yards are his share × the program's volume

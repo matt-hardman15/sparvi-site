@@ -133,3 +133,12 @@ def test_freeze_refreshes_the_board_but_records_nothing_before_entries(monkeypat
     monkeypatch.setattr(F.ledger, "append_forecasts", lambda *a, **k: calls.__setitem__("ledger", calls["ledger"] + 1))
     monkeypatch.setattr(F, "cfb", lambda: SimpleNamespace(season=2026))
     assert F.main() == 0 and calls == {"export": 1, "ledger": 0}
+
+
+def test_leave_rates_fall_back_when_a_cell_is_thin():
+    from cfb.fit import model as M
+    d = pd.DataFrame({"group": ["QB"] * 10 + ["WR"] * 100, "exp": [4] * 110, "gone": [True] * 10 + [False] * 100})
+    r = M.leave_rates_by_group(d)
+    assert r[("WR", 4)] == 0.0                         # 100 rows: its own rate
+    assert r[("QB", 4)] == r[("*", 4)] == 10 / 110     # 10 rows: the pooled rate
+    assert M.UNDERCLASS == 3                           # underclassmen not in the portal count as returning (Matt, Nov 17)
