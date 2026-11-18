@@ -7,6 +7,7 @@ are fixed in models.py before the backtest (2020-2025) runs; later seasons are n
 from __future__ import annotations
 
 import json
+from functools import partial
 from pathlib import Path
 
 import numpy as np
@@ -39,7 +40,7 @@ def main() -> None:
         res["models"][name] = {"metric": metric, "n": int(len(rows)), "scores": out}
 
     s = scrimmage(d)
-    wp = {f"lgb_r{r}_l{lv}": ((lambda r, lv: lambda t: M.fit_wp(t, rounds=r, params={"num_leaves": lv}))(r, lv), M.predict_wp)
+    wp = {f"lgb_r{r}_l{lv}": (partial(M.fit_wp, rounds=r, params={"num_leaves": lv}), M.predict_wp)
           for r, lv in ((150, 7), (150, 15), (300, 7), (300, 15), (300, 31), (600, 15))}
     wp["baseline"] = (M.fit_wp_baseline, M.predict_wp_baseline)
     run("win_prob", s, "win", wp, "brier")
@@ -62,13 +63,13 @@ def main() -> None:
     res["models"]["conversion"] = {"metric": "brier", "n": int(len(c)), "scores": out}
 
     f = d[d["fg_made"].notna()]
-    fg = {f"logit_{fs}_C{C}": ((lambda C, fs: lambda t: M.fit_fg(t, C=C, features=fs))(C, fs), M.predict_fg)
+    fg = {f"logit_{fs}_C{C}": (partial(M.fit_fg, C=C, features=fs), M.predict_fg)
           for fs in M.FG_SETS for C in (0.1, 1.0, 10.0)}
     fg["baseline"] = (M.fit_fg_baseline, M.predict_fg_baseline)
     run("fg_make", f, "fg_made", fg, "brier")
 
     p = d[d["punt_net"].notna()]
-    pn = {f"lgb_r{r}": ((lambda r: lambda t: M.fit_punt(t, rounds=r))(r), M.predict_punt) for r in (75, 150, 300)}
+    pn = {f"lgb_r{r}": (partial(M.fit_punt, rounds=r), M.predict_punt) for r in (75, 150, 300)}
     pn["baseline"] = (M.fit_punt_baseline, M.predict_punt_baseline)
     run("punt_net", p, "punt_net", pn, "mae")
 

@@ -15,8 +15,8 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import SplineTransformer, StandardScaler
 from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import SplineTransformer, StandardScaler
 
 SEED = 7
 
