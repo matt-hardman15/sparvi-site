@@ -1,14 +1,14 @@
 name: deploy
 
 # Renders the site from the data committed in site/data and deploys it to GitHub Pages.
-# Runs on every push to main, by hand, and at the end of each sport's refresh workflow
-# (pushes made with GITHUB_TOKEN don't trigger other workflows, so refreshes call this directly).
+# Runs on every push to main and by hand. The refresh and backtest workflows push their commits with
+# the deploy key (not GITHUB_TOKEN), so those pushes run this too; they don't call it themselves.
+# A backtest commit that only updates run metadata is pushed with [skip ci] (see backtest.yml).
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
-  workflow_call:
 
 permissions:
   contents: read

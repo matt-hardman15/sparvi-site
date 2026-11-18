@@ -196,6 +196,10 @@ jobs:
           # Reports and the run log only; the site's model files are generated at render time (deploy.yml).
           git add models/*/*/backtest backtest/runs
           if git diff --cached --quiet; then echo "Nothing new."; exit 0; fi
-          git commit -m "Backtest run $(date -u +%Y-%m-%d)"
+          # Same code and data give the same results; then only the run id, time and commit change, and a
+          # redeploy would publish nothing new. [skip ci] keeps that push from running deploy.yml.
+          changed=$(git diff --cached -U0 -- models | grep -E '^[-+][^-+]' | grep -vcE '"(run_id|ran_at|code_sha)":' || true)
+          if [ "$changed" = "0" ]; then skip=" [skip ci]"; echo "Run metadata only; no redeploy."; else skip=""; fi
+          git commit -m "Backtest run $(date -u +%Y-%m-%d)$skip"
           git pull --rebase --autostash origin main
           git push origin HEAD:main

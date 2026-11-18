@@ -12,8 +12,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 concurrency:
   group: cfb                     # never alongside the weekly cfb refresh (same raw cache and data files)
@@ -89,11 +87,5 @@ jobs:
           uv run python -m sparvi.ledger check --base origin/main
           git push origin HEAD:main
 
-  deploy:
-    needs: board
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/deploy.yml
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
+  # No deploy job here: the data commit above is pushed with the deploy key, and that push runs deploy.yml
+  # (a failed data check still commits the status file, so /status/ shows it). Nothing pushed = nothing to deploy.
