@@ -82,8 +82,9 @@ backtest:
     note: 'No sealed season yet: with MLB 2024-2026 the only test season is 2026. The 2027 season becomes the vault
       when it completes.'
     accesses: 0
-experimental: 2.0.0 hasn't been through the backtest harness yet (CI runs it after merge); 1.0.1's edge over last
-  season's results had a 90% interval that included zero, so it didn't clear the strict gate
+experimental: 'its latest backtest run didn''t clear the strict gate. Shown only in that case: 2.0.0 passed on 2026-11-18
+  (run 063ae43be446, r 0.307 vs. 0.193 for last season''s results), but the low end of the edge''s 90% interval was
+  +0.007, so a rerun on revised data can fall back under it'
 challengers: []
 history:
 - version: 1.0.1

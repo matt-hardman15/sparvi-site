@@ -123,6 +123,11 @@ jobs:
 
       # College football (PLAYER-ADJ): the cfb workflow's raw-data cache, including CFBD's cached responses, from which
       # the play-player links are parsed (no API calls). A miss leaves the CFB backtest without data, and it fails.
+      # nflverse needs no key and no quota (~1 min for every season); nothing to cache.
+      - name: Pull NFL raw data
+        if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'nfl') }}
+        run: uv run python ingest/nfl/pull.py
+
       - name: Restore CFB raw data
         if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'cfb') }}
         id: cfb_cache

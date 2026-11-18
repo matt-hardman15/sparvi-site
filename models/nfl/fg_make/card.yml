@@ -1,0 +1,95 @@
+# Model card (PLAN-scout A2). Change `code` files only with a new version: python -m sparvi.registry --help
+name: nfl_fg_make
+title: NFL field-goal make probability
+sport: nfl
+status: champion
+version: 1.0.0
+owner: Matt
+spec: Logistic regression on kick distance. Development tried a distance spline with roof, temperature, wind and
+  season; it tied distance alone (Brier 0.1209 vs 0.1207), so distance alone is the model (Matt, Nov 18).
+target: A field-goal attempt is good (blocks count as misses)
+method: Logistic regression on kick distance
+code:
+- nfl/fourth/data.py
+- nfl/fourth/models.py
+- nfl/fourth/harness.py
+- models/nfl/fg_make/backtest.py
+training_data:
+- data/raw/nfl/pbp_*.parquet
+- data/raw/nfl/state/pbp_state_*.parquet
+artifacts:
+- nfl/fourth/output/development.json
+validation:
+  file: nfl/fourth/output/development.json
+  metrics:
+    dev_brier: models.fg_make.scores.baseline
+    dev_brier_best_rich: models.fg_make.scores.logit_full_C1p0
+eval:
+  set: 'Development: validation seasons 2018 (trained on 2016-2017) and 2019 (trained on 2016-2018).'
+  set_keys:
+    seasons: seasons
+  primary: dev_brier
+  higher_is_better: false
+published_in:
+- nfl/fourth-downs
+backtest:
+  preregistered_at: '2026-11-18'
+  module: models/nfl/fg_make/backtest.py
+  target: Whether the kick was good
+  decision_dates: 'Each play''s own snap. Models are fit before season t (training data through Sept 1 of t: seasons
+    2016..t-1 including their playoffs); each play is predicted from its pre-snap state and from team ratings built
+    only from earlier games (nfl/fourth/data.ratings), so the fold''s decision date is the end of season t (March
+    1 of t+1) and the leakage concern is the training cutoff, which the audit checks.'
+  splits:
+    type: walk_forward
+    first_test: 2020
+    last_test: 2025
+    train_window: null
+    first_train: 2016
+    predictor_lag: 0
+    train_until: 09-01
+    decision: +1:03-01
+    resolve: +1:03-01
+    fast_folds: 1
+  training: 'Fold t trains on seasons 2016..t-1 (an expanding window) as of Sept 1 of t. Settings fixed from development:
+    Development used 2016-2019 only (nfl/fourth/develop.py -> nfl/fourth/output/development.json: validation seasons
+    2018 and 2019); the 2020-2025 folds and the 2026 vault never informed a choice.'
+  rows: Every field-goal attempt of season t (blocked kicks are misses).
+  known_hindsight: 'Seasons before 2026-11-13 come from the current nflverse files, not as they stood then (revision_safe:
+    false). The model inputs here are raw game facts (score, clock, down, distance, field position, timeouts, kick
+    distance, roof, weather), which nflverse rarely revises; its model columns (EPA, WP), revised Nov 17 2026, are
+    never read.'
+  group_by: game_id
+  block: game_id
+  baselines: []
+  baseline_definitions: {}
+  primary_metric: ece
+  bootstrap: 2000
+  seed: 7
+  pass_gate:
+    calibration_noise:
+      quantile: 0.9
+      draws: 2000
+  gate_decided: 'Matt, 2026-11-18: strict for each F4 model. Win probability and punts must beat their baseline
+    with the 90% interval of the edge (bootstrap by game) above zero. Conversion and field goals, whose models are
+    the simple tables because nothing beat them in development, pass if their pooled ECE is below the 90th percentile
+    of the ECE that perfectly calibrated predictions would show on the same plays (2,000 simulated draws).'
+  too_good: 0.0
+  null_baseline: 'null'
+  secondary: 'Reported, not gating: log loss, Brier, the reliability table, per fold, and (win probability) the
+    same on 4th-down plays only.'
+  limits: No injuries, personnel, play calls, or game-specific information; weather is the stadium reading; team
+    strength is point margin, not opponent-adjusted efficiency. Betting lines are never an input.
+  reproduction: Deterministic (single-thread LightGBM with a fixed seed; closed-form tables; lbfgs logistic). Official
+    runs happen in CI.
+  not_applicable:
+    label_permutation: The model is a lookup table fit to outcomes; fit to shuffled outcomes it predicts the base
+      rate, which is calibrated by construction, so a shuffled-label run can't separate a leak from no leak under
+      a calibration gate. The timestamp and future-poisoning tests still check that no later data is read (Matt,
+      2026-11-18).
+  vault:
+    seasons:
+    - 2026
+    note: Season 2026 plays are sealed until the season completes (February 2027).
+    accesses: 0
+experimental: pre-registered Nov 18, 2026; the backtest hasn't run yet
