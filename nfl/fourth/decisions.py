@@ -9,8 +9,12 @@ choice cost.
     cost        win probability of the best choice minus that of the actual one, counted only on clear calls
                 (a toss-up costs nothing by definition)
 
-Writes output/decisions_{season}.parquet (play-level, private: gitignored) and output/decisions.json (the engine's
-tables and run settings per season). nfl/export_site_data.py turns the rows into the site's aggregates.
+The newest engine also fills a chart of standard situations (GRID: a tie game with 10:00 left in the 2nd quarter,
+outdoors, even teams, all timeouts, averaged over home and away) for every field position and distance, with the
+same intervals: the "when should you go" map.
+
+Writes output/decisions_{season}.parquet (play-level, private: gitignored), output/grid_{season}.json, and
+output/decisions.json (the engine's tables and run settings per season). nfl/export_site_data.py turns the rows into the site's aggregates.
 
     python -m nfl.fourth.decisions                 # every season; reuses a season's file when its inputs are unchanged
     python -m nfl.fourth.decisions --boot 50 --seasons 2025 2026
@@ -50,11 +54,42 @@ def _fingerprint(season: int, boot: int) -> str:
     return h.hexdigest()
 
 
-def season_decisions(loader: Loader, season: int, boot: int, today: pd.Timestamp) -> tuple[pd.DataFrame, dict]:
+GRID_YARDLINES = list(range(1, 100))
+GRID_YTG = list(range(1, 16))
+
+
+def grid(season: int) -> pd.DataFrame:
+    """Standard situations: every yards-from-goal x yards-to-go pair, as the home and as the away team."""
+    g = pd.DataFrame([(y, t, h) for y in GRID_YARDLINES for t in GRID_YTG if t <= y for h in (1.0, 0.0)],
+                     columns=["yardline_100", "ydstogo", "home"]).astype(float)
+    return g.assign(season=season, score_differential=0.0, game_seconds_remaining=2700.0, half_seconds_remaining=900.0,
+                    half2=0.0, ot=0.0, down=4.0, posteam_timeouts_remaining=3.0, defteam_timeouts_remaining=3.0,
+                    recv_2h=0.5, strength=0.0, indoors=0.0, wind=5.0)
+
+
+def _grid_table(g: pd.DataFrame, r: pd.DataFrame, b: np.ndarray) -> list[dict]:
+    """Home and away rows averaged (within each refit, so the interval is of the average)."""
+    key = [g["yardline_100"].astype(int), g["ydstogo"].astype(int)]
+    cols = ["wp_go", "wp_fg", "wp_punt", "p_convert", "p_fg", "punt_net", "margin"]
+    t = r[cols].groupby(key).mean()
+    bm = pd.DataFrame(b.T).groupby([k.to_numpy() for k in key]).mean()
+    t["margin_lo"], t["margin_hi"] = np.percentile(bm, 5, axis=1), np.percentile(bm, 95, axis=1)
+    t["call"] = np.where(t["margin_lo"] > 0, "go", np.where(t["margin_hi"] < 0, "kick", "toss-up"))
+    t["kick"] = np.where(t["wp_fg"].fillna(-1) >= t["wp_punt"].fillna(-1), "fg", "punt")
+    t = t.rename_axis(["yardline_100", "ydstogo"]).reset_index()
+    num = [c for c in t.columns if t[c].dtype.kind == "f"]
+    t[num] = t[num].round(4)
+    return json.loads(t.to_json(orient="records"))
+
+
+def season_decisions(loader: Loader, season: int, boot: int, today: pd.Timestamp) -> tuple[pd.DataFrame, dict, list[dict]]:
     eng, train = D.engine_for(loader, season, FIRST_SEASON, f"{season}-09-01")
     s = D.situations(D.plays(loader, [season], today))
-    r = eng.decide(s)
-    b = D.bootstrap(train, s, boot)
+    g = grid(season)
+    r_all = eng.decide(pd.concat([s[D.STATE], g[D.STATE]], ignore_index=True))      # one pass, one set of refits
+    b_all = D.bootstrap(train, pd.concat([s[D.STATE], g[D.STATE]], ignore_index=True), boot)
+    r, b = r_all.iloc[:len(s)].reset_index(drop=True), b_all[:, :len(s)]
+    grid_rows = _grid_table(g, r_all.iloc[len(s):].reset_index(drop=True), b_all[:, len(s):])
     out = pd.concat([s[KEEP], r], axis=1)
     out["margin_lo"], out["margin_hi"] = np.percentile(b, 5, axis=0), np.percentile(b, 95, axis=0)
     out["call"] = np.where(out["margin_lo"] > 0, "go", np.where(out["margin_hi"] < 0, "kick", "toss-up"))
@@ -64,7 +99,7 @@ def season_decisions(loader: Loader, season: int, boot: int, today: pd.Timestamp
     info = {"train_seasons": list(eng.seasons), "decisions": int(len(out)), "bootstrap": boot,
             "p_block": eng.p_block, "fg_snap": eng.fg_snap, "runoff": eng.runoff, "kick_start": eng.kick_start,
             "calls": {k: int(v) for k, v in out["call"].value_counts().sort_index().items()}}
-    return out, info
+    return out, info, grid_rows
 
 
 def main() -> None:
@@ -81,8 +116,9 @@ def main() -> None:
         if f.exists() and meta["seasons"].get(str(t), {}).get("inputs") == fp:
             print(f"{t}: unchanged")
             continue
-        out, info = season_decisions(loader, t, a.boot, today)
+        out, info, grid_rows = season_decisions(loader, t, a.boot, today)
         out.to_parquet(f, index=False)
+        (OUT / f"grid_{t}.json").write_text(json.dumps(grid_rows), encoding="utf-8", newline="\n")
         meta["seasons"][str(t)] = info | {"inputs": fp}
         print(f"{t}: {info['decisions']:,} decisions, calls {info['calls']}", flush=True)
     meta["seasons"] = dict(sorted(meta["seasons"].items()))
