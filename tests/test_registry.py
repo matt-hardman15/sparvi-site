@@ -87,3 +87,21 @@ def test_versions_are_never_rewritten(toy):
         registry.register("toy", "1.0.0", root=toy)
     with pytest.raises(ValueError):
         registry.register("toy", "1.1", root=toy)
+
+
+def test_pages_cite_only_model_keys_the_registry_exports():
+    """check.yml skips the render and browser test when a pull request touches nothing the site reads directly
+    (a card or a version record, say). Those still feed `{{< meta models.<key> >}}`, so the cheap half of that
+    check lives here: every key a page cites must exist in the registry's export."""
+    import re
+
+    from sparvi.config import ROOT
+
+    have = set(registry.site_numbers())
+    cited = {}
+    for f in sorted((ROOT / "site").rglob("*.qmd")):
+        for key in re.findall(r"meta models\.(\w+)", f.read_text(encoding="utf-8")):
+            cited.setdefault(key, f.relative_to(ROOT).as_posix())
+    assert cited, "no page cites a model version: the pattern is stale"
+    missing = {k: f for k, f in cited.items() if k not in have}
+    assert not missing, f"pages cite model keys the registry doesn't export: {missing}"
