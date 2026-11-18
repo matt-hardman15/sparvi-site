@@ -10,6 +10,9 @@ Usage:
 
 Output (data/raw/nfl/, never committed):
     pbp_{season}.parquet          regular-season and postseason plays, the columns the pipeline reads
+    state/pbp_state_{season}.parquet   the same plays' game state and kicking details, for the fourth-down models (F4):
+                                  a separate table so adding it didn't change pbp_*'s rows (snapshot hashes), in a
+                                  subfolder so the pbp_*.parquet globs (dbt, checks, provenance) don't pick it up
     team_stats_{season}.parquet   nflverse regular-season team stats (for the reconciliation check)
     schedules.parquet             every game in the window, with scores (team codes normalized)
     source/schedules.parquet, source/teams.parquet   as nflverse sent them: every column, original codes (snapshots)
@@ -39,6 +42,17 @@ PBP_COLS = [
 ]
 
 
+# Game state and kicking details for the fourth-down models (F4). Raw inputs only: nflverse's own model columns
+# (wp, ep, fg_prob, go_boost...) are trained on every season, so the models here never read them.
+STATE_COLS = [
+    "play_id", "game_id", "game_date", "season_type", "game_seconds_remaining", "half_seconds_remaining", "game_half",
+    "score_differential", "posteam_timeouts_remaining", "defteam_timeouts_remaining", "spread_line", "total_line",
+    "roof", "surface", "temp", "wind", "kick_distance", "field_goal_result", "punt_blocked", "return_yards",
+    "touchback", "fourth_down_converted", "fourth_down_failed", "first_down", "kickoff_attempt", "home_timeouts_remaining",
+    "away_timeouts_remaining", "aborted_play",
+]
+
+
 def save(df, path) -> None:
     pdf = df.to_pandas() if hasattr(df, "to_pandas") else df
     pdf.to_parquet(path, index=False)
@@ -46,8 +60,10 @@ def save(df, path) -> None:
 
 
 def pull_season(season: int) -> None:
-    pbp = nfl.load_pbp([season]).select(PBP_COLS)
-    save(pbp, OUT / f"pbp_{season}.parquet")
+    full = nfl.load_pbp([season])
+    save(full.select(PBP_COLS), OUT / f"pbp_{season}.parquet")
+    (OUT / "state").mkdir(exist_ok=True)
+    save(full.select(STATE_COLS), OUT / "state" / f"pbp_state_{season}.parquet")
     save(nfl.load_team_stats([season], summary_level="reg"), OUT / f"team_stats_{season}.parquet")
 
 
@@ -61,7 +77,8 @@ def main() -> None:
         current = s == CFG.season
         if args.current and not current:
             continue
-        if not current and (OUT / f"pbp_{s}.parquet").exists() and (OUT / f"team_stats_{s}.parquet").exists():
+        have = [OUT / f"pbp_{s}.parquet", OUT / "state" / f"pbp_state_{s}.parquet", OUT / f"team_stats_{s}.parquet"]
+        if not current and all(p.exists() for p in have):
             print(f"skip {s} (on file)")
             continue
         pull_season(s)
