@@ -1,0 +1,58 @@
+{
+  "model": "nfl_team_efficiency",
+  "version": "1.0.1",
+  "status": "champion",
+  "registered": "2026-11-18",
+  "note": "NFL-LAMBDA (patch): lambda grid extended to 6400 and 12800 so the minimum (3200) is inside it; lambda, ratings and metrics unchanged.",
+  "code_hash": "69d25f80c3c246442841b6b5b8f5f4b7bd99a7aa033534132207f06758623080",
+  "code_files": {
+    "nfl/team_efficiency/adjusted.py": "063d6ce2fdef7ee2cbfa98a451da334171d526bc28750678f69bc4f279f7d32a",
+    "football/common/adjust.py": "a7f59a55f3d49b4b183dd5200be76e77c4d2bfaf847a8310a66ef1e4794326f2",
+    "football/dbt/models/staging/stg_nfl_plays.sql": "c60831f4df6ca09e3ee594fecada871f564d2f0945c19fe003cede3a9730292a"
+  },
+  "training_data": {
+    "data/raw/nfl/pbp_2016.parquet": "9af68a89522d56675accda9e6b8928fe34bc93444b01f75d2685c0fd39a2c993",
+    "data/raw/nfl/pbp_2017.parquet": "38045069b9fb294aafadaabed28e6f5de21c85f96e632bc1a7ba7c29f9e13fd6",
+    "data/raw/nfl/pbp_2018.parquet": "8a53d2ee066751ddfe2d7ae8f03e2611f533b180454ae6a5e68c251643d8c3ed",
+    "data/raw/nfl/pbp_2019.parquet": "d01b4edfd3796f9db433f4baaf5ea828ee613ed57a5e83adee3d7e9fd6c7ed79",
+    "data/raw/nfl/pbp_2020.parquet": "a08d28011add9de38815c326ee87e9f5e29fe9a742534c47364a9391623bb6d2",
+    "data/raw/nfl/pbp_2021.parquet": "25e4e60655ea8d3a143aa36e3b5d2bbd68e141bf5e874aa76ad9e9bd7b14ed70",
+    "data/raw/nfl/pbp_2022.parquet": "a2630bf777a973a48421328634f6768dfcdc9d8d6a5eab53feceb8da1a371663",
+    "data/raw/nfl/pbp_2023.parquet": "3849e1d2915eeb4dd7c5ad3332c398bc29df42223d57554a6ef3d2b2819f1350",
+    "data/raw/nfl/pbp_2024.parquet": "1b2ad40f70ab22893db2daf55249791a96ce9c61db32f15eb17ee22e2bd977ea",
+    "data/raw/nfl/pbp_2025.parquet": "6eeb0bd0c8e35e9ee5f7599470fbf79e124a42edc7dd22260ed066ff428771e2",
+    "data/raw/nfl/pbp_2026.parquet": "ba54a5515fb8a95b7b47e937026bc5927a1df435bfa64b66016ba91d4931bd6b",
+    "data/raw/nfl/schedules.parquet": "d6e373d47223ca654c480e7bd11a06006a924f741124a843c601b84632312bdd"
+  },
+  "artifacts": {
+    "nfl/team_efficiency/output/adjustment.json": "a20680a7d50054915aff6ed77ac83cfee465e36a159eada61dc6623f0e03f57e"
+  },
+  "eval": {
+    "set": "Every regular-season game from week 3 on, complete seasons in the window, predicted from ratings through the prior week (leave-one-season-out).",
+    "set_keys": {
+      "seasons": [
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "min_week": 3
+    },
+    "primary": "mae_ridge",
+    "higher_is_better": false
+  },
+  "metrics": {
+    "mae_ridge": 10.37893172610516,
+    "mae_adjusted": 10.469283925924286,
+    "mae_raw": 10.47155015597792,
+    "mae_home_only": 11.104256894732336,
+    "lambda": 3200,
+    "n_games": 2160
+  }
+}

@@ -2,6 +2,14 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-18 · NFL opponent adjustment 1.0.0 → 1.0.1 (patch: lambda grid, NFL-LAMBDA)
+The chosen lambda (3200) was the largest value in the search grid, so the search didn't show it was a minimum. The grid
+now runs to 12800. Next-week margin MAE, 2,160 games: 1600 10.3797, 3200 10.3789, 6400 10.3814, 12800 10.3839 (an
+exploratory sweep to 1e8 levels off at 10.3876). Lambda stays 3200; `adjusted_team_week.csv` is byte-identical and no
+published number changes. The curve is nearly flat (0.009 points from 800 up), and at 3200 the adjustment moves a
+team's offense by 0.0025 EPA per play on average: in the NFL the opponent adjustment is close to off, as the method
+note already says.
+
 ## 2026-11-17 · CFB system fit 1.1.9 → 1.1.10; CFB player projection 1.2.1 → 1.2.2 (patch: board openings)
 Matt: the 2027 board said about 48% of Kansas's QB dropbacks were leaving with no portal entries; its starter (Isaiah
 Marshall, 86% of dropbacks) is an underclassman who hasn't entered. `model.availability` (F0 role availability; the
