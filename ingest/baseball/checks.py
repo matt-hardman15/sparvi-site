@@ -19,7 +19,8 @@ def run(today: date | None = None, n_orgs: int = 30) -> bool:
     cfg = baseball()
     c = Checks("baseball")
     through = {}
-    for level, seasons in (("aaa", cfg.aaa_seasons), ("mlb", cfg.mlb_seasons)):
+    history = [s for s in cfg.history_seasons if (RAW / f"statcast_mlb_{s}.parquet").exists()]   # optional (PQ-WINDOW)
+    for level, seasons in (("aaa", cfg.aaa_seasons), ("mlb", history + cfg.mlb_seasons)):
         for s in seasons:
             name = f"statcast_{level}_{s}"
             path = RAW / f"{name}.parquet"

@@ -9,10 +9,18 @@
 season = 2026
 mlb_seasons = 3
 aaa_seasons = 2
+# MLB seasons before the `mlb_seasons` window that the pitch-quality models may use for development and backtests
+# (PQ-WINDOW). Pulled once by hand (`ingest/baseball/pull.py --history`), never by the refresh, and read only where a
+# file exists: the site's pipeline, the published models and the refresh don't touch them. 2021 is the first season
+# with arm angle on most pitches (2020: 75% and a short season; 2019: none).
+history_first = 2021
 
 # Regular-season date windows for the Savant pull (generous; empty days return nothing).
 # At rollover, add the new season here and bump `season` above. That's the whole rollover.
 [baseball.season_windows]
+2021 = ["2021-03-30", "2021-10-05"]
+2022 = ["2022-04-05", "2022-10-07"]
+2023 = ["2023-03-28", "2023-10-03"]
 2024 = ["2024-03-20", "2024-09-30"]
 2025 = ["2025-03-18", "2025-09-28"]
 2026 = ["2026-03-25", "2026-09-27"]

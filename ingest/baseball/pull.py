@@ -239,7 +239,14 @@ if __name__ == "__main__":
                     help="re-pull the given seasons even if files exist (use for the current season)")
     ap.add_argument("--incremental", action="store_true",
                     help=f"only fetch new games (plus the last {OVERLAP_DAYS} days on file) for the given seasons")
+    ap.add_argument("--history", action="store_true",
+                    help=f"pull the MLB history seasons {CFG.history_seasons} (model development only; by hand, once)")
     args = ap.parse_args()
+    if args.history:
+        for s in CFG.history_seasons:
+            pull_season(s, "MLB")
+        pull_heights()
+        raise SystemExit(0)
     if args.current:
         args.seasons = [CFG.season]
     if args.refresh:

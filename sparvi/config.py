@@ -31,6 +31,7 @@ class Baseball:
     n_mlb: int
     n_aaa: int
     season_windows: dict[int, tuple[str, str]]
+    history_first: int | None = None
 
     @property
     def prev(self) -> int:
@@ -43,6 +44,13 @@ class Baseball:
     @property
     def aaa_seasons(self) -> list[int]:
         return list(range(self.season - self.n_aaa + 1, self.season + 1))
+
+    @property
+    def history_seasons(self) -> list[int]:
+        """MLB seasons before the `mlb_seasons` window kept for model development and backtests (PQ-WINDOW): pulled
+        by hand, optional everywhere (read only where the file exists), never part of the site's pipeline."""
+        first = self.mlb_seasons[0]
+        return [] if self.history_first is None else list(range(self.history_first, first))
 
     @property
     def train_seasons(self) -> list[int]:
@@ -63,8 +71,9 @@ def baseball() -> Baseball:
         n_mlb=int(c["mlb_seasons"]),
         n_aaa=int(c["aaa_seasons"]),
         season_windows={int(k): tuple(v) for k, v in c["season_windows"].items()},
+        history_first=int(c["history_first"]) if "history_first" in c else None,
     )
-    missing = [s for s in b.mlb_seasons if s not in b.season_windows]
+    missing = [s for s in b.history_seasons + b.mlb_seasons if s not in b.season_windows]
     if missing:
         raise ValueError(f"sparvi.toml: add a [baseball.season_windows] entry for {missing}")
     return b
