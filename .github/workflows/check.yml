@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read    # the `changes` job lists the pull request's files
 
 concurrency:
   group: check-${{ github.ref }}
@@ -48,7 +49,39 @@ jobs:
           git fetch --no-tags --depth=1 origin ${{ github.base_ref || 'main' }}
           uv run python -m sparvi.ledger check --base FETCH_HEAD --pr
 
+  # Does this pull request touch anything the rendered site depends on? If not, `site` (render every page + browser
+  # test, most of this workflow's time) is skipped; a skipped job still satisfies the required check. The list is
+  # generous on purpose, and tests/test_workflows.py pins it. deploy.yml renders everything on merge either way.
+  changes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      site: ${{ steps.files.outputs.site }}
+    steps:
+      - id: files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          # Site source, data and build scripts; the shared package and config; dependencies; every exporter and
+          # page builder; the browser test; this workflow.
+          SITE_PATHS: '^(site/|sparvi/|football/common/|sparvi\.toml$|pyproject\.toml$|uv\.lock$|\.python-version$|build\.sh$|\.github/workflows/check\.yml$|tests/(test_site|conftest)\.py$|(.*/)?export_site_data\.py$|(nfl|cfb)/team_pages\.py$|cfb/thumb\.py$)'
+        run: |
+          if [ -z "$PR" ]; then echo "site=true" >> "$GITHUB_OUTPUT"; exit 0; fi   # run by hand: check everything
+          # GitHub sometimes answers 500 ("diff temporarily unavailable") right after a push: retry before failing
+          # (on failure `site` runs anyway).
+          ok=""
+          for i in 1 2 3 4 5; do
+            if gh api "repos/${{ github.repository }}/pulls/$PR/files" --paginate --jq '.[].filename' > files.txt; then ok=1; break; fi
+            echo "files API failed (attempt $i); retrying in $((i * 15))s"; sleep $((i * 15))
+          done
+          [ -n "$ok" ] || { echo "could not list the pull request's files"; exit 1; }
+          echo "$(wc -l < files.txt) files changed"
+          if grep -E "$SITE_PATHS" files.txt; then echo "site=true" >> "$GITHUB_OUTPUT"; else echo "site=false" >> "$GITHUB_OUTPUT"; fi
+
   site:
+    needs: changes
+    # Also runs when `changes` itself failed: a skipped job counts as passing, so never skip on an error.
+    if: ${{ always() && (needs.changes.result != 'success' || needs.changes.outputs.site == 'true') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
