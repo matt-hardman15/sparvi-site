@@ -174,6 +174,16 @@ class Engine:
         out["best"] = np.where(out["margin"] > 0, "go", out["best_kick"])
         return out
 
+    def chosen(self, s: pd.DataFrame, r: pd.DataFrame) -> np.ndarray:
+        """Win probability of what the team actually did (`s.choice`), including kicks and punts from spots where
+        the engine doesn't offer that option."""
+        s = s.reset_index(drop=True)
+        y = s["yardline_100"].to_numpy(float)
+        far, near = s.assign(yardline_100=np.minimum(y, FG_MAX_YARDLINE)), s.assign(yardline_100=np.maximum(y, PUNT_MIN_YARDLINE))
+        fg = np.where(np.isnan(r["wp_fg"]), self.kick(far)[0], r["wp_fg"])          # valued at the nearest offered spot
+        punt = np.where(np.isnan(r["wp_punt"]), self.punt_wp(near)[0], r["wp_punt"])
+        return np.select([s["choice"] == "go", s["choice"] == "fg"], [r["wp_go"], fg], punt)
+
 
 def plays(loader, seasons, as_of) -> pd.DataFrame:
     """data.load_plays plus yards gained per play (not a model input; only the engine's outcome tables read it)."""
