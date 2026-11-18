@@ -621,6 +621,15 @@ def act_nfl_jax(p):
     assert rows(p, "#hist") >= 10
 
 
+def act_cfp(p):
+    assert "at-large picks" in p.text_content(".finding") and "%" in p.text_content(".finding")
+    assert p.locator("#field svg circle").count() >= 16
+    assert "as selected" in p.text_content("#cap") or "as if the season ended now" in p.text_content("#cap")
+    select(p, "#c", "Season", "2017"); wait(p, 400)
+    assert "4-team field" in p.text_content("#cap")
+    assert rows(p, "#bubble") >= 8 and rows(p, "#hist") >= 10
+
+
 def act_home(p):
     """Latest: newest first, a sport label and a filled-in key number on every card."""
     import datetime as dt
@@ -692,6 +701,7 @@ PAGES = [
     ("cfb-ranked-vs-good", "/cfb/ranked-vs-good/", act_cfb_article),
     ("cfb-what-a-loss-costs", "/cfb/what-a-loss-costs/", act_cfb_loss_cost),
     ("cfb-coaching-changes", "/cfb/coaching-changes/", act_cfb_carousel),
+    ("cfb-cfp-12", "/cfb/did-the-committee-pick-the-best-12/", act_cfp),
     ("glossary", "/glossary.html", None),
     ("about", "/about.html", None),
     ("status", "/status.html", act_status),

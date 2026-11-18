@@ -149,7 +149,9 @@ def cfb_tables() -> list[Table]:
         t.append(Table(f"play_players_{s}", d / "players" / f"play_players_{s}.parquet", ("play_id", "role"),
                        _play_players_available(d / f"games_{s}.parquet", d / f"plays_{s}.parquet")))
         t += [Table(f"plays_{s}", d / f"plays_{s}.parquet", ("id",), _plays_available(d / f"games_{s}.parquet")),
-              Table(f"games_{s}", d / f"games_{s}.parquet", ("id",), _game_available),
+              # `notes` (playoff/bowl/title-game labels) was added after the first snapshots and is fixed
+              # when a game is scheduled; leaving it out of the versioned columns avoids a mass revision.
+              Table(f"games_{s}", d / f"games_{s}.parquet", ("id",), _game_available, drop=("notes",)),
               Table(f"teams_{s}", d / f"teams_{s}.parquet", ("id",)),
               Table(f"rankings_{s}", d / f"rankings_{s}.parquet", ("season", "seasonType", "week", "poll", "school")),
               # Lines move until kickoff; each version is recorded when first seen. Benchmark only.

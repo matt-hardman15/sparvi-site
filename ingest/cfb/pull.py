@@ -91,9 +91,15 @@ def _floats(df: pd.DataFrame, kind: str) -> pd.DataFrame:
 def _games_frame(raw: list[dict]) -> pd.DataFrame:
     keep = ["id", "season", "week", "seasonType", "startDate", "completed", "neutralSite", "conferenceGame",
             "homeId", "homeTeam", "homeConference", "homeClassification", "homePoints", "homePregameElo", "homePostgameElo",
-            "awayId", "awayTeam", "awayConference", "awayClassification", "awayPoints", "awayPregameElo", "awayPostgameElo"]
+            "awayId", "awayTeam", "awayConference", "awayClassification", "awayPoints", "awayPregameElo", "awayPostgameElo",
+            "notes"]
     df = pd.DataFrame(raw)
-    return df[[c for c in keep if c in df.columns]]
+    df = df[[c for c in keep if c in df.columns]]
+    # "College Football Playoff First Round Game", "SEC Championship", bowl names: identifies playoff and
+    # title games (cfb/cfp). Text even when a season has none, so the file matches the contract.
+    if "notes" in df.columns:
+        df["notes"] = df["notes"].astype("string")
+    return df
 
 
 def _lines_frame(raw: list[dict]) -> pd.DataFrame:

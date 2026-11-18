@@ -66,7 +66,8 @@ def _season(season: int, rng: np.random.Generator, gid0: int, pid0: int):
                      "homeId": TEAMS.index(g["home"]), "homeTeam": g["home"], "homeConference": CONF[g["home"]], "homeClassification": "fbs",
                      "homePoints": float(score[g["home"]]), "homePregameElo": elo[g["home"]], "homePostgameElo": elo[g["home"]] + 5,
                      "awayId": TEAMS.index(g["away"]), "awayTeam": g["away"], "awayConference": CONF[g["away"]], "awayClassification": "fbs",
-                     "awayPoints": float(score[g["away"]]), "awayPregameElo": elo[g["away"]], "awayPostgameElo": elo[g["away"]] - 5})
+                     "awayPoints": float(score[g["away"]]), "awayPregameElo": elo[g["away"]], "awayPostgameElo": elo[g["away"]] - 5,
+                     "notes": "Synthetic Bowl" if g["seasonType"] == "postseason" else None})
         # An end-of-game marker carrying the final score (as CFBD's feed does).
         pid += 1
         plays.append({**plays[-1], "id": pid, "playType": "End of Game", "ppa": None, "offense": g["home"], "defense": g["away"],
