@@ -95,10 +95,12 @@ Clubs protect a player by adding him to the 40-man roster. Anyone left off who h
 
 The rankings lean on the measures that hold up across levels and samples. For pitchers that's Stuff+, which grades velocity, movement, and release on the MLB scale and [predicts the next season at least as well as results do](/baseball/stuff-plus/), plus strikeout-minus-walk rate. For hitters it's chase rate, zone contact, 90th-percentile exit velocity, and hard-hit rate, as percentiles against qualified Triple-A hitters.
 
+A Rule 5 hitter usually sticks as a bench player, so where he can play matters as much as how he hits. The [board](/baseball/tools/rule-5.html) lists each hitter's Triple-A line, the positions he played, and his fielding at the one he played most, and can be filtered to catchers, infielders, or outfielders. It has {{< meta baseball.r5_n_catchers >}} catchers, and {{< meta baseball.r5_n_versatile >}} hitters who played at least two positions ({{< meta baseball.r5_versatile_g >}}+ games at each). The fielding numbers are thin: errors and fielding percentage count the plays a fielder made, not the balls he reached, and for catchers the board shows runners thrown out and passed balls but not framing.
+
 <details class="method" id="method">
 <summary>Method and caveats</summary>
 
-**Data.** {{< meta baseball.season >}} Triple-A Statcast (regular season) for performance; MLB Stats API for 40-man rosters (snapshot {{< meta baseball.r5_snapshot >}}), birth dates, draft history, and transactions. Only aggregates are published.
+**Data.** {{< meta baseball.season >}} Triple-A Statcast (regular season) for performance; MLB Stats API for 40-man rosters (snapshot {{< meta baseball.r5_snapshot >}}), birth dates, draft history, and transactions, and for hitters' season lines, games by position, and fielding totals (players who changed Triple-A clubs are combined). Only aggregates are published.
 
 **Eligibility estimate.** A player who was 18 or younger on the June 5 immediately preceding his first pro contract must be added to the 40-man roster within five seasons; 19 or older, within four. The signing year counts as a season if he signed before his first league's season ended (rookie and complex leagues, late August). The signing date is his earliest signing with an MLB organization in the transaction record (**Eligible**). Without one, the draft year is used and the signing date is assumed to be mid-July (**Likely eligible**, {{< meta baseball.r5_n_likely >}} players). With neither, the status is **Unknown** ({{< meta baseball.r5_n_unknown >}}). Players whose most recent transaction is electing free agency, a release, or retirement aren't under contract and are left off.
 
@@ -106,7 +108,7 @@ The rankings lean on the measures that hold up across levels and samples. For pi
 
 **Rankings.** Pitchers in the finding met their role's Triple-A pitch minimum (see the [glossary](/glossary.html#roles)); hitters had {{< meta baseball.min_pa_qualified >}}+ PA. The hitter ranking averages four percentiles with equal weight, a simple choice rather than a fitted model.
 
-**What this can't tell you.** Only Triple-A players are on the board, so eligible prospects at Double-A and below are missing. There's no injury, scouting, or makeup information, and nothing about a club's roster needs, which drive most picks. Edge cases in the rule (voided contracts, players signed out of foreign leagues, time on restricted lists) aren't modeled. The MLB phase of the draft only happens if a labor agreement is in place; the minor league phase is expected to go ahead either way.
+**What this can't tell you.** Only Triple-A players are on the board, so eligible prospects at Double-A and below are missing. Defense is the weakest part: there's no range, arm-strength, or framing measure for Triple-A here, only errors, fielding percentage, and catchers' caught-stealing and passed balls. There's no injury, scouting, or makeup information, and nothing about a club's roster needs, which drive most picks. Edge cases in the rule (voided contracts, players signed out of foreign leagues, time on restricted lists) aren't modeled. The MLB phase of the draft only happens if a labor agreement is in place; the minor league phase is expected to go ahead either way.
 
 Code: [`baseball/rule5/`](https://github.com/matt-hardman15/sparvi-site/tree/main/baseball/rule5) · [`ingest/baseball/pull_rosters.py`](https://github.com/matt-hardman15/sparvi-site/blob/main/ingest/baseball/pull_rosters.py)
 </details>

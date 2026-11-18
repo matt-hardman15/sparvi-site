@@ -9,9 +9,11 @@ window. This is an estimate: transactions can be missing, and edge cases (voided
 players signed out of foreign leagues) aren't modeled.
 
 Inputs (data/raw, from ingest/baseball/pull_rosters.py; newest snapshot wins):
-  rosters_40man_D.parquet, people_rule5_D.json, milb_season_end.json, aaa_affiliates_SEASON.parquet
+  rosters_40man_D.parquet, people_rule5_D.json, milb_season_end.json, aaa_affiliates_SEASON.parquet,
+  aaa_hitting_SEASON.parquet, aaa_fielding_SEASON.parquet
 Outputs (baseball/rule5/output, committed; no birth dates):
   eligibility.csv   one row per player: status, reason, org, estimate inputs
+  hitter_stats.csv  board hitters' Triple-A season line, positions played, and fielding (season totals)
   validation.csv    the published-list check, row by row
   results.json      counts, validation agreement, snapshot date
 """
@@ -120,6 +122,47 @@ def status(r: dict) -> str:
     return "Eligible" if r["basis"] == "signing" else "Likely eligible"
 
 
+BOARD = ("Eligible", "Likely eligible", "Unknown")    # the statuses the board shows (export_site_data.R5_STATUSES)
+GROUP = {"C": "C", "1B": "IF", "2B": "IF", "3B": "IF", "SS": "IF", "LF": "OF", "CF": "OF", "RF": "OF", "OF": "OF"}
+FIELD = tuple(GROUP)            # defensive positions (not P or DH)
+VERSATILE_G = 10                # games at a position to count it as one he plays
+
+
+def hitter_stats(board: set[int]) -> pd.DataFrame:
+    """Triple-A season totals for board hitters: slash line, power and speed, positions, and fielding at his
+    main position (the one he played the most innings at). Fielding here is errors and plays made, not range."""
+    h = pd.read_parquet(RAW / f"aaa_hitting_{SEASON}.parquet")
+    f = pd.read_parquet(RAW / f"aaa_fielding_{SEASON}.parquet")
+    h = h[h["player_id"].isin(board) & (h["pa"] > 0)].copy()
+    tb = h["h"] + h["doubles"] + 2 * h["triples"] + 3 * h["hr"]
+    h["avg"] = (h["h"] / h["ab"]).where(h["ab"] > 0)
+    h["obp"] = ((h["h"] + h["bb"] + h["hbp"]) / (h["ab"] + h["bb"] + h["hbp"] + h["sf"])).where(h["pa"] > 0)
+    h["slg"] = (tb / h["ab"]).where(h["ab"] > 0)
+
+    f = f[f["player_id"].isin(h["player_id"])]
+    played = f[f["position"] != "P"].sort_values(["player_id", "g", "position"], ascending=[True, False, True])
+    pos_list = played.groupby("player_id").apply(
+        lambda d: " · ".join(f"{r.position} {r.g}" for r in d.itertuples()), include_groups=False).rename("positions")
+    fld = f[f["position"].isin(FIELD)].copy()
+    n_pos = fld[fld["g"] >= VERSATILE_G].groupby("player_id").size().rename("n_positions")
+    main = (fld.sort_values(["player_id", "outs", "g", "position"], ascending=[True, False, False, True])
+            .drop_duplicates("player_id").set_index("player_id"))
+    main = pd.DataFrame({
+        "def_pos": main["position"], "def_g": main["g"], "def_inn": main["outs"] / 3, "def_e": main["e"],
+        "def_fpct": ((main["po"] + main["a"]) / main["chances"]).where(main["chances"] > 0),
+    })
+    c = fld[fld["position"] == "C"].set_index("player_id")
+    catch = pd.DataFrame({"c_sb": c["c_sb"], "c_cs": c["c_cs"], "c_pb": c["c_pb"],
+                          "c_cs_pct": (c["c_cs"] / (c["c_sb"] + c["c_cs"])).where((c["c_sb"] + c["c_cs"]) > 0)})
+    out = (h.set_index("player_id")[["pa", "avg", "obp", "slg", "hr", "sb", "cs"]]
+           .join(pos_list).join(n_pos).join(main).join(catch).reset_index())
+    out["n_positions"] = out["n_positions"].fillna(0).astype(int)
+    out["pos_group"] = out["def_pos"].map(GROUP).fillna("DH")
+    for col in ("def_g", "def_e", "c_sb", "c_cs", "c_pb"):
+        out[col] = out[col].astype("Int64")
+    return out.round({"avg": 3, "obp": 3, "slg": 3, "def_inn": 1, "def_fpct": 3, "c_cs_pct": 3}).sort_values("player_id")
+
+
 def main() -> None:
     roster_file = newest("rosters_40man_*.parquet")
     snap = roster_file.stem.removeprefix("rosters_40man_")
@@ -143,6 +186,10 @@ def main() -> None:
     for c in ("age_at_signing", "seasons_to_protect", "first_season", "eligible_from"):
         el[c] = el[c].astype("Int64")
     el.to_csv(OUT / "eligibility.csv", index=False)
+    board = set(el.loc[el["status"].isin(BOARD) & ~el["on_40man"], "player_id"])
+    hs = hitter_stats(board)
+    hs.to_csv(OUT / "hitter_stats.csv", index=False)
+    print(f"hitter stats: {len(hs)} board hitters, {int(hs['def_pos'].notna().sum())} with a fielding position")
     # Triple-A club -> MLB org, committed so CI (and the farm-system work) can use it without raw data.
     aff.sort_values("team")[["season", "team_id", "team", "team_name", "org_id", "org"]].to_csv(
         OUT / "aaa_affiliates.csv", index=False)
@@ -164,6 +211,7 @@ def main() -> None:
         "status_counts": el["status"].value_counts().to_dict(),
         "basis_counts": el["basis"].value_counts().to_dict(),
         "on_40man_snapshot": int(len(on40)),
+        "versatile_g": VERSATILE_G,
         "validation": {
             "n": n, "agree": n_ok, "agreement": n_ok / n,
             "n_listed_eligible": len(pos), "agree_listed_eligible": int(pos["agree"].sum()),

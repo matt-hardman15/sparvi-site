@@ -178,12 +178,17 @@ write_records(OUT / "rule5_pitchers.json", r5p[cols].sort_values("player_id"), r
               digits=dict.fromkeys(GRADES, 1) | {"best_pt_stuff": 1, "k_pct": 4, "bb_pct": 4, "k_bb_pct": 4, "csw_pct": 4, "fb_velo": 1})
 
 R5_HIT = ["chase_pct", "zone_contact_pct", "ev90", "hard_hit_pct"]
-r5h = with_org(h.merge(e5, on="player_id"))
+# Triple-A season line, positions, and fielding (Stats API season totals, aggregated in rule5/analysis.py).
+R5_LINE = ["avg", "obp", "slg", "hr", "sb", "cs", "positions", "n_positions", "pos_group", "def_pos", "def_g", "def_inn",
+           "def_e", "def_fpct", "c_sb", "c_cs", "c_cs_pct", "c_pb"]
+hs = pd.read_csv(R5 / "hitter_stats.csv")
+r5h = with_org(h.merge(e5, on="player_id").merge(hs[["player_id", *R5_LINE]], on="player_id", how="left"))
 cols = (["player_id", "name", "org", "team", "age", "position", "pa", "xwoba", "k_pct", "bb_pct"] + R5_HIT
-        + [f"{c}_pctl" for c in R5_HIT] + ["status", "reason"])
+        + [f"{c}_pctl" for c in R5_HIT] + R5_LINE + ["status", "reason"])
 write_records(OUT / "rule5_hitters.json", r5h[cols].sort_values("player_id"), required=cols,
-              not_null=["player_id", "name", "status", "reason"], min_rows=50,
-              digits={"xwoba": 3, "k_pct": 4, "bb_pct": 4, "chase_pct": 4, "zone_contact_pct": 4, "ev90": 1, "hard_hit_pct": 4})
+              not_null=["player_id", "name", "status", "reason", "pos_group"], min_rows=50,
+              digits={"xwoba": 3, "k_pct": 4, "bb_pct": 4, "chase_pct": 4, "zone_contact_pct": 4, "ev90": 1, "hard_hit_pct": 4,
+                      "avg": 3, "obp": 3, "slg": 3, "def_inn": 1, "def_fpct": 3, "c_cs_pct": 3})
 
 # ---- Snapshots: weekly values for the date slider ------------------------------------
 # League files are columnar to stay small:
@@ -352,7 +357,8 @@ meta = {
     "stuff_robustness": strip(robust),
     "location_metrics": locm,
     "shape_results": strip(shape_res),
-    "rule5": {"snapshot_date": r5res["snapshot_date"], "statuses": R5_STATUSES, **section("baseball", "rule5")},
+    "rule5": {"snapshot_date": r5res["snapshot_date"], "statuses": R5_STATUSES, "versatile_g": r5res["versatile_g"],
+              **section("baseball", "rule5")},
     # Snapshot calendars, for the date slider and for prorating pitch minimums at earlier dates.
     "snapshots": {lvl: {"dates": [pd.Timestamp(d).strftime("%Y-%m-%d") for d in g["snapshot_date"]], "team_games": g["team_games"].tolist(),
                         "team_games_last": g["team_games_last"].tolist(), "full_season_games": DBT_VARS["full_season_games"][lvl]}
@@ -890,6 +896,8 @@ N |= {
     "r5_val_n": val["n"], "r5_val_agree": val["agree"], "r5_val_pct": f"{val['agreement']:.0%}",
     "r5_val_n_pos": val["n_listed_eligible"], "r5_val_n_neg": val["n_listed_not_yet"],
     "r5_n_free_agents": f"{r5res['status_counts'].get('Free agent', 0):,}",
+    "r5_n_catchers": f"{int((r5h['pos_group'] == 'C').sum()):,}",
+    "r5_n_versatile": f"{int((r5h['n_positions'] >= 2).sum()):,}", "r5_versatile_g": str(r5res["versatile_g"]),
     # Before the deadline the article says the board is preliminary; after it, that the pool is final.
     "r5_prelim_note": (
         f"*Built from {nice(snap)} rosters, after the {nice(R5CAL['protection_deadline'])} protection deadline, "
