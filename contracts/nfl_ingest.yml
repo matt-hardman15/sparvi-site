@@ -6,6 +6,43 @@
 # max_null: largest allowed share of missing values. Row counts may not drop more than 1% below the
 # last accepted pull (ingest/common/checks.py).
 tables:
+  pbp_state:
+    description: Game state and kicking details for the same plays as pbp (F4 fourth-down models; ingest/nfl/pull.py STATE_COLS)
+    files: "nfl/state/pbp_state_{season}.parquet"
+    key: [game_id, play_id]
+    max_null:
+      game_id: 0
+      play_id: 0
+      game_seconds_remaining: 0.01
+    columns:
+      play_id: DOUBLE
+      game_id: VARCHAR
+      game_date: VARCHAR
+      season_type: VARCHAR
+      game_seconds_remaining: DOUBLE
+      half_seconds_remaining: DOUBLE
+      game_half: VARCHAR
+      score_differential: DOUBLE
+      posteam_timeouts_remaining: DOUBLE
+      defteam_timeouts_remaining: DOUBLE
+      spread_line: DOUBLE
+      total_line: DOUBLE
+      roof: VARCHAR
+      surface: VARCHAR
+      temp: DOUBLE
+      wind: DOUBLE
+      kick_distance: DOUBLE
+      field_goal_result: VARCHAR
+      punt_blocked: DOUBLE
+      return_yards: DOUBLE
+      touchback: DOUBLE
+      fourth_down_converted: DOUBLE
+      fourth_down_failed: DOUBLE
+      first_down: DOUBLE
+      kickoff_attempt: DOUBLE
+      home_timeouts_remaining: DOUBLE
+      away_timeouts_remaining: DOUBLE
+      aborted_play: DOUBLE
   pbp:
     description: nflverse play-by-play, one file per season (ingest/nfl/pull.py keeps PBP_COLS)
     files: "nfl/pbp_{season}.parquet"

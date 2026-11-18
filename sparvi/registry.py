@@ -228,12 +228,17 @@ def site_numbers(root: Path = ROOT) -> dict[str, str]:
             if bt.exists():
                 r = json.loads(bt.read_text(encoding="utf-8"))
                 ev = r["evaluation"]
-                b, v = next(iter(ev["baselines"].items()))
                 vault = m.card.get("backtest", {}).get("vault", {})
+                if ev["baselines"]:
+                    b, v = next(iter(ev["baselines"].items()))
+                    vs = (f"{ev['metric'].replace('pearson_r', 'r')} {ev['point']:.3f} vs. {v['value']:.3f} for {b.replace('_', ' ')}; "
+                          f"edge {v['paired']['est']:+.3f} (90% interval {v['paired']['ci90'][0]:+.3f} to {v['paired']['ci90'][1]:+.3f}); ")
+                else:   # calibration gate: the ECE against what perfect calibration shows on the same rows by chance
+                    nb = ev.get("ece_noise", {})
+                    vs = (f"calibration error (ECE) {ev['point']:.3f} vs. {nb.get('bar', float('nan')):.3f}, the "
+                          f"{nb.get('q', 0.9):.0%} level for perfectly calibrated predictions on the same plays; ")
                 out[f"{m.name}_backtest"] = (
-                    f"Backtest ({r['ran_at'][:10]}, folds {', '.join(map(str, r['folds']))}, n {ev['n']}): "
-                    f"{ev['metric'].replace('pearson_r', 'r')} {ev['point']:.3f} vs. {v['value']:.3f} for {b.replace('_', ' ')}; "
-                    f"edge {v['paired']['est']:+.3f} (90% interval {v['paired']['ci90'][0]:+.3f} to {v['paired']['ci90'][1]:+.3f}); "
+                    f"Backtest ({r['ran_at'][:10]}, folds {', '.join(map(str, r['folds']))}, n {ev['n']}): " + vs +
                     f"gate {'passed' if r['gate']['passed'] else 'not passed'}; leakage tests "
                     f"{'all passed' if all(x['passed'] for x in r['leakage'].values()) else 'FAILED'}; "
                     f"revision-safe: {'yes' if r['revision_safe'] else 'no (data from before snapshots began)'}; "

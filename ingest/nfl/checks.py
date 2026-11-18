@@ -23,6 +23,10 @@ def run(today: date | None = None, n_teams: int = 32) -> bool:
     for s in cfg.seasons:
         pbp_ok &= c.table(f"pbp_{s}", d / f"pbp_{s}.parquet", "pbp")
         c.table(f"team_stats_{s}", d / f"team_stats_{s}.parquet", "team_stats")
+        if (d / "state" / f"pbp_state_{s}.parquet").exists():          # F4 inputs; same plays as pbp_{s}
+            if c.table(f"pbp_state_{s}", d / "state" / f"pbp_state_{s}.parquet", "pbp_state"):
+                c.add(f"pbp_state_{s}: one row per pbp play", c.rows[f"pbp_state_{s}"] == c.rows.get(f"pbp_{s}"),
+                      f"{c.rows[f'pbp_state_{s}']} vs {c.rows.get(f'pbp_{s}')}")
 
     through = {}
     if c.table("schedules", d / "schedules.parquet", "schedules") and pbp_ok:

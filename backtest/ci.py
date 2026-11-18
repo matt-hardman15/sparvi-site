@@ -115,10 +115,16 @@ def main() -> int:
         ok, notes = judge(m, rep, prev)
         all_ok &= ok
         notes_all += [f"**{m.name}**: {n}" for n in notes]
-        b = next(iter(rep["evaluation"]["baselines"].items()))
+        ev = rep["evaluation"]
+        if ev["baselines"]:
+            b = next(iter(ev["baselines"].items()))
+            edge = f"{b[0]}: {b[1]['paired']['est']:+.4f} ({b[1]['paired']['ci90'][0]:+.3f} to {b[1]['paired']['ci90'][1]:+.3f})"
+        else:   # calibration gate (F4's lookup tables): the ECE against the noise bar
+            nb = ev.get("ece_noise", {})
+            edge = f"noise bar {nb['bar']:.4f} (q{nb['q']:.2f})" if nb else "no baseline"
         rows.append({"model": m.name, "version": m.version, "kind": rep["kind"], "metric": rep["evaluation"]["metric"],
                      "now": f"{rep['evaluation']['point']:.4f}", "prev": f"{comparable_point(rep, prev):.4f}" if comparable_point(rep, prev) is not None else "none",
-                     "edge": f"{b[0]}: {b[1]['paired']['est']:+.4f} ({b[1]['paired']['ci90'][0]:+.3f} to {b[1]['paired']['ci90'][1]:+.3f})",
+                     "edge": edge,
                      "gate": "pass" if rep["gate"]["passed"] else "fail",
                      "leakage": "pass" if all(v["passed"] for v in rep["leakage"].values()) else "FAIL",
                      "status": status(m.name)["state"], "ci": "ok" if ok else "BLOCK"})

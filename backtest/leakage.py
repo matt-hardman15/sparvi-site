@@ -61,6 +61,8 @@ def label_permutation(mod, fold, seed: int = 1, n_boot: int = 1000, spec: dict |
     pred = mod.predict(mod.fit(loader, fold, permute_seed=seed), loader, fold)
     df = pred.merge(mod.outcome(loader, fold), on="entity_id").reset_index(drop=True)
     metric = (spec or {}).get("primary_metric", "pearson_r")
+    if metric != "pearson_r" and int((spec or {}).get("permutation_seeds", 1)) > 1:
+        return _permutation_mean_loss(mod, fold, loader, df, metric, spec, seed, n_boot)
     if metric != "pearson_r":
         null = spec["null_baseline"]
         p = metrics.paired_bootstrap(df, metric, "point", null, "y", spec.get("block"), n=n_boot, seed=seed)
@@ -75,6 +77,40 @@ def label_permutation(mod, fold, seed: int = 1, n_boot: int = 1000, spec: dict |
              (rng.integers(0, len(df), len(df)) for _ in range(n_boot))]
     lo, hi = float(np.percentile(draws, 5)), float(np.percentile(draws, 95))
     return {"passed": lo <= 0 <= hi, "r": r, "ci90": [lo, hi], "n": int(len(df))}
+
+
+ROW_LOSS = {"brier": lambda p, y: (p - y) ** 2, "mae": lambda p, y: np.abs(p - y), "rmse": lambda p, y: (p - y) ** 2}
+
+
+def _permutation_mean_loss(mod, fold, loader, first: pd.DataFrame, metric: str, spec: dict, seed: int, n_boot: int) -> dict:
+    """Shuffled-label test over `permutation_seeds` seeds for loss metrics (F4, Matt 2026-11-18): each row's loss minus
+    the null's, averaged over the seeds, then a block bootstrap of that mean. One seed's noise function can line up with
+    a strong real predictor by chance in either direction; a leak lines up in every seed. One-sided (Matt, 2026-11-18):
+    a model fit to noise is worse than a constant on average (its predictions add variance), so the test fails only when
+    the shuffled-label model is significantly *better* than the null (the 90% interval of the loss difference entirely
+    below zero)."""
+    null, block, seeds = spec["null_baseline"], spec.get("block"), int(spec["permutation_seeds"])
+    loss = ROW_LOSS[metric]
+    key = first[["entity_id"]].copy()
+    diffs, per_seed = [], []
+    for k in range(seeds):
+        df = first if k == 0 else mod.predict(mod.fit(loader, fold, permute_seed=seed + k), loader, fold).merge(
+            mod.outcome(loader, fold), on="entity_id")
+        df = key.merge(df, on="entity_id", how="left")
+        d = loss(df["point"].to_numpy(float), df["y"].to_numpy(float)) - loss(df[null].to_numpy(float), df["y"].to_numpy(float))
+        diffs.append(d)
+        per_seed.append(float(np.nanmean(d)))
+    mean_d = np.nanmean(np.vstack(diffs), axis=0)
+    groups = first[block].to_numpy() if block else np.arange(len(first))
+    g = pd.Series(mean_d).groupby(groups)
+    sums, counts = g.sum().to_numpy(), g.count().to_numpy()
+    rng = np.random.default_rng(seed)
+    idx = rng.integers(0, len(sums), size=(n_boot, len(sums)))
+    boot = sums[idx].sum(axis=1) / counts[idx].sum(axis=1)
+    lo, hi = float(np.quantile(boot, 0.05)), float(np.quantile(boot, 0.95))
+    return {"passed": hi >= 0, "rule": "one-sided: fail if the shuffled-label model beats the null",
+            "edge_over": null, "est": float(np.nanmean(mean_d)), "ci90": [lo, hi],
+            "seeds": seeds, "per_seed": per_seed, "n": int(len(first))}
 
 
 def _permutation_mean(mod, fold, loader, first: pd.DataFrame, seed: int, seeds: int) -> dict:
@@ -122,10 +158,12 @@ def run_all(name: str, mod, spec: dict, fold, scored: pd.DataFrame) -> dict:
         ceiling = spec.get("too_good_r", 0.9)
         r = metrics.pearson(scored["point"], scored["y"])
         out["too_good"] = {"passed": abs(r) < ceiling, "r": r, "ceiling": ceiling}
-    else:
-        ceiling = spec["too_good"]
+    else:   # too good = beyond the spec's bound in the metric's better direction (above it, or below it for errors)
+        bound = spec["too_good"]
         v = metrics.score(metric, scored["point"], scored["y"])
-        out["too_good"] = {"passed": v < ceiling, metric: v, "ceiling": ceiling}
+        ok = v < bound if metrics.higher_is_better(metric) else v > bound
+        out["too_good"] = {"passed": ok, metric: v, "bound": bound,
+                           "direction": "must stay below" if metrics.higher_is_better(metric) else "must stay above"}
     if str(spec.get("group_by", "")).startswith("entity"):
         train_ids = set(getattr(mod, "train_entities", lambda *_: set())(loader, fold))
         overlap = train_ids & set(clean["entity_id"])
