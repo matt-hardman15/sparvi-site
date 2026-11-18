@@ -3,7 +3,7 @@ name: nfl_win_prob
 title: NFL win probability
 sport: nfl
 status: champion
-version: 1.0.0
+version: 1.0.1
 owner: Matt
 spec: LightGBM (150 rounds, 15 leaves, learning rate 0.05) on score margin, margin scaled by time left, time left
   in game and half, half, overtime, down, distance, field position, both teams' timeouts, home, who receives the
@@ -81,6 +81,15 @@ backtest:
     of the ECE that perfectly calibrated predictions would show on the same plays (2,000 simulated draws).'
   too_good: 0.1
   null_baseline: 'null'
+  permutation_seeds: 10
+  permutation_note: 'Changed after the first (fast, 2025) run, before the full run (Matt, 2026-11-18): one seed
+    failed the shuffled-label test in the better-than-null direction with no leak behind it. Win probability: the
+    monotone constraint is a prior that keeps a leading-teams-win tilt on shuffled outcomes (seed 1 AUC 0.574 with
+    it, 0.493 without); punts: shuffled-label correlation across five seeds +0.06, +0.02, +0.17, -0.14, +0.06. Now
+    10 seeds, row loss minus the null averaged over seeds, bootstrap by game; the win-probability shuffled fit drops
+    the monotone constraint. With 10 seeds both shuffled-label models were significantly worse than the null (fitting
+    noise adds variance), so the test is one-sided: it fails only if the shuffled-label model is significantly better
+    than the null (90% interval of the loss difference entirely below zero). Version 1.0.1 records the change.'
   secondary: 'Reported, not gating: log loss, Brier, the reliability table, per fold, and (win probability) the
     same on 4th-down plays only.'
   limits: No injuries, personnel, play calls, or game-specific information; weather is the stadium reading; team

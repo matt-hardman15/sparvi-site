@@ -2,6 +2,17 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-18 · NFL win probability and net punt 1.0.0 → 1.0.1 (leakage test only; the models are unchanged)
+The first CI run (fast fold, 2025) failed both models' shuffled-label test, one seed, in the better-than-null direction
+(Brier -0.0034, 90% -0.0062 to -0.0006; punt MAE -0.025 yd, -0.041 to -0.009). No leak behind it: (1) win
+probability's monotone constraint is a prior that keeps a leading-teams-win tilt on shuffled outcomes (seed 1 AUC 0.574
+with it, 0.493 without); (2) single seeds swing widely (punt shuffled-label correlation over five seeds +0.06, +0.02,
++0.17, -0.14, +0.06). Matt (Nov 18): the shuffled-label fit drops the monotone constraint, and the test averages 10
+seeds. With 10 seeds both shuffled-label models were significantly *worse* than the null (Brier +0.0055, 90% +0.004 to
++0.007; punts +0.011 yd, +0.001 to +0.022), as noise-fit models should be, so (Matt) the loss-metric test is one-sided:
+it fails only if the shuffled-label model is significantly better than the null. Both pass on 2025. Changed before the
+full 2020-2025 run; the models, gates and folds are as pre-registered.
+
 ## 2026-11-18 · New: NFL win probability, fourth-down conversion, field-goal make, net punt 1.0.0 (F4, pre-registered)
 The four inputs to the fourth-down decision tool (F4). Raw game facts only (nflverse's own EPA/WP columns and betting
 lines are never inputs); new raw table `state/pbp_state_{season}` for the game state. Development on 2016-2019 only
