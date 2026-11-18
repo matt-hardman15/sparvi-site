@@ -53,7 +53,7 @@ def main() -> None:
             sc = [metrics.brier(M.predict_conv(M.fit_conv(d[d["season"].isin(tr)], C=C, features=fs),
                                                d[(d["season"] == v) & d["converted"].notna()]),
                                 d.loc[(d["season"] == v) & d["converted"].notna(), "converted"]) for v, tr in VAL.items()]
-            out[f"logit_{fs}_C{C}"] = round(float(np.mean(sc)), 5)
+            out[f"logit_{fs}_C{str(C).replace('.', 'p')}"] = round(float(np.mean(sc)), 5)
     c = d[d["converted"].notna()]
     sc = [metrics.brier(M.predict_conv_baseline(M.fit_conv_baseline(c[c["season"].isin(tr)]), c[c["season"] == v]),
                         c.loc[c["season"] == v, "converted"]) for v, tr in VAL.items()]
@@ -63,7 +63,7 @@ def main() -> None:
     res["models"]["conversion"] = {"metric": "brier", "n": int(len(c)), "scores": out}
 
     f = d[d["fg_made"].notna()]
-    fg = {f"logit_{fs}_C{C}": (partial(M.fit_fg, C=C, features=fs), M.predict_fg)
+    fg = {f"logit_{fs}_C{str(C).replace('.', 'p')}": (partial(M.fit_fg, C=C, features=fs), M.predict_fg)
           for fs in M.FG_SETS for C in (0.1, 1.0, 10.0)}
     fg["baseline"] = (M.fit_fg_baseline, M.predict_fg_baseline)
     run("fg_make", f, "fg_made", fg, "brier")

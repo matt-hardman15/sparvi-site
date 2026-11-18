@@ -53,8 +53,17 @@ def ece(p, y, bins: int = 10) -> float:
     return float(sum(r["n"] * abs(r["predicted"] - r["observed"]) for r in t) / n)
 
 
+def ece_noise(p, q: float = 0.9, draws: int = 2000, seed: int = 7, bins: int = 10) -> dict:
+    """The ECE that perfectly calibrated predictions would show on these same rows: outcomes drawn as Bernoulli(p),
+    `draws` times. Returns the q-quantile (the calibration gate's bar) and the median."""
+    p = np.asarray(p, float)
+    rng = np.random.default_rng(seed)
+    sims = np.array([ece(p, (rng.random(len(p)) < p).astype(float), bins) for _ in range(draws)])
+    return {"q": q, "draws": draws, "bar": float(np.quantile(sims, q)), "median": float(np.median(sims))}
+
+
 METRICS = {"pearson_r": (pearson, True), "mae": (mae, False), "rmse": (rmse, False), "recall": (recall, True),
-           "brier": (brier, False), "log_loss": (log_loss, False)}
+           "brier": (brier, False), "log_loss": (log_loss, False), "ece": (ece, False)}
 
 
 def score(metric: str, pred, y) -> float:

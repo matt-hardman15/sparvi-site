@@ -122,10 +122,12 @@ def run_all(name: str, mod, spec: dict, fold, scored: pd.DataFrame) -> dict:
         ceiling = spec.get("too_good_r", 0.9)
         r = metrics.pearson(scored["point"], scored["y"])
         out["too_good"] = {"passed": abs(r) < ceiling, "r": r, "ceiling": ceiling}
-    else:
-        ceiling = spec["too_good"]
+    else:   # too good = beyond the spec's bound in the metric's better direction (above it, or below it for errors)
+        bound = spec["too_good"]
         v = metrics.score(metric, scored["point"], scored["y"])
-        out["too_good"] = {"passed": v < ceiling, metric: v, "ceiling": ceiling}
+        ok = v < bound if metrics.higher_is_better(metric) else v > bound
+        out["too_good"] = {"passed": ok, metric: v, "bound": bound,
+                           "direction": "must stay below" if metrics.higher_is_better(metric) else "must stay above"}
     if str(spec.get("group_by", "")).startswith("entity"):
         train_ids = set(getattr(mod, "train_entities", lambda *_: set())(loader, fold))
         overlap = train_ids & set(clean["entity_id"])

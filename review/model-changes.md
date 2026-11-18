@@ -2,6 +2,25 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-18 · New: NFL win probability, fourth-down conversion, field-goal make, net punt 1.0.0 (F4, pre-registered)
+The four inputs to the fourth-down decision tool (F4). Raw game facts only (nflverse's own EPA/WP columns and betting
+lines are never inputs); new raw table `state/pbp_state_{season}` for the game state. Development on 2016-2019 only
+(`nfl/fourth/develop.py`; validation seasons 2018 and 2019):
+- win probability: LightGBM, monotone in margin and strength, Brier 0.1491 vs. 0.1589 for a margin-by-time logistic.
+- net punt: LightGBM L1, MAE 6.57 vs. 6.65 yards for a field-position bucket mean.
+- fourth-down conversion: nothing beat the yards-to-go rate table (best logistic, with 3rd downs as extra rows, 0.2335
+  vs. 0.2327), so the table is the model.
+- field goal: a distance spline with roof, temperature, wind and season tied distance alone (0.1209 vs. 0.1207), so
+  the distance-only logistic is the model.
+
+Gates (Matt): win probability and punts must beat their baseline with the 90% interval of the edge (by game) above
+zero; conversion and field goals pass if pooled ECE is below the 90th percentile of the ECE perfectly calibrated
+predictions show on the same plays (a fixed ECE < 0.02 was dropped before registration: at ~550 attempts a season,
+noise alone gives ~0.05). Backtest: walk-forward 2020-2025, expanding training from 2016; 2026 sealed. Harness
+changes: Brier, log loss and ECE metrics, the calibration gate, fold dates in the next calendar year, an expanding
+window that needs `first_train` (it silently trained on one season before; no card used it), and the "too good"
+check now respects metrics where lower is better.
+
 ## 2026-11-17 · CFB system fit 1.1.9 → 1.1.10; CFB player projection 1.2.1 → 1.2.2 (patch: board openings)
 Matt: the 2027 board said about 48% of Kansas's QB dropbacks were leaving with no portal entries; its starter (Isaiah
 Marshall, 86% of dropbacks) is an underclassman who hasn't entered. `model.availability` (F0 role availability; the
