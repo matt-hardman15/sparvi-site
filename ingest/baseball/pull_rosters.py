@@ -9,6 +9,9 @@ Writes, for snapshot date D:
   data/raw/people_rule5_D.json           bio, draft history, transactions, current team for every
                                          Triple-A player this season plus the validation list
   data/raw/milb_season_end.json          minor league regular-season end date by year
+  data/raw/aaa_hitting_SEASON.parquet    Triple-A season batting totals, one row per player
+  data/raw/aaa_fielding_SEASON.parquet   Triple-A season fielding totals, one row per player x position
+                                         (catchers add stolen bases, caught stealing, passed balls)
 
 Take the board's final snapshot the day after the 40-man protection deadline, when the eligible
 pool is set. The analysis uses the newest snapshot it finds.
@@ -88,6 +91,49 @@ def aaa_player_ids() -> list[int]:
         f"select distinct id from (select pitcher as id from '{f}' union select batter from '{f}') order by 1").fetchall()]
 
 
+def _aaa_season(group: str, season: int) -> list[dict]:
+    """League-wide Triple-A season totals; a player who changed clubs is one row (numTeams > 1)."""
+    st = get("/stats", stats="season", group=group, sportId=11, season=season, playerPool="ALL", limit=10000)["stats"][0]
+    if st.get("totalSplits", len(st["splits"])) != len(st["splits"]):
+        raise RuntimeError(f"{group}: got {len(st['splits'])} of {st['totalSplits']} rows; raise the limit")
+    return st["splits"]
+
+
+def _outs(innings: str | None) -> int | None:
+    """'48.2' innings -> 146 outs."""
+    if innings in (None, "", "-.--"):
+        return None
+    whole, _, part = str(innings).partition(".")
+    return int(whole) * 3 + int(part or 0)
+
+
+def aaa_hitting(season: int) -> pd.DataFrame:
+    keys = {"plateAppearances": "pa", "atBats": "ab", "hits": "h", "doubles": "doubles", "triples": "triples",
+            "homeRuns": "hr", "baseOnBalls": "bb", "intentionalWalks": "ibb", "hitByPitch": "hbp", "sacFlies": "sf",
+            "strikeOuts": "so", "stolenBases": "sb", "caughtStealing": "cs", "gamesPlayed": "g"}
+    rows = [{"season": season, "player_id": sp["player"]["id"], "name": sp["player"]["fullName"],
+             "num_teams": sp.get("numTeams", 1), **{v: sp["stat"].get(k) for k, v in keys.items()}}
+            for sp in _aaa_season("hitting", season)]
+    df = pd.DataFrame(rows).sort_values("player_id")
+    print(f"Triple-A hitting {season}: {len(df)} players")
+    return df
+
+
+def aaa_fielding(season: int) -> pd.DataFrame:
+    keys = {"games": "g", "gamesStarted": "gs", "putOuts": "po", "assists": "a", "errors": "e",
+            "throwingErrors": "throwing_e", "chances": "chances", "doublePlays": "dp",
+            "stolenBases": "c_sb", "caughtStealing": "c_cs", "passedBall": "c_pb", "pickoffs": "c_pickoffs"}
+    rows = [{"season": season, "player_id": sp["player"]["id"], "position": sp["position"]["abbreviation"],
+             "num_teams": sp.get("numTeams", 1), "outs": _outs(sp["stat"].get("innings")),
+             **{v: sp["stat"].get(k) for k, v in keys.items()}}
+            for sp in _aaa_season("fielding", season)]
+    df = pd.DataFrame(rows).sort_values(["player_id", "position"])
+    for c in ("outs", "c_sb", "c_cs", "c_pb", "c_pickoffs"):
+        df[c] = df[c].astype("Int64")
+    print(f"Triple-A fielding {season}: {len(df)} player-positions")
+    return df
+
+
 def people(ids: list[int]) -> list[dict]:
     out = []
     for i in range(0, len(ids), 100):
@@ -116,6 +162,8 @@ def main() -> None:
     ids = sorted(set(aaa_player_ids()) | set(extra))
     (RAW / f"people_rule5_{args.date}.json").write_text(json.dumps(people(ids)), encoding="utf-8")
     (RAW / "milb_season_end.json").write_text(json.dumps(season_ends(2010), indent=1), encoding="utf-8")
+    aaa_hitting(CFG.season).to_parquet(RAW / f"aaa_hitting_{CFG.season}.parquet", index=False)
+    aaa_fielding(CFG.season).to_parquet(RAW / f"aaa_fielding_{CFG.season}.parquet", index=False)
     print(f"snapshot {args.date} written to {RAW}")
 
 

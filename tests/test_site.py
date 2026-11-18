@@ -323,6 +323,16 @@ def act_rule5(p):
     assert "role" not in query(p) and rows(p, "#t") >= 0
     select(p, "#c", "Organization", "")
     assert rows(p, "#t") > 0 and p.locator("#scatter svg").count() == 1
+    # R5-DEFENSE: hitters' line, positions and fielding; the position filter keeps only that group.
+    for h in ("Positions (G)", "AVG/OBP/SLG", "HR", "SB", "Defense"):
+        assert p.locator("#t th", has_text=h).count() >= 1, h
+    p.locator("#c label", has_text="Max. age").locator("input").fill("")
+    p.locator("#c label", has_text="Max. age").locator("input").press("Enter"); wait(p)
+    seg(p, "#c", "Catchers")
+    assert query(p).get("pos") == "C" and rows(p, "#t") > 0 and "catchers" in p.text_content("#scap")
+    assert all(v.startswith("CS ") for v in col_values(p, "#t", "Defense")), "catchers show caught stealing"
+    seg(p, "#c", "Pitchers")
+    assert "pos" not in query(p)
 
 
 def act_rule5_article(p):

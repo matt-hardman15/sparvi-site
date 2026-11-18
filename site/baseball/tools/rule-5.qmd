@@ -20,8 +20,10 @@ Every {{< meta baseball.season >}} Triple-A player who is likely eligible for th
   const S = Sparvi, f = S.fmt, U = S.urlState;
   const [pitchers, hitters, meta] = await Promise.all(["rule5_pitchers", "rule5_hitters", "meta"].map(n => S.load(`/data/baseball/${n}.json`)));
   const R5 = meta.rule5, MIN_DEFAULT = 50;
-  const DEF = { side: "pitchers", org: "", role: "all" };
+  const DEF = { side: "pitchers", org: "", role: "all", pos: "all" };
+  const POS = [["all", "All"], ["C", "Catchers"], ["IF", "Infield"], ["OF", "Outfield"]];
   const st = { side: U.get("side", DEF.side), org: U.get("org", DEF.org), role: U.get("role", DEF.role), q: "",
+               pos: POS.some(([k]) => k === U.get("pos")) ? U.get("pos") : DEF.pos,
                min: U.get("min") == null ? null : +U.get("min"), agemax: U.get("agemax") == null ? null : +U.get("agemax") };
   const ap = f.apDate;
   if (R5.snapshot_date <= R5.protection_deadline) {
@@ -35,9 +37,9 @@ Every {{< meta baseball.season >}} Triple-A player who is likely eligible for th
   function controls() {
     const pitch = st.side === "pitchers";
     c.replaceChildren(...[
-      S.el("label", {}, "Players", S.seg([["pitchers", "Pitchers"], ["hitters", "Hitters"]], st.side, v => { st.side = v; st.role = "all"; st.min = null; controls(); draw(); })),
+      S.el("label", {}, "Players", S.seg([["pitchers", "Pitchers"], ["hitters", "Hitters"]], st.side, v => { st.side = v; st.role = "all"; st.pos = "all"; st.min = null; controls(); draw(); })),
       S.select("Organization", [["", "All 30"], ...orgs.map(o => [o, o])], st.org, v => { st.org = v; draw(); }),
-      pitch ? roleHost : null,
+      pitch ? roleHost : S.el("label", {}, "Position", S.seg(POS, st.pos, v => { st.pos = v; draw(); })),
       S.number("Max. age", st.agemax, 1, v => { st.agemax = v; draw(); }, "any"),
       S.number(pitch ? "Min. BF" : "Min. PA", st.min, 25, v => { st.min = v; draw(); }, String(MIN_DEFAULT)),
       S.search("Find a player", "Name", v => { st.q = v; draw(); }, st.q)].filter(Boolean));
@@ -59,14 +61,26 @@ Every {{< meta baseball.season >}} Triple-A player who is likely eligible for th
     { key: "mlb_g", label: "MLB G", fmt: v => v || "—", title: `MLB games in ${meta.season}. Players outrighted off a 40-man stay on the board.` },
     { key: "status", label: "Eligibility", align: "l", html: statusCell, title: "Estimated from signing date and age; hover for the reasoning" },
   ];
+  const slash = r => r.avg == null ? "—" : [r.avg, r.obp, r.slg].map(v => f.woba(v)).join("/");
+  // Fielding at his main position. Catchers: base stealers thrown out and passed balls; everyone else: errors
+  // and fielding percentage, which count plays made, not range.
+  const defense = r => r.def_pos == null ? "—" : r.def_pos === "C"
+    ? `CS ${r.c_cs ?? 0}/${(r.c_sb ?? 0) + (r.c_cs ?? 0)} · PB ${r.c_pb ?? 0}`
+    : `${r.def_pos} ${r.def_fpct == null ? "—" : f.woba(r.def_fpct)}, ${r.def_e} E`;
   const hCols = [
     { key: "name", label: "Hitter", align: "l", html: r => S.playerLink(r.player_id, r.name) },
-    { key: "org", label: "Org", align: "l" }, { key: "age", label: "Age" }, { key: "position", label: "Pos", align: "l" },
+    { key: "org", label: "Org", align: "l" }, { key: "age", label: "Age" },
     { key: "pa", label: "PA" },
     pc("chase_pct_pctl", "Chase pctl", "Percentile vs qualified Triple-A hitters; higher = chases less"),
     pc("zone_contact_pct_pctl", "Z-Contact pctl"), pc("ev90_pctl", "EV90 pctl", "90th-percentile exit velocity"),
     pc("hard_hit_pct_pctl", "Hard-hit pctl"),
     { key: "xwoba", label: "xwOBA", fmt: f.woba },
+    { key: "slash", label: "AVG/OBP/SLG", html: slash, sortVal: r => (r.obp ?? 0) + (r.slg ?? 0), title: "Triple-A season line; sorts by OPS" },
+    { key: "hr", label: "HR" }, { key: "sb", label: "SB", title: "Stolen bases; hover a dot for caught stealing" },
+    { key: "defense", label: "Defense", align: "l", html: defense, sortVal: r => r.def_pos === "C" ? (r.c_cs_pct ?? -1) : (r.def_fpct ?? -1),
+      title: "At his main position (most innings). Catchers: runners caught stealing out of attempts, and passed balls. Others: fielding percentage and errors, which don't measure range." },
+    { key: "positions", label: "Positions (G)", align: "l", sortVal: r => -(r.n_positions ?? 0), fmt: v => v ?? "—",
+      title: `Triple-A games at each position, most first. Sorting puts players with the most positions (${R5.versatile_g}+ games each) first.` },
     { key: "status", label: "Eligibility", align: "l", html: statusCell, title: "Estimated from signing date and age; hover for the reasoning" },
   ];
   let tbl, side;
@@ -75,12 +89,12 @@ Every {{< meta baseball.season >}} Triple-A player who is likely eligible for th
     const pitch = st.side === "pitchers", src = pitch ? pitchers : hitters, n = pitch ? "bf" : "pa";
     const pre = src.filter(d => d[n] >= (st.min ?? MIN_DEFAULT) && (st.agemax == null || d.age <= st.agemax));
     if (pitch) roleHost.replaceChildren(S.roleFilter(st.role, v => { st.role = v; draw(); }, { swing: pre.filter(d => d.role === "Swing").length }));
-    const base = pre.filter(d => !pitch || st.role === "all" || d.role === st.role);
+    const base = pre.filter(d => pitch ? (st.role === "all" || d.role === st.role) : (st.pos === "all" || d.pos_group === st.pos));
     const rows = base.filter(d => !st.org || d.org === st.org);
     const shown = st.q ? rows.filter(d => d.name.toLowerCase().includes(st.q)) : rows;
     if (side !== st.side) { tbl = S.table(document.getElementById("t"), pitch ? pCols : hCols, { sortKey: pitch ? "stuff_plus" : "ev90_pctl" }); side = st.side; }
     tbl.update(shown);
-    U.set({ side: st.side, org: st.org, role: pitch ? st.role : "all", min: st.min, agemax: st.agemax }, DEF);
+    U.set({ side: st.side, org: st.org, role: pitch ? st.role : "all", pos: pitch ? "all" : st.pos, min: st.min, agemax: st.agemax }, DEF);
     const hi = st.org || st.q ? shown : [];
     const X = pitch ? "stuff_plus" : "chase_pct_pctl", Y = pitch ? "k_bb_pct" : "ev90_pctl";
     const pts = base.filter(d => d[X] != null && d[Y] != null);
@@ -96,11 +110,12 @@ Every {{< meta baseball.season >}} Triple-A player who is likely eligible for th
         Plot.tip(pts, Plot.pointer({ x: X, y: Y, title: d => `${d.name} (${d.org}${pitch ? `, ${d.role}` : `, ${d.position}`}, age ${d.age})\n` + (pitch
           ? `Stuff+ ${f.num(d.stuff_plus, 0)} · Location+ ${f.num(d.loc_plus, 0)} · Pitching+ ${f.num(d.pitching_plus, 0)}
 K−BB ${f.pct(d.k_bb_pct)} · ${d.bf} BF`
-          : `Chase pctl ${d.chase_pct_pctl} · EV90 pctl ${d.ev90_pctl} · ${d.pa} PA`) + `\n${d.status}` }))] }));
-    const who = pitch ? (st.role === "all" ? "pitchers" : S.ROLES[st.role].toLowerCase()) : "hitters";
+          : `Chase pctl ${d.chase_pct_pctl} · EV90 pctl ${d.ev90_pctl} · ${d.pa} PA\n${slash(d)} · ${d.hr ?? 0} HR · ${d.sb ?? 0} SB, ${d.cs ?? 0} CS\n${d.positions ?? ""}`) + `\n${d.status}` }))] }));
+    const who = pitch ? (st.role === "all" ? "pitchers" : S.ROLES[st.role].toLowerCase())
+      : ({ all: "hitters", C: "catchers", IF: "infielders", OF: "outfielders" })[st.pos];
     document.getElementById("scap").textContent = (pitch
       ? `${rows.length} ${who} with ${st.min ?? MIN_DEFAULT}+ BF. Upper right is the profile that tends to translate: MLB-caliber stuff (right of the dashed line at 100) and a strong strikeout-to-walk margin.`
-      : `${rows.length} hitters with ${st.min ?? MIN_DEFAULT}+ PA. Upper right: disciplined swing decisions and top-end contact quality. Percentiles are against qualified Triple-A hitters (${meta.min_pa_qualified}+ PA).`)
+      : `${rows.length} ${who} with ${st.min ?? MIN_DEFAULT}+ PA (by the position he played most). Upper right: disciplined swing decisions and top-end contact quality. Percentiles are against qualified Triple-A hitters (${meta.min_pa_qualified}+ PA). The table adds each hitter's line, the positions he played, and his fielding.`)
       + (hi.length ? ` Orange: ${st.org || "search matches"}.` : " Pick an organization or search a name to highlight players.");
   }
   controls(); draw();
@@ -109,5 +124,5 @@ K−BB ${f.pct(d.k_bb_pct)} · ${d.bf} BF`
 ```
 
 ::: {.note}
-{{< meta baseball.season >}} regular-season Triple-A data. 40-man rosters as of {{< meta baseball.r5_snapshot >}}; the protection deadline is {{< meta baseball.r5_deadline >}} and the Rule 5 Draft is scheduled for {{< meta baseball.r5_draft >}}. Players who elected free agency after the season or were released aren't under contract and can't be drafted, so they're excluded. Eligibility statuses: **Eligible** (signing date and age known), **Likely eligible** (signing date estimated from the draft year), **Unknown** (no signing record found). How the estimate works and how it checked out: [method](/baseball/rule-5/#method).
+{{< meta baseball.season >}} regular-season Triple-A data. 40-man rosters as of {{< meta baseball.r5_snapshot >}}; the protection deadline is {{< meta baseball.r5_deadline >}} and the Rule 5 Draft is scheduled for {{< meta baseball.r5_draft >}}. Players who elected free agency after the season or were released aren't under contract and can't be drafted, so they're excluded. Hitters' lines, positions, and fielding are {{< meta baseball.season >}} Triple-A season totals from the MLB Stats API; fielding percentage counts errors, not range, so read it as a check, not a grade. Eligibility statuses: **Eligible** (signing date and age known), **Likely eligible** (signing date estimated from the draft year), **Unknown** (no signing record found). How the estimate works and how it checked out: [method](/baseball/rule-5/#method).
 :::
