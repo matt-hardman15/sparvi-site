@@ -11,6 +11,7 @@ import http.server
 import json
 import os
 import re
+import sys
 import threading
 
 import pytest
@@ -322,6 +323,16 @@ def act_rule5(p):
     assert "role" not in query(p) and rows(p, "#t") >= 0
     select(p, "#c", "Organization", "")
     assert rows(p, "#t") > 0 and p.locator("#scatter svg").count() == 1
+    # R5-DEFENSE: hitters' line, positions and fielding; the position filter keeps only that group.
+    for h in ("Positions (G)", "AVG/OBP/SLG", "HR", "SB", "Defense"):
+        assert p.locator("#t th", has_text=h).count() >= 1, h
+    p.locator("#c label", has_text="Max. age").locator("input").fill("")
+    p.locator("#c label", has_text="Max. age").locator("input").press("Enter"); wait(p)
+    seg(p, "#c", "Catchers")
+    assert query(p).get("pos") == "C" and rows(p, "#t") > 0 and "catchers" in p.text_content("#scap")
+    assert all(v.startswith("CS ") for v in col_values(p, "#t", "Defense")), "catchers show caught stealing"
+    seg(p, "#c", "Pitchers")
+    assert "pos" not in query(p)
 
 
 def act_rule5_article(p):
@@ -341,6 +352,12 @@ def player_hitter():
 
 def player_pitcher():
     return first_id("aaa_pitchers.json", "player_id", lambda r: r["bf"] >= 300)
+
+
+def player_url(pid, qs=""):
+    """A player's static page (PLAN-seo S2), from the URL registry."""
+    reg = json.loads((DATA / "baseball" / "player_urls.json").read_text(encoding="utf-8"))
+    return f"/baseball/players/{reg[str(pid)][-1]}/{qs}"
 
 
 def act_player(*sections, role_tag=False):
@@ -367,6 +384,16 @@ def act_player(*sections, role_tag=False):
             tags = p.locator("#root .role-tag").all_text_contents()
             assert tags and all(re.fullmatch(r"(SP|RP|Swing) · \d+ G, \d+ GS · through \w+ \d+", t) for t in tags), tags
     return check
+
+
+def act_free_agents(p):
+    assert "Pitching+" in p.text_content(".finding")
+    assert rows(p, "#t") == 25 and p.locator("#t a[href^='/baseball/players/']").count() >= 20
+    assert p.locator("#scatter svg circle").count() >= 50
+    seg(p, "#c", "Starters"); assert query(p)["role"] == "SP" and "starters" in p.text_content("#scap")
+    n_sp = rows(p, "#t")
+    seg(p, "#c", "Unsigned"); assert query(p)["status"] == "unsigned" and rows(p, "#t") <= n_sp
+    seg(p, "#c", "All"); seg(p, "#c", "Everyone")
 
 
 def act_farm(p):
@@ -423,6 +450,8 @@ def act_nfl_efficiency(p):
 
 
 def act_nfl_team(p):
+    assert p.locator("#team-static").count() == 0, "the plain-HTML block should give way to the charts"
+    assert "Through week" in p.text_content(".page-summary") and p.locator("a[href$='nfl/teams/']").count() >= 1
     tiles = p.locator(".stat-row .stat").all_text_contents()
     assert len(tiles) == 4 and re.search(r"\d+–\d+", tiles[0]), tiles
     assert p.locator("#off svg").count() == 1 and p.locator("#def svg").count() == 1
@@ -434,7 +463,32 @@ def act_nfl_team(p):
     nfl_week_slider(p, "#cap")
 
 
+def act_nfl_teams_index(p):
+    assert p.locator("ul.team-index a").count() == 32 and p.locator("h2").count() == 8
+
+
+def act_cfb_teams_index(p):
+    assert p.locator("ul.team-index a").count() >= 130 and "Former FBS teams" in p.locator("h2").all_text_contents()
+
+
+def act_cfb_portal_coming(p):
+    """The coming window is listed before it opens (Matt, Nov 17): no entrants yet, programs' openings shown."""
+    import json
+    idx = json.loads((DATA / "cfb" / "portal" / "index.json").read_text(encoding="utf-8"))["windows"]
+    if not any(w["window"] == 2027 and w["players"] == 0 for w in idx):
+        return                                         # entrants have arrived: the regular test covers it
+    assert "No entrants yet" in p.text_content("#tcap")
+    assert rows(p, "#t") == 0
+
+
+def no_team_cards(p):
+    # The hub's article listing must not pick up the generated team pages.
+    hrefs = p.eval_on_selector_all("#listing-nfl-articles a, #listing-cfb-articles a", "e => e.map(a => a.getAttribute('href'))")
+    assert hrefs and not [h for h in hrefs if "teams/" in h], hrefs
+
+
 def act_nfl_index(p):
+    no_team_cards(p)
     assert p.locator("#team-grid li a").count() == 32
     assert p.locator(".team-div h4").count() == 8
     assert p.locator(".card-link").count() >= 1
@@ -470,6 +524,94 @@ def act_cfb_article(p):
     assert "the bowls" in p.text_content("#scap")
 
 
+def act_cfb_portal(p):
+    """SC-3a: position tabs, filters, search, best landing spots, and a program's projected-yards and fit lists."""
+    assert rows(p, "#t") == 25 and "Value over repl." in p.text_content("#t thead")
+    assert "quarterbacks in the" in p.text_content("#tcap")
+    assert "Tier 1" in p.text_content("#tier-rules") and p.locator("[data-n]").first.text_content().strip()
+    seg(p, "#c", "WR"); assert query(p)["pos"] == "WR" and "wide receivers" in p.text_content("#tcap")
+    select(p, "#c2", "Level last season", "FCS"); assert query(p)["lvl"] == "FCS" and rows(p, "#t") >= 1
+    select(p, "#c2", "Level last season", "all")
+    select(p, "#c2", "Market tier", "1"); assert query(p)["tier"] == "1"
+    select(p, "#c2", "Market tier", "all")
+    seg(p, "#c", "QB")
+    name = p.locator("#t tbody tr td strong").first.text_content()
+    search(p, "#c2", name); assert rows(p, "#t") >= 1 and name in p.text_content("#t tbody")
+    search(p, "#c2", "")
+    assert "Best landing spots" in p.text_content("#t thead")
+    select(p, "#c", "Program", "Ohio State"); wait(p, 400)
+    assert query(p)["prog"] == "Ohio State" and "Ohio State" in p.text_content("#prog") and "experimental" in p.text_content("#prog")
+    # CFB-PROJ: the projected-yards list is the default program view; the fit list is a toggle.
+    assert "Projected yards (80%)" in p.text_content("#t thead") and 1 <= rows(p, "#t") <= 25
+    assert "projected yards at Ohio State" in p.text_content("#tcap")
+    seg(p, "#c", "System fit"); wait(p, 300)
+    assert query(p)["list"] == "fit"
+    assert "Fit" in p.text_content("#t thead") and "Projected here" in p.text_content("#t thead") and 1 <= rows(p, "#t") <= 25
+    assert "frozen in the forecast record" in p.text_content("#tcap")
+    seg(p, "#c2", "Backup minimum"); wait(p, 300)
+    assert query(p)["min"] == "floor" and "ranked among entrants with at least" in p.text_content("#tcap")
+
+
+def act_cfb_index(p):
+    no_team_cards(p)
+    assert p.locator(".card-link").count() >= 1
+    assert p.locator("#team-grid li a").count() >= 130
+    assert p.locator(".team-div h4", has_text="SEC").count() == 1
+
+
+def act_cfb_team(p):
+    assert len(p.locator("#quarto-content p").first.text_content()) > 40, "the summary paragraph renders without JS"
+    tiles = p.locator(".stat-row .stat").all_text_contents()
+    assert len(tiles) == 5 and re.search(r"\d+–\d+", tiles[0]) and "of" in tiles[1], tiles
+    for host in ("#power", "#off", "#def"):
+        assert p.locator(f"{host} svg").count() == 1, host
+    assert rows(p, "#games") >= 8
+    assert p.locator("#games a[href^='/cfb/teams/']").count() >= 5, "FBS opponents link to their pages"
+    seg(p, "#c", "Raw"); seg(p, "#c", "Included"); seg(p, "#c", "Passes")
+    assert "passes" in p.text_content("#cap")
+    seg(p, "#c", "All plays")
+    select(p, "#c", "Season", "2019"); assert query(p)["season"] == "2019" and "bowls included" in p.text_content("#gcap")
+    nfl_week_slider(p, "#cap")
+
+
+def act_cfb_former_team(p):
+    # Idaho left FBS after 2017: its page opens on its last FBS season and offers only FBS seasons.
+    assert "2017" in p.text_content("#gcap")
+    opts = p.locator("#c select").first.locator("option").all_text_contents()
+    assert opts[0] == "2017" and "2026" not in opts
+
+
+def act_cfb_loss_cost(p):
+    assert "spots" in p.text_content(".finding")
+    assert p.locator("#scatter svg circle").count() >= 100
+    assert rows(p, "#games") >= 1 or "No regular-season games" in p.text_content("#games")
+    ticks = lambda: p.eval_on_selector_all("#scatter svg [aria-label='y-axis tick label'] text", "e => e.map(t => t.textContent).join('|')")  # noqa: E731
+    before = ticks()
+    seg(p, "#c", "Power rating"); assert query(p)["view"] == "power" and "power rating" in p.text_content("#scap")
+    assert ticks() == before, "both views share one y scale"
+
+
+def act_cfb_carousel(p):
+    """CFB-CAROUSEL: the scatter and table follow the filters; the in-progress table lists this season's new coaches."""
+    assert "points per game" in p.text_content(".finding")
+    assert p.locator("#scatter svg circle").count() >= 100 and rows(p, "#t") == 15
+    ticks = lambda: p.eval_on_selector_all("#scatter svg [aria-label='x-axis tick label'] text", "e => e.map(t => t.textContent).join('|')")  # noqa: E731
+    before = ticks()
+    seg(p, "#c", "Left for another job"); assert query(p)["why"] == "left" and "These" in p.text_content("#scap")
+    assert ticks() == before, "filters keep one scale"
+    seg(p, "#c", "Group of Five"); assert query(p)["lvl"] == "G5"
+    seg(p, "#c", "First-time"); assert query(p)["coach"] == "first" and rows(p, "#t") >= 1
+    assert rows(p, "#cur") >= 1 and "first-year head coach" in p.text_content("#ccap")
+
+
+def act_nfl_offense_defense(p):
+    assert "times as closely" in p.text_content(".finding")
+    assert rows(p, "#games") >= 2 or "No regular-season games" in p.text_content("#games")
+    assert p.locator("#grid svg rect").count() >= 9
+    seg(p, "#c", "Passes"); assert query(p)["split"] == "pass" and "passes" in p.text_content("#gcap")
+    seg(p, "#c2", "Runs"); assert query(p)["gsplit"] == "run" and "runs" in p.text_content("#gridcap")
+
+
 def act_nfl_jax(p):
     assert "Jacksonville" in p.text_content(".finding") and "%" in p.text_content(".finding")
     assert p.locator("#lines svg text", has_text="JAX").count() >= 1
@@ -499,6 +641,28 @@ def act_home(p):
     assert p.locator('a[href="https://x.com/SparviAnalytics"]').count() >= 1
 
 
+def act_players_index(p):
+    links = p.locator("ul.player-index a")
+    assert links.count() > 1500
+    href = links.first.evaluate("a => a.pathname")
+    assert re.fullmatch(r"/baseball/players/[a-z0-9-]+-\d+/", href), href
+
+
+def act_baseball_teams_index(p):
+    assert p.locator("ul.team-index > li").count() == 30
+    assert p.locator("ul.team-index a[href*='teams/aaa/']").count() == 30
+
+
+def act_baseball_team_aaa(p):
+    assert "Omaha Storm Chasers" in p.locator("h1").text_content() and "Triple-A team" in p.text_content(".page-summary")
+    assert p.locator("table.s-table").count() == 2 and p.locator("table.s-table a[href*='/baseball/players/']").count() >= 40
+    assert p.locator("a[href*='teams/mlb/kc/']").count() == 1
+
+
+def act_baseball_team_mlb(p):
+    assert p.locator("table.s-table tbody tr").count() >= 15 and p.locator("a[href*='teams/aaa/oma/']").count() == 1
+
+
 PAGES = [
     ("home", "/", act_home),
     ("baseball", "/baseball/", None),
@@ -507,22 +671,36 @@ PAGES = [
     ("shape-changes", "/baseball/shape-changes/", act_shape),
     ("two-week", "/baseball/two-week-signal/", act_two_week),
     ("farm-systems", "/baseball/farm-systems/", act_farm),
+    ("free-agent-pitchers", "/baseball/free-agent-pitchers/", act_free_agents),
     ("stuff-leaderboard", "/baseball/tools/stuff-leaderboard.html", act_leaderboard),
     ("triple-a", "/baseball/tools/triple-a.html", act_triple_a),
     ("triple-a-mlb", "/baseball/tools/triple-a.html?view=mlb", act_triple_a_mlb),
     ("aaa-translation", "/baseball/aaa-translation/", act_translation),
     ("rule-5-board", "/baseball/tools/rule-5.html", act_rule5),
     ("rule-5-article", "/baseball/rule-5/", act_rule5_article),
-    ("player-hitter", lambda: f"/baseball/player.html?id={player_hitter()}", act_player("Hitting · Triple-A")),
-    ("player-pitcher", lambda: f"/baseball/player.html?id={player_pitcher()}", act_player("Pitching · Triple-A", role_tag=True)),
-    ("player-missing", "/baseball/player.html?id=1", lambda p: "No " in p.text_content("#root")),
+    ("player-hitter", lambda: player_url(player_hitter()), act_player("Hitting · Triple-A")),
+    ("player-pitcher", lambda: player_url(player_pitcher()), act_player("Pitching · Triple-A", role_tag=True)),
+    ("player-old-url-missing", "/baseball/player.html?id=1", lambda p: "No profile" in p.text_content("#root")),
+    ("players-index", "/baseball/players/", act_players_index),
+    ("baseball-teams", "/baseball/teams/", act_baseball_teams_index),
+    ("baseball-team-aaa", "/baseball/teams/aaa/oma/", act_baseball_team_aaa),
+    ("baseball-team-mlb", "/baseball/teams/mlb/kc/", act_baseball_team_mlb),
     ("nfl", "/nfl/", act_nfl_index),
     ("nfl-jax-article", "/nfl/is-jacksonville-the-best/", act_nfl_jax),
+    ("nfl-offense-or-defense", "/nfl/offense-or-defense/", act_nfl_offense_defense),
     ("nfl-team-efficiency", "/nfl/tools/team-efficiency.html", act_nfl_efficiency),
     ("nfl-team", "/nfl/teams/kc/", act_nfl_team),
-    ("cfb", "/cfb/", lambda p: p.locator(".card-link").count() >= 1),
+    ("nfl-teams-index", "/nfl/teams/", act_nfl_teams_index),
+    ("cfb", "/cfb/", act_cfb_index),
+    ("cfb-team", "/cfb/teams/georgia/", act_cfb_team),
+    ("cfb-teams-index", "/cfb/teams/", act_cfb_teams_index),
+    ("cfb-team-former", "/cfb/teams/idaho/", act_cfb_former_team),
     ("cfb-team-ratings", "/cfb/tools/team-ratings.html", act_cfb_ratings),
+    ("cfb-portal", "/cfb/tools/portal-board.html", act_cfb_portal),
+    ("cfb-portal-coming-window", "/cfb/tools/portal-board.html?win=2027", act_cfb_portal_coming),
     ("cfb-ranked-vs-good", "/cfb/ranked-vs-good/", act_cfb_article),
+    ("cfb-what-a-loss-costs", "/cfb/what-a-loss-costs/", act_cfb_loss_cost),
+    ("cfb-coaching-changes", "/cfb/coaching-changes/", act_cfb_carousel),
     ("cfb-cfp-12", "/cfb/did-the-committee-pick-the-best-12/", act_cfp),
     ("glossary", "/glossary.html", None),
     ("about", "/about.html", None),
@@ -584,3 +762,153 @@ def test_slider_axes_are_stable(browser, base_url, name, path):
         assert start == ticks() == end, "the axes changed when the slider moved"
     finally:
         ctx.close()
+
+
+# ---- static player pages (PLAN-seo S2) ----------------------------------------------------------
+def test_old_player_url_redirects_with_view_state(browser, base_url):
+    ctx = browser.new_context()
+    p = ctx.new_page()
+    try:
+        pid = player_pitcher()
+        p.goto(f"{base_url}/baseball/player.html?id={pid}&window=last30", wait_until="networkidle")
+        wait(p, 500)
+        assert p.url == base_url + player_url(pid, "?window=last30")
+        assert query(p).get("window") == "last30"
+    finally:
+        ctx.close()
+
+
+def test_player_page_numbers_are_in_the_html_without_javascript(browser, base_url):
+    """Crawlers and no-JS readers get the season's numbers as plain HTML."""
+    ctx = browser.new_context(java_script_enabled=False)
+    p = ctx.new_page()
+    try:
+        pid = player_pitcher()
+        p.goto(base_url + player_url(pid))
+        row = next(r for r in json.loads((DATA / "baseball" / "aaa_pitchers.json").read_text(encoding="utf-8")) if r["player_id"] == pid)
+        assert p.locator("h1").count() == 1 and row["name"] in p.locator("h1").text_content()
+        assert str(row["bf"]) in p.locator(".player-summary").text_content()
+        assert f"{100 * row['k_pct']:.1f}%" in p.text_content("#root")
+        assert p.locator("#root table.s-table tbody tr").count() >= 5
+        assert p.locator("link[rel=canonical]").get_attribute("href") == "https://sparvi.io" + player_url(pid)
+    finally:
+        ctx.close()
+
+
+def test_js_slug_matches_python_on_every_name(browser, base_url):
+    """Sparvi.slug (tools' player links) must give the same path as sparvi/urls.py for every player."""
+    from sparvi.urls import slug
+    names = sorted({json.loads(f.read_text(encoding="utf-8"))["name"] for f in (DATA / "baseball" / "players").glob("*.json")})
+    ctx = browser.new_context()
+    p = ctx.new_page()
+    try:
+        p.goto(base_url + "/baseball/tools/stuff-leaderboard.html", wait_until="networkidle")
+        js = p.evaluate("names => names.map(n => Sparvi.slug(n))", names)
+        bad = [(n, a, slug(n)) for n, a in zip(names, js, strict=True) if a != slug(n)]
+        assert not bad, bad[:5]
+    finally:
+        ctx.close()
+
+
+def test_player_sitemap_lists_real_pages():
+    idx = (DOCS / "sitemap-index.xml").read_text(encoding="utf-8")
+    assert "https://sparvi.io/sitemap-baseball-players.xml" in idx
+    locs = re.findall(r"<loc>(.*?)</loc>", (DOCS / "sitemap-baseball-players.xml").read_text(encoding="utf-8"))
+    assert len(locs) > 1500
+    for loc in locs[::97]:
+        h = (DOCS / loc.removeprefix("https://sparvi.io/") / "index.html").read_text(encoding="utf-8")
+        assert 'name="robots" content="noindex"' not in h and f'<link rel="canonical" href="{loc}">' in h
+    assert not (DOCS / "baseball" / "players" / "template").exists()
+    assert "players/template" not in (DOCS / "sitemap.xml").read_text(encoding="utf-8")
+    assert "baseball/player.html" not in (DOCS / "sitemap.xml").read_text(encoding="utf-8")
+
+
+def test_build_report_within_budget():
+    r = json.loads((DOCS / "_build-report.json").read_text(encoding="utf-8"))
+    assert r["files"] > 2000 and all(v < 0.6 for v in r["usage"].values()), r["usage"]
+
+
+def test_team_page_numbers_are_in_the_html_without_javascript(browser, base_url):
+    """Team pages (SEO-2b) show the summary, tiles, splits, and results as plain HTML."""
+    ctx = browser.new_context(java_script_enabled=False)
+    p = ctx.new_page()
+    try:
+        p.goto(base_url + "/nfl/teams/kc/")
+        assert "Kansas City Chiefs" in p.text_content(".page-summary")
+        assert p.locator("#team-static .stat-row .stat").count() == 4
+        assert p.locator("#team-static table.s-table").count() == 2
+        assert p.locator("#team-static a[href*='nfl/teams/']").count() >= 8
+        p.goto(base_url + "/cfb/teams/georgia/")
+        assert "Georgia" in p.text_content(".page-summary")
+        assert p.locator("#team-static .stat-row .stat").count() == 5 and p.locator("#team-static table.s-table").count() == 2
+        assert p.locator(".team-sub a[href*='cfb/teams/']").count() >= 10      # SEC teams + the index
+    finally:
+        ctx.close()
+
+
+# ---- structured data and preview images (PLAN-seo S3) ---------------------------------------------
+def _ld_types(rel):
+    h = (DOCS / rel).read_text(encoding="utf-8")
+    types = []
+    for b in re.findall(r'<script type="application/ld\+json"[^>]*>(.*?)</script>', h, re.S):
+        d = json.loads(b)
+        types += [x["@type"] for x in d.get("@graph", [d])]
+    return h, types
+
+
+@pytest.mark.parametrize("rel,want", [
+    ("index.html", {"WebSite", "Organization"}),
+    ("baseball/stuff-plus/index.html", {"BreadcrumbList", "Article"}),
+    ("baseball/tools/stuff-leaderboard.html", {"BreadcrumbList", "Dataset"}),
+    ("nfl/tools/team-efficiency.html", {"BreadcrumbList", "Dataset"}),
+    ("nfl/teams/kc/index.html", {"BreadcrumbList", "SportsTeam"}),
+    ("cfb/teams/georgia/index.html", {"BreadcrumbList", "SportsTeam"}),
+    ("baseball/players/ryan-ramsey-687547/index.html", {"BreadcrumbList", "ProfilePage"}),
+    ("baseball/teams/aaa/oma/index.html", {"BreadcrumbList", "SportsTeam"}),
+    ("glossary.html", {"BreadcrumbList"}),
+])
+def test_structured_data_by_page_type(rel, want):
+    _, types = _ld_types(rel)
+    assert want <= set(types), types
+
+
+def test_breadcrumb_links_resolve():
+    for rel in ["baseball/players/ryan-ramsey-687547/index.html", "baseball/teams/aaa/oma/index.html", "cfb/teams/georgia/index.html"]:
+        h = (DOCS / rel).read_text(encoding="utf-8")
+        for b in re.findall(r'<script type="application/ld\+json"[^>]*>(.*?)</script>', h, re.S):
+            d = json.loads(b)
+            for x in d.get("@graph", [d]):
+                if x["@type"] == "BreadcrumbList":
+                    names = [i["name"] for i in x["itemListElement"]]
+                    assert names[0] == "Sparvi" and len(names) >= 3, names
+                    for i in x["itemListElement"]:
+                        p = i["item"].removeprefix("https://sparvi.io/")
+                        assert (DOCS / (p + "index.html" if p.endswith("/") or not p else p)).exists(), i["item"]
+
+
+@pytest.mark.parametrize("rel", ["baseball/stuff-plus/index.html", "baseball/tools/triple-a.html", "baseball/index.html",
+                                 "baseball/players/ryan-ramsey-687547/index.html", "baseball/teams/mlb/kc/index.html",
+                                 "nfl/teams/kc/index.html"])
+def test_preview_image_exists_and_is_1200x630(rel):
+    from PIL import Image
+    h = (DOCS / rel).read_text(encoding="utf-8")
+    og = re.search(r'<meta property="og:image" content="https://sparvi.io/([^"]+)"', h)[1]
+    tw = re.search(r'<meta name="twitter:image" content="https://sparvi.io/([^"]+)"', h)[1]
+    assert og == tw and Image.open(DOCS / og).size == (1200, 630)
+    assert "og-default.png" not in og
+
+
+# ---- first-mention links and "Mentioned in" (PLAN-seo S5) ----------------------------------------------
+def test_articles_link_first_mentions_and_entity_pages_list_them():
+    h = (DOCS / "baseball" / "stuff-or-command" / "index.html").read_text(encoding="utf-8")
+    links = re.findall(r'<a href="(/baseball/players/[a-z0-9-]+-\d+/)" class="entity-link">', h)
+    assert len(links) >= 5 and len(links) == len(set(links)), "each player linked once"
+    for path in links:
+        page = (DOCS / path.strip("/") / "index.html").read_text(encoding="utf-8")
+        assert '<section class="mentioned-in">' in page and 'href="/baseball/stuff-or-command/"' in page, path
+
+
+def test_build_has_no_broken_internal_links():
+    import subprocess
+    r = subprocess.run([sys.executable, str(ROOT / "site" / "build" / "linkcheck.py")], capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr[-2000:]

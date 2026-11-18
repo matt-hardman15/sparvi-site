@@ -292,10 +292,17 @@
     host.replaceChildren(grid);
   };
 
-  S.playerLink = (id, name) => `<a href="/baseball/player.html?id=${id}">${name ?? id}</a>`;
+  // Baseball player pages are static: /baseball/players/<slug>-<id>/ (PLAN-seo S2). S.slug is the twin of
+  // sparvi/urls.py slug(); tests/test_site.py checks they agree on every name in player_urls.json.
+  S.slug = (name) => String(name).normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "player";
+  S.playerHref = (id, name, qs = "") => `/baseball/players/${S.slug(name)}-${id}/${qs ? "?" + qs : ""}`;
+  S.playerLink = (id, name) => `<a href="${S.playerHref(id, name)}">${name ?? id}</a>`;
   // NFL team pages are static, one per team: /nfl/teams/kc/ (query string carries the view state).
   S.nflTeamHref = (id, qs = "") => `/nfl/teams/${String(id).toLowerCase()}/${qs ? "?" + qs : ""}`;
   S.nflTeamLink = (id, label, qs = "") => `<a href="${S.nflTeamHref(id, qs)}">${label ?? id}</a>`;
+  // CFB team pages: /cfb/teams/<slug>/, one per team in /data/cfb/teams.json (t = that file's entry).
+  S.cfbTeamHref = (t, qs = "") => `/cfb/teams/${t.slug}/${qs ? "?" + qs : ""}`;
+  S.cfbTeamLink = (t, label, qs = "") => (t ? `<a href="${S.cfbTeamHref(t, qs)}">${label ?? t.name}</a>` : (label ?? ""));
   // Rank percentile (0-100) of each row's value within rows, higher = better unless lowerBetter.
   S.rankPct = (rows, key, lowerBetter = false) => {
     const v = rows.map((r) => r[key]).filter((x) => x != null).sort(d3.ascending), n = v.length;

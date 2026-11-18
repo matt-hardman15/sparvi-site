@@ -3,7 +3,11 @@
 Three model families, each one LightGBM regressor per pitch group (fastball / breaking / offspeed),
 all with the same target (pitcher run value of the pitch, denoised on balls in play), the same
 training seasons (every configured MLB season except the current one) and the same holdout (the
-current season, out of time). Seasons come from sparvi.toml; feature sets from features.py:
+current season, out of time). Each regressor is a bag of N_BAGS models (v2.0.0): pitchers are split
+into N_BAGS folds, model f trains on the other folds and early-stops on fold f, and a pitch's
+prediction is the bag average. One model early-stopped on one validation slice was unstable: its
+tree count swung with which pitchers landed in the slice, and per-pitcher grades moved by up to 64
+points between seeds (review/model-changes.md, 2026-11-14). stability.py measures what remains. Seasons come from sparvi.toml; feature sets from features.py:
     stuff     Stuff+     what the ball does (velocity, movement, spin, release)
     loc       Location+  where it crossed the plate, in the count
     pitching  Pitching+  both
@@ -15,6 +19,7 @@ Outputs (pitch_quality/output/):
     importance.csv, importance_{loc,pitching}.csv   gain importance by group
     scale_reference.json/.csv          the frozen prior-season scale for every grade
     pitch_predictions_*.parquet        pitch-level predictions (gitignored; snapshot marts only)
+    models/{kind}_{group}_{f}.txt      the bagged boosters (gitignored, large; the registry keeps their hashes)
 """
 import json
 from pathlib import Path
@@ -33,6 +38,10 @@ AAA_MIN_PITCHES = 300  # Triple-A side of the Triple-A -> MLB check
 OUT = Path(__file__).resolve().parent / "output"
 OUT.mkdir(exist_ok=True)
 GROUPS = ["fastball", "breaking", "offspeed"]
+N_BAGS = 10
+# Stuff+ models early-stop after very few trees at 0.03 (12-100), so where they stop moves the grades;
+# a smaller step spreads the same fit over ~10x the trees and makes the stopping point matter less.
+LEARNING_RATE = {"stuff": 0.005, "loc": 0.03, "pitching": 0.03}
 KINDS = list(FEATURE_SETS)  # stuff, loc, pitching
 GRADE = {"stuff": "stuff_plus", "loc": "loc_plus", "pitching": "pitching_plus"}
 XRV = {"stuff": "xrv", "loc": "xrv_loc", "pitching": "xrv_pitching"}  # pitch-level prediction columns
@@ -64,26 +73,40 @@ def load(level: str, year: int) -> pd.DataFrame:
     return build_features(pd.read_parquet(RAW / f"statcast_{level}_{year}.parquet"))
 
 
-def fit_group(train: pd.DataFrame, valid: pd.DataFrame, features: list[str] = FEATURES) -> lgb.Booster:
+def fit_group(train: pd.DataFrame, valid: pd.DataFrame, features: list[str] = FEATURES,
+              seed: int = SEED, learning_rate: float | None = None) -> lgb.Booster:
     dtr = lgb.Dataset(train[features], train[TARGET])
     dva = lgb.Dataset(valid[features], valid[TARGET], reference=dtr)
+    params = {**PARAMS, "seed": seed} | ({"learning_rate": learning_rate} if learning_rate else {})
     return lgb.train(
-        PARAMS, dtr, num_boost_round=2000, valid_sets=[dva],
+        params, dtr, num_boost_round=10_000, valid_sets=[dva],
         callbacks=[lgb.early_stopping(200, verbose=False)],
     )
 
 
-def fit_kinds(tr: pd.DataFrame, is_val: pd.Series, kinds=KINDS) -> dict:
-    """{kind: {group: model}} trained on the same rows and validation split."""
-    return {k: {g: fit_group(tr[tr["group"].eq(g) & ~is_val], tr[tr["group"].eq(g) & is_val], FEATURE_SETS[k])
+def bag_folds(pitchers: pd.Series, seed: int = SEED, n_bags: int = N_BAGS) -> pd.Series:
+    """Fold number (0..n_bags-1) for each row, by pitcher: a seeded shuffle of the sorted pitcher ids."""
+    ids = np.sort(pitchers.unique())
+    fold_of = dict(zip(np.random.default_rng(seed).permutation(ids), np.arange(len(ids)) % n_bags, strict=True))
+    return pitchers.map(fold_of)
+
+
+def fit_kinds(tr: pd.DataFrame, kinds=KINDS, seed: int = SEED, n_bags: int = N_BAGS) -> dict:
+    """{kind: {group: [n_bags boosters]}}. Model f of each bag trains on every fold but f and early-stops on f;
+    its LightGBM seed is seed * 100 + f. Same seed, same data: same bags."""
+    fold = bag_folds(tr["pitcher"], seed, n_bags)
+    return {k: {g: [fit_group(tr[tr["group"].eq(g) & fold.ne(f)], tr[tr["group"].eq(g) & fold.eq(f)], FEATURE_SETS[k],
+                              seed=seed * 100 + f, learning_rate=LEARNING_RATE[k]) for f in range(n_bags)]
                 for g in GROUPS} for k in kinds}
 
 
 def predict(models: dict, df: pd.DataFrame, features: list[str] = FEATURES) -> pd.Series:
+    """Bag average: each booster at its own best iteration."""
     pred = pd.Series(np.nan, index=df.index)
-    for g, m in models.items():
+    for g, bag in models.items():
         idx = df["group"].eq(g)
-        pred[idx] = m.predict(df.loc[idx, features], num_iteration=m.best_iteration)
+        if idx.any():
+            pred[idx] = np.mean([m.predict(df.loc[idx, features], num_iteration=m.best_iteration) for m in bag], axis=0)
     return pred
 
 
@@ -136,23 +159,25 @@ def main() -> None:
     tr = pd.concat([load("mlb", y) for y in CFG.train_seasons], ignore_index=True)
     ho = load("mlb", Y)
 
-    # Early stopping uses a pitcher-grouped 15% slice of training data, never the holdout.
-    rng = np.random.default_rng(SEED)
-    pitchers = tr["pitcher"].unique()
-    val_p = set(rng.choice(pitchers, size=int(0.15 * len(pitchers)), replace=False))
-    is_val = tr["pitcher"].isin(val_p)
-
-    all_models = fit_kinds(tr, is_val)
+    # Early stopping uses the bag's held-out pitcher folds of the training data, never the holdout.
+    all_models = fit_kinds(tr)
+    (OUT / "models").mkdir(exist_ok=True)
+    for old in (OUT / "models").glob("*.txt"):
+        old.unlink()
     for k, models in all_models.items():
         imp = []
-        for g, m in models.items():
-            imp.append(pd.DataFrame({"group": g, "feature": FEATURE_SETS[k],
-                                     "gain": m.feature_importance("gain") / m.feature_importance("gain").sum()}))
-            print(f"  {k}/{g}: {m.best_iteration} trees")
-            m.save_model(str(OUT / (f"model_{g}.txt" if k == "stuff" else f"model_{k}_{g}.txt")), num_iteration=m.best_iteration)
+        for g, bag in models.items():
+            gains = [m.feature_importance("gain", iteration=m.best_iteration) for m in bag]
+            gain = np.mean([x / x.sum() for x in gains], axis=0)
+            imp.append(pd.DataFrame({"group": g, "feature": FEATURE_SETS[k], "gain": gain}))
+            print(f"  {k}/{g}: {[m.best_iteration for m in bag]} trees")
+            for f, m in enumerate(bag):
+                m.save_model(str(OUT / "models" / f"{k}_{g}_{f}.txt"), num_iteration=m.best_iteration)
         pd.concat(imp).to_csv(OUT / ("importance.csv" if k == "stuff" else f"importance_{k}.csv"), index=False)
+    trees = {f"{k}/{g}": [m.best_iteration for m in bag] for k, models in all_models.items() for g, bag in models.items()}
 
-    metrics = {"season": Y, "min_pitches": MIN_PITCHES, "aaa_min_pitches": AAA_MIN_PITCHES}
+    metrics = {"season": Y, "min_pitches": MIN_PITCHES, "aaa_min_pitches": AAA_MIN_PITCHES,
+               "n_bags": N_BAGS, "learning_rate": LEARNING_RATE, "trees": trees}
     for name, df in [("train", tr), ("holdout", ho)]:
         predict_all(all_models, df)
         # Pitch-level R^2 is tiny by nature (single-pitch outcomes are mostly noise),
@@ -257,7 +282,7 @@ def main() -> None:
 
     files = [RAW / f"statcast_mlb_{y}.parquet" for y in CFG.mlb_seasons] + \
             [RAW / f"statcast_aaa_{y}.parquet" for y in CFG.aaa_seasons]
-    metrics["provenance"] = provenance(files, seeds={"lightgbm": SEED, "validation_split": SEED})
+    metrics["provenance"] = provenance(files, seeds={"lightgbm": f"{SEED} * 100 + bag member", "bag_folds": SEED})
     (OUT / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
     print(json.dumps({k: v for k, v in metrics.items() if k != "provenance"}, indent=2))
 

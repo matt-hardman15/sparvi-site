@@ -1,0 +1,24 @@
+---
+title: "New Mexico Lobos"
+pagetitle: "New Mexico football: power rating by week"
+description: "New Mexico (Mountain West) power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+```{=html}
+<div id="team-root" data-team="New Mexico"></div>
+<p class="page-summary">Through week 11 of 2026, New Mexico is 8–2. Its power rating, +7.5 points against an average FBS team, ranks 33rd of 138; the AP poll has it 23rd. That is the highest power rating in the Mountain West.</p>
+<p class="note team-sub" style="border-left:4px solid #ba0c2f;padding-left:.6rem">Mountain West: <a href="/cfb/teams/air-force/">Air Force</a> · <a href="/cfb/teams/hawai-i/">Hawai&#x27;i</a> · <a href="/cfb/teams/nevada/">Nevada</a> · <a href="/cfb/teams/north-dakota-state/">North Dakota State</a> · <a href="/cfb/teams/northern-illinois/">Northern Illinois</a> · <a href="/cfb/teams/san-jose-state/">San José State</a> · <a href="/cfb/teams/unlv/">UNLV</a> · <a href="/cfb/teams/utep/">UTEP</a> · <a href="/cfb/teams/wyoming/">Wyoming</a> · <a href="/cfb/teams/">All FBS teams</a> · <a href="/cfb/tools/team-ratings.html?team=New Mexico">Compare with every FBS team</a></p>
+<!-- The season's numbers as plain HTML; the interactive page below removes this once it runs. -->
+<div id="team-static">
+<h3>2026 through week 11</h3>
+<div class="stat-row"><div class="stat"><div class="v">8–2</div><div class="k">Record</div></div><div class="stat"><div class="v">+7.5</div><div class="k">Power rating · 33rd of 138</div></div><div class="stat"><div class="v">23 / NR</div><div class="k">AP / CFP rank · latest polls</div></div><div class="stat"><div class="v">+0.109</div><div class="k">Offense EPA/play · 94th of 138</div></div><div class="stat"><div class="v">-0.147</div><div class="k">Defense EPA/play · 11th of 138 (allowed)</div></div></div>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th class=l>Opponent-adjusted EPA/play</th><th>Value</th><th>Rank</th></tr></thead><tbody><tr><td class=l>Offense · all plays</td><td>+0.109</td><td>94th of 138</td></tr><tr><td class=l>Offense · passes</td><td>-0.046</td><td>130th of 138</td></tr><tr><td class=l>Offense · runs</td><td>+0.161</td><td>41st of 138</td></tr><tr><td class=l>Defense (allowed) · all plays</td><td>-0.147</td><td>11th of 138</td></tr><tr><td class=l>Defense (allowed) · passes</td><td>-0.068</td><td>23rd of 138</td></tr><tr><td class=l>Defense (allowed) · runs</td><td>-0.232</td><td>4th of 138</td></tr></tbody></table></div>
+<h3>Results</h3>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th>Wk</th><th class=l>Opponent</th><th class=l>Result</th><th>Off EPA/play</th><th>Def EPA/play</th><th>Off success</th></tr></thead><tbody><tr><td>1</td><td class=l>vs <a href="/cfb/teams/central-michigan/">Central Michigan</a></td><td class=l>W 38–7</td><td>+0.291</td><td>-0.363</td><td>54.4%</td></tr><tr><td>2</td><td class=l>vs Mercyhurst</td><td class=l>W 70–7</td><td>+0.232</td><td>-0.400</td><td>46.2%</td></tr><tr><td>3</td><td class=l>@ <a href="/cfb/teams/oklahoma/">Oklahoma</a></td><td class=l>L 6–14</td><td>-0.234</td><td>+0.033</td><td>22.8%</td></tr><tr><td>4</td><td class=l>@ <a href="/cfb/teams/new-mexico-state/">New Mexico State</a></td><td class=l>W 42–18</td><td>+0.488</td><td>-0.039</td><td>46.8%</td></tr><tr><td>5</td><td class=l>vs <a href="/cfb/teams/utep/">UTEP</a></td><td class=l>W 61–7</td><td>+0.277</td><td>-0.440</td><td>58.1%</td></tr><tr><td>7</td><td class=l>@ <a href="/cfb/teams/hawai-i/">Hawai&#x27;i</a></td><td class=l>W 21–10</td><td>+0.019</td><td>-0.128</td><td>35.0%</td></tr><tr><td>8</td><td class=l>vs <a href="/cfb/teams/north-dakota-state/">North Dakota State</a></td><td class=l>W 21–16</td><td>+0.014</td><td>-0.169</td><td>34.5%</td></tr><tr><td>9</td><td class=l>@ <a href="/cfb/teams/san-jose-state/">San José State</a></td><td class=l>W 21–16</td><td>-0.195</td><td>-0.171</td><td>51.7%</td></tr><tr><td>10</td><td class=l>@ <a href="/cfb/teams/nevada/">Nevada</a></td><td class=l>W 31–3</td><td>+0.207</td><td>-0.281</td><td>44.9%</td></tr><tr><td>11</td><td class=l>vs <a href="/cfb/teams/unlv/">UNLV</a></td><td class=l>L 17–21</td><td>+0.006</td><td>-0.080</td><td>39.7%</td></tr></tbody></table></div>
+<p class="note">Single games are raw (not opponent-adjusted), garbage time removed.</p>
+</div>
+```
+
+{{< include ../_team.qmd >}}

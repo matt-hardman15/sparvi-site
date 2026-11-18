@@ -23,7 +23,7 @@ All code (data pulls, models, pipelines, and this site) is public on [GitHub](ht
 
 ## Privacy
 
-Sparvi counts visits with [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/), which sets no cookies, doesn't fingerprint your browser, and doesn't follow you to other sites. It records which pages are read, roughly from where, and how fast they load, only as totals. There are no ads, no ad networks, and no other analytics.
+Sparvi counts visits with [Umami](https://umami.is) and [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/). Neither sets cookies, fingerprints your browser, or follows you to other sites, and Umami is skipped entirely if your browser sends Do Not Track. Together they record, only as totals: which pages are read, the site that sent you (a search engine, X, a link), your rough country and device type, how fast pages load, which tool controls get used and the option picked, and clicks on links that leave the site. They never record what you type into a search box, and there are no session recordings. There are no ads, no ad networks, and no other analytics.
 
 ## Who runs it
 

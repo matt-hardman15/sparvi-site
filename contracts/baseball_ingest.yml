@@ -106,6 +106,80 @@ tables:
       level: VARCHAR
       team_id: BIGINT
       parent_org_id: BIGINT
+  free_agents:
+    description: MLB's free-agent list for the off-season after `season`, MLB Stats API (snapshot; pull_free_agents.py)
+    files: "free_agents_{season}.parquet"
+    key: [player_id]
+    max_null:
+      player_id: 0
+      name: 0
+      position_type: 0
+    columns:
+      season: BIGINT
+      player_id: BIGINT
+      name: VARCHAR
+      position: VARCHAR
+      position_type: VARCHAR
+      from_team_id: BIGINT
+      from_team: VARCHAR
+      to_team_id: BIGINT
+      to_team: VARCHAR
+      notes: VARCHAR
+      date_declared: VARCHAR
+      date_signed: VARCHAR
+      pulled_on: VARCHAR
+  aaa_hitting:
+    description: Triple-A season batting totals, one row per player (clubs combined), MLB Stats API (pull_rosters.py)
+    files: "aaa_hitting_{season}.parquet"
+    key: [player_id]
+    max_null:
+      player_id: 0
+      pa: 0
+    columns:
+      season: BIGINT
+      player_id: BIGINT
+      name: VARCHAR
+      num_teams: BIGINT
+      pa: BIGINT
+      ab: BIGINT
+      h: BIGINT
+      doubles: BIGINT
+      triples: BIGINT
+      hr: BIGINT
+      bb: BIGINT
+      ibb: BIGINT
+      hbp: BIGINT
+      sf: BIGINT
+      so: BIGINT
+      sb: BIGINT
+      cs: BIGINT
+      g: BIGINT
+  aaa_fielding:
+    description: Triple-A season fielding totals, one row per player x position, MLB Stats API (pull_rosters.py); c_* are catcher-only
+    files: "aaa_fielding_{season}.parquet"
+    key: [player_id, position]
+    max_null:
+      player_id: 0
+      position: 0
+      g: 0
+    columns:
+      season: BIGINT
+      player_id: BIGINT
+      position: VARCHAR
+      num_teams: BIGINT
+      outs: BIGINT
+      g: BIGINT
+      gs: BIGINT
+      po: BIGINT
+      a: BIGINT
+      e: BIGINT
+      throwing_e: BIGINT
+      chances: BIGINT
+      dp: BIGINT
+      c_sb: BIGINT
+      c_cs: BIGINT
+      c_pb: BIGINT
+      c_pickoffs: BIGINT
   aaa_affiliates:
     description: Triple-A club -> parent org, one file per season, MLB Stats API
     files: "aaa_affiliates_{season}.parquet"

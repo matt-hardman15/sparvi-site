@@ -1,0 +1,102 @@
+# Model card (PLAN-scout A2). Change `code` files only with a new version: python -m sparvi.registry --help
+name: nfl_punt_net
+title: NFL net punt yards
+sport: nfl
+status: champion
+version: 1.0.1
+owner: Matt
+spec: LightGBM L1 regression (75 rounds, 8 leaves) on field position, roof, wind and season.
+target: Net yards of a punt (touchbacks net to the 20)
+method: LightGBM regression (L1), deterministic single thread
+code:
+- nfl/fourth/data.py
+- nfl/fourth/models.py
+- nfl/fourth/harness.py
+- models/nfl/punt_net/backtest.py
+training_data:
+- data/raw/nfl/pbp_*.parquet
+- data/raw/nfl/state/pbp_state_*.parquet
+artifacts:
+- nfl/fourth/output/development.json
+validation:
+  file: nfl/fourth/output/development.json
+  metrics:
+    dev_mae: models.punt_net.scores.lgb_r75
+    dev_mae_baseline: models.punt_net.scores.baseline
+eval:
+  set: 'Development: validation seasons 2018 (trained on 2016-2017) and 2019 (trained on 2016-2018).'
+  set_keys:
+    seasons: seasons
+  primary: dev_mae
+  higher_is_better: false
+published_in:
+- nfl/fourth-downs
+backtest:
+  preregistered_at: '2026-11-18'
+  module: models/nfl/punt_net/backtest.py
+  target: Net yards (kick distance minus return; touchbacks to the 20)
+  decision_dates: 'Each play''s own snap. Models are fit before season t (training data through Sept 1 of t: seasons
+    2016..t-1 including their playoffs); each play is predicted from its pre-snap state and from team ratings built
+    only from earlier games (nfl/fourth/data.ratings), so the fold''s decision date is the end of season t (March
+    1 of t+1) and the leakage concern is the training cutoff, which the audit checks.'
+  splits:
+    type: walk_forward
+    first_test: 2020
+    last_test: 2025
+    train_window: null
+    first_train: 2016
+    predictor_lag: 0
+    train_until: 09-01
+    decision: +1:03-01
+    resolve: +1:03-01
+    fast_folds: 1
+  training: 'Fold t trains on seasons 2016..t-1 (an expanding window) as of Sept 1 of t. Settings fixed from development:
+    Development used 2016-2019 only (nfl/fourth/develop.py -> nfl/fourth/output/development.json: validation seasons
+    2018 and 2019); the 2020-2025 folds and the 2026 vault never informed a choice.'
+  rows: Every unblocked punt of season t with a recorded kick distance.
+  known_hindsight: 'Seasons before 2026-11-13 come from the current nflverse files, not as they stood then (revision_safe:
+    false). The model inputs here are raw game facts (score, clock, down, distance, field position, timeouts, kick
+    distance, roof, weather), which nflverse rarely revises; its model columns (EPA, WP), revised Nov 17 2026, are
+    never read.'
+  group_by: game_id
+  block: game_id
+  baselines:
+  - baseline
+  baseline_definitions:
+    baseline: the training seasons' mean net by 5-yard bucket of field position
+  primary_metric: mae
+  bootstrap: 2000
+  seed: 7
+  pass_gate:
+    beats_baseline:
+    - baseline
+    min_skill: 0.0
+    ci_excludes_zero: true
+  gate_decided: 'Matt, 2026-11-18: strict for each F4 model. Win probability and punts must beat their baseline
+    with the 90% interval of the edge (bootstrap by game) above zero. Conversion and field goals, whose models are
+    the simple tables because nothing beat them in development, pass if their pooled ECE is below the 90th percentile
+    of the ECE that perfectly calibrated predictions would show on the same plays (2,000 simulated draws).'
+  too_good: 3.0
+  null_baseline: 'null'
+  permutation_seeds: 10
+  permutation_note: 'Changed after the first (fast, 2025) run, before the full run (Matt, 2026-11-18): one seed
+    failed the shuffled-label test in the better-than-null direction with no leak behind it. Win probability: the
+    monotone constraint is a prior that keeps a leading-teams-win tilt on shuffled outcomes (seed 1 AUC 0.574 with
+    it, 0.493 without); punts: shuffled-label correlation across five seeds +0.06, +0.02, +0.17, -0.14, +0.06. Now
+    10 seeds, row loss minus the null averaged over seeds, bootstrap by game; the win-probability shuffled fit drops
+    the monotone constraint. With 10 seeds both shuffled-label models were significantly worse than the null (fitting
+    noise adds variance), so the test is one-sided: it fails only if the shuffled-label model is significantly better
+    than the null (90% interval of the loss difference entirely below zero). Version 1.0.1 records the change.'
+  secondary: 'Reported, not gating: log loss, Brier, the reliability table, per fold, and (win probability) the
+    same on 4th-down plays only.'
+  limits: No injuries, personnel, play calls, or game-specific information; weather is the stadium reading; team
+    strength is point margin, not opponent-adjusted efficiency. Betting lines are never an input.
+  reproduction: Deterministic (single-thread LightGBM with a fixed seed; closed-form tables; lbfgs logistic). Official
+    runs happen in CI.
+  label_permutation: Net yards shuffled across punts.
+  vault:
+    seasons:
+    - 2026
+    note: Season 2026 plays are sealed until the season completes (February 2027).
+    accesses: 0
+experimental: pre-registered Nov 18, 2026; the backtest hasn't run yet

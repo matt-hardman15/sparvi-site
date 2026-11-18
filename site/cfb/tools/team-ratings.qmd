@@ -69,7 +69,7 @@ Every FBS team, week by week. The **power rating** is how many points better tha
     const off = epaKey("off"), def = epaKey("def"), std = st.win === "std";
     return [
       ...(std ? [{ key: "rank", label: "#", fmt: f.int, title: "Power rating rank among FBS teams", sortVal: r => r.rank ?? 999 }] : []),
-      { key: "name", label: "Team", align: "l", sortVal: r => r.name },
+      { key: "name", label: "Team", align: "l", sortVal: r => r.name, html: r => S.cfbTeamLink(teams.get(r.id), r.name, `season=${st.season}`) },
       { key: "conf", label: "Conf", align: "l" },
       { key: "games", label: "G", fmt: f.int },
       ...(std ? [

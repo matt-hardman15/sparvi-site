@@ -1,5 +1,5 @@
 """Baseball ingest checks: Statcast (every level x season in the config window), batter heights,
-Triple-A rosters and affiliates. Exit status 1 if any check fails.
+Triple-A rosters and affiliates, and the free-agent list when one has been pulled. Exit status 1 if any check fails.
 
     python -m ingest.baseball.checks
 """
@@ -42,6 +42,15 @@ def run(today: date | None = None, n_orgs: int = 30) -> bool:
 
     c.table("batter_heights", RAW / "batter_heights.parquet", "batter_heights")
     c.table(f"milb_players_{cfg.season}", RAW / f"milb_players_{cfg.season}.parquet", "milb_players")
+    fa = RAW / f"free_agents_{cfg.season}.parquet"      # pulled by hand each off-season (pull_free_agents.py)
+    if fa.exists() and c.table(f"free_agents_{cfg.season}", fa, "free_agents"):
+        n_p = c.sql(f"select count(*) filter (where position_type = 'Pitcher') from read_parquet('{fa.as_posix()}')")[0]
+        c.add(f"free_agents_{cfg.season}: a full list", c.rows[f"free_agents_{cfg.season}"] >= 100 and n_p >= 40,
+              f"{c.rows[f'free_agents_{cfg.season}']} players, {n_p} pitchers")
+    for kind, least in (("hitting", 500), ("fielding", 2000)):      # pull_rosters.py, with each roster snapshot
+        name, f = f"aaa_{kind}_{cfg.season}", RAW / f"aaa_{kind}_{cfg.season}.parquet"
+        if f.exists() and c.table(name, f, f"aaa_{kind}"):
+            c.add(f"{name}: a full league", c.rows[name] >= least, f"{c.rows[name]} rows (want {least}+)")
     for s in cfg.aaa_seasons:
         name = f"aaa_affiliates_{s}"
         if c.table(name, RAW / f"{name}.parquet", "aaa_affiliates"):

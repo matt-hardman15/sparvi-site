@@ -1,0 +1,404 @@
+{
+ "seasons": {
+  "first": 2021,
+  "last": 2025
+ },
+ "movers": {
+  "n": 4813,
+  "n_players": 698,
+  "adjusted": {
+   "r": 0.2079
+  },
+  "raw": {
+   "r": 0.2042
+  },
+  "edge": {
+   "est": 0.0037,
+   "ci90": [
+    -0.0096,
+    0.0171
+   ]
+  }
+ },
+ "all": {
+  "n": 22718,
+  "n_players": 2186,
+  "adjusted": {
+   "r": 0.3238
+  },
+  "raw": {
+   "r": 0.2998
+  },
+  "edge": {
+   "est": 0.024,
+   "ci90": [
+    0.0177,
+    0.0303
+   ]
+  }
+ },
+ "raw_target": {
+  "n": 4813,
+  "n_players": 698,
+  "adjusted": {
+   "r": 0.1888
+  },
+  "raw": {
+   "r": 0.1882
+  },
+  "edge": {
+   "est": 0.0005,
+   "ci90": [
+    -0.0125,
+    0.0136
+   ]
+  }
+ },
+ "by_feature": {
+  "movers": {
+   "qb_comp": {
+    "n": 102,
+    "adjusted": 0.267,
+    "raw": 0.285
+   },
+   "qb_early": {
+    "n": 110,
+    "adjusted": 0.228,
+    "raw": 0.248
+   },
+   "qb_epa": {
+    "n": 104,
+    "adjusted": 0.357,
+    "raw": 0.317
+   },
+   "qb_explosive": {
+    "n": 102,
+    "adjusted": 0.266,
+    "raw": 0.271
+   },
+   "qb_int": {
+    "n": 102,
+    "adjusted": 0.178,
+    "raw": 0.202
+   },
+   "qb_long": {
+    "n": 94,
+    "adjusted": 0.16,
+    "raw": 0.142
+   },
+   "qb_redzone": {
+    "n": 62,
+    "adjusted": 0.101,
+    "raw": 0.028
+   },
+   "qb_rush_epa": {
+    "n": 64,
+    "adjusted": 0.104,
+    "raw": 0.059
+   },
+   "qb_rush_explosive": {
+    "n": 64,
+    "adjusted": 0.242,
+    "raw": 0.152
+   },
+   "qb_sack": {
+    "n": 104,
+    "adjusted": 0.388,
+    "raw": 0.354
+   },
+   "qb_success": {
+    "n": 104,
+    "adjusted": 0.31,
+    "raw": 0.327
+   },
+   "qb_td": {
+    "n": 102,
+    "adjusted": 0.149,
+    "raw": 0.146
+   },
+   "qb_third": {
+    "n": 98,
+    "adjusted": 0.309,
+    "raw": 0.294
+   },
+   "qb_ypa": {
+    "n": 102,
+    "adjusted": 0.266,
+    "raw": 0.27
+   },
+   "rb_epa": {
+    "n": 145,
+    "adjusted": 0.191,
+    "raw": 0.193
+   },
+   "rb_rec_epa": {
+    "n": 44,
+    "adjusted": 0.321,
+    "raw": 0.349
+   },
+   "rb_rec_yptp": {
+    "n": 190,
+    "adjusted": 0.392,
+    "raw": 0.391
+   },
+   "rb_run10": {
+    "n": 145,
+    "adjusted": 0.196,
+    "raw": 0.222
+   },
+   "rb_run20": {
+    "n": 145,
+    "adjusted": 0.168,
+    "raw": 0.202
+   },
+   "rb_short": {
+    "n": 20,
+    "adjusted": 0.383,
+    "raw": 0.38
+   },
+   "rb_stuff": {
+    "n": 145,
+    "adjusted": 0.147,
+    "raw": 0.21
+   },
+   "rb_success": {
+    "n": 145,
+    "adjusted": 0.199,
+    "raw": 0.172
+   },
+   "rb_ypc": {
+    "n": 145,
+    "adjusted": 0.257,
+    "raw": 0.291
+   },
+   "rec_catch": {
+    "n": 198,
+    "adjusted": -0.015,
+    "raw": -0.028
+   },
+   "rec_epa": {
+    "n": 196,
+    "adjusted": 0.182,
+    "raw": 0.178
+   },
+   "rec_epa_tp": {
+    "n": 417,
+    "adjusted": 0.278,
+    "raw": 0.261
+   },
+   "rec_explosive": {
+    "n": 198,
+    "adjusted": 0.145,
+    "raw": 0.122
+   },
+   "rec_success": {
+    "n": 198,
+    "adjusted": 0.057,
+    "raw": 0.061
+   },
+   "rec_td": {
+    "n": 198,
+    "adjusted": -0.039,
+    "raw": 0.01
+   },
+   "rec_third": {
+    "n": 88,
+    "adjusted": 0.3,
+    "raw": 0.295
+   },
+   "rec_ypr": {
+    "n": 267,
+    "adjusted": 0.259,
+    "raw": 0.209
+   },
+   "rec_ypt": {
+    "n": 198,
+    "adjusted": 0.196,
+    "raw": 0.177
+   },
+   "rec_yptp": {
+    "n": 417,
+    "adjusted": 0.26,
+    "raw": 0.24
+   }
+  },
+  "all": {
+   "qb_comp": {
+    "n": 380,
+    "adjusted": 0.411,
+    "raw": 0.369
+   },
+   "qb_early": {
+    "n": 420,
+    "adjusted": 0.308,
+    "raw": 0.234
+   },
+   "qb_epa": {
+    "n": 387,
+    "adjusted": 0.426,
+    "raw": 0.339
+   },
+   "qb_explosive": {
+    "n": 380,
+    "adjusted": 0.295,
+    "raw": 0.256
+   },
+   "qb_int": {
+    "n": 380,
+    "adjusted": 0.188,
+    "raw": 0.174
+   },
+   "qb_long": {
+    "n": 352,
+    "adjusted": 0.25,
+    "raw": 0.265
+   },
+   "qb_redzone": {
+    "n": 250,
+    "adjusted": 0.142,
+    "raw": 0.117
+   },
+   "qb_rush_epa": {
+    "n": 277,
+    "adjusted": 0.284,
+    "raw": 0.23
+   },
+   "qb_rush_explosive": {
+    "n": 277,
+    "adjusted": 0.447,
+    "raw": 0.395
+   },
+   "qb_sack": {
+    "n": 387,
+    "adjusted": 0.389,
+    "raw": 0.37
+   },
+   "qb_success": {
+    "n": 387,
+    "adjusted": 0.42,
+    "raw": 0.359
+   },
+   "qb_td": {
+    "n": 380,
+    "adjusted": 0.227,
+    "raw": 0.176
+   },
+   "qb_third": {
+    "n": 363,
+    "adjusted": 0.269,
+    "raw": 0.262
+   },
+   "qb_ypa": {
+    "n": 380,
+    "adjusted": 0.384,
+    "raw": 0.307
+   },
+   "rb_epa": {
+    "n": 733,
+    "adjusted": 0.334,
+    "raw": 0.275
+   },
+   "rb_rec_epa": {
+    "n": 243,
+    "adjusted": 0.238,
+    "raw": 0.217
+   },
+   "rb_rec_yptp": {
+    "n": 964,
+    "adjusted": 0.492,
+    "raw": 0.487
+   },
+   "rb_run10": {
+    "n": 735,
+    "adjusted": 0.305,
+    "raw": 0.278
+   },
+   "rb_run20": {
+    "n": 735,
+    "adjusted": 0.185,
+    "raw": 0.158
+   },
+   "rb_short": {
+    "n": 122,
+    "adjusted": 0.074,
+    "raw": 0.063
+   },
+   "rb_stuff": {
+    "n": 735,
+    "adjusted": 0.278,
+    "raw": 0.26
+   },
+   "rb_success": {
+    "n": 735,
+    "adjusted": 0.331,
+    "raw": 0.272
+   },
+   "rb_ypc": {
+    "n": 735,
+    "adjusted": 0.318,
+    "raw": 0.271
+   },
+   "rec_catch": {
+    "n": 1002,
+    "adjusted": 0.177,
+    "raw": 0.177
+   },
+   "rec_epa": {
+    "n": 998,
+    "adjusted": 0.222,
+    "raw": 0.197
+   },
+   "rec_epa_tp": {
+    "n": 2092,
+    "adjusted": 0.521,
+    "raw": 0.507
+   },
+   "rec_explosive": {
+    "n": 1002,
+    "adjusted": 0.207,
+    "raw": 0.176
+   },
+   "rec_success": {
+    "n": 1002,
+    "adjusted": 0.184,
+    "raw": 0.171
+   },
+   "rec_td": {
+    "n": 1002,
+    "adjusted": 0.071,
+    "raw": 0.139
+   },
+   "rec_third": {
+    "n": 464,
+    "adjusted": 0.152,
+    "raw": 0.132
+   },
+   "rec_ypr": {
+    "n": 1325,
+    "adjusted": 0.383,
+    "raw": 0.325
+   },
+   "rec_ypt": {
+    "n": 1002,
+    "adjusted": 0.259,
+    "raw": 0.221
+   },
+   "rec_yptp": {
+    "n": 2092,
+    "adjusted": 0.53,
+    "raw": 0.519
+   }
+  }
+ },
+ "split_half": {
+  "adjusted": 0.3261,
+  "raw": 0.2541,
+  "season": 2024,
+  "n": 6797
+ },
+ "opponent": {
+  "raw": 0.2901,
+  "adjusted": 0.0604,
+  "season": 2024
+ }
+}

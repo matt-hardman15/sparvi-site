@@ -1,15 +1,15 @@
 {
-  "snapshot_date": "2026-11-11",
+  "snapshot_date": "2026-11-18",
   "season": 2026,
   "players": 2123,
   "status_counts": {
-    "On 40-man": 747,
-    "Free agent": 490,
-    "Eligible": 474,
-    "Released": 242,
-    "Not yet eligible": 140,
+    "On 40-man": 779,
+    "Free agent": 474,
+    "Eligible": 460,
+    "Released": 241,
+    "Not yet eligible": 141,
     "Retired": 14,
-    "Likely eligible": 12,
+    "Likely eligible": 10,
     "Unknown": 4
   },
   "basis_counts": {
@@ -17,7 +17,8 @@
     "draft": 21,
     "unknown": 9
   },
-  "on_40man_snapshot": 1118,
+  "on_40man_snapshot": 1173,
+  "versatile_g": 10,
   "validation": {
     "n": 46,
     "agree": 46,

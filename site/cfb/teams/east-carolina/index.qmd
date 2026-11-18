@@ -1,0 +1,24 @@
+---
+title: "East Carolina Pirates"
+pagetitle: "East Carolina football: power rating by week"
+description: "East Carolina (American Athletic) power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+```{=html}
+<div id="team-root" data-team="East Carolina"></div>
+<p class="page-summary">Through week 11 of 2026, East Carolina is 6–4. Its power rating, −3.4 points against an average FBS team, ranks 85th of 138; it is unranked in the AP poll.</p>
+<p class="note team-sub" style="border-left:4px solid #592a8a;padding-left:.6rem">American Athletic: <a href="/cfb/teams/army/">Army</a> · <a href="/cfb/teams/charlotte/">Charlotte</a> · <a href="/cfb/teams/florida-atlantic/">Florida Atlantic</a> · <a href="/cfb/teams/memphis/">Memphis</a> · <a href="/cfb/teams/navy/">Navy</a> · <a href="/cfb/teams/north-texas/">North Texas</a> · <a href="/cfb/teams/rice/">Rice</a> · <a href="/cfb/teams/south-florida/">South Florida</a> · <a href="/cfb/teams/temple/">Temple</a> · <a href="/cfb/teams/tulane/">Tulane</a> · <a href="/cfb/teams/tulsa/">Tulsa</a> · <a href="/cfb/teams/uab/">UAB</a> · <a href="/cfb/teams/utsa/">UTSA</a> · <a href="/cfb/teams/">All FBS teams</a> · <a href="/cfb/tools/team-ratings.html?team=East Carolina">Compare with every FBS team</a></p>
+<!-- The season's numbers as plain HTML; the interactive page below removes this once it runs. -->
+<div id="team-static">
+<h3>2026 through week 11</h3>
+<div class="stat-row"><div class="stat"><div class="v">6–4</div><div class="k">Record</div></div><div class="stat"><div class="v">−3.4</div><div class="k">Power rating · 85th of 138</div></div><div class="stat"><div class="v">NR / NR</div><div class="k">AP / CFP rank · latest polls</div></div><div class="stat"><div class="v">+0.054</div><div class="k">Offense EPA/play · 113th of 138</div></div><div class="stat"><div class="v">-0.015</div><div class="k">Defense EPA/play · 49th of 138 (allowed)</div></div></div>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th class=l>Opponent-adjusted EPA/play</th><th>Value</th><th>Rank</th></tr></thead><tbody><tr><td class=l>Offense · all plays</td><td>+0.054</td><td>113th of 138</td></tr><tr><td class=l>Offense · passes</td><td>+0.087</td><td>98th of 138</td></tr><tr><td class=l>Offense · runs</td><td>+0.011</td><td>111th of 138</td></tr><tr><td class=l>Defense (allowed) · all plays</td><td>-0.015</td><td>49th of 138</td></tr><tr><td class=l>Defense (allowed) · passes</td><td>-0.032</td><td>30th of 138</td></tr><tr><td class=l>Defense (allowed) · runs</td><td>+0.007</td><td>68th of 138</td></tr></tbody></table></div>
+<h3>Results</h3>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th>Wk</th><th class=l>Opponent</th><th class=l>Result</th><th>Off EPA/play</th><th>Def EPA/play</th><th>Off success</th></tr></thead><tbody><tr><td>1</td><td class=l>@ <a href="/cfb/teams/alabama/">Alabama</a></td><td class=l>L 10–48</td><td>-0.170</td><td>+0.364</td><td>28.0%</td></tr><tr><td>2</td><td class=l>vs <a href="/cfb/teams/app-state/">App State</a></td><td class=l>L 24–27</td><td>+0.272</td><td>+0.186</td><td>48.6%</td></tr><tr><td>3</td><td class=l>@ <a href="/cfb/teams/old-dominion/">Old Dominion</a></td><td class=l>W 20–17</td><td>-0.266</td><td>-0.234</td><td>29.2%</td></tr><tr><td>4</td><td class=l>vs North Carolina Central</td><td class=l>W 42–9</td><td>+0.891</td><td>-0.242</td><td>71.0%</td></tr><tr><td>6</td><td class=l>vs <a href="/cfb/teams/rice/">Rice</a></td><td class=l>W 28–12</td><td>+0.021</td><td>-0.295</td><td>32.4%</td></tr><tr><td>7</td><td class=l>@ <a href="/cfb/teams/uab/">UAB</a></td><td class=l>L 17–30</td><td>-0.167</td><td>+0.104</td><td>37.7%</td></tr><tr><td>8</td><td class=l>@ <a href="/cfb/teams/memphis/">Memphis</a></td><td class=l>L 34–41</td><td>+0.162</td><td>+0.299</td><td>33.8%</td></tr><tr><td>9</td><td class=l>vs <a href="/cfb/teams/temple/">Temple</a></td><td class=l>W 17–9</td><td>+0.066</td><td>-0.152</td><td>47.3%</td></tr><tr><td>10</td><td class=l>vs <a href="/cfb/teams/south-florida/">South Florida</a></td><td class=l>W 20–17</td><td>+0.111</td><td>+0.080</td><td>42.3%</td></tr><tr><td>11</td><td class=l>@ <a href="/cfb/teams/charlotte/">Charlotte</a></td><td class=l>W 17–16</td><td>-0.202</td><td>-0.332</td><td>39.0%</td></tr></tbody></table></div>
+<p class="note">Single games are raw (not opponent-adjusted), garbage time removed.</p>
+</div>
+```
+
+{{< include ../_team.qmd >}}

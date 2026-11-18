@@ -1,0 +1,91 @@
+name: portal
+
+# The public portal board (SC-3a) during portal windows: every day in December, January, and April, pull the coming
+# window's portal entries (one CFBD call), rebuild the board, and freeze each program's lists into the forecast ledger
+# (cfb/portal/freeze.py). The board's site data and the ledger are committed separately (the ledger on its own, as
+# sparvi/ledger.py requires) and pushed with the deploy key. Off-window the weekly cfb workflow keeps the board current.
+
+on:
+  schedule:
+    - cron: "30 14 * 1,4,12 *"   # daily at 14:30 UTC in the window months
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cfb                     # never alongside the weekly cfb refresh (same raw cache and data files)
+  cancel-in-progress: false
+
+jobs:
+  board:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ssh-key: ${{ secrets.SPARVI_DEPLOY_KEY }}
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        with:
+          enable-cache: true
+
+      - run: uv sync --frozen
+
+      - name: Restore raw CFB data
+        id: raw_cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: data/raw/cfb
+          key: cfb-raw-${{ github.run_id }}
+          restore-keys: cfb-raw-
+
+      - name: Restore raw CFB data from the R2 seed
+        if: steps.raw_cache.outputs.cache-matched-key == ''
+        env:
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: uv run python -m ingest.cfb.seed restore
+
+      - name: Pull the coming window's portal entries
+        env:
+          CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
+        run: uv run python ingest/cfb/pull.py --portal
+
+      - name: Save raw CFB data
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: data/raw/cfb
+          key: cfb-raw-${{ github.run_id }}
+
+      - name: Data checks
+        run: uv run python -m ingest.cfb.checks
+
+      - name: Snapshot raw data
+        env:
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: uv run python -m ingest.snapshot cfb --require
+
+      - name: Board data and the ledger freeze
+        run: uv run python cfb/portal/freeze.py
+
+      - name: Commit the board, then the ledger on its own
+        run: |
+          git config user.name "sparvi-bot"
+          git config user.email "sparvi-bot@users.noreply.github.com"
+          git add site/data/cfb/portal
+          if ! git diff --cached --quiet; then git commit -m "Portal board refresh $(date -u +%Y-%m-%d)"; fi
+          git add forecasts
+          if ! git diff --cached --quiet; then git commit -m "Ledger: portal board lists $(date -u +%Y-%m-%d)"; fi
+          if [ "$(git rev-list --count origin/main..HEAD)" = "0" ]; then echo "No changes."; exit 0; fi
+          git pull --rebase origin main
+          uv run python -m sparvi.ledger check --base origin/main
+          git push origin HEAD:main
+
+  # No deploy job here: the data commit above is pushed with the deploy key, and that push runs deploy.yml
+  # (a failed data check still commits the status file, so /status/ shows it). Nothing pushed = nothing to deploy.

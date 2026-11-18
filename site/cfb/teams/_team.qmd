@@ -1,0 +1,147 @@
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c"></div>
+  <div class="controls" id="c2"></div>
+  <div id="tiles"></div>
+  <h3>Power rating by week</h3>
+  <div id="power" class="plot-host"></div>
+  <p class="caption" id="pcap"></p>
+  <h3>Offense by week</h3>
+  <div id="off" class="plot-host"></div>
+  <h3>Defense by week</h3>
+  <div id="def" class="plot-host"></div>
+  <p class="caption" id="cap"></p>
+</div>
+<div class="explorer">
+  <h3>Results</h3>
+  <div id="games"><div class="loading">Loading…</div></div>
+  <p class="caption" id="gcap"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt, U = S.urlState;
+  const TEAM = document.getElementById("team-root").dataset.team;
+  document.getElementById("team-static")?.remove();  // the plain-HTML numbers; the charts below replace them
+  const meta = await S.load("/data/cfb/meta.json");
+  const teams = new Map((await S.load("/data/cfb/teams.json")).map(t => [t.id, t]));
+  const T = teams.get(TEAM);
+  // Only the seasons this team played in FBS; a team that left FBS opens on its last season.
+  const SEASONS = T.seasons.map(String).filter(s => meta.seasons.map(String).includes(s));
+  const LAST = SEASONS[SEASONS.length - 1];
+  const weekFile = (s) => S.load(`/data/cfb/team_week_${s}.json`), gameFile = (s) => S.load(`/data/cfb/team_games_${s}.json`);
+  const DEF = { season: LAST, adj: "adj", gt: "no_gt", split: "all" };
+  const st = { season: SEASONS.includes(U.get("season")) ? U.get("season") : DEF.season, adj: U.get("adj") === "raw" ? "raw" : DEF.adj,
+               gt: U.get("gt") === "all" ? "all" : DEF.gt, split: ["pass", "run"].includes(U.get("split")) ? U.get("split") : DEF.split,
+               week: U.get("week") == null ? null : +U.get("week") };
+  weekFile(st.season); gameFile(st.season);  // start both requests now
+  const SPLITS = { all: "All plays", pass: "Passes", run: "Runs" };
+  // The conference line, team links, and team color are in the page itself (cfb/team_pages.py).
+  const weeks = () => meta.weeks[st.season];
+  const lastWeek = () => Math.max(...weeks());
+  const weekLabel = w => (w === lastWeek() && +st.season < meta.season ? "bowls" : `week ${w}`);
+  const wi = () => { const w = weeks(), k = st.week == null ? w.length - 1 : w.indexOf(st.week); return k < 0 ? w.length - 1 : k; };
+  const pre = () => (st.split === "all" ? "" : st.split + "_");
+  const c = document.getElementById("c"), c2 = document.getElementById("c2");
+  let gtable = null;
+
+  function controls() {
+    c.replaceChildren(
+      S.select("Season", SEASONS.slice().reverse().map(s => [s, s]), st.season, v => { st.season = v; st.week = null; controls(); draw(); }),
+      S.el("label", {}, "Numbers", S.seg([["adj", "Opponent-adjusted"], ["raw", "Raw"]], st.adj, v => { st.adj = v; draw(); })),
+      S.el("label", {}, "Garbage time", S.seg([["no_gt", "Removed"], ["all", "Included"]], st.gt, v => { st.gt = v; draw(); })),
+      S.el("label", {}, "Plays", S.seg(Object.entries(SPLITS), st.split, v => { st.split = v; draw(); })));
+    const sl = S.dateSlider(weeks(), wi(), k => { st.week = weeks()[k]; draw(); }, { label: k => `Through ${weekLabel(weeks()[k])}`, aria: "Week" });
+    c2.replaceChildren(sl.el);
+  }
+
+  async function draw() {
+    const [wf, gf] = await Promise.all([weekFile(st.season), gameFile(st.season)]);
+    const k = wi(), W = weeks()[k], adj = st.adj === "adj";
+    const cum = (side) => `${side}_${pre()}epa${adj ? "_adj" : ""}`;
+    const at = (t, fld, j) => { const s = t.series[st.gt][fld]; return s ? s[j] : null; };
+    const me = wf.teams.find(t => t.id === TEAM);
+    const ord = (r) => r == null ? "—" : r + (r % 100 >= 11 && r % 100 <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" }[r % 10] || "th"));
+
+    // Tiles: record, power rating, polls, and adjusted efficiency through the slider's week.
+    const games = (gf.teams[TEAM] || []).filter(g => g.week <= W && g.res);
+    const rec = ["W", "L", "T"].map(r => games.filter(g => g.res === r).length);
+    const vals = (fld) => wf.teams.map(t => at(t, fld, k)).filter(v => v != null);
+    const rank = (fld, lower) => { const v = at(me, fld, k); if (v == null) return null; return 1 + vals(fld).filter(x => lower ? x < v : x > v).length; };
+    const power = at(me, "power", k), prank = at(me, "rank", k), ap = at(me, "ap", k), cfp = at(me, "cfp", k);
+    const tile = (label, value, sub) => S.el("div", { class: "stat" }, S.el("div", { class: "v" }, value), S.el("div", { class: "k" }, `${label} · ${sub}`));
+    document.getElementById("tiles").replaceChildren(S.el("div", { class: "stat-row" },
+      tile("Record", `${rec[0]}–${rec[1]}${rec[2] ? "–" + rec[2] : ""}`, `through ${weekLabel(W)}`),
+      tile("Power rating", power == null ? "—" : f.signed(power, 1), `${ord(prank)} of ${vals("power").length}`),
+      tile("AP / CFP rank", `${ap ?? "NR"} / ${cfp ?? "NR"}`, "latest polls"),
+      tile("Offense EPA/play", f.signed(at(me, cum("off"), k), 3), `${ord(rank(cum("off"), false))} of ${vals(cum("off")).length}`),
+      tile("Defense EPA/play", f.signed(at(me, cum("def"), k), 3), `${ord(rank(cum("def"), true))} of ${vals(cum("def")).length} (allowed)`)));
+
+    // Power rating by week. The y range covers the whole season, so moving the slider never rescales it.
+    const pw = weeks().map((w, j) => ({ week: w, v: at(me, "power", j), rank: at(me, "rank", j), ap: at(me, "ap", j), cfp: at(me, "cfp", j), elo: at(me, "elo", j) }))
+      .filter(d => d.v != null);
+    const xDom = [0.5, lastWeek() + 0.5], ticks = weeks();
+    S.plot(document.getElementById("power"), w => Plot.plot({ ...S.plotDefaults(w), height: 240, grid: true,
+      x: { label: null, domain: xDom, ticks, tickFormat: d => (d === lastWeek() && +st.season < meta.season ? "Bowls" : d) },
+      y: { label: "↑ Points better than an average FBS team", domain: S.stableDomain(pw.map(d => d.v).concat([0])), tickFormat: "+.0f" },
+      marks: [
+        Plot.ruleY([0], { stroke: "#c9c7c0", strokeDasharray: "4,3" }),
+        Plot.ruleX(meta.min_week > weeks()[0] ? [meta.min_week - 0.5] : [], { stroke: "#e4e2dc" }),
+        Plot.line(pw, { x: "week", y: "v", stroke: "#0f5257", strokeWidth: 2.2 }),
+        Plot.dot(pw, { x: "week", y: "v", r: 3, fill: "#0f5257", fillOpacity: d => (d.week < meta.min_week ? 0.35 : 1) }),
+        Plot.ruleX([W], { stroke: "#0f5257", strokeWidth: 1.5, strokeDasharray: "4,3" }),
+        Plot.tip(pw, Plot.pointer({ x: "week", y: "v", title: d => `Through ${weekLabel(d.week)}: power ${f.signed(d.v, 1)} (#${d.rank})`
+          + (d.ap ? ` · AP ${d.ap}` : "") + (d.cfp ? ` · CFP ${d.cfp}` : "") + (d.elo != null ? `\nElo ${d.elo}` : "") })),
+      ] }));
+    document.getElementById("pcap").textContent = `${T.name}'s power rating after each week of ${st.season}: how many points better than an average FBS team (the dashed line) it should be on a neutral field. `
+      + `It blends opponent-adjusted efficiency with CFBD's Elo; before week ${meta.min_week} it rests on very few games, so those dots are faded. Hover for the rank, polls, and Elo.`;
+
+    // Weekly lines: season-to-date (line) and each game (dots), with the average FBS team as a reference.
+    for (const side of ["off", "def"]) {
+      const pts = weeks().map((w, j) => ({ week: w, cum: at(me, cum(side), j) })).filter(d => d.cum != null);
+      const gk = `${side}_${st.gt === "no_gt" ? "ng_" : ""}epa`;
+      const gp = st.split !== "all" ? [] : (gf.teams[TEAM] || []).filter(g => g[gk] != null).map(g => ({ week: g.week, v: g[gk], opp: g.opp, res: g.res, pf: g.pf, pa: g.pa }));
+      const lg = weeks().map((w, j) => ({ week: w, v: d3.mean(wf.teams, t => at(t, cum(side), j)) })).filter(d => d.v != null);
+      const good = side === "off" ? "Offense EPA/play" : "Defense EPA/play allowed";
+      S.plot(document.getElementById(side), w => Plot.plot({ ...S.plotDefaults(w), height: 240, grid: true,
+        x: { label: null, domain: xDom, ticks, tickFormat: d => (d === lastWeek() && +st.season < meta.season ? "Bowls" : d) },
+        y: { label: `↑ ${good}${side === "def" ? ", better is up" : ""}`, reverse: side === "def", tickFormat: "+.2f", nice: true },
+        marks: [
+          Plot.line(lg, { x: "week", y: "v", stroke: "#c9c7c0", strokeDasharray: "4,3" }),
+          Plot.dot(gp, { x: "week", y: "v", r: 3.5, fill: "#8a8b8f", fillOpacity: 0.6 }),
+          Plot.line(pts, { x: "week", y: "cum", stroke: "#0f5257", strokeWidth: 2.2 }),
+          Plot.ruleX([W], { stroke: "#0f5257", strokeWidth: 1.5, strokeDasharray: "4,3" }),
+          Plot.tip(gp, Plot.pointer({ x: "week", y: "v", title: d => `${weekLabel(d.week)}: ${d.res ?? ""} ${d.pf ?? ""}–${d.pa ?? ""} vs ${d.opp}\nThis game: ${f.signed(d.v, 3)} EPA/play${side === "def" ? " allowed" : ""} (raw)` })),
+        ] }));
+    }
+    document.getElementById("cap").textContent = `${T.name}, ${st.season}, ${SPLITS[st.split].toLowerCase()}, garbage time ${st.gt === "no_gt" ? "removed" : "included"}. `
+      + `The teal line is the season to date (${adj ? "opponent-adjusted" : "raw"}); the dashed gray line is the average FBS team. `
+      + (st.split === "all" ? "Gray dots are single games (raw); hover one for the game. " : "Single games aren't split by pass and run. ")
+      + `Defense is EPA allowed, with the axis flipped so up is better. The dashed teal rule marks ${weekLabel(W)}.`;
+
+    // Game log
+    const g = st.gt === "no_gt" ? "ng_" : "";
+    const cols = [
+      { key: "week", label: "Wk", html: r => (r.week === lastWeek() && +st.season < meta.season ? "Bowl" : String(r.week)), sortVal: r => r.week },
+      { key: "opp", label: "Opponent", align: "l", sortVal: r => r.opp,
+        html: r => `${r.home ? "vs" : "@"} ${teams.has(r.opp) && teams.get(r.opp).seasons.includes(+st.season) ? S.cfbTeamLink(teams.get(r.opp), r.opp, `season=${st.season}`) : r.opp}` },
+      { key: "res", label: "Result", align: "l", html: r => r.res ? `${r.res} ${r.pf}–${r.pa}` : "—" },
+      { key: "o", label: "Off EPA/play", fmt: v => f.signed(v, 3) },
+      { key: "d", label: "Def EPA/play", fmt: v => f.signed(v, 3), title: "Allowed: lower is better" },
+      { key: "osr", label: "Off success", fmt: v => f.pct(v) },
+      { key: "dsr", label: "Def success", fmt: v => f.pct(v), title: "Allowed: lower is better" },
+    ];
+    const rows = (gf.teams[TEAM] || []).map(r => ({ ...r, o: r[`off_${g}epa`], d: r[`def_${g}epa`], osr: r[`off_${g}sr`], dsr: r[`def_${g}sr`] }));
+    gtable ||= S.table(document.getElementById("games"), cols, { sortKey: "week", desc: false, pageSize: 20 });
+    gtable.update(rows);
+    document.getElementById("gcap").textContent = `Every ${st.season} game${+st.season < meta.season ? ", bowls included" : ""}; opponents without a link are FCS teams. `
+      + `Single-game numbers are raw (not opponent-adjusted), garbage time ${st.gt === "no_gt" ? "removed" : "included"}.`;
+    U.set({ season: st.season, week: k === weeks().length - 1 ? null : W, adj: st.adj, gt: st.gt, split: st.split }, DEF);
+  }
+  controls(); draw();
+})();
+</script>
+```
+
+::: {.note}
+EPA per play ([defined here](/glossary.html#nfl-epa); the same idea in college, from CFBD's model) and success rate count passes (including sacks) and runs; garbage time removes plays when the margin is more than {{< meta cfb.garbage_q2 >}} points in the 2nd quarter, {{< meta cfb.garbage_q3 >}} in the 3rd, or {{< meta cfb.garbage_q4 >}} in the 4th. Opponent-adjusted numbers remove the strength of the opponents the team faced, and the power rating ({{< meta models.cfb_power_rating >}}) adds CFBD's Elo; [how they're made and how well they predict](/cfb/tools/team-ratings.html). Data provided by [CollegeFootballData.com](https://collegefootballdata.com).
+:::

@@ -1,0 +1,141 @@
+# Model card (PLAN-scout A2). Change `code` files only with a new version: python -m sparvi.registry --help
+name: cfb_player_projection
+title: CFB player projection
+sport: cfb
+status: champion
+version: 1.2.2
+owner: Matt
+spec: 'For every QB, RB, WR, and TE on an FBS team''s projected roster as of May 1, his season yards at that team:
+  QB passing yards on dropbacks, RB rushing yards, WR and TE receiving yards (RB receiving is projected as well),
+  with an 80% interval. Team volume x his share of it x his efficiency, with everyone at the position competing
+  for one pie (CFB-PROJ, PLAN-fit). The base the system-fit question sits on: does system match add to it?'
+target: His season-t yards in the category at any team (0 if he recorded none), non-garbage-time FBS plays
+method: 'P1 team volume: ridge (alpha 10) on the offense''s last two seasons'' pass and run plays per game, pass
+  rate, games, offensive and defensive EPA per play, a head-coaching change, and a new head coach''s old pass rate;
+  games from strength and coaching change, 2020 excluded. P2 shares: conditional logit with an outside option (players
+  nobody projected), one per pool (QB dropbacks, RB carries, receiving yards for WR + TE + RB), soft labels, L2
+  1: last share (square root), a role flag, experience and its square, returner / transfer / freshman, P(stays |
+  experience), recruiting rating (inside the model only, never shown), level change, last-season EPA per opportunity,
+  position flags, and transfer-specific terms (old share, level change, efficiency, rating, experience, and the
+  destination''s opening). P3 efficiency: QB yards per dropback and RB yards per carry, his last two seasons shrunk
+  toward the position (K 300 dropbacks / 200 carries), a level shift for movers, and the destination''s last rate
+  at the position (supporting cast); team receiving yards per dropback and RB share of runs from the team''s last
+  two seasons. Intervals: development residual quantiles by category and projected-yards bin.'
+history: 'New (CFB-PROJ). Developed on seasons 2016-2020 only, each piece leave-one-season-out (cfb/proj/volume.py,
+  shares.py, efficiency.py, assemble.py; sparvi-site #58-#61, #63); the test seasons were not looked at. Development
+  projected-yards r: QB 0.531, RB 0.550, WR 0.500, TE 0.488 (each beat both baselines, 90% intervals above zero).'
+code:
+- cfb/proj/pit.py
+- cfb/proj/shares.py
+- cfb/proj/efficiency.py
+- cfb/fit/data.py
+- cfb/fit/labels.py
+- cfb/fit/model.py
+- cfb/fit/portal.py
+- cfb/profile/engine.py
+- cfb/profile/events.py
+- cfb/profile/features.yml
+- ingest/cfb/play_players.py
+- football/common/filters.py
+training_data:
+- data/raw/cfb/plays_*.parquet
+- data/raw/cfb/games_*.parquet
+- data/raw/cfb/teams_*.parquet
+- data/raw/cfb/coaches.parquet
+- data/raw/cfb/players/play_players_*.parquet
+- data/raw/cfb/players/roster_*.parquet
+- data/raw/cfb/players/portal_*.parquet
+- data/raw/cfb/players/recruits_*.parquet
+artifacts:
+- cfb/proj/output/assemble_dev.json
+- cfb/proj/output/interval_bins.json
+validation:
+  file: cfb/proj/output/assemble_dev.json
+  metrics:
+    r_qb_dev: categories.QB.proj.r
+    r_rb_dev: categories.RB.proj.r
+    r_wr_dev: categories.WR_rec.proj.r
+    r_te_dev: categories.TE_rec.proj.r
+    coverage80_wr_dev: categories.WR_rec.coverage80
+eval:
+  set: 'Development seasons 2016-2020, every piece leave-one-season-out: projected-roster players, projected vs.
+    actual season yards by category. The registered numbers are development numbers; the test is the backtest below.'
+  set_keys:
+    n_wr: categories.WR_rec.rows
+  primary: r_wr_dev
+  higher_is_better: true
+live_window:
+  unit: seasons
+  min: 1
+published_in:
+- site/cfb/tools/portal-board.qmd
+backtest:
+  preregistered_at: '2026-11-16'
+  module: models/cfb/player_projection/backtest.py
+  target: 'Season-t yards in his category at any team: QB passing yards on dropbacks, RB rushing yards, WR and TE
+    receiving yards; 0 if he recorded none. A transfer whose id changed at his new school is followed by the roster-based
+    transfer link.'
+  decision_dates: May 1 of season t (after the spring portal window). Every input is what was public then, through
+    the point-in-time loader.
+  splits:
+    type: walk_forward
+    first_test: 2021
+    last_test: 2025
+    train_window: 1
+    predictor_lag: 1
+    decision: 05-01
+    train_until: 05-01
+    fast_folds: 1
+  training: 'Fold t trains every piece on outcome seasons 2016 through t-1 (inputs from 2014). Hyperparameters are
+    fixed from development (2016-2020): volume ridge alpha 10, shares L2 1, efficiency K 300 / 200, interval bins
+    from the development residuals. Training rosters use past seasons'' September rosters (public long before May
+    1 of t).'
+  rows: 'Every QB, RB, WR, TE on an FBS team''s projected season-t roster as of May 1: returners (season t-1 roster,
+    minus players with a portal entry filed by May 1), incoming transfers (portal entries filed by May 1 whose destination
+    is an FBS team, linked to a t-1 or t-2 roster id), and the high-school signing class. Players who appear later
+    (walk-ons, late transfers) are outside the projection.'
+  known_hindsight: 'The portal''s destination field is its current value, not what was public on May 1; some players
+    committed later (Matt, 2026-11-15: used and flagged).'
+  group_by: 'none: rows are players in a season none of the training seasons include'
+  block: player
+  segment: position
+  baselines:
+  - carry
+  - share_only
+  baseline_definitions:
+    carry: his own last-season yards in the category wherever he played (0 for freshmen)
+    share_only: his last-season share of the category's pool x the destination's last-season yards in the category,
+      transfers placed at their new team, no competition model (0 for freshmen)
+  primary_metric: pearson_r
+  bootstrap: 2000
+  seed: 7
+  pass_gate:
+    beats_baseline:
+    - carry
+    - share_only
+    min_skill: 0.0
+    ci_excludes_zero: true
+    each_segment: true
+  gate_decided: 'Matt, 2026-11-15: strict in every position group (QB, RB, WR, TE): against each of carry and share-only,
+    the 90% interval of the correlation edge (bootstrap by player) must be above zero. A position that fails ships
+    experimental.'
+  too_good_r: 0.9
+  not_applicable:
+    label_permutation: 'Structural model (Matt, 2026-11-16): its skill comes from roster composition (who is on
+      the roster, experience, returning vs. new, who played), not from what it learns from targets, so shuffled
+      targets or shuffled input plays can''t bring it to zero (development season 2020: play-shuffled inputs r 0.48-0.52
+      vs. 0.56 real). The timestamp and future-poisoning tests check that no data after May 1 is read.'
+  secondary: 'Reported, not gating: by status (returner, transfer, freshman), per fold, MAE, 80% interval coverage,
+    RB receiving yards, and the count of season-t players who were outside the projected rosters.'
+  limits: 'Free data only: no snaps, routes, depth charts, injuries, or NIL; usage is a share of team plays, not
+    of plays he was on the field for. 2021-2024 incompletions mostly lack the receiver (CFB-RECV-FIX), so receiving
+    shares use yards on completions.'
+  reproduction: Deterministic (closed-form ridge, L-BFGS from zeros). Official runs happen in CI.
+  vault:
+    seasons:
+    - 2026
+    note: Season 2026 outcomes are sealed until the season completes (January 2027).
+    accesses: 0
+experimental: its QB, RB and WR projections beat both simple baselines (last season's yards; last season's share)
+  in a 2021-2025 backtest, but those seasons were also used to find and fix bugs, so the clean test is the 2026
+  season (scored in January 2027); its TE projections tied the baselines

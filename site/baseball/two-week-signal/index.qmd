@@ -100,7 +100,7 @@ A player development report has three jobs: show what changed recently, show whe
 - **Pitcher flags lead with velocity**: a 1+ mph change in the primary fastball over 10+ batters faced. They also flag walk-rate jumps of 5+ points and whiff-rate jumps of 7+, but with carry-over of {{< meta baseball.tw_pit_bb >}} (walks) and {{< meta baseball.tw_pit_whiff >}} (whiffs), read those as "go look," not "something changed."
 - **League percentiles use the full season**, where sample size is no longer the main problem, and every rate is oriented so a higher percentile is always better.
 
-Browse it for any club: **[Triple-A explorer](/baseball/tools/triple-a.html)**. Or open any player page, like [this one](/baseball/player.html?id=687547), for the one-page version.
+Browse it for any club: **[Triple-A explorer](/baseball/tools/triple-a.html)**. Or open any player page, like [this one](/baseball/players/ryan-ramsey-687547/), for the one-page version.
 
 <details class="method" id="method">
 <summary>Method and caveats</summary>

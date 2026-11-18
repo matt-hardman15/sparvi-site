@@ -157,9 +157,10 @@ FRAMES = {"roster": roster_frame, "stats": stats_frame, "usage": usage_frame, "p
           "portal": portal_frame, "recruits": recruits_frame}
 
 
-def pull(c: Client) -> None:
+def pull(c: Client, only: tuple[str, int] | None = None) -> None:
+    """Every player table; only=(table, season) pulls just that one (the portal board's daily portal refresh)."""
     OUT.mkdir(parents=True, exist_ok=True)
-    reqs = requests()
+    reqs = [r for r in requests() if only is None or (r[0], r[4]) == only]
     wepa: dict[int, dict[str, list[dict]]] = {}
     n = {}
     for table, ep, prm, done, s in reqs:

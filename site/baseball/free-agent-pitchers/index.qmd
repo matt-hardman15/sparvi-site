@@ -1,0 +1,139 @@
+---
+title: "This winter's free-agent pitchers, graded by their pitches"
+pagetitle: "MLB free-agent pitchers by Stuff+ and Pitching+"
+description: "Every free-agent pitcher with a real MLB sample, graded on what his pitches did. Whose results trailed the grades, and what history says happens next."
+date: 2026-11-14
+categories: [Baseball, pitching, free agency]
+image: thumb.png
+card-key: baseball.fa_n_trailed
+card-prefix: ""
+card-suffix: ""
+card-label: "free-agent pitchers whose results trailed their pitch grades"
+---
+
+::: {.finding}
+[The finding]{.label}
+Of the {{< meta baseball.fa_n >}} free-agent pitchers who threw {{< meta baseball.fa_min_pitches >}}+ MLB pitches in {{< meta baseball.fa_season >}}, {{< meta baseball.fa_n_trailed >}} posted results at least {{< meta baseball.fa_gap >}} points worse than their **Pitching+** said their pitches deserved, and {{< meta baseball.fa_n_ahead >}} at least {{< meta baseball.fa_gap >}} points better. History favors the grades: from {{< meta baseball.fa_h_prev >}} to {{< meta baseball.fa_h_cur >}}, pitchers whose results trailed that much changed by {{< meta baseball.fa_h_trailed_change >}} points of results the next season (90% interval {{< meta baseball.fa_h_trailed_ci >}}), and those ahead by {{< meta baseball.fa_h_ahead_change >}} ({{< meta baseball.fa_h_ahead_ci >}}).
+:::
+
+::: {.so-what}
+[So what]{.label}
+
+- **Results trailed the grades:** {{< meta baseball.fa_trailed_names >}}. By past seasons, pitchers like these pitched closer to their grades the next year than their results suggest.
+- **Results ran ahead of the grades:** {{< meta baseball.fa_ahead_names >}}. Expect less than last season's numbers.
+- **The best pitches on the market** by Stuff+: {{< meta baseball.fa_top_stuff >}}. The top starter by Pitching+ is {{< meta baseball.fa_top_sp >}}.
+- **What this leaves out:** health and medicals, age, workload, contract terms, and makeup. These are grades of the pitches thrown in {{< meta baseball.fa_season >}}, not a full evaluation of a pitcher.
+:::
+
+## Every free-agent pitcher
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c"></div>
+  <div id="t"><div class="loading">Loading…</div></div>
+  <p class="caption" id="tcap"></p>
+</div>
+```
+
+## Results against the grades
+
+```{=html}
+<div class="explorer">
+  <div id="scatter" class="plot-host"></div>
+  <p class="caption" id="scap"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt, U = S.urlState;
+  const D = await S.load("/data/baseball/free_agents.json");
+  const ROLES = { all: "All", SP: "Starters", RP: "Relievers" };
+  const DEF = { role: "all", status: "all" };
+  const st = { role: ROLES[U.get("role")] ? U.get("role") : DEF.role, status: U.get("status") === "unsigned" ? "unsigned" : DEF.status };
+  const pulled = new Date(D.pulled_on + "T12:00:00Z").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
+  const status = r => r.to_team ? `Signed: ${r.to_team}` : "Unsigned";
+  // "San Diego Padres" -> "Padres"; two-word nicknames keep both words.
+  const nick = t => { if (!t) return "—"; const w = t.split(" "); return /^(Sox|Jays)$/.test(w[w.length - 1]) ? w.slice(-2).join(" ") : w[w.length - 1]; };
+  const who = r => `${S.playerLink(r.id, r.name)}<br><span class="muted" style="font-size:.8em;white-space:nowrap">${nick(r.from_team)} · ${r.to_team ? "signed: " + nick(r.to_team) : "unsigned"}</span>`;
+  // The 90% interval on a second, smaller line in the cell's own text color (readable on the heat colors).
+  const iv = (r, k) => `${f.num(r[k + "_plus"], 0)}<br><span style="font-size:.75em;opacity:.85;white-space:nowrap">${f.num(r[k + "_lo"], 0)}–${f.num(r[k + "_hi"], 0)}</span>`;
+  const GAPLAB = { trailed: "trailed the grades", ahead: "ran ahead of the grades" };
+  let table = null;
+
+  function controls() {
+    document.getElementById("c").replaceChildren(
+      S.el("label", {}, "Role", S.seg(Object.entries(ROLES), st.role, v => { st.role = v; draw(); })),
+      S.el("label", {}, "Status", S.seg([["all", "Everyone"], ["unsigned", "Unsigned"]], st.status, v => { st.status = v; draw(); })));
+  }
+  function draw() {
+    const rows = D.pitchers.filter(r => (st.role === "all" || r.role === st.role)
+                                    && (st.status === "all" || !r.to_team));
+    const cols = [
+      { key: "name", label: "Pitcher", align: "l", html: who, sortVal: r => r.name, title: "Last club · signing status on the list date" },
+      { key: "role", label: "Role", align: "l", title: "SP, RP, or Swing, from his starts this season" },
+      { key: "pitches", label: "Pitches", fmt: f.int },
+      { key: "stuff_plus", label: "Stuff+", html: r => iv(r, "stuff"), heat: "plus", heatVal: r => r.stuff_plus, title: "What the ball does; 100 = average MLB pitcher; 90% interval in parentheses" },
+      { key: "loc_plus", label: "Location+", fmt: v => f.num(v, 0), heat: "plus", heatVal: r => r.loc_plus, title: "Where the pitches crossed the plate, in the count" },
+      { key: "pitching_plus", label: "Pitching+", html: r => iv(r, "pitching"), heat: "plus", heatVal: r => r.pitching_plus, title: "Stuff and location together; 90% interval in parentheses" },
+      { key: "rv_plus", label: "Results", fmt: v => f.num(v, 0), heat: "plus", heatVal: r => r.rv_plus, title: "Actual run value (RV+) on the same scale" },
+      { key: "gap", label: "Gap", fmt: v => { const g = Math.round(v); return g > 0 ? `+${g}` : g < 0 ? `−${-g}` : "0"; }, title: "Results minus Pitching+: negative means results trailed the grades" },
+    ];
+    table ||= S.table(document.getElementById("t"), cols, { sortKey: "pitching_plus", desc: true, pageSize: 25 });
+    table.update(rows);
+    document.getElementById("tcap").textContent = `${rows.length} pitchers: MLB's free-agent list as of ${pulled}, pitchers with ${D.min_pitches}+ MLB pitches in ${D.season}. `
+      + `All grades use the same scale: 100 is an average MLB pitcher and 10 points is one standard deviation. Intervals are 90%, from resampling each pitcher's games. `
+      + `"Gap" is results minus Pitching+; below −${D.history.gap} or above +${D.history.gap} are the thresholds the history test uses. Signing status changes daily; this is the list on the date above.`;
+
+    // Scatter: Pitching+ across, results up, with each Pitching+ interval.
+    const pts = D.pitchers.map(r => ({ ...r, y: r.rv_plus, x: r.pitching_plus }));
+    const xs = pts.flatMap(r => [r.pitching_lo, r.pitching_hi]), ys = pts.map(r => r.y);
+    const lo = Math.floor(Math.min(...xs, ...ys) / 10) * 10, hi = Math.ceil(Math.max(...xs, ...ys) / 10) * 10;
+    const shown = new Set(rows.map(r => r.id));
+    S.plot(document.getElementById("scatter"), w => Plot.plot({ ...S.plotDefaults(w), height: Math.min(520, Math.max(360, w * 0.7)), grid: true, clip: true,
+      x: { label: "Pitching+ (what the pitches deserved) →", domain: [lo, hi] },
+      y: { label: "↑ Results, RV+", domain: [lo, hi] },
+      color: { domain: ["Results trailed the grades", "Results ran ahead of the grades", "Within " + D.history.gap + " points"],
+               range: ["#eb6834", "#2a78d6", "#b9b8b3"], legend: true },
+      marks: [
+        Plot.line([[lo, lo], [hi, hi]], { stroke: "#8a8b8f" }),
+        Plot.line([[lo, lo - D.history.gap], [hi, hi - D.history.gap]], { stroke: "#c9c7c0", strokeDasharray: "3,3" }),
+        Plot.line([[lo, lo + D.history.gap], [hi, hi + D.history.gap]], { stroke: "#c9c7c0", strokeDasharray: "3,3" }),
+        Plot.ruleY(pts.filter(r => shown.has(r.id)), { y: "y", x1: "pitching_lo", x2: "pitching_hi", stroke: "#b9b8b3", strokeOpacity: 0.6 }),
+        Plot.dot(pts, { x: "x", y: "y", r: 5, fillOpacity: d => (shown.has(d.id) ? 0.9 : 0.12), stroke: "#fff",
+                        fill: d => d.flag === "trailed" ? "Results trailed the grades" : d.flag === "ahead" ? "Results ran ahead of the grades" : "Within " + D.history.gap + " points" }),
+        Plot.tip(pts.filter(r => shown.has(r.id)), Plot.pointer({ x: "x", y: "y", title: d => `${d.name} (${d.role}), ${status(d)}\n`
+          + `Pitching+ ${f.num(d.pitching_plus, 0)} (${f.num(d.pitching_lo, 0)}–${f.num(d.pitching_hi, 0)}) · results ${f.num(d.rv_plus, 0)}\nStuff+ ${f.num(d.stuff_plus, 0)} · Location+ ${f.num(d.loc_plus, 0)} · ${f.int(d.pitches)} pitches` })),
+      ] }));
+    document.getElementById("scap").textContent = `Each dot is a free-agent pitcher (${st.role === "all" ? "all roles" : ROLES[st.role].toLowerCase()}${st.status === "unsigned" ? ", unsigned only" : ""}; others are faded). `
+      + `On the solid line, results matched the grades; the dashed lines are ${D.history.gap} points either side. Orange dots, below the band, `
+      + `pitched worse than their pitches deserved; blue dots, above it, better. The gray bar on each dot is the 90% interval for its Pitching+. Hover for details.`;
+    U.set({ role: st.role, status: st.status }, DEF);
+  }
+  controls(); draw();
+})();
+</script>
+```
+
+## Why the grades, not the results
+
+A season of results is noisy. Whether a hard-hit ball finds a glove, whether a two-strike pitch on the black gets the call, and a handful of bad outings in 60 innings all move a reliever's numbers more than his talent does. The pitch grades look at something steadier: what every pitch did (its velocity, movement, and release for [Stuff+](/baseball/stuff-plus/)) and where it went, in the count it was thrown ([Location+ and Pitching+](/baseball/stuff-or-command/)).
+
+Free-agent talk usually starts from last season's results. The test here asks how much those results say compared with the grades. Take every MLB pitcher with {{< meta baseball.stuff_min_pitches >}}+ pitches in both {{< meta baseball.fa_h_prev >}} and {{< meta baseball.fa_h_cur >}} ({{< meta baseball.fa_h_n >}} pitchers), graded by models that never saw either season. Pitchers whose {{< meta baseball.fa_h_prev >}} results trailed their Pitching+ by {{< meta baseball.fa_gap >}}+ points ({{< meta baseball.fa_h_trailed_n >}} of them) saw their results change by {{< meta baseball.fa_h_trailed_change >}} points the next season; those whose results ran {{< meta baseball.fa_gap >}}+ points ahead ({{< meta baseball.fa_h_ahead_n >}}) changed by {{< meta baseball.fa_h_ahead_change >}}; everyone in between, {{< meta baseball.fa_h_close_change >}}. Put both numbers in one model of next season's results and last season's Pitching+ carries a weight of {{< meta baseball.fa_h_coef_pitching >}} per point, against {{< meta baseball.fa_h_coef_results >}} for last season's results.
+
+That doesn't make the grades a forecast on their own. Pitching+ predicted next season's run value at r = {{< meta baseball.loc_next_pitching >}}, better than results ({{< meta baseball.loc_next_results >}}) but far from certain, and one season is a small test. The gap is a reason to look harder, not a verdict.
+
+<details class="method" id="method">
+<summary>Method and caveats</summary>
+
+**Who's included.** MLB's free-agent list from the MLB Stats API as of {{< meta baseball.fa_pulled >}}, pitchers only, leaving out players whose club option was exercised or who were claimed off waivers (they aren't free). Of those, the {{< meta baseball.fa_n >}} with {{< meta baseball.fa_min_pitches >}}+ graded MLB pitches in {{< meta baseball.fa_season >}} ({{< meta baseball.fa_n_sp >}} starters, {{< meta baseball.fa_n_rp >}} relievers, the rest swingmen). {{< meta baseball.fa_n_signed >}} had already signed on that date. Signing status isn't updated after it.
+
+**The grades.** Stuff+, Location+, Pitching+, and results (RV+, actual run value) on one frozen scale: 100 is the average qualified MLB pitcher of the season before, 10 points is one standard deviation. They're the same numbers as the [leaderboard](/baseball/tools/stuff-leaderboard.html) and player pages. How they're built: [Stuff+](/baseball/stuff-plus/#method), [Location+ and Pitching+](/baseball/stuff-or-command/#method). Models: {{< meta models.stuff_plus >}} ({{< meta models.stuff_plus_status >}}); {{< meta models.location_plus >}} and {{< meta models.pitching_plus >}} ({{< meta models.pitching_plus_status >}}).
+
+**Intervals.** 90%, from 1,000 resamples of each pitcher's games (pitches in the same game move together). They cover sampling noise, not model noise: retraining the models with a different random seed moves a pitcher's Stuff+ by {{< meta baseball.stab_stuff_mean >}} points on average and Pitching+ by {{< meta baseball.stab_pitching_mean >}}, which is small next to these intervals.
+
+**The history test.** Out-of-sample pairs: models trained on {{< meta baseball.stuff_yoy_train_season >}} only grade {{< meta baseball.fa_h_prev >}}, and the outcome is {{< meta baseball.fa_h_cur >}} run value, MLB pitchers with {{< meta baseball.stuff_min_pitches >}}+ pitches in both seasons. The change is in RV+ points; intervals come from 1,000 resamples of the pitchers in each group. Part of the movement is plain regression to the mean: unusually good or bad results drift back for anyone. What the grades add is the direction, which pitchers' results were too good or too bad for their pitches. One pair of seasons is a small sample, and the groups are smaller still.
+
+**What it can't tell you.** Health, medicals, and injury history; age and the aging curve; workload and role next season; contract cost; makeup and coachability. A pitcher whose results trailed his grades may have pitched hurt. Relievers' samples are small, which is why their intervals are wide.
+
+Code: [`baseball/free_agents/`](https://github.com/matt-hardman15/sparvi-site/tree/main/baseball/free_agents) · Data: Baseball Savant (Statcast) and the MLB Stats API. Sparvi is not affiliated with MLB or any club.
+
+</details>

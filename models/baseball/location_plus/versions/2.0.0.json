@@ -1,0 +1,69 @@
+{
+  "model": "location_plus",
+  "version": "2.0.0",
+  "status": "challenger",
+  "registered": "2026-11-14",
+  "note": "MAJOR: each pitch-group regressor is a bag of 10 models (pitcher folds; each early-stops on its own held-out fold), predictions averaged; Stuff+ learning rate 0.03 -> 0.005. v1's single model early-stopped on one 15% validation slice and per-pitcher grades moved up to 64 points (Stuff+) between seeds. Seed sensitivity now (stability.py, 562 MLB pitchers 300+ pitches): mean |change| 0.116 points, max 0.611.",
+  "code_hash": "80c594f6cf85664075197e5c5850538f2cdad390d9e4a1414848b683dcf724ff",
+  "code_files": {
+    "baseball/pitch_quality/train.py": "31215205c593fc4b50eaa429f8af7499ced64706d34f00e227d70c27cc5b8492",
+    "baseball/pitch_quality/features.py": "f987ab72a067f7d255dbc4b7bae595394a4d37118f82ec3bc4833c6e87ae8e71"
+  },
+  "training_data": {
+    "data/raw/statcast_mlb_2024.parquet": "c5676654e7f48e22834e8a769256354ba890560b6862502a4e8b5722c960ddb4",
+    "data/raw/statcast_mlb_2025.parquet": "ae3d141a26a1ac8f6d4ab8c8a1cd93d2e791ee976fc58a3920c9c0bf00b59d0a",
+    "data/raw/statcast_mlb_2026.parquet": "d94f4ad13ed089e60b901c5e101aca511519a80d72e559e30c4d77b101751cab",
+    "data/raw/batter_heights.parquet": "8ef788c005dc68e9038b11d9091eb654d68a871d81b294a0f4b9892639326383"
+  },
+  "artifacts": {
+    "baseball/pitch_quality/output/models/loc_breaking_0.txt": "11b28cbe96babffdd1716f3bb81d04512119d93bc1ffedfb3a1cdf0798b53237",
+    "baseball/pitch_quality/output/models/loc_breaking_1.txt": "f6f37d9c697b0faaac98435cc6acf10af079f01ae9ca5cf9a2f922717af9fecb",
+    "baseball/pitch_quality/output/models/loc_breaking_2.txt": "60cb91431d4ea5c809dd7ca703c88542c63f57260733af04bd0ab3284351aae5",
+    "baseball/pitch_quality/output/models/loc_breaking_3.txt": "6e9a21e89319a6aaf75b411728ae1ac3317623f06985132285efe2d25de60f04",
+    "baseball/pitch_quality/output/models/loc_breaking_4.txt": "5e1fa3968522f64e0d910ce83e64ea46f52b3ac151c5d9565637817e14f20fd0",
+    "baseball/pitch_quality/output/models/loc_breaking_5.txt": "01073ebd6c7e4f5f6e97b613258905c61ec61afe6d7d2ff88dac095a829b732c",
+    "baseball/pitch_quality/output/models/loc_breaking_6.txt": "08d183abe21f73a80b6beafa766f9c2dbcdc3d2578c7fb4993e11223fa9263b9",
+    "baseball/pitch_quality/output/models/loc_breaking_7.txt": "6e798f8683117578eba3dc65cab5a7699c54e71cd53bc7a49efc96b93d8656d7",
+    "baseball/pitch_quality/output/models/loc_breaking_8.txt": "509073c1e289cbde917e1e58b8c3f3d24726768424da5aa0bea85467aeba872e",
+    "baseball/pitch_quality/output/models/loc_breaking_9.txt": "2b33afb3bff506cfdf021fab0cf6ad667961e867bfbaa3830dab88ffc1f914f7",
+    "baseball/pitch_quality/output/models/loc_fastball_0.txt": "fa90992ce6eae0aa0182655e0be7c4aa9c8752ef82ddd0fcd96afd9393cf7723",
+    "baseball/pitch_quality/output/models/loc_fastball_1.txt": "6ec4a044f8461eb46fa060c4cad44945ade6029295a11bb13d7b4f4c435b8e7e",
+    "baseball/pitch_quality/output/models/loc_fastball_2.txt": "5a679eeda8a52830922908be75959c52bc04b9101f3345eb3732b4fb91e45c97",
+    "baseball/pitch_quality/output/models/loc_fastball_3.txt": "539a13b4f2a7901fca91c206fdda7ba198fe70b9cd53c37e66a9296b02910a66",
+    "baseball/pitch_quality/output/models/loc_fastball_4.txt": "1c509731bc7abe1c69000a8289292d63a643c96b9b54821889ea59ae8a5cd03c",
+    "baseball/pitch_quality/output/models/loc_fastball_5.txt": "4653d96d843d219c37fcc63df8857ab8027f73a7372b930861f69f80bd3f1f77",
+    "baseball/pitch_quality/output/models/loc_fastball_6.txt": "9f6c84b73160d61979854d042cdd12ba77817b61be86e37d4d2712d6c82ece81",
+    "baseball/pitch_quality/output/models/loc_fastball_7.txt": "a81df9a2dc73ad823fc4b27a0adc9535ed15baf7641fc1def9d4b5e19efd191e",
+    "baseball/pitch_quality/output/models/loc_fastball_8.txt": "09c57a055d0153198d96d71da25d6290b02ac9182eb5c7dca580a0bc6605732d",
+    "baseball/pitch_quality/output/models/loc_fastball_9.txt": "ccb2db10d11b2fa82c1e1924fce7e3b669163b077b69398d213d7af89348c710",
+    "baseball/pitch_quality/output/models/loc_offspeed_0.txt": "d4cde12fbaed3c033ce462b0539258ba45aabdbfae83803e141d4e7eb922e3b4",
+    "baseball/pitch_quality/output/models/loc_offspeed_1.txt": "975b5b198c2873d0db10046cff068cfe5e8663eee5fd798c3a06db9b9a5518a6",
+    "baseball/pitch_quality/output/models/loc_offspeed_2.txt": "e9174e3c8372db84ce9dd39ad96c721c17479907bfb8b02c6677fae4b0ca795f",
+    "baseball/pitch_quality/output/models/loc_offspeed_3.txt": "a56c71f5b3576b16c151a4626bc8de2d4f89fdf395b23f13718a21a75710d8dd",
+    "baseball/pitch_quality/output/models/loc_offspeed_4.txt": "c6a9a84d0ab2ff69cd51ba54c703b97a4e105811844486888653087d43f7c5b1",
+    "baseball/pitch_quality/output/models/loc_offspeed_5.txt": "f03daad217703ccc824da22b0f3520b35ed3143c810c1c26a3554ca8f81448e4",
+    "baseball/pitch_quality/output/models/loc_offspeed_6.txt": "6520e3bb9398a2c73a18273454e36e9b5fb3431910c043d1d573ac54baf23242",
+    "baseball/pitch_quality/output/models/loc_offspeed_7.txt": "e8acb905a49976345c12fa84003c02d6241de46d4b8e959c2b70f0d93e40f1a2",
+    "baseball/pitch_quality/output/models/loc_offspeed_8.txt": "71b8ce396c09c181a9f937dc3d8c996b52dd2c39fc2992a54206044df78d5166",
+    "baseball/pitch_quality/output/models/loc_offspeed_9.txt": "b9b744de0dff4692ab0a3bee62d54da9606435f45b9a155121a96a2e55c74024",
+    "baseball/pitch_quality/output/scale_reference.json": "70920938f0f1af91f8b39e14107a724ab86d7f12ce5420db12eb8a1f40f40336"
+  },
+  "eval": {
+    "set": "Out-of-sample year over year: models refit on the earliest season only, grade the next season, and correlate with the season after's run value (MLB pitchers with enough pitches both years). Same split as the published Stuff+ validation.",
+    "set_keys": {
+      "train_season": 2024,
+      "predictor_season": 2025,
+      "outcome_season": 2026,
+      "min_pitches": 500
+    },
+    "primary": "r_next_rv",
+    "higher_is_better": true
+  },
+  "metrics": {
+    "r_next_rv": 0.007666808604247877,
+    "r_self": 0.7064130311604654,
+    "split_half": 0.695439629778152,
+    "aaa_to_mlb": -0.05610977635294951,
+    "holdout_pitch_r2": 0.034202638111460626
+  }
+}

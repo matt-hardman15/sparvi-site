@@ -1,0 +1,258 @@
+{
+  "run_id": "5d88d059af1b",
+  "model": "cfb_system_fit",
+  "version": "1.1.3",
+  "kind": "full",
+  "ran_at": "2026-11-16T02:29:15Z",
+  "code_sha": "1fd521251e48312f53dc1b24d619bcf8a88d1ad2",
+  "lockfile": "e6f7c7528ac332cf",
+  "preregistered_at": "2026-11-15",
+  "spec": {
+    "preregistered_at": "2026-11-15",
+    "module": "models/cfb/system_fit/backtest.py",
+    "target": "Success within two years at the destination (see target). Rows: successful transfers at FBS programs who were on that program's board; y = 1",
+    "decision_dates": "May 1 of the season the player transfers into (after the spring window). Boards hold entries filed by then; every feature uses data available then",
+    "splits": {
+      "type": "walk_forward",
+      "first_test": 2021,
+      "last_test": 2024,
+      "train_window": 1,
+      "predictor_lag": 1,
+      "decision": "05-01",
+      "train_until": "05-01",
+      "fast_folds": 1
+    },
+    "training": "Fold t trains on transfer cohorts 2018 through t-2, the cohorts whose two-year outcome is complete by May 1 of season t (cohort t-1 is left out: only its first year is known; Matt, 2026-11-15). Type dimensions (F2) and system dimensions (F1) are refit each fold on seasons 2017 through t-1. The first two dimensions of each are used (the stable ones in the F1/F2 reports, fixed before any result).",
+    "boards": "One board per FBS program (teams_t), position (QB, RB, WR, TE by the previous-season roster), and window: every portal entrant for season t filed by May 1 and linked to a season t-1 (or t-2) roster id, whether or not he played. Ranked by the model's probability for that program.",
+    "group_by": "none: player and program features; the outcome rows are the test cohort's transfers, never in training",
+    "block": "player",
+    "baselines": [
+      "transfer_rating",
+      "raw_production",
+      "profile_only",
+      "random"
+    ],
+    "baseline_definitions": {
+      "transfer_rating": "portal stars, ties broken by the transfer rating; missing ranks last",
+      "raw_production": "previous-season yards at his position (QB passing on dropbacks, RB rushing, WR/TE receiving)",
+      "profile_only": "previous-season opponent-adjusted, shrunk efficiency composite, the same for every program; no previous production ranks last",
+      "random": "10 / board size (reported only)"
+    },
+    "primary_metric": "recall",
+    "metric_definition": "Recall at 10: the mean, over successful transfers, of the chance he ranks in the top 10 of his destination's board at his position. Tied scores share the places they span (credit = (10 - players strictly above) / players tied, clipped to [0, 1])",
+    "bootstrap": 2000,
+    "seed": 7,
+    "pass_gate": {
+      "beats_baseline": [
+        "transfer_rating",
+        "raw_production",
+        "profile_only"
+      ],
+      "min_skill": 0.0,
+      "ci_excludes_zero": true
+    },
+    "gate_decided": "Matt, 2026-11-15: strict, and against all three baselines: for each of transfer rating, raw production, and profile only, the 90% interval of the recall-at-10 edge (bootstrap by player) must be above zero",
+    "null_baseline": "random_direction",
+    "null_baseline_note": "Label-permutation null. Changed from uniform random after the first run (Matt, 2026-11-15): a shuffled-label model still beat uniform random (+0.027 over 20 seeds) because any linear ranker puts players with production at the board's extremes. The null is now the mean credit of 20 random-direction rankers on the same standardized features. The gate is unchanged.",
+    "too_good": 0.9,
+    "secondary": "Reported, not gating: recall at 25; AUC among each program's actual transfer signees (pairs within program, position, and window); fit x role availability (probability x open share, F0); the efficient label (above the starters' average with >= 10% share, within two years); the 2025 window on the year-1 label; by position and by destination level; FCS destinations where a system exists; calibration (predicted vs. actual by decile among signees, Brier vs. the base rate).",
+    "limits": "The test sees only where players went, not whether a program could have signed them. About a third of successes are at FCS programs, outside the primary test. Early folds train on few transfers (2021: cohorts 2018-2019). Not seen at all: health, makeup, NIL cost, academics, film traits.",
+    "reproduction": "Exact on the same machine (deterministic solvers). Official runs happen in CI.",
+    "vault": {
+      "seasons": [
+        2026
+      ],
+      "note": "Season 2026 outcomes are sealed: the 2025 window's second year and the 2026 window's first, scored once after the season completes (January 2027).",
+      "accesses": 0
+    }
+  },
+  "folds": [
+    2021,
+    2022,
+    2023,
+    2024
+  ],
+  "evaluation": {
+    "metric": "recall",
+    "n": 310,
+    "point": 0.14838709677419354,
+    "baselines": {
+      "transfer_rating": {
+        "value": 0.14293394777265744,
+        "paired": {
+          "est": 0.005453149001536095,
+          "ci90": [
+            -0.034115716524828636,
+            0.04532879906230931
+          ],
+          "n": 310,
+          "blocks": 304,
+          "bootstrap": 2000,
+          "seed": 7
+        }
+      },
+      "raw_production": {
+        "value": 0.1532258064516129,
+        "paired": {
+          "est": -0.004838709677419367,
+          "ci90": [
+            -0.03798071127185052,
+            0.02922077922077923
+          ],
+          "n": 310,
+          "blocks": 304,
+          "bootstrap": 2000,
+          "seed": 7
+        }
+      },
+      "profile_only": {
+        "value": 0.14838709677419354,
+        "paired": {
+          "est": 0.0,
+          "ci90": [
+            -0.03525641025641027,
+            0.03525641025641027
+          ],
+          "n": 310,
+          "blocks": 304,
+          "bootstrap": 2000,
+          "seed": 7
+        }
+      },
+      "random": {
+        "value": 0.04508384161972479,
+        "paired": {
+          "est": 0.10330325515446875,
+          "ci90": [
+            0.07217423247830305,
+            0.1356087707829656
+          ],
+          "n": 310,
+          "blocks": 304,
+          "bootstrap": 2000,
+          "seed": 7
+        }
+      }
+    },
+    "by_fold": {
+      "2021": 0.11904761904761904,
+      "2022": 0.17567567567567569,
+      "2023": 0.1724137931034483,
+      "2024": 0.12149532710280374
+    }
+  },
+  "gate": {
+    "checks": {
+      "beats_baseline": false,
+      "min_skill": false,
+      "ci_excludes_zero": false
+    },
+    "passed": false,
+    "gap": -0.004838709677419367,
+    "per_baseline": {
+      "transfer_rating": {
+        "gap": 0.005453149001536095,
+        "ci90_low": -0.034115716524828636
+      },
+      "raw_production": {
+        "gap": -0.004838709677419367,
+        "ci90_low": -0.03798071127185052
+      },
+      "profile_only": {
+        "gap": 0.0,
+        "ci90_low": -0.03525641025641027
+      }
+    }
+  },
+  "leakage": {
+    "timestamp": {
+      "passed": true,
+      "folds": [
+        {
+          "fold": 2021,
+          "fit_max_available_at": "2021-01-13 00:00:00",
+          "train_until": "2021-05-01 00:00:00",
+          "predict_max_available_at": "2021-05-01 00:00:00",
+          "decision_date": "2021-05-01 00:00:00",
+          "passes": true
+        },
+        {
+          "fold": 2022,
+          "fit_max_available_at": "2019-02-15 00:00:00",
+          "train_until": "2022-05-01 00:00:00",
+          "predict_max_available_at": "2022-05-01 00:00:00",
+          "decision_date": "2022-05-01 00:00:00",
+          "passes": true
+        },
+        {
+          "fold": 2023,
+          "fit_max_available_at": "2021-08-01 00:00:00",
+          "train_until": "2023-05-01 00:00:00",
+          "predict_max_available_at": "2023-05-01 00:00:00",
+          "decision_date": "2023-05-01 00:00:00",
+          "passes": true
+        },
+        {
+          "fold": 2024,
+          "fit_max_available_at": "2022-09-08 00:00:00",
+          "train_until": "2024-05-01 00:00:00",
+          "predict_max_available_at": "2024-05-01 00:00:00",
+          "decision_date": "2024-05-01 00:00:00",
+          "passes": true
+        }
+      ]
+    },
+    "future_poisoning": {
+      "passed": true,
+      "cutoff": "2024-05-01 00:00:00",
+      "n": 151018
+    },
+    "label_permutation": {
+      "passed": true,
+      "edge_over": "random_direction",
+      "est": 0.018535825545171344,
+      "ci90": [
+        -0.02087227414330218,
+        0.06636292834890965
+      ],
+      "n": 107
+    },
+    "too_good": {
+      "passed": true,
+      "recall": 0.14838709677419354,
+      "ceiling": 0.9
+    },
+    "entity_overlap": {
+      "passed": true,
+      "not_applicable": "group_by: none: player and program features; the outcome rows are the test cohort's transfers, never in training"
+    },
+    "universe": {
+      "passed": true,
+      "predicted": 151018,
+      "scored": 107,
+      "no_outcome": 150911,
+      "note": "entities without an outcome (retired, injured, too few pitches) can't be scored; they're counted here so survivorship is visible"
+    }
+  },
+  "passed": false,
+  "primary": {
+    "metric": "recall",
+    "point": 0.14838709677419354,
+    "transfer_rating": 0.14293394777265744,
+    "raw_production": 0.1532258064516129,
+    "profile_only": 0.14838709677419354,
+    "random": 0.04508384161972479
+  },
+  "revision_safe": false,
+  "approximate_tables": [
+    "teams_2017",
+    "teams_2018",
+    "teams_2019",
+    "teams_2020",
+    "teams_2021",
+    "teams_2022",
+    "teams_2023",
+    "teams_2024",
+    "teams_2025"
+  ]
+}

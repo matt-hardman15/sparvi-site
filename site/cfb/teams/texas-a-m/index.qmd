@@ -1,0 +1,24 @@
+---
+title: "Texas A&M Aggies"
+pagetitle: "Texas A&M football: power rating by week"
+description: "Texas A&M (SEC) college football power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+```{=html}
+<div id="team-root" data-team="Texas A&amp;M"></div>
+<p class="page-summary">Through week 11 of 2026, Texas A&amp;M is 4–6. Its power rating, +6.5 points against an average FBS team, ranks 35th of 138; it is unranked in the AP poll.</p>
+<p class="note team-sub" style="border-left:4px solid #500000;padding-left:.6rem">SEC: <a href="/cfb/teams/alabama/">Alabama</a> · <a href="/cfb/teams/arkansas/">Arkansas</a> · <a href="/cfb/teams/auburn/">Auburn</a> · <a href="/cfb/teams/florida/">Florida</a> · <a href="/cfb/teams/georgia/">Georgia</a> · <a href="/cfb/teams/kentucky/">Kentucky</a> · <a href="/cfb/teams/lsu/">LSU</a> · <a href="/cfb/teams/mississippi-state/">Mississippi State</a> · <a href="/cfb/teams/missouri/">Missouri</a> · <a href="/cfb/teams/oklahoma/">Oklahoma</a> · <a href="/cfb/teams/ole-miss/">Ole Miss</a> · <a href="/cfb/teams/south-carolina/">South Carolina</a> · <a href="/cfb/teams/tennessee/">Tennessee</a> · <a href="/cfb/teams/texas/">Texas</a> · <a href="/cfb/teams/vanderbilt/">Vanderbilt</a> · <a href="/cfb/teams/">All FBS teams</a> · <a href="/cfb/tools/team-ratings.html?team=Texas A&amp;M">Compare with every FBS team</a></p>
+<!-- The season's numbers as plain HTML; the interactive page below removes this once it runs. -->
+<div id="team-static">
+<h3>2026 through week 11</h3>
+<div class="stat-row"><div class="stat"><div class="v">4–6</div><div class="k">Record</div></div><div class="stat"><div class="v">+6.5</div><div class="k">Power rating · 35th of 138</div></div><div class="stat"><div class="v">NR / NR</div><div class="k">AP / CFP rank · latest polls</div></div><div class="stat"><div class="v">+0.132</div><div class="k">Offense EPA/play · 84th of 138</div></div><div class="stat"><div class="v">-0.048</div><div class="k">Defense EPA/play · 39th of 138 (allowed)</div></div></div>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th class=l>Opponent-adjusted EPA/play</th><th>Value</th><th>Rank</th></tr></thead><tbody><tr><td class=l>Offense · all plays</td><td>+0.132</td><td>84th of 138</td></tr><tr><td class=l>Offense · passes</td><td>+0.047</td><td>114th of 138</td></tr><tr><td class=l>Offense · runs</td><td>+0.151</td><td>50th of 138</td></tr><tr><td class=l>Defense (allowed) · all plays</td><td>-0.048</td><td>39th of 138</td></tr><tr><td class=l>Defense (allowed) · passes</td><td>+0.155</td><td>100th of 138</td></tr><tr><td class=l>Defense (allowed) · runs</td><td>-0.160</td><td>14th of 138</td></tr></tbody></table></div>
+<h3>Results</h3>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th>Wk</th><th class=l>Opponent</th><th class=l>Result</th><th>Off EPA/play</th><th>Def EPA/play</th><th>Off success</th></tr></thead><tbody><tr><td>1</td><td class=l>vs <a href="/cfb/teams/missouri-state/">Missouri State</a></td><td class=l>W 50–0</td><td>+0.272</td><td>-0.598</td><td>53.8%</td></tr><tr><td>2</td><td class=l>vs <a href="/cfb/teams/arizona-state/">Arizona State</a></td><td class=l>W 48–20</td><td>+0.011</td><td>-0.099</td><td>38.2%</td></tr><tr><td>3</td><td class=l>vs <a href="/cfb/teams/kentucky/">Kentucky</a></td><td class=l>L 21–31</td><td>-0.051</td><td>+0.433</td><td>44.0%</td></tr><tr><td>4</td><td class=l>@ <a href="/cfb/teams/lsu/">LSU</a></td><td class=l>L 6–35</td><td>-0.159</td><td>+0.468</td><td>28.9%</td></tr><tr><td>5</td><td class=l>vs <a href="/cfb/teams/arkansas/">Arkansas</a></td><td class=l>W 34–7</td><td>+0.393</td><td>-0.176</td><td>47.1%</td></tr><tr><td>6</td><td class=l>@ <a href="/cfb/teams/missouri/">Missouri</a></td><td class=l>L 6–27</td><td>-0.163</td><td>+0.109</td><td>29.5%</td></tr><tr><td>7</td><td class=l>vs The Citadel</td><td class=l>W 41–0</td><td>+0.596</td><td>-0.202</td><td>67.4%</td></tr><tr><td>8</td><td class=l>@ <a href="/cfb/teams/alabama/">Alabama</a></td><td class=l>L 20–31</td><td>-0.070</td><td>+0.240</td><td>37.7%</td></tr><tr><td>10</td><td class=l>@ <a href="/cfb/teams/south-carolina/">South Carolina</a></td><td class=l>L 9–17</td><td>+0.075</td><td>+0.130</td><td>40.0%</td></tr><tr><td>11</td><td class=l>vs <a href="/cfb/teams/tennessee/">Tennessee</a></td><td class=l>L 7–22</td><td>-0.400</td><td>+0.080</td><td>31.8%</td></tr></tbody></table></div>
+<p class="note">Single games are raw (not opponent-adjusted), garbage time removed.</p>
+</div>
+```
+
+{{< include ../_team.qmd >}}

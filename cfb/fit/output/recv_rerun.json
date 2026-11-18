@@ -1,0 +1,189 @@
+{
+ "status": "EXPLORATORY (RECV-MEASURES follow-up): seen data only; the 2026 vault is not read",
+ "receiver_value_definition": "rate = receiving EPA per team pass play (shrunk); replacement = backups' weighted mean",
+ "transfers": {
+  "WR": 2220,
+  "TE": 760
+ },
+ "analyses_run": 16,
+ "expected_by_chance_at_90pct": 1.6,
+ "excluding_zero": 5,
+ "analyses": [
+  {
+   "id": "WR.A_tp.M1.all",
+   "analysis": "corr(style distance, residual); closer is better if negative",
+   "n": 1857,
+   "est": 0.0023,
+   "ci90": [
+    -0.0335,
+    0.037
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "WR.A_tp.M1.kept_coach",
+   "analysis": "same, destinations that kept their head coach",
+   "n": 960,
+   "est": -0.0074,
+   "ci90": [
+    -0.0547,
+    0.046
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "WR.A_tp.agree",
+   "analysis": "agreement rate minus chance (style rank thirds vs. beat / fell short or didn't play)",
+   "n": 1355,
+   "est": 0.0259,
+   "ci90": [
+    0.0004,
+    0.05
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "WR.A_tp.agree.kept_coach",
+   "analysis": "same, destinations that kept their head coach",
+   "n": 936,
+   "est": 0.0201,
+   "ci90": [
+    -0.0078,
+    0.0495
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "WR.B_tp.M1.all",
+   "analysis": "corr(style distance, residual); closer is better if negative",
+   "n": 804,
+   "est": -0.0762,
+   "ci90": [
+    -0.1286,
+    -0.0174
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "WR.B_tp.M1.kept_coach",
+   "analysis": "same, destinations that kept their head coach",
+   "n": 477,
+   "est": -0.1168,
+   "ci90": [
+    -0.1797,
+    -0.0493
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "WR.B_tp.agree",
+   "analysis": "agreement rate minus chance (style rank thirds vs. beat / fell short or didn't play)",
+   "n": 653,
+   "est": 0.0397,
+   "ci90": [
+    0.0067,
+    0.0721
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "WR.B_tp.agree.kept_coach",
+   "analysis": "same, destinations that kept their head coach",
+   "n": 453,
+   "est": 0.0548,
+   "ci90": [
+    0.0144,
+    0.0957
+   ],
+   "excludes_zero": true
+  },
+  {
+   "id": "TE.A_tp.M1.all",
+   "analysis": "corr(style distance, residual); closer is better if negative",
+   "n": 661,
+   "est": 0.0336,
+   "ci90": [
+    -0.0292,
+    0.1026
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "TE.A_tp.M1.kept_coach",
+   "analysis": "same, destinations that kept their head coach",
+   "n": 356,
+   "est": 0.0304,
+   "ci90": [
+    -0.0415,
+    0.103
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "TE.A_tp.agree",
+   "analysis": "agreement rate minus chance (style rank thirds vs. beat / fell short or didn't play)",
+   "n": 500,
+   "est": -0.039,
+   "ci90": [
+    -0.0788,
+    0.002
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "TE.A_tp.agree.kept_coach",
+   "analysis": "same, destinations that kept their head coach",
+   "n": 351,
+   "est": -0.0385,
+   "ci90": [
+    -0.0871,
+    0.008
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "TE.B_tp.M1.all",
+   "analysis": "corr(style distance, residual); closer is better if negative",
+   "n": 252,
+   "est": 0.0982,
+   "ci90": [
+    -0.0086,
+    0.2067
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "TE.B_tp.M1.kept_coach",
+   "analysis": "same, destinations that kept their head coach",
+   "n": 155,
+   "est": 0.0632,
+   "ci90": [
+    -0.0589,
+    0.1734
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "TE.B_tp.agree",
+   "analysis": "agreement rate minus chance (style rank thirds vs. beat / fell short or didn't play)",
+   "n": 214,
+   "est": -0.0282,
+   "ci90": [
+    -0.0886,
+    0.0327
+   ],
+   "excludes_zero": false
+  },
+  {
+   "id": "TE.B_tp.agree.kept_coach",
+   "analysis": "same, destinations that kept their head coach",
+   "n": 150,
+   "est": -0.0188,
+   "ci90": [
+    -0.0942,
+    0.0488
+   ],
+   "excludes_zero": false
+  }
+ ]
+}

@@ -35,7 +35,8 @@ def load_module(path: str):
 
 def folds_for(spec: dict, fast: bool):
     s = spec["splits"]
-    fs = season_folds(s["first_test"], s["last_test"], s.get("train_window"), s.get("decision", "03-01"), s.get("predictor_lag", 1))
+    fs = season_folds(s["first_test"], s["last_test"], s.get("train_window"), s.get("decision", "03-01"), s.get("predictor_lag", 1),
+                      s.get("train_until"), s.get("resolve"), s.get("first_train"))
     return fs[-s.get("fast_folds", 1):] if fast else fs
 
 
@@ -54,29 +55,66 @@ def run_fold(mod, loader: Loader, fold) -> tuple[pd.DataFrame, dict]:
     return df, audit
 
 
-def evaluate(df: pd.DataFrame, spec: dict) -> dict:
+def evaluate(df: pd.DataFrame, spec: dict, segments: bool = True) -> dict:
+    """The primary metric and each baseline's paired comparison; with the spec's `segment` (a prediction column, e.g.
+    position group), the same per segment under "segments"."""
     metric = spec["primary_metric"]
     block = spec.get("block", "entity_id")
-    out = {"metric": metric, "n": int(len(df)), "point": metrics.score(metric, df["point"], df["y"]), "baselines": {}}
+    out = {"metric": metric, "n": int(len(df)), "point": metrics.score(metric, df["point"], df["y"]), "baselines": {},
+           "by_fold": {int(f): metrics.score(metric, g["point"], g["y"]) for f, g in df.groupby("fold")}}
     for b in spec["baselines"]:
         out["baselines"][b] = {"value": metrics.score(metric, df[b], df["y"]),
                                "paired": metrics.paired_bootstrap(df.reset_index(drop=True), metric, "point", b, "y", block,
                                                                   n=spec.get("bootstrap", 2000), seed=spec.get("seed", 7))}
+    noise = (spec.get("pass_gate") or {}).get("calibration_noise")
+    if noise:   # F4's calibration gate: the ECE must sit below what perfect calibration shows on these rows by chance
+        out["ece_noise"] = metrics.ece_noise(df["point"], q=noise.get("quantile", 0.9), draws=noise.get("draws", 2000),
+                                             seed=spec.get("seed", 7))
+    if segments and spec.get("segment"):
+        out["segments"] = {str(k): evaluate(g.reset_index(drop=True), spec, segments=False) for k, g in df.groupby(spec["segment"])}
     return out
 
 
 def gate(ev: dict, g: dict) -> dict:
-    """The pre-registered pass gate. Comparisons are oriented so 'better' is positive."""
+    """The pre-registered pass gate. Comparisons are oriented so 'better' is positive. beats_baseline is one baseline
+    or a list; with a list, every check must hold against each of them (gap and lower bound are the worst). A gate with
+    no beats_baseline (a calibration gate, e.g. F4's lookup-table components) checks min_point alone."""
     sign = 1 if metrics.higher_is_better(ev["metric"]) else -1
-    base = ev["baselines"][g["beats_baseline"]]
-    gap = sign * base["paired"]["est"]
-    lo = min(sign * base["paired"]["ci90"][0], sign * base["paired"]["ci90"][1])
+    if not g.get("beats_baseline"):
+        if g.get("calibration_noise"):
+            bar = ev["ece_noise"]["bar"]
+            ok = ev["point"] < bar
+            return {"checks": {"calibration_noise": ok}, "passed": ok, "gap": bar - ev["point"], "per_baseline": {},
+                    "noise_bar": bar}
+        if "min_point" not in g:
+            raise ValueError("a gate without beats_baseline needs min_point or calibration_noise")
+        ok = ev["point"] >= g["min_point"] if sign > 0 else ev["point"] <= g["min_point"]
+        return {"checks": {"min_point": ok}, "passed": ok, "gap": sign * (ev["point"] - g["min_point"]), "per_baseline": {}}
+    names = g["beats_baseline"] if isinstance(g["beats_baseline"], list) else [g["beats_baseline"]]
+    gaps, los = [], []
+    for b in names:
+        base = ev["baselines"][b]
+        gaps.append(sign * base["paired"]["est"])
+        los.append(min(sign * base["paired"]["ci90"][0], sign * base["paired"]["ci90"][1]))
+    gap, lo = min(gaps), min(los)
     checks = {"beats_baseline": gap > 0,
               "min_skill": gap >= g.get("min_skill", 0.0),
               "ci_excludes_zero": (lo > 0) if g.get("ci_excludes_zero") else True}
     if "min_point" in g:
         checks["min_point"] = ev["point"] >= g["min_point"] if metrics.higher_is_better(ev["metric"]) else ev["point"] <= g["min_point"]
-    return {"checks": checks, "passed": all(checks.values()), "gap": gap}
+    return {"checks": checks, "passed": all(checks.values()), "gap": gap,
+            "per_baseline": {b: {"gap": x, "ci90_low": y} for b, x, y in zip(names, gaps, los, strict=True)}}
+
+
+def gate_all(ev: dict, g: dict) -> dict:
+    """The gate on the pooled rows, or with pass_gate.each_segment (Matt, CFB-PROJ: strict in every position group) on
+    every segment, each against every baseline; the overall result is the worst segment's."""
+    if not g.get("each_segment"):
+        return gate(ev, g)
+    per = {k: gate(v, g) for k, v in ev["segments"].items()}
+    worst = min(per, key=lambda k: per[k]["gap"])
+    return {"checks": {k: v["passed"] for k, v in per.items()}, "passed": all(v["passed"] for v in per.values()),
+            "gap": per[worst]["gap"], "per_segment": per}
 
 
 def run(name: str, fast: bool = False, loader: Loader | None = None, write: bool = True, leakage: bool = True) -> dict:
@@ -91,7 +129,7 @@ def run(name: str, fast: bool = False, loader: Loader | None = None, write: bool
         audits.append({"fold": fold.test_season, **audit})
     df = pd.concat(frames, ignore_index=True)
     ev = evaluate(df, spec)
-    g = gate(ev, spec["pass_gate"])
+    g = gate_all(ev, spec["pass_gate"])
     leak = {"timestamp": {"passed": all(a["passes"] for a in audits), "folds": audits}}
     if leakage:
         from backtest import leakage as lk

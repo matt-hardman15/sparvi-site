@@ -8,6 +8,17 @@ page-layout: full
 
 ```{=html}
 <div id="team-root" data-team="DET"></div>
+<p class="page-summary">The Detroit Lions are 7–2 through week 10 of 2026. Opponent-adjusted, the offense ranks 6th of 32 in EPA per play (+0.109) and the defense 25th (+0.051 allowed).</p>
+<p class="note team-sub" style="border-left:4px solid #0076B6;padding-left:.6rem">NFC North: <a href="/nfl/teams/chi/">Chicago Bears</a> · <a href="/nfl/teams/gb/">Green Bay Packers</a> · <a href="/nfl/teams/min/">Minnesota Vikings</a> · <a href="/nfl/teams/">All 32 teams</a> · <a href="/nfl/tools/team-efficiency.html?team=DET">Compare with every team</a></p>
+<!-- The season's numbers as plain HTML; the interactive page below removes this once it runs. -->
+<div id="team-static">
+<h3>2026 through week 10</h3>
+<div class="stat-row"><div class="stat"><div class="v">7–2</div><div class="k">Record</div></div><div class="stat"><div class="v">+0.109</div><div class="k">Offense EPA/play · 6th of 32</div></div><div class="stat"><div class="v">+0.051</div><div class="k">Defense EPA/play · 25th of 32 (allowed)</div></div><div class="stat"><div class="v">+0.058</div><div class="k">Net EPA/play · 9th of 32</div></div></div>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th class=l>Opponent-adjusted EPA/play</th><th>Value</th><th>Rank</th></tr></thead><tbody><tr><td class=l>Offense · all plays</td><td>+0.109</td><td>6th of 32</td></tr><tr><td class=l>Offense · passes</td><td>+0.185</td><td>5th of 32</td></tr><tr><td class=l>Offense · runs</td><td>+0.006</td><td>5th of 32</td></tr><tr><td class=l>Defense (allowed) · all plays</td><td>+0.051</td><td>25th of 32</td></tr><tr><td class=l>Defense (allowed) · passes</td><td>+0.119</td><td>23rd of 32</td></tr><tr><td class=l>Defense (allowed) · runs</td><td>-0.101</td><td>11th of 32</td></tr></tbody></table></div>
+<h3>Results</h3>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th>Wk</th><th class=l>Opponent</th><th class=l>Result</th><th>Off EPA/play</th><th>Def EPA/play</th><th>Off success</th></tr></thead><tbody><tr><td>1</td><td class=l>vs <a href="/nfl/teams/no/">NO</a></td><td class=l>W 31–30</td><td>+0.011</td><td>+0.008</td><td>45.3%</td></tr><tr><td>2</td><td class=l>@ <a href="/nfl/teams/buf/">BUF</a></td><td class=l>L 31–41</td><td>+0.224</td><td>+0.416</td><td>52.3%</td></tr><tr><td>3</td><td class=l>vs <a href="/nfl/teams/nyj/">NYJ</a></td><td class=l>W 31–24</td><td>+0.232</td><td>-0.034</td><td>61.4%</td></tr><tr><td>4</td><td class=l>@ <a href="/nfl/teams/car/">CAR</a></td><td class=l>L 26–32</td><td>+0.117</td><td>+0.391</td><td>44.0%</td></tr><tr><td>5</td><td class=l>@ <a href="/nfl/teams/ari/">ARI</a></td><td class=l>W 45–21</td><td>+0.287</td><td>-0.022</td><td>46.9%</td></tr><tr><td>7</td><td class=l>vs <a href="/nfl/teams/gb/">GB</a></td><td class=l>W 20–17</td><td>+0.002</td><td>+0.016</td><td>52.2%</td></tr><tr><td>8</td><td class=l>vs <a href="/nfl/teams/min/">MIN</a></td><td class=l>W 19–15</td><td>-0.014</td><td>-0.074</td><td>49.2%</td></tr><tr><td>9</td><td class=l>@ <a href="/nfl/teams/mia/">MIA</a></td><td class=l>W 19–9</td><td>+0.015</td><td>-0.112</td><td>45.8%</td></tr><tr><td>10</td><td class=l>vs <a href="/nfl/teams/ne/">NE</a></td><td class=l>W 35–10</td><td>+0.202</td><td>-0.211</td><td>50.0%</td></tr></tbody></table></div>
+<p class="note">Single games are raw (not opponent-adjusted), garbage time removed.</p>
+</div>
 ```
 
 {{< include ../_team.qmd >}}

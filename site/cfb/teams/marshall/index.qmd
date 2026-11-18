@@ -1,0 +1,24 @@
+---
+title: "Marshall Thundering Herd"
+pagetitle: "Marshall football: power rating by week"
+description: "Marshall (Sun Belt) college football power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+```{=html}
+<div id="team-root" data-team="Marshall"></div>
+<p class="page-summary">Through week 11 of 2026, Marshall is 5–5. Its power rating, −11.2 points against an average FBS team, ranks 118th of 138; it is unranked in the AP poll.</p>
+<p class="note team-sub" style="border-left:4px solid #00b140;padding-left:.6rem">Sun Belt: <a href="/cfb/teams/app-state/">App State</a> · <a href="/cfb/teams/arkansas-state/">Arkansas State</a> · <a href="/cfb/teams/coastal-carolina/">Coastal Carolina</a> · <a href="/cfb/teams/georgia-southern/">Georgia Southern</a> · <a href="/cfb/teams/georgia-state/">Georgia State</a> · <a href="/cfb/teams/james-madison/">James Madison</a> · <a href="/cfb/teams/louisiana/">Louisiana</a> · <a href="/cfb/teams/louisiana-tech/">Louisiana Tech</a> · <a href="/cfb/teams/old-dominion/">Old Dominion</a> · <a href="/cfb/teams/south-alabama/">South Alabama</a> · <a href="/cfb/teams/southern-miss/">Southern Miss</a> · <a href="/cfb/teams/troy/">Troy</a> · <a href="/cfb/teams/ul-monroe/">UL Monroe</a> · <a href="/cfb/teams/">All FBS teams</a> · <a href="/cfb/tools/team-ratings.html?team=Marshall">Compare with every FBS team</a></p>
+<!-- The season's numbers as plain HTML; the interactive page below removes this once it runs. -->
+<div id="team-static">
+<h3>2026 through week 11</h3>
+<div class="stat-row"><div class="stat"><div class="v">5–5</div><div class="k">Record</div></div><div class="stat"><div class="v">−11.2</div><div class="k">Power rating · 118th of 138</div></div><div class="stat"><div class="v">NR / NR</div><div class="k">AP / CFP rank · latest polls</div></div><div class="stat"><div class="v">+0.071</div><div class="k">Offense EPA/play · 105th of 138</div></div><div class="stat"><div class="v">+0.167</div><div class="k">Defense EPA/play · 126th of 138 (allowed)</div></div></div>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th class=l>Opponent-adjusted EPA/play</th><th>Value</th><th>Rank</th></tr></thead><tbody><tr><td class=l>Offense · all plays</td><td>+0.071</td><td>105th of 138</td></tr><tr><td class=l>Offense · passes</td><td>+0.080</td><td>103rd of 138</td></tr><tr><td class=l>Offense · runs</td><td>+0.031</td><td>105th of 138</td></tr><tr><td class=l>Defense (allowed) · all plays</td><td>+0.167</td><td>126th of 138</td></tr><tr><td class=l>Defense (allowed) · passes</td><td>+0.230</td><td>124th of 138</td></tr><tr><td class=l>Defense (allowed) · runs</td><td>+0.132</td><td>122nd of 138</td></tr></tbody></table></div>
+<h3>Results</h3>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th>Wk</th><th class=l>Opponent</th><th class=l>Result</th><th>Off EPA/play</th><th>Def EPA/play</th><th>Off success</th></tr></thead><tbody><tr><td>1</td><td class=l>@ <a href="/cfb/teams/penn-state/">Penn State</a></td><td class=l>L 0–45</td><td>-0.048</td><td>+0.592</td><td>31.4%</td></tr><tr><td>2</td><td class=l>vs <a href="/cfb/teams/middle-tennessee/">Middle Tennessee</a></td><td class=l>W 28–26</td><td>+0.096</td><td>+0.153</td><td>41.0%</td></tr><tr><td>3</td><td class=l>@ <a href="/cfb/teams/missouri-state/">Missouri State</a></td><td class=l>W 30–24</td><td>+0.340</td><td>+0.387</td><td>50.0%</td></tr><tr><td>4</td><td class=l>vs Gardner-Webb</td><td class=l>W 36–35</td><td>+0.233</td><td>+0.376</td><td>45.3%</td></tr><tr><td>5</td><td class=l>@ <a href="/cfb/teams/james-madison/">James Madison</a></td><td class=l>L 17–45</td><td>+0.220</td><td>+0.450</td><td>46.8%</td></tr><tr><td>6</td><td class=l>vs <a href="/cfb/teams/coastal-carolina/">Coastal Carolina</a></td><td class=l>L 21–27</td><td>+0.013</td><td>+0.034</td><td>47.4%</td></tr><tr><td>8</td><td class=l>vs <a href="/cfb/teams/south-alabama/">South Alabama</a></td><td class=l>W 20–13</td><td>+0.087</td><td>-0.031</td><td>48.5%</td></tr><tr><td>9</td><td class=l>@ <a href="/cfb/teams/old-dominion/">Old Dominion</a></td><td class=l>W 36–23</td><td>-0.142</td><td>-0.033</td><td>35.2%</td></tr><tr><td>10</td><td class=l>@ <a href="/cfb/teams/georgia-southern/">Georgia Southern</a></td><td class=l>L 13–49</td><td>-0.298</td><td>+0.388</td><td>38.9%</td></tr><tr><td>11</td><td class=l>vs <a href="/cfb/teams/app-state/">App State</a></td><td class=l>L 16–20</td><td>-0.169</td><td>-0.042</td><td>42.3%</td></tr></tbody></table></div>
+<p class="note">Single games are raw (not opponent-adjusted), garbage time removed.</p>
+</div>
+```
+
+{{< include ../_team.qmd >}}

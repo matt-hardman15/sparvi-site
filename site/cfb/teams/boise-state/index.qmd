@@ -1,0 +1,24 @@
+---
+title: "Boise State Broncos"
+pagetitle: "Boise State football: power rating by week"
+description: "Boise State (Pac-12) power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+```{=html}
+<div id="team-root" data-team="Boise State"></div>
+<p class="page-summary">Through week 11 of 2026, Boise State is 9–1. Its power rating, +10.0 points against an average FBS team, ranks 26th of 138; the AP poll has it 17th. That is the highest power rating in the Pac-12.</p>
+<p class="note team-sub" style="border-left:4px solid #0033a0;padding-left:.6rem">Pac-12: <a href="/cfb/teams/colorado-state/">Colorado State</a> · <a href="/cfb/teams/fresno-state/">Fresno State</a> · <a href="/cfb/teams/oregon-state/">Oregon State</a> · <a href="/cfb/teams/san-diego-state/">San Diego State</a> · <a href="/cfb/teams/texas-state/">Texas State</a> · <a href="/cfb/teams/utah-state/">Utah State</a> · <a href="/cfb/teams/washington-state/">Washington State</a> · <a href="/cfb/teams/">All FBS teams</a> · <a href="/cfb/tools/team-ratings.html?team=Boise State">Compare with every FBS team</a></p>
+<!-- The season's numbers as plain HTML; the interactive page below removes this once it runs. -->
+<div id="team-static">
+<h3>2026 through week 11</h3>
+<div class="stat-row"><div class="stat"><div class="v">9–1</div><div class="k">Record</div></div><div class="stat"><div class="v">+10.0</div><div class="k">Power rating · 26th of 138</div></div><div class="stat"><div class="v">17 / 24</div><div class="k">AP / CFP rank · latest polls</div></div><div class="stat"><div class="v">+0.395</div><div class="k">Offense EPA/play · 4th of 138</div></div><div class="stat"><div class="v">+0.058</div><div class="k">Defense EPA/play · 83rd of 138 (allowed)</div></div></div>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th class=l>Opponent-adjusted EPA/play</th><th>Value</th><th>Rank</th></tr></thead><tbody><tr><td class=l>Offense · all plays</td><td>+0.395</td><td>4th of 138</td></tr><tr><td class=l>Offense · passes</td><td>+0.553</td><td>2nd of 138</td></tr><tr><td class=l>Offense · runs</td><td>+0.235</td><td>13th of 138</td></tr><tr><td class=l>Defense (allowed) · all plays</td><td>+0.058</td><td>83rd of 138</td></tr><tr><td class=l>Defense (allowed) · passes</td><td>+0.043</td><td>53rd of 138</td></tr><tr><td class=l>Defense (allowed) · runs</td><td>+0.089</td><td>106th of 138</td></tr></tbody></table></div>
+<h3>Results</h3>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th>Wk</th><th class=l>Opponent</th><th class=l>Result</th><th>Off EPA/play</th><th>Def EPA/play</th><th>Off success</th></tr></thead><tbody><tr><td>1</td><td class=l>@ <a href="/cfb/teams/oregon/">Oregon</a></td><td class=l>L 27–34</td><td>+0.067</td><td>+0.188</td><td>36.9%</td></tr><tr><td>2</td><td class=l>vs <a href="/cfb/teams/memphis/">Memphis</a></td><td class=l>W 38–20</td><td>+0.413</td><td>+0.229</td><td>49.3%</td></tr><tr><td>3</td><td class=l>vs South Dakota</td><td class=l>W 38–24</td><td>+0.297</td><td>+0.017</td><td>59.0%</td></tr><tr><td>4</td><td class=l>@ <a href="/cfb/teams/western-michigan/">Western Michigan</a></td><td class=l>W 32–7</td><td>+0.394</td><td>-0.194</td><td>51.9%</td></tr><tr><td>5</td><td class=l>vs <a href="/cfb/teams/utah-state/">Utah State</a></td><td class=l>W 37–18</td><td>+0.332</td><td>-0.021</td><td>45.9%</td></tr><tr><td>6</td><td class=l>@ <a href="/cfb/teams/fresno-state/">Fresno State</a></td><td class=l>W 38–31</td><td>+0.398</td><td>+0.355</td><td>46.8%</td></tr><tr><td>8</td><td class=l>@ <a href="/cfb/teams/washington-state/">Washington State</a></td><td class=l>W 31–10</td><td>+0.380</td><td>-0.142</td><td>41.0%</td></tr><tr><td>9</td><td class=l>vs <a href="/cfb/teams/texas-state/">Texas State</a></td><td class=l>W 46–45</td><td>+0.227</td><td>+0.195</td><td>47.7%</td></tr><tr><td>10</td><td class=l>@ <a href="/cfb/teams/colorado-state/">Colorado State</a></td><td class=l>W 64–38</td><td>+0.771</td><td>+0.399</td><td>67.9%</td></tr><tr><td>11</td><td class=l>vs <a href="/cfb/teams/oregon-state/">Oregon State</a></td><td class=l>W 46–41</td><td>+0.395</td><td>+0.406</td><td>46.2%</td></tr></tbody></table></div>
+<p class="note">Single games are raw (not opponent-adjusted), garbage time removed.</p>
+</div>
+```
+
+{{< include ../_team.qmd >}}

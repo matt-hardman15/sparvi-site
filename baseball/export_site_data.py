@@ -23,6 +23,8 @@ import yaml
 from backtest.gate import require_passing
 from sparvi.config import ROOT, baseball, section
 from sparvi.io import write_json, write_numbers, write_records
+from sparvi.player_archive import archive, path_for
+from sparvi.urls import update_registry
 
 CFG = baseball()
 SEASON, PREV = CFG.season, CFG.prev
@@ -176,12 +178,17 @@ write_records(OUT / "rule5_pitchers.json", r5p[cols].sort_values("player_id"), r
               digits=dict.fromkeys(GRADES, 1) | {"best_pt_stuff": 1, "k_pct": 4, "bb_pct": 4, "k_bb_pct": 4, "csw_pct": 4, "fb_velo": 1})
 
 R5_HIT = ["chase_pct", "zone_contact_pct", "ev90", "hard_hit_pct"]
-r5h = with_org(h.merge(e5, on="player_id"))
+# Triple-A season line, positions, and fielding (Stats API season totals, aggregated in rule5/analysis.py).
+R5_LINE = ["avg", "obp", "slg", "hr", "sb", "cs", "positions", "n_positions", "pos_group", "def_pos", "def_g", "def_inn",
+           "def_e", "def_fpct", "c_sb", "c_cs", "c_cs_pct", "c_pb"]
+hs = pd.read_csv(R5 / "hitter_stats.csv")
+r5h = with_org(h.merge(e5, on="player_id").merge(hs[["player_id", *R5_LINE]], on="player_id", how="left"))
 cols = (["player_id", "name", "org", "team", "age", "position", "pa", "xwoba", "k_pct", "bb_pct"] + R5_HIT
-        + [f"{c}_pctl" for c in R5_HIT] + ["status", "reason"])
+        + [f"{c}_pctl" for c in R5_HIT] + R5_LINE + ["status", "reason"])
 write_records(OUT / "rule5_hitters.json", r5h[cols].sort_values("player_id"), required=cols,
-              not_null=["player_id", "name", "status", "reason"], min_rows=50,
-              digits={"xwoba": 3, "k_pct": 4, "bb_pct": 4, "chase_pct": 4, "zone_contact_pct": 4, "ev90": 1, "hard_hit_pct": 4})
+              not_null=["player_id", "name", "status", "reason", "pos_group"], min_rows=50,
+              digits={"xwoba": 3, "k_pct": 4, "bb_pct": 4, "chase_pct": 4, "zone_contact_pct": 4, "ev90": 1, "hard_hit_pct": 4,
+                      "avg": 3, "obp": 3, "slg": 3, "def_inn": 1, "def_fpct": 3, "c_cs_pct": 3})
 
 # ---- Snapshots: weekly values for the date slider ------------------------------------
 # League files are columnar to stay small:
@@ -326,6 +333,10 @@ for pid in ids:
         "flags": season_rows["aaa_flags"].get(pid, []), "timeline": timelines.get(pid, {}),
     })
 write_json(OUT / "players_index.json", ids)
+# Every page path each player has had (PLAN-seo S2): only grows, so old URLs keep redirecting.
+write_json(OUT / "player_urls.json", update_registry(OUT / "player_urls.json", {pid: names.get(pid, str(pid)) for pid in ids}))
+# This season's final numbers per player, so pages survive the rollover (sparvi/player_archive.py).
+write_json(path_for(OUT, SEASON), archive([json.loads((PLAYERS / f"{pid}.json").read_text(encoding="utf-8")) for pid in ids]))
 sizes = sorted(f.stat().st_size for f in PLAYERS.glob("*.json"))
 print(f"players/*.json {len(sizes):>14,} files, median {sizes[len(sizes) // 2] / 1024:.0f} KB, "
       f"max {sizes[-1] / 1024:.0f} KB, total {sum(sizes) / 1e6:.1f} MB")
@@ -346,7 +357,8 @@ meta = {
     "stuff_robustness": strip(robust),
     "location_metrics": locm,
     "shape_results": strip(shape_res),
-    "rule5": {"snapshot_date": r5res["snapshot_date"], "statuses": R5_STATUSES, **section("baseball", "rule5")},
+    "rule5": {"snapshot_date": r5res["snapshot_date"], "statuses": R5_STATUSES, "versatile_g": r5res["versatile_g"],
+              **section("baseball", "rule5")},
     # Snapshot calendars, for the date slider and for prorating pitch minimums at earlier dates.
     "snapshots": {lvl: {"dates": [pd.Timestamp(d).strftime("%Y-%m-%d") for d in g["snapshot_date"]], "team_games": g["team_games"].tolist(),
                         "team_games_last": g["team_games_last"].tolist(), "full_season_games": DBT_VARS["full_season_games"][lvl]}
@@ -884,6 +896,8 @@ N |= {
     "r5_val_n": val["n"], "r5_val_agree": val["agree"], "r5_val_pct": f"{val['agreement']:.0%}",
     "r5_val_n_pos": val["n_listed_eligible"], "r5_val_n_neg": val["n_listed_not_yet"],
     "r5_n_free_agents": f"{r5res['status_counts'].get('Free agent', 0):,}",
+    "r5_n_catchers": f"{int((r5h['pos_group'] == 'C').sum()):,}",
+    "r5_n_versatile": f"{int((r5h['n_positions'] >= 2).sum()):,}", "r5_versatile_g": str(r5res["versatile_g"]),
     # Before the deadline the article says the board is preliminary; after it, that the pool is final.
     "r5_prelim_note": (
         f"*Built from {nice(snap)} rosters, after the {nice(R5CAL['protection_deadline'])} protection deadline, "
@@ -1000,4 +1014,70 @@ N |= {"farm_rel_min": f"{100 * min(rel):.0f}%", "farm_rel_max": f"{100 * max(rel
 if not max(rel) < 0.6:
     raise StaleProse("Farm-systems article says one season's org scores are mostly noise (signal share under 60%).")
 
+# ---- Free-agent pitchers (baseball/free_agents; article site/baseball/free-agent-pitchers/) -------------
+# Point grades come from the published MLB rows (stuff_pitchers.json, written above), so the article always matches
+# the leaderboard and player pages; the analysis supplies the game-bootstrap interval widths and the history test.
+FA = read_json(ROOT / "baseball" / "free_agents" / "output" / "results.json")
+pub = {r["id"]: r for r in read_json(OUT / "stuff_pitchers.json") if r["level"] == "MLB"}
+fa_rows = []
+for x in FA["pitchers"]:
+    pp = pub.get(x["id"])
+    if pp is None:
+        raise ValueError(f"free agent {x['name']} ({x['id']}) has no published MLB row")
+    row = {k: x[k] for k in ("id", "name", "role", "g", "gs", "from_team", "to_team", "date_signed", "pitches")}
+    for k in ("stuff", "loc", "pitching"):
+        v = pp[f"{k}_plus"]
+        row[f"{k}_plus"] = v
+        row[f"{k}_lo"], row[f"{k}_hi"] = round(v + x[f"{k}_lo"] - x[f"{k}_plus"], 1), round(v + x[f"{k}_hi"] - x[f"{k}_plus"], 1)
+    row["rv_plus"] = pp["rv_plus"]
+    row["gap"] = round(pp["rv_plus"] - pp["pitching_plus"], 1)
+    row["flag"] = "trailed" if row["gap"] <= -FA["history"]["gap"] else "ahead" if row["gap"] >= FA["history"]["gap"] else ""
+    fa_rows.append(row)
+write_json(OUT / "free_agents.json", {"season": FA["season"], "pulled_on": FA["pulled_on"], "min_pitches": FA["min_pitches"],
+                                      "history": FA["history"], "pitchers": fa_rows})
+H = FA["history"]
+link = lambda r: f"[{r['name']}](/baseball/player.html?id={r['id']})"  # noqa: E731
+trailed = sorted((r for r in fa_rows if r["flag"] == "trailed"), key=lambda r: r["gap"])
+ahead = sorted((r for r in fa_rows if r["flag"] == "ahead"), key=lambda r: -r["gap"])
+gapnote = lambda r: f"{link(r)} (Pitching+ {r['pitching_plus']:.0f}, RV+ {r['rv_plus']:.0f})"  # noqa: E731
+by_stuff = sorted(fa_rows, key=lambda r: -r["stuff_plus"])
+sp = sorted((r for r in fa_rows if r["role"] == "SP"), key=lambda r: -r["pitching_plus"])
+sgn = lambda v: f"{v:+.1f}".replace("-", "−")  # noqa: E731
+N.update({
+    "fa_n": str(len(fa_rows)), "fa_min_pitches": str(FA["min_pitches"]), "fa_season": str(FA["season"]),
+    "fa_n_signed": str(sum(1 for r in fa_rows if r["to_team"])), "fa_gap": str(H["gap"]),
+    "fa_n_trailed": str(len(trailed)), "fa_n_ahead": str(len(ahead)),
+    "fa_trailed_names": "; ".join(map(gapnote, trailed[:4])), "fa_ahead_names": "; ".join(map(gapnote, ahead[:4])),
+    "fa_top_stuff": "; ".join(f"{link(r)} ({r['stuff_plus']:.0f}, interval {r['stuff_lo']:.0f} to {r['stuff_hi']:.0f})" for r in by_stuff[:3]),
+    "fa_top_sp": f"{link(sp[0])} (Pitching+ {sp[0]['pitching_plus']:.0f}, interval {sp[0]['pitching_lo']:.0f} to {sp[0]['pitching_hi']:.0f})",
+    "fa_n_sp": str(sum(r["role"] == "SP" for r in fa_rows)), "fa_n_rp": str(sum(r["role"] == "RP" for r in fa_rows)),
+    "fa_h_n": str(H["n"]), "fa_h_prev": str(H["seasons"][0]), "fa_h_cur": str(H["seasons"][1]),
+    "fa_h_trailed_n": str(H["trailed"]["n"]), "fa_h_trailed_change": sgn(H["trailed"]["change"]),
+    "fa_h_trailed_ci": f"{sgn(H['trailed']['ci90'][0])} to {sgn(H['trailed']['ci90'][1])}",
+    "fa_h_ahead_n": str(H["ahead"]["n"]), "fa_h_ahead_change": sgn(H["ahead"]["change"]),
+    "fa_h_ahead_ci": f"{sgn(H['ahead']['ci90'][0])} to {sgn(H['ahead']['ci90'][1])}",
+    "fa_h_close_change": sgn(H["close"]["change"]),
+    "fa_h_coef_pitching": f"{H['coef_pitching']:.2f}", "fa_h_coef_results": f"{H['coef_results']:.2f}",
+})
+fa_day = date.fromisoformat(FA["pulled_on"])
+N["fa_pulled"] = f"{fa_day:%B} {fa_day.day}, {fa_day.year}"
+# Claims the free-agent article makes. If one stops holding, rewrite the sentence.
+if not H["trailed"]["ci90"][0] > 0:
+    raise StaleProse("Free-agent article: 'pitchers whose results trailed Pitching+ improved the next season' (interval above zero) no longer holds.")
+if not H["ahead"]["ci90"][1] < 0:
+    raise StaleProse("Free-agent article: 'pitchers whose results ran ahead of Pitching+ fell back the next season' (interval below zero) no longer holds.")
+if not H["coef_pitching"] > H["coef_results"]:
+    raise StaleProse("Free-agent article: 'last season's Pitching+ carried into the next season more than last season's results' no longer holds.")
+if not (trailed and ahead and sp):
+    raise StaleProse("Free-agent article: the lists of free agents whose results trailed or ran ahead (and the top starter) are empty.")
+
+# Seed sensitivity of the bagged pitch-quality models (pitch_quality/stability.py, v2.0.0), for the method notes.
+STAB = read_json(PQ / "stability.json")
+N.update({"stab_n": str(STAB["n"]), "stab_min_pitches": str(STAB["min_pitches"]),
+          "stab_stuff_mean": f"{STAB['stuff_plus']['mean_abs']:.1f}", "stab_stuff_max": f"{STAB['stuff_plus']['max']:.1f}",
+          "stab_pitching_mean": f"{STAB['pitching_plus']['mean_abs']:.1f}", "stab_pitching_max": f"{STAB['pitching_plus']['max']:.1f}",
+          "stab_loc_mean": f"{STAB['loc_plus']['mean_abs']:.1f}", "stab_loc_max": f"{STAB['loc_plus']['max']:.1f}"})
+if not (STAB["stuff_plus"]["mean_abs"] < 1 and STAB["pitching_plus"]["mean_abs"] < 1):
+    raise StaleProse("Stuff+/Pitching+ method notes: 'retraining with another seed moves a pitcher's grade by well under a point "
+                     "on average' no longer holds.")
 write_numbers("baseball", N, source="baseball/export_site_data.py")

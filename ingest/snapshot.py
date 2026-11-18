@@ -29,6 +29,13 @@ def baseball_tables() -> list[Table]:
     rosters = sorted(RAW.glob("rosters_40man_*.parquet"))       # dated files from pull_rosters.py; newest wins
     if rosters:
         t.append(Table("rosters_40man", rosters[-1], ("player_id",), drop=("snapshot_date",)))
+    for kind, key in (("hitting", ("player_id",)), ("fielding", ("player_id", "position"))):   # pull_rosters.py
+        f = RAW / f"aaa_{kind}_{cfg.season}.parquet"
+        if f.exists():
+            t.append(Table(f"aaa_{kind}_{cfg.season}", f, key))
+    fa = RAW / f"free_agents_{cfg.season}.parquet"               # pull_free_agents.py, by hand each off-season
+    if fa.exists():
+        t.append(Table(f"free_agents_{cfg.season}", fa, ("player_id",), drop=("pulled_on",)))
     return t
 
 
@@ -43,6 +50,8 @@ def nfl_tables() -> list[Table]:
     cfg = nfl()
     d = RAW / "nfl"
     t = [Table(f"pbp_{s}", d / f"pbp_{s}.parquet", ("game_id", "play_id"), day_after("game_date")) for s in cfg.seasons]
+    t += [Table(f"pbp_state_{s}", d / "state" / f"pbp_state_{s}.parquet", ("game_id", "play_id"), day_after("game_date"))
+          for s in cfg.seasons]
     t += [Table(f"team_stats_{s}", d / f"team_stats_{s}.parquet", ("season", "team", "season_type")) for s in cfg.seasons]
     # The source's own team codes (ingest/nfl/pull.py normalizes the working copies).
     t.append(Table("schedules", d / "source" / "schedules.parquet", ("game_id",), _schedule_available))
@@ -58,11 +67,19 @@ def _game_available(df: pd.DataFrame, ingested: pd.Timestamp) -> pd.Series:
 
 
 def _plays_available(games_path):
-    """Plays carry no date; take the day after their game's start (from that season's games file)."""
+    """Plays carry no date; take the day after their game's start (from that season's games file). Games between two
+    FCS teams aren't in the FBS games file: those plays take the day after the last FBS game of the same season type and
+    week (SYSTEM-FIT F0, Nov 15 2026). Snapshots taken before that stored the ingest date for them; snapshots are never
+    rewritten, so point-in-time reads from R2 still see those rows as late, while reads from the raw files (the
+    backtest workflow's) use this rule."""
     def f(df: pd.DataFrame, ingested: pd.Timestamp) -> pd.Series:
-        g = pd.read_parquet(games_path, columns=["id", "startDate"])
+        g = pd.read_parquet(games_path, columns=["id", "startDate", "week", "seasonType"])
         start = pd.to_datetime(g["startDate"], utc=True).dt.tz_localize(None).dt.normalize() + pd.Timedelta(days=1)
         out = df["gameId"].map(dict(zip(g["id"], start, strict=True)))
+        if out.isna().any() and {"week", "seasonType"} <= set(df.columns):
+            week_end = start.groupby([g["seasonType"], g["week"]]).max()
+            by_week = pd.Series(list(zip(df["seasonType"], df["week"], strict=True)), index=df.index).map(week_end.to_dict())
+            out = out.fillna(by_week)
         return out.fillna(ingested.tz_localize(None).normalize())
     return f
 
@@ -100,11 +117,37 @@ def cfb_player_tables() -> list[Table]:
     return t
 
 
+def _coach_available(df: pd.DataFrame, ingested: pd.Timestamp) -> pd.Series:
+    """A season's head coach is public when he's hired for it (SC-3a; 91% of coaching changes are hired by May 1):
+    max(hire date, December 1 before the season), so a coach who stays is known once the carousel starts and a
+    mid-season hire (an interim) only from his hire date. September 1 when the hire date is missing."""
+    start = pd.to_datetime(df["season"].astype(str) + "-09-01")
+    carousel = pd.to_datetime((df["season"] - 1).astype(str) + "-12-01")
+    hired = pd.to_datetime(df["hire_date"], utc=True, errors="coerce").dt.tz_localize(None).dt.normalize()
+    return pd.concat([hired, carousel], axis=1).max(axis=1).where(hired.notna(), start)
+
+
+def _play_players_available(games_path, plays_path):
+    """play_players rows (ingest/cfb/play_players.py) carry game_id; same rule as plays (the day after the game, by
+    week for FCS-only games), each game's date taken from the plays file's rows for it."""
+    inner = _plays_available(games_path)
+
+    def f(df: pd.DataFrame, ingested: pd.Timestamp) -> pd.Series:
+        games = pd.read_parquet(plays_path, columns=["gameId", "week", "seasonType"]).drop_duplicates("gameId")
+        when = dict(zip(games["gameId"], inner(games, ingested), strict=True))
+        return df["game_id"].map(when).fillna(ingested.tz_localize(None).normalize())
+    return f
+
+
 def cfb_tables() -> list[Table]:
     cfg = cfb()
     d = RAW / "cfb"
     t = cfb_player_tables()
+    t.append(Table("coaches", d / "coaches.parquet", ("season", "school", "coach_id"), _coach_available))
     for s in cfg.seasons:
+        # Who was on each play (parsed from the cached play text, PLAYER-ADJ): one row per play x role.
+        t.append(Table(f"play_players_{s}", d / "players" / f"play_players_{s}.parquet", ("play_id", "role"),
+                       _play_players_available(d / f"games_{s}.parquet", d / f"plays_{s}.parquet")))
         t += [Table(f"plays_{s}", d / f"plays_{s}.parquet", ("id",), _plays_available(d / f"games_{s}.parquet")),
               # `notes` (playoff/bowl/title-game labels) was added after the first snapshots and is fixed
               # when a game is scheduled; leaving it out of the versioned columns avoids a mass revision.

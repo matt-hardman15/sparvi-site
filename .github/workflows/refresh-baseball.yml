@@ -22,8 +22,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 concurrency:
   group: refresh-baseball
@@ -38,7 +36,7 @@ jobs:
   refresh:
     if: github.event_name == 'workflow_dispatch' || github.event.schedule != '0 9 * 1-3,11-12 1'
     runs-on: ubuntu-24.04
-    timeout-minutes: 150
+    timeout-minutes: 300   # bagged pitch-quality training (v2.0.0): ~65 min train + 2 x ~25 min robustness
     steps:
       # Push with the repo's deploy key, not GITHUB_TOKEN: main requires PRs with passing checks,
       # and on a personal repo the only actor that can be exempted for an unattended push is a
@@ -204,15 +202,8 @@ jobs:
           echo "::error::The raw-data snapshot failed (the site was still updated). Rerun the workflow so today's data is recorded."
           exit 1
 
-  # Deploys after a failed data check too, so /status/ shows the failure (the data is unchanged).
-  deploy:
-    needs: refresh
-    if: ${{ !cancelled() }}
-    uses: ./.github/workflows/deploy.yml
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
+  # No deploy job here: the data commit above is pushed with the deploy key, and that push runs deploy.yml
+  # (a failed data check still commits the status file, so /status/ shows it). Nothing pushed = nothing to deploy.
 
   keep-cache-warm:
     if: github.event.schedule == '0 9 * 1-3,11-12 1'

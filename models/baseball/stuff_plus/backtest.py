@@ -34,9 +34,7 @@ def fit(loader, fold, permute_seed: int | None = None) -> dict:
     tr = pd.concat([_pitches(loader, s, fold.train_until) for s in fold.train_seasons], ignore_index=True)
     if permute_seed is not None:   # label-permutation leakage test: the target shuffled across pitches
         tr["rv_x"] = np.random.default_rng(permute_seed).permutation(tr["rv_x"].to_numpy())
-    rng = np.random.default_rng(SEED)            # same seeded 15% pitcher split for early stopping as train.py
-    val_p = set(rng.choice(tr["pitcher"].unique(), size=int(0.15 * tr["pitcher"].nunique()), replace=False))
-    return {"models": fit_kinds(tr, tr["pitcher"].isin(val_p), kinds=KINDS)}
+    return {"models": fit_kinds(tr, kinds=KINDS)}   # bagged, same settings as train.py
 
 
 def predict(fitted, loader, fold) -> pd.DataFrame:

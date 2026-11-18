@@ -1,0 +1,468 @@
+{
+  "run_id": "6d9a095c0ccc",
+  "model": "cfb_player_projection",
+  "version": "1.2.1",
+  "kind": "full",
+  "ran_at": "2026-11-17T22:51:38Z",
+  "code_sha": "ec8627cf6e27b23057b644ef11647809e18c2512",
+  "lockfile": "e6f7c7528ac332cf",
+  "preregistered_at": "2026-11-16",
+  "spec": {
+    "preregistered_at": "2026-11-16",
+    "module": "models/cfb/player_projection/backtest.py",
+    "target": "Season-t yards in his category at any team: QB passing yards on dropbacks, RB rushing yards, WR and TE receiving yards; 0 if he recorded none. A transfer whose id changed at his new school is followed by the roster-based transfer link.",
+    "decision_dates": "May 1 of season t (after the spring portal window). Every input is what was public then, through the point-in-time loader.",
+    "splits": {
+      "type": "walk_forward",
+      "first_test": 2021,
+      "last_test": 2025,
+      "train_window": 1,
+      "predictor_lag": 1,
+      "decision": "05-01",
+      "train_until": "05-01",
+      "fast_folds": 1
+    },
+    "training": "Fold t trains every piece on outcome seasons 2016 through t-1 (inputs from 2014). Hyperparameters are fixed from development (2016-2020): volume ridge alpha 10, shares L2 1, efficiency K 300 / 200, interval bins from the development residuals. Training rosters use past seasons' September rosters (public long before May 1 of t).",
+    "rows": "Every QB, RB, WR, TE on an FBS team's projected season-t roster as of May 1: returners (season t-1 roster, minus players with a portal entry filed by May 1), incoming transfers (portal entries filed by May 1 whose destination is an FBS team, linked to a t-1 or t-2 roster id), and the high-school signing class. Players who appear later (walk-ons, late transfers) are outside the projection.",
+    "known_hindsight": "The portal's destination field is its current value, not what was public on May 1; some players committed later (Matt, 2026-11-15: used and flagged).",
+    "group_by": "none: rows are players in a season none of the training seasons include",
+    "block": "player",
+    "segment": "position",
+    "baselines": [
+      "carry",
+      "share_only"
+    ],
+    "baseline_definitions": {
+      "carry": "his own last-season yards in the category wherever he played (0 for freshmen)",
+      "share_only": "his last-season share of the category's pool x the destination's last-season yards in the category, transfers placed at their new team, no competition model (0 for freshmen)"
+    },
+    "primary_metric": "pearson_r",
+    "bootstrap": 2000,
+    "seed": 7,
+    "pass_gate": {
+      "beats_baseline": [
+        "carry",
+        "share_only"
+      ],
+      "min_skill": 0.0,
+      "ci_excludes_zero": true,
+      "each_segment": true
+    },
+    "gate_decided": "Matt, 2026-11-15: strict in every position group (QB, RB, WR, TE): against each of carry and share-only, the 90% interval of the correlation edge (bootstrap by player) must be above zero. A position that fails ships experimental.",
+    "too_good_r": 0.9,
+    "not_applicable": {
+      "label_permutation": "Structural model (Matt, 2026-11-16): its skill comes from roster composition (who is on the roster, experience, returning vs. new, who played), not from what it learns from targets, so shuffled targets or shuffled input plays can't bring it to zero (development season 2020: play-shuffled inputs r 0.48-0.52 vs. 0.56 real). The timestamp and future-poisoning tests check that no data after May 1 is read."
+    },
+    "secondary": "Reported, not gating: by status (returner, transfer, freshman), per fold, MAE, 80% interval coverage, RB receiving yards, and the count of season-t players who were outside the projected rosters.",
+    "limits": "Free data only: no snaps, routes, depth charts, injuries, or NIL; usage is a share of team plays, not of plays he was on the field for. 2021-2024 incompletions mostly lack the receiver (CFB-RECV-FIX), so receiving shares use yards on completions.",
+    "reproduction": "Deterministic (closed-form ridge, L-BFGS from zeros). Official runs happen in CI.",
+    "vault": {
+      "seasons": [
+        2026
+      ],
+      "note": "Season 2026 outcomes are sealed until the season completes (January 2027).",
+      "accesses": 0
+    }
+  },
+  "folds": [
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "evaluation": {
+    "metric": "pearson_r",
+    "n": 26646,
+    "point": 0.5739270012450186,
+    "baselines": {
+      "carry": {
+        "value": 0.5135054397625712,
+        "paired": {
+          "est": 0.06042156148244737,
+          "ci90": [
+            0.042331769516958065,
+            0.07880095506993424
+          ],
+          "n": 26646,
+          "blocks": 11976,
+          "bootstrap": 2000,
+          "seed": 7
+        }
+      },
+      "share_only": {
+        "value": 0.49884905133487967,
+        "paired": {
+          "est": 0.07507794991013894,
+          "ci90": [
+            0.05610457928110359,
+            0.09337916267256145
+          ],
+          "n": 26646,
+          "blocks": 11976,
+          "bootstrap": 2000,
+          "seed": 7
+        }
+      }
+    },
+    "by_fold": {
+      "2021": 0.6200725960198886,
+      "2022": 0.61071274679955,
+      "2023": 0.6265692107859501,
+      "2024": 0.5787220465559976,
+      "2025": 0.43401902529462905
+    },
+    "segments": {
+      "QB": {
+        "metric": "pearson_r",
+        "n": 3894,
+        "point": 0.5323766117367856,
+        "baselines": {
+          "carry": {
+            "value": 0.49198477458878515,
+            "paired": {
+              "est": 0.04039183714800049,
+              "ci90": [
+                0.010992147669932858,
+                0.06959478506055254
+              ],
+              "n": 3894,
+              "blocks": 1803,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          },
+          "share_only": {
+            "value": 0.4723450123160118,
+            "paired": {
+              "est": 0.06003159942077385,
+              "ci90": [
+                0.031237545300223275,
+                0.08783537256364862
+              ],
+              "n": 3894,
+              "blocks": 1803,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          }
+        },
+        "by_fold": {
+          "2021": 0.5840307780204496,
+          "2022": 0.5805508080030278,
+          "2023": 0.5979319554774045,
+          "2024": 0.5467755142395208,
+          "2025": 0.35141002232799884
+        }
+      },
+      "RB": {
+        "metric": "pearson_r",
+        "n": 5989,
+        "point": 0.5140165248780665,
+        "baselines": {
+          "carry": {
+            "value": 0.40024642275368605,
+            "paired": {
+              "est": 0.11377010212438043,
+              "ci90": [
+                0.09391145428629812,
+                0.1336120134737828
+              ],
+              "n": 5989,
+              "blocks": 2715,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          },
+          "share_only": {
+            "value": 0.3950882657377865,
+            "paired": {
+              "est": 0.11892825914027999,
+              "ci90": [
+                0.0980131019227793,
+                0.13868692194362833
+              ],
+              "n": 5989,
+              "blocks": 2715,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          }
+        },
+        "by_fold": {
+          "2021": 0.5768833874576049,
+          "2022": 0.5239130850059903,
+          "2023": 0.5566257185666996,
+          "2024": 0.5179712774547242,
+          "2025": 0.3795063438173905
+        }
+      },
+      "TE": {
+        "metric": "pearson_r",
+        "n": 5518,
+        "point": 0.44080850193739274,
+        "baselines": {
+          "carry": {
+            "value": 0.4453926609954722,
+            "paired": {
+              "est": -0.004584159058079462,
+              "ci90": [
+                -0.0430368582192677,
+                0.03349995465645987
+              ],
+              "n": 5518,
+              "blocks": 2416,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          },
+          "share_only": {
+            "value": 0.4406055317769125,
+            "paired": {
+              "est": 0.00020297016048026473,
+              "ci90": [
+                -0.037551644441968686,
+                0.038094572670253395
+              ],
+              "n": 5518,
+              "blocks": 2416,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          }
+        },
+        "by_fold": {
+          "2021": 0.48980424544173495,
+          "2022": 0.524903937934964,
+          "2023": 0.4730495743839117,
+          "2024": 0.47160863854189583,
+          "2025": 0.28283019593541764
+        }
+      },
+      "WR": {
+        "metric": "pearson_r",
+        "n": 11245,
+        "point": 0.4890028000269812,
+        "baselines": {
+          "carry": {
+            "value": 0.42976356846491376,
+            "paired": {
+              "est": 0.05923923156206745,
+              "ci90": [
+                0.04328679277378097,
+                0.07477383275149198
+              ],
+              "n": 11245,
+              "blocks": 5169,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          },
+          "share_only": {
+            "value": 0.42557714901419985,
+            "paired": {
+              "est": 0.06342565101278136,
+              "ci90": [
+                0.04699765500676322,
+                0.07928387682171445
+              ],
+              "n": 11245,
+              "blocks": 5169,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          }
+        },
+        "by_fold": {
+          "2021": 0.5796440633334237,
+          "2022": 0.5170865806694399,
+          "2023": 0.5205638017166413,
+          "2024": 0.46039186268608645,
+          "2025": 0.3686011172205749
+        }
+      }
+    }
+  },
+  "gate": {
+    "checks": {
+      "QB": true,
+      "RB": true,
+      "TE": false,
+      "WR": true
+    },
+    "passed": false,
+    "gap": -0.004584159058079462,
+    "per_segment": {
+      "QB": {
+        "checks": {
+          "beats_baseline": true,
+          "min_skill": true,
+          "ci_excludes_zero": true
+        },
+        "passed": true,
+        "gap": 0.04039183714800049,
+        "per_baseline": {
+          "carry": {
+            "gap": 0.04039183714800049,
+            "ci90_low": 0.010992147669932858
+          },
+          "share_only": {
+            "gap": 0.06003159942077385,
+            "ci90_low": 0.031237545300223275
+          }
+        }
+      },
+      "RB": {
+        "checks": {
+          "beats_baseline": true,
+          "min_skill": true,
+          "ci_excludes_zero": true
+        },
+        "passed": true,
+        "gap": 0.11377010212438043,
+        "per_baseline": {
+          "carry": {
+            "gap": 0.11377010212438043,
+            "ci90_low": 0.09391145428629812
+          },
+          "share_only": {
+            "gap": 0.11892825914027999,
+            "ci90_low": 0.0980131019227793
+          }
+        }
+      },
+      "TE": {
+        "checks": {
+          "beats_baseline": false,
+          "min_skill": false,
+          "ci_excludes_zero": false
+        },
+        "passed": false,
+        "gap": -0.004584159058079462,
+        "per_baseline": {
+          "carry": {
+            "gap": -0.004584159058079462,
+            "ci90_low": -0.0430368582192677
+          },
+          "share_only": {
+            "gap": 0.00020297016048026473,
+            "ci90_low": -0.037551644441968686
+          }
+        }
+      },
+      "WR": {
+        "checks": {
+          "beats_baseline": true,
+          "min_skill": true,
+          "ci_excludes_zero": true
+        },
+        "passed": true,
+        "gap": 0.05923923156206745,
+        "per_baseline": {
+          "carry": {
+            "gap": 0.05923923156206745,
+            "ci90_low": 0.04328679277378097
+          },
+          "share_only": {
+            "gap": 0.06342565101278136,
+            "ci90_low": 0.04699765500676322
+          }
+        }
+      }
+    }
+  },
+  "leakage": {
+    "timestamp": {
+      "passed": true,
+      "folds": [
+        {
+          "fold": 2021,
+          "fit_max_available_at": null,
+          "train_until": "2021-05-01 00:00:00",
+          "predict_max_available_at": "2021-05-01 00:00:00",
+          "decision_date": "2021-05-01 00:00:00",
+          "passes": true
+        },
+        {
+          "fold": 2022,
+          "fit_max_available_at": null,
+          "train_until": "2022-05-01 00:00:00",
+          "predict_max_available_at": "2022-05-01 00:00:00",
+          "decision_date": "2022-05-01 00:00:00",
+          "passes": true
+        },
+        {
+          "fold": 2023,
+          "fit_max_available_at": null,
+          "train_until": "2023-05-01 00:00:00",
+          "predict_max_available_at": "2023-05-01 00:00:00",
+          "decision_date": "2023-05-01 00:00:00",
+          "passes": true
+        },
+        {
+          "fold": 2024,
+          "fit_max_available_at": null,
+          "train_until": "2024-05-01 00:00:00",
+          "predict_max_available_at": "2024-05-01 00:00:00",
+          "decision_date": "2024-05-01 00:00:00",
+          "passes": true
+        },
+        {
+          "fold": 2025,
+          "fit_max_available_at": null,
+          "train_until": "2025-05-01 00:00:00",
+          "predict_max_available_at": "2025-05-01 00:00:00",
+          "decision_date": "2025-05-01 00:00:00",
+          "passes": true
+        }
+      ]
+    },
+    "future_poisoning": {
+      "passed": true,
+      "cutoff": "2025-05-01 00:00:00",
+      "n": 5545
+    },
+    "label_permutation": {
+      "passed": true,
+      "not_applicable": "Structural model (Matt, 2026-11-16): its skill comes from roster composition (who is on the roster, experience, returning vs. new, who played), not from what it learns from targets, so shuffled targets or shuffled input plays can't bring it to zero (development season 2020: play-shuffled inputs r 0.48-0.52 vs. 0.56 real). The timestamp and future-poisoning tests check that no data after May 1 is read."
+    },
+    "too_good": {
+      "passed": true,
+      "r": 0.5739270012450186,
+      "ceiling": 0.9
+    },
+    "entity_overlap": {
+      "passed": true,
+      "not_applicable": "group_by: none: rows are players in a season none of the training seasons include"
+    },
+    "universe": {
+      "passed": true,
+      "predicted": 5545,
+      "scored": 5545,
+      "no_outcome": 0,
+      "note": "entities without an outcome (retired, injured, too few pitches) can't be scored; they're counted here so survivorship is visible"
+    }
+  },
+  "passed": false,
+  "primary": {
+    "metric": "pearson_r",
+    "point": 0.5739270012450186,
+    "carry": 0.5135054397625712,
+    "share_only": 0.49884905133487967
+  },
+  "revision_safe": false,
+  "approximate_tables": [
+    "teams_2014",
+    "teams_2015",
+    "teams_2016",
+    "teams_2017",
+    "teams_2018",
+    "teams_2019",
+    "teams_2020",
+    "teams_2021",
+    "teams_2022",
+    "teams_2023",
+    "teams_2024",
+    "teams_2025"
+  ]
+}

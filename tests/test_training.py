@@ -2,8 +2,9 @@
 
 The published model numbers (Stuff+, Location+, Pitching+, and the article figures built on them)
 come from LightGBM. Multithreaded training without deterministic settings can round differently from
-run to run, which moved prose numbers between two refreshes on unchanged data. This trains the real
-fit function twice on synthetic rows and requires identical models.
+run to run, which moved prose numbers between two refreshes on unchanged data. These train the real
+fit functions twice on synthetic rows and require identical models, and check the bag's folds (v2.0.0):
+every pitcher in exactly one held-out fold, each model early-stopping on pitchers it never trained on.
 """
 import sys
 
@@ -16,10 +17,12 @@ sys.path.insert(0, str(ROOT / "baseball" / "pitch_quality"))
 import train  # noqa: E402
 
 
-def _rows(n: int, seed: int) -> pd.DataFrame:
+def _rows(n: int, seed: int, n_pitchers: int = 200) -> pd.DataFrame:
     rng = np.random.default_rng(seed)
     df = pd.DataFrame(rng.normal(size=(n, len(train.FEATURES))), columns=train.FEATURES)
     df[train.TARGET] = 0.02 * df[train.FEATURES[0]] + rng.normal(0, 0.25, n)
+    df["pitcher"] = rng.integers(0, n_pitchers, n)
+    df["group"] = rng.choice(train.GROUPS, n)
     return df
 
 
@@ -35,3 +38,25 @@ def test_same_data_same_model():
     a = train.fit_group(tr, va).model_to_string()
     b = train.fit_group(tr, va).model_to_string()
     assert a == b
+
+
+def test_bag_folds_hold_out_each_pitcher_once():
+    df = _rows(5_000, 3)
+    fold = train.bag_folds(df["pitcher"], seed=7, n_bags=5)
+    per_pitcher = fold.groupby(df["pitcher"]).nunique()
+    assert (per_pitcher == 1).all(), "a pitcher's pitches must all sit in one fold"
+    assert sorted(fold.unique()) == [0, 1, 2, 3, 4]
+    sizes = df.groupby(fold)["pitcher"].nunique()
+    assert sizes.max() - sizes.min() <= 1, "folds split the pitchers evenly"
+    assert fold.equals(train.bag_folds(df["pitcher"], seed=7, n_bags=5))
+    assert not fold.equals(train.bag_folds(df["pitcher"], seed=8, n_bags=5))
+
+
+def test_same_data_same_bag():
+    df = _rows(30_000, 4)
+    a = train.fit_kinds(df, kinds=["stuff"], n_bags=3)
+    b = train.fit_kinds(df, kinds=["stuff"], n_bags=3)
+    for g in train.GROUPS:
+        assert [m.model_to_string() for m in a["stuff"][g]] == [m.model_to_string() for m in b["stuff"][g]]
+    pa, pb = train.predict(a["stuff"], df, train.FEATURE_SETS["stuff"]), train.predict(b["stuff"], df, train.FEATURE_SETS["stuff"])
+    assert pa.notna().all() and pa.equals(pb)

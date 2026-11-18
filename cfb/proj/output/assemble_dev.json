@@ -1,0 +1,260 @@
+{
+ "status": "DEVELOPMENT (CFB-PROJ P4): seasons 2016-2020 only; test seasons 2021-2025 not scored",
+ "categories": {
+  "QB": {
+   "rows": 3874,
+   "actual_mean": 362.3,
+   "proj": {
+    "r": 0.5312,
+    "mae": 404.8
+   },
+   "carry": {
+    "r": 0.4266,
+    "mae": 421.6
+   },
+   "share_only": {
+    "r": 0.4162,
+    "mae": 430.1
+   },
+   "proj_minus_carry_r": {
+    "est": 0.1046,
+    "ci90": [
+     0.0865,
+     0.1252
+    ]
+   },
+   "proj_minus_share_only_r": {
+    "est": 0.1149,
+    "ci90": [
+     0.0964,
+     0.1364
+    ]
+   },
+   "coverage80": 0.7948,
+   "by_status": {
+    "freshman": {
+     "n": 576,
+     "proj": 0.2804,
+     "carry": null,
+     "share_only": null
+    },
+    "returner": {
+     "n": 3110,
+     "proj": 0.5394,
+     "carry": 0.4446,
+     "share_only": 0.44
+    },
+    "transfer": {
+     "n": 188,
+     "proj": 0.4231,
+     "carry": 0.2101,
+     "share_only": 0.0492
+    }
+   }
+  },
+  "RB": {
+   "rows": 6530,
+   "actual_mean": 127.2,
+   "proj": {
+    "r": 0.5497,
+    "mae": 138.4
+   },
+   "carry": {
+    "r": 0.4507,
+    "mae": 143.9
+   },
+   "share_only": {
+    "r": 0.4406,
+    "mae": 145.2
+   },
+   "proj_minus_carry_r": {
+    "est": 0.0991,
+    "ci90": [
+     0.0856,
+     0.1115
+    ]
+   },
+   "proj_minus_share_only_r": {
+    "est": 0.1091,
+    "ci90": [
+     0.0956,
+     0.122
+    ]
+   },
+   "coverage80": 0.7971,
+   "by_status": {
+    "freshman": {
+     "n": 707,
+     "proj": 0.133,
+     "carry": null,
+     "share_only": null
+    },
+    "returner": {
+     "n": 5708,
+     "proj": 0.5696,
+     "carry": 0.4681,
+     "share_only": 0.4605
+    },
+    "transfer": {
+     "n": 115,
+     "proj": 0.3687,
+     "carry": 0.3493,
+     "share_only": 0.1787
+    }
+   }
+  },
+  "WR_rec": {
+   "rows": 11403,
+   "actual_mean": 100.2,
+   "proj": {
+    "r": 0.4997,
+    "mae": 111.2
+   },
+   "carry": {
+    "r": 0.4195,
+    "mae": 116.1
+   },
+   "share_only": {
+    "r": 0.4159,
+    "mae": 116.7
+   },
+   "proj_minus_carry_r": {
+    "est": 0.0802,
+    "ci90": [
+     0.0699,
+     0.0909
+    ]
+   },
+   "proj_minus_share_only_r": {
+    "est": 0.0839,
+    "ci90": [
+     0.0739,
+     0.0941
+    ]
+   },
+   "coverage80": 0.7937,
+   "by_status": {
+    "freshman": {
+     "n": 1229,
+     "proj": 0.1025,
+     "carry": -0.0116,
+     "share_only": null
+    },
+    "returner": {
+     "n": 9918,
+     "proj": 0.5086,
+     "carry": 0.4244,
+     "share_only": 0.4241
+    },
+    "transfer": {
+     "n": 256,
+     "proj": 0.2737,
+     "carry": 0.2589,
+     "share_only": 0.173
+    }
+   }
+  },
+  "TE_rec": {
+   "rows": 4655,
+   "actual_mean": 39.2,
+   "proj": {
+    "r": 0.4885,
+    "mae": 50.8
+   },
+   "carry": {
+    "r": 0.4252,
+    "mae": 47.1
+   },
+   "share_only": {
+    "r": 0.4002,
+    "mae": 47.9
+   },
+   "proj_minus_carry_r": {
+    "est": 0.0632,
+    "ci90": [
+     0.0337,
+     0.0914
+    ]
+   },
+   "proj_minus_share_only_r": {
+    "est": 0.0883,
+    "ci90": [
+     0.0663,
+     0.1088
+    ]
+   },
+   "coverage80": 0.7953,
+   "by_status": {
+    "freshman": {
+     "n": 436,
+     "proj": 0.1521,
+     "carry": null,
+     "share_only": null
+    },
+    "returner": {
+     "n": 4122,
+     "proj": 0.5096,
+     "carry": 0.4279,
+     "share_only": 0.4279
+    },
+    "transfer": {
+     "n": 97,
+     "proj": 0.2004,
+     "carry": 0.3111,
+     "share_only": 0.0955
+    }
+   }
+  },
+  "RB_rec": {
+   "rows": 6530,
+   "actual_mean": 25.5,
+   "proj": {
+    "r": 0.4648,
+    "mae": 32.0
+   },
+   "carry": {
+    "r": 0.3968,
+    "mae": 31.6
+   },
+   "share_only": {
+    "r": 0.3917,
+    "mae": 31.7
+   },
+   "proj_minus_carry_r": {
+    "est": 0.0681,
+    "ci90": [
+     0.0491,
+     0.0873
+    ]
+   },
+   "proj_minus_share_only_r": {
+    "est": 0.0731,
+    "ci90": [
+     0.0537,
+     0.0941
+    ]
+   },
+   "coverage80": 0.7931,
+   "by_status": {
+    "freshman": {
+     "n": 707,
+     "proj": 0.1447,
+     "carry": null,
+     "share_only": null
+    },
+    "returner": {
+     "n": 5708,
+     "proj": 0.4824,
+     "carry": 0.4118,
+     "share_only": 0.4118
+    },
+    "transfer": {
+     "n": 115,
+     "proj": 0.3725,
+     "carry": 0.2974,
+     "share_only": 0.1751
+    }
+   }
+  }
+ }
+}

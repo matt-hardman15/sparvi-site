@@ -1,0 +1,24 @@
+---
+title: "BYU Cougars"
+pagetitle: "BYU football: power rating by week"
+description: "BYU (Big 12) college football power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+```{=html}
+<div id="team-root" data-team="BYU"></div>
+<p class="page-summary">Through week 11 of 2026, BYU is 8–2. Its power rating, +12.5 points against an average FBS team, ranks 17th of 138; the AP poll has it 12th.</p>
+<p class="note team-sub" style="border-left:4px solid #003da5;padding-left:.6rem">Big 12: <a href="/cfb/teams/arizona/">Arizona</a> · <a href="/cfb/teams/arizona-state/">Arizona State</a> · <a href="/cfb/teams/baylor/">Baylor</a> · <a href="/cfb/teams/cincinnati/">Cincinnati</a> · <a href="/cfb/teams/colorado/">Colorado</a> · <a href="/cfb/teams/houston/">Houston</a> · <a href="/cfb/teams/iowa-state/">Iowa State</a> · <a href="/cfb/teams/kansas/">Kansas</a> · <a href="/cfb/teams/kansas-state/">Kansas State</a> · <a href="/cfb/teams/oklahoma-state/">Oklahoma State</a> · <a href="/cfb/teams/tcu/">TCU</a> · <a href="/cfb/teams/texas-tech/">Texas Tech</a> · <a href="/cfb/teams/ucf/">UCF</a> · <a href="/cfb/teams/utah/">Utah</a> · <a href="/cfb/teams/west-virginia/">West Virginia</a> · <a href="/cfb/teams/">All FBS teams</a> · <a href="/cfb/tools/team-ratings.html?team=BYU">Compare with every FBS team</a></p>
+<!-- The season's numbers as plain HTML; the interactive page below removes this once it runs. -->
+<div id="team-static">
+<h3>2026 through week 11</h3>
+<div class="stat-row"><div class="stat"><div class="v">8–2</div><div class="k">Record</div></div><div class="stat"><div class="v">+12.5</div><div class="k">Power rating · 17th of 138</div></div><div class="stat"><div class="v">12 / 10</div><div class="k">AP / CFP rank · latest polls</div></div><div class="stat"><div class="v">+0.301</div><div class="k">Offense EPA/play · 19th of 138</div></div><div class="stat"><div class="v">-0.117</div><div class="k">Defense EPA/play · 18th of 138 (allowed)</div></div></div>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th class=l>Opponent-adjusted EPA/play</th><th>Value</th><th>Rank</th></tr></thead><tbody><tr><td class=l>Offense · all plays</td><td>+0.301</td><td>19th of 138</td></tr><tr><td class=l>Offense · passes</td><td>+0.296</td><td>37th of 138</td></tr><tr><td class=l>Offense · runs</td><td>+0.256</td><td>10th of 138</td></tr><tr><td class=l>Defense (allowed) · all plays</td><td>-0.117</td><td>18th of 138</td></tr><tr><td class=l>Defense (allowed) · passes</td><td>-0.102</td><td>15th of 138</td></tr><tr><td class=l>Defense (allowed) · runs</td><td>-0.079</td><td>35th of 138</td></tr></tbody></table></div>
+<h3>Results</h3>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th>Wk</th><th class=l>Opponent</th><th class=l>Result</th><th>Off EPA/play</th><th>Def EPA/play</th><th>Off success</th></tr></thead><tbody><tr><td>1</td><td class=l>vs Utah Tech</td><td class=l>W 63–7</td><td>+0.568</td><td>-0.802</td><td>65.1%</td></tr><tr><td>2</td><td class=l>vs <a href="/cfb/teams/arizona/">Arizona</a></td><td class=l>W 28–17</td><td>+0.400</td><td>+0.110</td><td>50.0%</td></tr><tr><td>3</td><td class=l>@ <a href="/cfb/teams/colorado-state/">Colorado State</a></td><td class=l>W 41–23</td><td>+0.614</td><td>-0.009</td><td>66.7%</td></tr><tr><td>5</td><td class=l>@ <a href="/cfb/teams/tcu/">TCU</a></td><td class=l>W 17–10</td><td>-0.029</td><td>-0.091</td><td>32.3%</td></tr><tr><td>6</td><td class=l>vs <a href="/cfb/teams/iowa-state/">Iowa State</a></td><td class=l>W 24–10</td><td>+0.228</td><td>-0.130</td><td>49.2%</td></tr><tr><td>7</td><td class=l>vs <a href="/cfb/teams/notre-dame/">Notre Dame</a></td><td class=l>W 28–24</td><td>+0.178</td><td>+0.208</td><td>47.8%</td></tr><tr><td>8</td><td class=l>@ <a href="/cfb/teams/ucf/">UCF</a></td><td class=l>L 31–39</td><td>+0.260</td><td>+0.225</td><td>40.3%</td></tr><tr><td>9</td><td class=l>vs <a href="/cfb/teams/arizona-state/">Arizona State</a></td><td class=l>W 27–20</td><td>-0.050</td><td>-0.020</td><td>37.3%</td></tr><tr><td>10</td><td class=l>@ <a href="/cfb/teams/utah/">Utah</a></td><td class=l>L 20–28</td><td>+0.034</td><td>+0.086</td><td>38.1%</td></tr><tr><td>11</td><td class=l>vs <a href="/cfb/teams/baylor/">Baylor</a></td><td class=l>W 28–7</td><td>+0.139</td><td>+0.002</td><td>43.1%</td></tr></tbody></table></div>
+<p class="note">Single games are raw (not opponent-adjusted), garbage time removed.</p>
+</div>
+```
+
+{{< include ../_team.qmd >}}

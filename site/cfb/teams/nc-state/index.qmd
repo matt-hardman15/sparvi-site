@@ -1,0 +1,24 @@
+---
+title: "NC State Wolfpack"
+pagetitle: "NC State football: power rating by week"
+description: "NC State (ACC) college football power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+```{=html}
+<div id="team-root" data-team="NC State"></div>
+<p class="page-summary">Through week 11 of 2026, NC State is 4–6. Its power rating, −4.1 points against an average FBS team, ranks 86th of 138; it is unranked in the AP poll.</p>
+<p class="note team-sub" style="border-left:4px solid #cc0000;padding-left:.6rem">ACC: <a href="/cfb/teams/boston-college/">Boston College</a> · <a href="/cfb/teams/california/">California</a> · <a href="/cfb/teams/clemson/">Clemson</a> · <a href="/cfb/teams/duke/">Duke</a> · <a href="/cfb/teams/florida-state/">Florida State</a> · <a href="/cfb/teams/georgia-tech/">Georgia Tech</a> · <a href="/cfb/teams/louisville/">Louisville</a> · <a href="/cfb/teams/miami/">Miami</a> · <a href="/cfb/teams/north-carolina/">North Carolina</a> · <a href="/cfb/teams/pittsburgh/">Pittsburgh</a> · <a href="/cfb/teams/smu/">SMU</a> · <a href="/cfb/teams/stanford/">Stanford</a> · <a href="/cfb/teams/syracuse/">Syracuse</a> · <a href="/cfb/teams/virginia/">Virginia</a> · <a href="/cfb/teams/virginia-tech/">Virginia Tech</a> · <a href="/cfb/teams/wake-forest/">Wake Forest</a> · <a href="/cfb/teams/">All FBS teams</a> · <a href="/cfb/tools/team-ratings.html?team=NC State">Compare with every FBS team</a></p>
+<!-- The season's numbers as plain HTML; the interactive page below removes this once it runs. -->
+<div id="team-static">
+<h3>2026 through week 11</h3>
+<div class="stat-row"><div class="stat"><div class="v">4–6</div><div class="k">Record</div></div><div class="stat"><div class="v">−4.1</div><div class="k">Power rating · 86th of 138</div></div><div class="stat"><div class="v">NR / NR</div><div class="k">AP / CFP rank · latest polls</div></div><div class="stat"><div class="v">+0.210</div><div class="k">Offense EPA/play · 50th of 138</div></div><div class="stat"><div class="v">+0.143</div><div class="k">Defense EPA/play · 118th of 138 (allowed)</div></div></div>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th class=l>Opponent-adjusted EPA/play</th><th>Value</th><th>Rank</th></tr></thead><tbody><tr><td class=l>Offense · all plays</td><td>+0.210</td><td>50th of 138</td></tr><tr><td class=l>Offense · passes</td><td>+0.389</td><td>19th of 138</td></tr><tr><td class=l>Offense · runs</td><td>-0.015</td><td>118th of 138</td></tr><tr><td class=l>Defense (allowed) · all plays</td><td>+0.143</td><td>118th of 138</td></tr><tr><td class=l>Defense (allowed) · passes</td><td>+0.212</td><td>117th of 138</td></tr><tr><td class=l>Defense (allowed) · runs</td><td>+0.075</td><td>100th of 138</td></tr></tbody></table></div>
+<h3>Results</h3>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th>Wk</th><th class=l>Opponent</th><th class=l>Result</th><th>Off EPA/play</th><th>Def EPA/play</th><th>Off success</th></tr></thead><tbody><tr><td>1</td><td class=l>@ <a href="/cfb/teams/virginia/">Virginia</a></td><td class=l>L 8–34</td><td>-0.249</td><td>+0.351</td><td>34.2%</td></tr><tr><td>2</td><td class=l>vs Richmond</td><td class=l>W 73–0</td><td>+0.973</td><td>-0.488</td><td>66.7%</td></tr><tr><td>3</td><td class=l>@ <a href="/cfb/teams/vanderbilt/">Vanderbilt</a></td><td class=l>L 31–35</td><td>+0.048</td><td>+0.417</td><td>39.7%</td></tr><tr><td>4</td><td class=l>vs <a href="/cfb/teams/app-state/">App State</a></td><td class=l>W 41–31</td><td>+0.246</td><td>+0.157</td><td>52.6%</td></tr><tr><td>5</td><td class=l>vs <a href="/cfb/teams/louisville/">Louisville</a></td><td class=l>W 31–28</td><td>+0.268</td><td>+0.234</td><td>39.8%</td></tr><tr><td>6</td><td class=l>vs <a href="/cfb/teams/wake-forest/">Wake Forest</a></td><td class=l>L 14–38</td><td>+0.061</td><td>+0.325</td><td>39.5%</td></tr><tr><td>8</td><td class=l>@ <a href="/cfb/teams/stanford/">Stanford</a></td><td class=l>L 28–31</td><td>+0.346</td><td>+0.318</td><td>50.0%</td></tr><tr><td>9</td><td class=l>vs <a href="/cfb/teams/california/">California</a></td><td class=l>W 31–10</td><td>+0.108</td><td>-0.183</td><td>43.8%</td></tr><tr><td>10</td><td class=l>vs <a href="/cfb/teams/duke/">Duke</a></td><td class=l>L 3–41</td><td>-0.048</td><td>+0.450</td><td>37.8%</td></tr><tr><td>11</td><td class=l>vs <a href="/cfb/teams/syracuse/">Syracuse</a></td><td class=l>L 31–34</td><td>+0.127</td><td>+0.235</td><td>42.9%</td></tr></tbody></table></div>
+<p class="note">Single games are raw (not opponent-adjusted), garbage time removed.</p>
+</div>
+```
+
+{{< include ../_team.qmd >}}

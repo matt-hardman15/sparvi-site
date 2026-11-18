@@ -1,0 +1,142 @@
+{
+  "run_id": "063ae43be446",
+  "model": "stuff_plus",
+  "version": "2.0.0",
+  "kind": "full",
+  "ran_at": "2026-11-18T19:28:18Z",
+  "code_sha": "02316fe7513409f9474c0474512495badeb6d4b3",
+  "lockfile": "e6f7c7528ac332cf",
+  "preregistered_at": "2026-11-13",
+  "spec": {
+    "preregistered_at": "2026-11-13",
+    "module": "models/baseball/stuff_plus/backtest.py",
+    "target": "Next-season run value per 100 pitches (RV/100), MLB pitchers with 500+ pitches in both seasons",
+    "decision_dates": "season start (March 1 of the outcome season)",
+    "splits": {
+      "type": "walk_forward",
+      "first_test": 2026,
+      "last_test": 2026,
+      "train_window": 1,
+      "predictor_lag": 1,
+      "decision": "03-01",
+      "fast_folds": 1
+    },
+    "group_by": "none: a pitch-physics model; pitcher identity is not a feature (same design as the published test)",
+    "block": "entity_id",
+    "baselines": [
+      "last_season"
+    ],
+    "primary_metric": "pearson_r",
+    "bootstrap": 2000,
+    "seed": 7,
+    "pass_gate": {
+      "beats_baseline": "last_season",
+      "min_skill": 0.0,
+      "ci_excludes_zero": true
+    },
+    "gate_decided": "Matt, 2026-11-13: strict (the 90% interval of the edge over last season's run value must exclude zero)",
+    "reproduction": "Exact on the same machine; across CPU models LightGBM trees differ slightly, tolerance \u00b10.01 in r (Matt, 2026-11-13). Official runs happen in CI.",
+    "vault": {
+      "seasons": [],
+      "note": "No sealed season yet: with MLB 2024-2026 the only test season is 2026. The 2027 season becomes the vault when it completes.",
+      "accesses": 0
+    }
+  },
+  "folds": [
+    2026
+  ],
+  "evaluation": {
+    "metric": "pearson_r",
+    "n": 324,
+    "point": 0.3068834680844296,
+    "baselines": {
+      "last_season": {
+        "value": 0.19259585980517263,
+        "paired": {
+          "est": 0.11428760827925699,
+          "ci90": [
+            0.006567826251904411,
+            0.21442908120860096
+          ],
+          "n": 324,
+          "blocks": 324,
+          "bootstrap": 2000,
+          "seed": 7
+        }
+      }
+    },
+    "by_fold": {
+      "2026": 0.3068834680844296
+    }
+  },
+  "gate": {
+    "checks": {
+      "beats_baseline": true,
+      "min_skill": true,
+      "ci_excludes_zero": true
+    },
+    "passed": true,
+    "gap": 0.11428760827925699,
+    "per_baseline": {
+      "last_season": {
+        "gap": 0.11428760827925699,
+        "ci90_low": 0.006567826251904411
+      }
+    }
+  },
+  "leakage": {
+    "timestamp": {
+      "passed": true,
+      "folds": [
+        {
+          "fold": 2026,
+          "fit_max_available_at": "2024-10-01 00:00:00",
+          "train_until": "2024-12-31 23:59:59",
+          "predict_max_available_at": "2025-09-29 00:00:00",
+          "decision_date": "2026-03-01 00:00:00",
+          "passes": true
+        }
+      ]
+    },
+    "future_poisoning": {
+      "passed": true,
+      "cutoff": "2026-03-01 00:00:00",
+      "n": 478
+    },
+    "label_permutation": {
+      "passed": true,
+      "r": -0.06929549076301396,
+      "ci90": [
+        -0.16928196508732857,
+        0.030456645856747632
+      ],
+      "n": 324
+    },
+    "too_good": {
+      "passed": true,
+      "r": 0.3068834680844296,
+      "ceiling": 0.9
+    },
+    "entity_overlap": {
+      "passed": true,
+      "not_applicable": "group_by: none: a pitch-physics model; pitcher identity is not a feature (same design as the published test)"
+    },
+    "universe": {
+      "passed": true,
+      "predicted": 478,
+      "scored": 324,
+      "no_outcome": 154,
+      "note": "entities without an outcome (retired, injured, too few pitches) can't be scored; they're counted here so survivorship is visible"
+    }
+  },
+  "passed": true,
+  "primary": {
+    "metric": "pearson_r",
+    "point": 0.3068834680844296,
+    "last_season": 0.19259585980517263
+  },
+  "revision_safe": false,
+  "approximate_tables": [
+    "batter_heights"
+  ]
+}

@@ -1,0 +1,633 @@
+{
+ "seasons": [
+  2018,
+  2025
+ ],
+ "transfers": 5295,
+ "with_prior_id": 0.9651,
+ "by_source": {
+  "id": 4903,
+  "reid": 204,
+  "portal": 188
+ },
+ "rates": {
+  "played_at_new_school": 0.7528,
+  "won_role": 0.2555,
+  "success": 0.125
+ },
+ "by_season": {
+  "2018": {
+   "n": 168,
+   "success": 0.1488
+  },
+  "2019": {
+   "n": 220,
+   "success": 0.1545
+  },
+  "2020": {
+   "n": 197,
+   "success": 0.1168
+  },
+  "2021": {
+   "n": 396,
+   "success": 0.1414
+  },
+  "2022": {
+   "n": 747,
+   "success": 0.1245
+  },
+  "2023": {
+   "n": 929,
+   "success": 0.1184
+  },
+  "2024": {
+   "n": 1131,
+   "success": 0.1317
+  },
+  "2025": {
+   "n": 1507,
+   "success": 0.1141
+  }
+ },
+ "by_group": {
+  "QB": {
+   "n": 1070,
+   "won_role": 0.3084,
+   "success": 0.1542
+  },
+  "RB": {
+   "n": 1130,
+   "won_role": 0.2434,
+   "success": 0.1248
+  },
+  "TE": {
+   "n": 804,
+   "won_role": 0.1542,
+   "success": 0.0734
+  },
+  "WR": {
+   "n": 2291,
+   "won_role": 0.2724,
+   "success": 0.1296
+  }
+ },
+ "by_destination_tier": {
+  "FCS": {
+   "n": 1309,
+   "success": 0.1803
+  },
+  "G5": {
+   "n": 1295,
+   "success": 0.1606
+  },
+  "Power": {
+   "n": 1200,
+   "success": 0.1817
+  }
+ },
+ "spot_checks": [
+  {
+   "player": "Joe Burrow",
+   "season": 2018,
+   "from": "Ohio State",
+   "to": "LSU",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.547,
+   "bar": 0.467,
+   "success": true,
+   "later": [
+    {
+     "year": 2,
+     "season": 2019,
+     "won_role": true,
+     "success": true
+    }
+   ]
+  },
+  {
+   "player": "Jalen Hurts",
+   "season": 2019,
+   "from": "Alabama",
+   "to": "Oklahoma",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.943,
+   "bar": 0.451,
+   "success": true,
+   "later": []
+  },
+  {
+   "player": "Joe Milton III",
+   "season": 2021,
+   "from": "Michigan",
+   "to": "Tennessee",
+   "source": "id",
+   "won_role": false,
+   "composite": -0.387,
+   "bar": 0.33,
+   "success": false,
+   "later": [
+    {
+     "year": 2,
+     "season": 2022,
+     "won_role": false,
+     "success": false
+    },
+    {
+     "year": 3,
+     "season": 2023,
+     "won_role": true,
+     "success": true
+    }
+   ]
+  },
+  {
+   "player": "Hendon Hooker",
+   "season": 2021,
+   "from": "Virginia Tech",
+   "to": "Tennessee",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.626,
+   "bar": 0.33,
+   "success": true,
+   "later": [
+    {
+     "year": 2,
+     "season": 2022,
+     "won_role": true,
+     "success": true
+    }
+   ]
+  },
+  {
+   "player": "Jameson Williams",
+   "season": 2021,
+   "from": "Ohio State",
+   "to": "Alabama",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.478,
+   "bar": 0.168,
+   "success": true,
+   "later": []
+  },
+  {
+   "player": "Caleb Williams",
+   "season": 2022,
+   "from": "Oklahoma",
+   "to": "USC",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.743,
+   "bar": 0.412,
+   "success": true,
+   "later": [
+    {
+     "year": 2,
+     "season": 2023,
+     "won_role": true,
+     "success": true
+    }
+   ]
+  },
+  {
+   "player": "Bo Nix",
+   "season": 2022,
+   "from": "Auburn",
+   "to": "Oregon",
+   "source": "reid",
+   "won_role": true,
+   "composite": 0.775,
+   "bar": 0.412,
+   "success": true,
+   "later": [
+    {
+     "year": 2,
+     "season": 2023,
+     "won_role": true,
+     "success": true
+    }
+   ]
+  },
+  {
+   "player": "Quinn Ewers",
+   "season": 2022,
+   "from": "Ohio State",
+   "to": "Texas",
+   "source": "portal",
+   "won_role": true,
+   "composite": 0.46,
+   "bar": 0.412,
+   "success": true,
+   "later": [
+    {
+     "year": 2,
+     "season": 2023,
+     "won_role": true,
+     "success": true
+    },
+    {
+     "year": 3,
+     "season": 2024,
+     "won_role": true,
+     "success": true
+    }
+   ]
+  },
+  {
+   "player": "Jayden Daniels",
+   "season": 2022,
+   "from": "Arizona State",
+   "to": "LSU",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.649,
+   "bar": 0.412,
+   "success": true,
+   "later": [
+    {
+     "year": 2,
+     "season": 2023,
+     "won_role": true,
+     "success": true
+    }
+   ]
+  },
+  {
+   "player": "Michael Penix Jr.",
+   "season": 2022,
+   "from": "Indiana",
+   "to": "Washington",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.682,
+   "bar": 0.412,
+   "success": true,
+   "later": [
+    {
+     "year": 2,
+     "season": 2023,
+     "won_role": true,
+     "success": true
+    }
+   ]
+  },
+  {
+   "player": "Jaxson Dart",
+   "season": 2022,
+   "from": "USC",
+   "to": "Ole Miss",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.578,
+   "bar": 0.412,
+   "success": true,
+   "later": [
+    {
+     "year": 2,
+     "season": 2023,
+     "won_role": true,
+     "success": true
+    },
+    {
+     "year": 3,
+     "season": 2024,
+     "won_role": true,
+     "success": true
+    }
+   ]
+  },
+  {
+   "player": "Ricky Pearsall",
+   "season": 2022,
+   "from": "Arizona State",
+   "to": "Florida",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.591,
+   "bar": 0.289,
+   "success": true,
+   "later": [
+    {
+     "year": 2,
+     "season": 2023,
+     "won_role": true,
+     "success": true
+    }
+   ]
+  },
+  {
+   "player": "Kedon Slovis",
+   "season": 2022,
+   "from": "USC",
+   "to": "Pittsburgh",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.157,
+   "bar": 0.412,
+   "success": false,
+   "later": []
+  },
+  {
+   "player": "Cam Ward",
+   "season": 2022,
+   "from": "Incarnate Word",
+   "to": "Washington State",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.293,
+   "bar": 0.412,
+   "success": false,
+   "later": [
+    {
+     "year": 2,
+     "season": 2023,
+     "won_role": true,
+     "success": false
+    }
+   ]
+  },
+  {
+   "player": "Tez Johnson",
+   "season": 2023,
+   "from": "Troy",
+   "to": "Oregon",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.541,
+   "bar": 0.261,
+   "success": true,
+   "later": [
+    {
+     "year": 2,
+     "season": 2024,
+     "won_role": true,
+     "success": false
+    }
+   ]
+  },
+  {
+   "player": "Kedon Slovis",
+   "season": 2023,
+   "from": "Pittsburgh",
+   "to": "BYU",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.148,
+   "bar": 0.46,
+   "success": false,
+   "later": []
+  },
+  {
+   "player": "Cam Ward",
+   "season": 2024,
+   "from": "Washington State",
+   "to": "Miami",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.804,
+   "bar": 0.443,
+   "success": true,
+   "later": []
+  },
+  {
+   "player": "Dillon Gabriel",
+   "season": 2024,
+   "from": "Oklahoma",
+   "to": "Oregon",
+   "source": "id",
+   "won_role": true,
+   "composite": 0.752,
+   "bar": 0.443,
+   "success": true,
+   "later": []
+  }
+ ],
+ "later_years": {
+  "years_at_school": {
+   "1": 3511,
+   "2": 1330,
+   "3": 355,
+   "4": 88,
+   "5": 10,
+   "6": 1
+  },
+  "success_by_year": {
+   "1": {
+    "cohorts": [
+     2018,
+     2025
+    ],
+    "n": 5295,
+    "rate": 0.125
+   },
+   "2": {
+    "cohorts": [
+     2018,
+     2024
+    ],
+    "n": 3788,
+    "rate": 0.1814
+   },
+   "3": {
+    "cohorts": [
+     2018,
+     2023
+    ],
+    "n": 2657,
+    "rate": 0.1961
+   },
+   "4": {
+    "cohorts": [
+     2018,
+     2022
+    ],
+    "n": 1728,
+    "rate": 0.2101
+   }
+  },
+  "won_role_by_year": {
+   "1": {
+    "cohorts": [
+     2018,
+     2025
+    ],
+    "n": 5295,
+    "rate": 0.2555
+   },
+   "2": {
+    "cohorts": [
+     2018,
+     2024
+    ],
+    "n": 3788,
+    "rate": 0.3273
+   },
+   "3": {
+    "cohorts": [
+     2018,
+     2023
+    ],
+    "n": 2657,
+    "rate": 0.35
+   },
+   "4": {
+    "cohorts": [
+     2018,
+     2022
+    ],
+    "n": 1728,
+    "rate": 0.3652
+   }
+  },
+  "efficient_by_year": {
+   "1": {
+    "cohorts": [
+     2018,
+     2025
+    ],
+    "n": 5295,
+    "rate": 0.1651
+   },
+   "2": {
+    "cohorts": [
+     2018,
+     2024
+    ],
+    "n": 3788,
+    "rate": 0.2313
+   },
+   "3": {
+    "cohorts": [
+     2018,
+     2023
+    ],
+    "n": 2657,
+    "rate": 0.2529
+   },
+   "4": {
+    "cohorts": [
+     2018,
+     2022
+    ],
+    "n": 1728,
+    "rate": 0.265
+   }
+  },
+  "first_success_year": {
+   "1": 662,
+   "2": 197,
+   "3": 34,
+   "4": 12
+  },
+  "success_by_year_and_group": {
+   "QB": {
+    "1": {
+     "cohorts": [
+      2018,
+      2025
+     ],
+     "n": 1070,
+     "rate": 0.1542
+    },
+    "2": {
+     "cohorts": [
+      2018,
+      2024
+     ],
+     "n": 804,
+     "rate": 0.2114
+    },
+    "3": {
+     "cohorts": [
+      2018,
+      2023
+     ],
+     "n": 581,
+     "rate": 0.2289
+    }
+   },
+   "RB": {
+    "1": {
+     "cohorts": [
+      2018,
+      2025
+     ],
+     "n": 1130,
+     "rate": 0.1248
+    },
+    "2": {
+     "cohorts": [
+      2018,
+      2024
+     ],
+     "n": 819,
+     "rate": 0.1673
+    },
+    "3": {
+     "cohorts": [
+      2018,
+      2023
+     ],
+     "n": 559,
+     "rate": 0.1825
+    }
+   },
+   "TE": {
+    "1": {
+     "cohorts": [
+      2018,
+      2025
+     ],
+     "n": 804,
+     "rate": 0.0734
+    },
+    "2": {
+     "cohorts": [
+      2018,
+      2024
+     ],
+     "n": 535,
+     "rate": 0.1159
+    },
+    "3": {
+     "cohorts": [
+      2018,
+      2023
+     ],
+     "n": 354,
+     "rate": 0.1073
+    }
+   },
+   "WR": {
+    "1": {
+     "cohorts": [
+      2018,
+      2025
+     ],
+     "n": 2291,
+     "rate": 0.1296
+    },
+    "2": {
+     "cohorts": [
+      2018,
+      2024
+     ],
+     "n": 1630,
+     "rate": 0.1951
+    },
+    "3": {
+     "cohorts": [
+      2018,
+      2023
+     ],
+     "n": 1163,
+     "rate": 0.2132
+    }
+   }
+  },
+  "notes": "efficient = above the starters' average with at least 10% of the team's dropbacks, carries or targets"
+ }
+}

@@ -81,6 +81,18 @@ def test_probability_forecasts_and_detail(tmp_path):
     assert ledger.append_forecasts("cfb", 2027, [p], root=tmp_path, gate=gate) == 1
 
 
+def test_ranking_forecasts_carry_a_list_not_a_number(tmp_path):
+    """SC-3a: a board's ordered list is the forecast; no prob or point."""
+    r = fc(point=None, lo80=None, hi80=None, entity_type="program_board",
+           detail={"kind": "ranking", "list": ["11", "12", "13"]}, baselines={"production": ["12", "14"]})
+    assert ledger.append_forecasts("cfb", 2027, [r], root=tmp_path, gate=gate) == 1
+    for bad, msg in (({"point": 0.2, "lo80": 0.1, "hi80": 0.3}, "not a prob or point"),
+                     ({"detail": {"kind": "ranking", "list": []}}, "non-empty"),
+                     ({"detail": {"kind": "ranking", "list": ["1", "1"]}}, "without repeats")):
+        with pytest.raises(LedgerError, match=msg):
+            ledger.append_forecasts("cfb", 2027, [{**r, "forecast_id": "cfb-2027-test-9", **bad}], root=tmp_path, gate=gate)
+
+
 def test_forecasts_are_never_replaced_and_resolve_once(tmp_path):
     ledger.append_forecasts("cfb", 2027, [fc()], root=tmp_path, gate=gate)
     with pytest.raises(LedgerError, match="never replaced"):

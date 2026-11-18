@@ -1,0 +1,24 @@
+---
+title: "Rice Owls"
+pagetitle: "Rice football: power rating by week"
+description: "Rice (American Athletic) power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+```{=html}
+<div id="team-root" data-team="Rice"></div>
+<p class="page-summary">Through week 11 of 2026, Rice is 1–9. Its power rating, −14.4 points against an average FBS team, ranks 126th of 138; it is unranked in the AP poll. The passing offense ranks 138th of 138 (-0.134).</p>
+<p class="note team-sub" style="border-left:4px solid #00205b;padding-left:.6rem">American Athletic: <a href="/cfb/teams/army/">Army</a> · <a href="/cfb/teams/charlotte/">Charlotte</a> · <a href="/cfb/teams/east-carolina/">East Carolina</a> · <a href="/cfb/teams/florida-atlantic/">Florida Atlantic</a> · <a href="/cfb/teams/memphis/">Memphis</a> · <a href="/cfb/teams/navy/">Navy</a> · <a href="/cfb/teams/north-texas/">North Texas</a> · <a href="/cfb/teams/south-florida/">South Florida</a> · <a href="/cfb/teams/temple/">Temple</a> · <a href="/cfb/teams/tulane/">Tulane</a> · <a href="/cfb/teams/tulsa/">Tulsa</a> · <a href="/cfb/teams/uab/">UAB</a> · <a href="/cfb/teams/utsa/">UTSA</a> · <a href="/cfb/teams/">All FBS teams</a> · <a href="/cfb/tools/team-ratings.html?team=Rice">Compare with every FBS team</a></p>
+<!-- The season's numbers as plain HTML; the interactive page below removes this once it runs. -->
+<div id="team-static">
+<h3>2026 through week 11</h3>
+<div class="stat-row"><div class="stat"><div class="v">1–9</div><div class="k">Record</div></div><div class="stat"><div class="v">−14.4</div><div class="k">Power rating · 126th of 138</div></div><div class="stat"><div class="v">NR / NR</div><div class="k">AP / CFP rank · latest polls</div></div><div class="stat"><div class="v">+0.067</div><div class="k">Offense EPA/play · 108th of 138</div></div><div class="stat"><div class="v">+0.108</div><div class="k">Defense EPA/play · 107th of 138 (allowed)</div></div></div>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th class=l>Opponent-adjusted EPA/play</th><th>Value</th><th>Rank</th></tr></thead><tbody><tr><td class=l>Offense · all plays</td><td>+0.067</td><td>108th of 138</td></tr><tr><td class=l>Offense · passes</td><td>-0.134</td><td>138th of 138</td></tr><tr><td class=l>Offense · runs</td><td>+0.117</td><td>58th of 138</td></tr><tr><td class=l>Defense (allowed) · all plays</td><td>+0.108</td><td>107th of 138</td></tr><tr><td class=l>Defense (allowed) · passes</td><td>+0.110</td><td>83rd of 138</td></tr><tr><td class=l>Defense (allowed) · runs</td><td>+0.121</td><td>119th of 138</td></tr></tbody></table></div>
+<h3>Results</h3>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th>Wk</th><th class=l>Opponent</th><th class=l>Result</th><th>Off EPA/play</th><th>Def EPA/play</th><th>Off success</th></tr></thead><tbody><tr><td>1</td><td class=l>vs Houston Christian</td><td class=l>W 31–3</td><td>+0.224</td><td>-0.292</td><td>53.5%</td></tr><tr><td>2</td><td class=l>@ <a href="/cfb/teams/notre-dame/">Notre Dame</a></td><td class=l>L 0–52</td><td>-0.676</td><td>+0.571</td><td>12.0%</td></tr><tr><td>3</td><td class=l>vs <a href="/cfb/teams/western-michigan/">Western Michigan</a></td><td class=l>L 21–28</td><td>+0.101</td><td>+0.140</td><td>44.3%</td></tr><tr><td>4</td><td class=l>@ <a href="/cfb/teams/fresno-state/">Fresno State</a></td><td class=l>L 24–38</td><td>+0.194</td><td>+0.271</td><td>54.0%</td></tr><tr><td>5</td><td class=l>vs <a href="/cfb/teams/utsa/">UTSA</a></td><td class=l>L 14–16</td><td>-0.145</td><td>-0.009</td><td>30.5%</td></tr><tr><td>6</td><td class=l>@ <a href="/cfb/teams/east-carolina/">East Carolina</a></td><td class=l>L 12–28</td><td>-0.295</td><td>+0.021</td><td>27.7%</td></tr><tr><td>7</td><td class=l>vs <a href="/cfb/teams/tulsa/">Tulsa</a></td><td class=l>L 17–38</td><td>+0.106</td><td>+0.286</td><td>42.6%</td></tr><tr><td>8</td><td class=l>@ <a href="/cfb/teams/florida-atlantic/">Florida Atlantic</a></td><td class=l>L 49–51</td><td>+0.475</td><td>+0.284</td><td>50.8%</td></tr><tr><td>10</td><td class=l>@ <a href="/cfb/teams/north-texas/">North Texas</a></td><td class=l>L 23–52</td><td>+0.158</td><td>+0.419</td><td>35.4%</td></tr><tr><td>11</td><td class=l>vs <a href="/cfb/teams/tulane/">Tulane</a></td><td class=l>L 17–20</td><td>-0.072</td><td>+0.151</td><td>36.9%</td></tr></tbody></table></div>
+<p class="note">Single games are raw (not opponent-adjusted), garbage time removed.</p>
+</div>
+```
+
+{{< include ../_team.qmd >}}

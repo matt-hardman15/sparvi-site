@@ -1,0 +1,24 @@
+---
+title: "Idaho Vandals"
+pagetitle: "Idaho football: power rating by week"
+description: "Idaho (Sun Belt) college football power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2017."
+image: preview.png
+page-layout: full
+---
+
+```{=html}
+<div id="team-root" data-team="Idaho"></div>
+<p class="page-summary">In 2017, its last FBS season, Idaho went 4–8. Its final power rating, −11.7 points against an average FBS team, ranked 108th of 130; it was unranked in the AP poll.</p>
+<p class="note team-sub" style="border-left:4px solid #000000;padding-left:.6rem"><a href="/cfb/teams/">All FBS teams</a> · <a href="/cfb/tools/team-ratings.html?team=Idaho">Compare with every FBS team</a></p>
+<!-- The season's numbers as plain HTML; the interactive page below removes this once it runs. -->
+<div id="team-static">
+<h3>2017 final</h3>
+<div class="stat-row"><div class="stat"><div class="v">4–8</div><div class="k">Record</div></div><div class="stat"><div class="v">−11.7</div><div class="k">Power rating · 108th of 130</div></div><div class="stat"><div class="v">NR / NR</div><div class="k">AP / CFP rank · latest polls</div></div><div class="stat"><div class="v">-0.029</div><div class="k">Offense EPA/play · 121st of 130</div></div><div class="stat"><div class="v">+0.053</div><div class="k">Defense EPA/play · 72nd of 130 (allowed)</div></div></div>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th class=l>Opponent-adjusted EPA/play</th><th>Value</th><th>Rank</th></tr></thead><tbody><tr><td class=l>Offense · all plays</td><td>-0.029</td><td>121st of 130</td></tr><tr><td class=l>Offense · passes</td><td>+0.014</td><td>112th of 130</td></tr><tr><td class=l>Offense · runs</td><td>-0.078</td><td>121st of 130</td></tr><tr><td class=l>Defense (allowed) · all plays</td><td>+0.053</td><td>72nd of 130</td></tr><tr><td class=l>Defense (allowed) · passes</td><td>+0.022</td><td>43rd of 130</td></tr><tr><td class=l>Defense (allowed) · runs</td><td>+0.073</td><td>91st of 130</td></tr></tbody></table></div>
+<h3>Results</h3>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th>Wk</th><th class=l>Opponent</th><th class=l>Result</th><th>Off EPA/play</th><th>Def EPA/play</th><th>Off success</th></tr></thead><tbody><tr><td>1</td><td class=l>vs <a href="/cfb/teams/sacramento-state/">Sacramento State</a></td><td class=l>W 28–6</td><td>0.000</td><td>-0.199</td><td>41.3%</td></tr><tr><td>2</td><td class=l>vs <a href="/cfb/teams/unlv/">UNLV</a></td><td class=l>L 16–44</td><td>+0.041</td><td>+0.373</td><td>45.3%</td></tr><tr><td>3</td><td class=l>@ <a href="/cfb/teams/western-michigan/">Western Michigan</a></td><td class=l>L 28–37</td><td>+0.098</td><td>+0.063</td><td>33.9%</td></tr><tr><td>4</td><td class=l>@ <a href="/cfb/teams/south-alabama/">South Alabama</a></td><td class=l>W 29–23</td><td>-0.021</td><td>-0.053</td><td>36.8%</td></tr><tr><td>6</td><td class=l>vs <a href="/cfb/teams/louisiana/">Louisiana</a></td><td class=l>L 16–21</td><td>-0.040</td><td>+0.067</td><td>34.3%</td></tr><tr><td>7</td><td class=l>vs <a href="/cfb/teams/app-state/">App State</a></td><td class=l>L 20–23</td><td>-0.138</td><td>-0.042</td><td>37.5%</td></tr><tr><td>8</td><td class=l>@ <a href="/cfb/teams/missouri/">Missouri</a></td><td class=l>L 21–68</td><td>+0.059</td><td>+0.902</td><td>28.9%</td></tr><tr><td>9</td><td class=l>vs <a href="/cfb/teams/ul-monroe/">UL Monroe</a></td><td class=l>W 31–23</td><td>+0.208</td><td>+0.192</td><td>45.7%</td></tr><tr><td>10</td><td class=l>@ <a href="/cfb/teams/troy/">Troy</a></td><td class=l>L 21–24</td><td>+0.122</td><td>+0.106</td><td>43.3%</td></tr><tr><td>12</td><td class=l>vs <a href="/cfb/teams/coastal-carolina/">Coastal Carolina</a></td><td class=l>L 7–13</td><td>-0.029</td><td>-0.060</td><td>44.1%</td></tr><tr><td>13</td><td class=l>@ <a href="/cfb/teams/new-mexico-state/">New Mexico State</a></td><td class=l>L 10–17</td><td>-0.289</td><td>+0.033</td><td>28.8%</td></tr><tr><td>14</td><td class=l>@ <a href="/cfb/teams/georgia-state/">Georgia State</a></td><td class=l>W 24–10</td><td>+0.066</td><td>-0.065</td><td>34.3%</td></tr></tbody></table></div>
+<p class="note">Single games are raw (not opponent-adjusted), garbage time removed.</p>
+</div>
+```
+
+{{< include ../_team.qmd >}}

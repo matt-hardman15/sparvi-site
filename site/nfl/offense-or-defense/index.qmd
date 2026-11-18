@@ -1,0 +1,128 @@
+---
+title: "Good offense vs. good defense: which one shows up?"
+pagetitle: "NFL matchups: offense tells you more than defense"
+description: "When a strong offense meets a strong defense, the offense's season numbers have predicted the game about twice as well as the defense's. This week's games."
+date: 2026-11-14
+categories: [NFL, efficiency]
+image: thumb.png
+card-key: nfl.od_ratio
+card-prefix: ""
+card-suffix: "×"
+card-label: "how much more an offense's numbers tell you than the defense's"
+---
+
+::: {.finding}
+Across {{< meta nfl.od_n >}} offense-vs-defense matchups ({{< meta nfl.od_first_season >}}–{{< meta nfl.od_last_season >}}, week {{< meta nfl.od_min_week >}} on), an offense's season-to-date EPA per play tracked how it played that week about {{< meta nfl.od_ratio >}} times as closely as the opposing defense's numbers did (90% interval {{< meta nfl.od_ratio_ci >}}). And strength against strength is no special case: the two sides simply add up.
+:::
+
+::: {.so-what}
+- **When a top offense meets a top defense, lean on the offense's track record.** Strong offenses facing strong defenses still averaged {{< meta nfl.od_ss >}} EPA per play, better than weak offenses facing weak defenses ({{< meta nfl.od_ww >}}).
+- **Discount hot defensive numbers.** A defense's season-to-date rate is a noisier guide to its next game, so a matchup "against the league's best defense" moves the expectation less than it sounds.
+- **Run numbers say the least on both sides.** Pass offense and pass defense carry most of what the season so far tells you.
+:::
+
+## This week's matchups
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c"></div>
+  <div id="games"><div class="loading">Loading…</div></div>
+  <p class="caption" id="gcap"></p>
+</div>
+```
+
+## What happened when offenses met defenses, {{< meta nfl.od_first_season >}}–{{< meta nfl.od_last_season >}}
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c2"></div>
+  <div id="grid" class="plot-host"></div>
+  <p class="caption" id="gridcap"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt, U = S.urlState;
+  const [D, teamList] = await Promise.all([S.load("/data/nfl/offense_defense.json"), S.load("/data/nfl/teams.json")]);
+  const teams = new Map(teamList.map(t => [t.id, t]));
+  const SPLITS = { all: "All plays", pass: "Passes", run: "Runs" };
+  const DEF = { split: "all", gsplit: "all" };
+  const st = { split: SPLITS[U.get("split")] ? U.get("split") : DEF.split, gsplit: SPLITS[U.get("gsplit")] ? U.get("gsplit") : DEF.gsplit };
+  const ord = (r) => r + (r % 100 >= 11 && r % 100 <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" }[r % 10] || "th"));
+  const name = (id) => S.nflTeamLink(id, teams.get(id)?.nick ?? id);
+  let table = null;
+
+  // This week's unit matchups, two per game.
+  function drawGames() {
+    const host = document.getElementById("games");
+    if (!D.games.length) { host.replaceChildren(S.el("p", { class: "muted" }, "No regular-season games left this season.")); return; }
+    const rows = D.games.flatMap(g => [[g.away, g.home, g.away_off], [g.home, g.away, g.home_off]].map(([o, d, u]) => {
+      const x = u[st.split];
+      return { date: g.date, o, d, off: x.off, off_rank: x.off_rank, def: x.def, def_rank: x.def_rank,
+               both: x.off_rank <= 10 && x.def_rank <= 10, gap: x.def_rank - x.off_rank };
+    }));
+    const cols = [
+      { key: "date", label: "Day", align: "l", fmt: d => new Date(d + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" }) },
+      { key: "o", label: "Offense", align: "l", html: r => name(r.o), sortVal: r => r.o },
+      { key: "off", label: "Off EPA/play", fmt: v => f.signed(v, 3), heat: "pct", heatVal: r => 100 * (32 - r.off_rank) / 31 },
+      { key: "off_rank", label: "Rank", fmt: v => ord(v) },
+      { key: "d", label: "vs. defense", align: "l", html: r => name(r.d) + (r.both ? ' <span class="muted" style="font-size:.8em;white-space:nowrap">· top 10 vs. top 10</span>' : ""), sortVal: r => r.d },
+      { key: "def", label: "Def EPA/play", fmt: v => f.signed(v, 3), heat: "pct", heatVal: r => 100 * (32 - r.def_rank) / 31, title: "Lower is better" },
+      { key: "def_rank", label: "Rank", fmt: v => ord(v) },
+    ];
+    table ||= S.table(host, cols, { sortKey: "off_rank", desc: false, pageSize: 40 });
+    table.update(rows);
+    document.getElementById("gcap").textContent = `Week ${D.week}: each offense against the defense it faces, ${SPLITS[st.split].toLowerCase()}, opponent-adjusted, garbage time removed, season to date through week ${D.through}. `
+      + `Def EPA/play is allowed, so lower is better. Ranks are among all 32 teams (1st = best). Colors rank each column (orange better, blue worse). `
+      + `The history below says to weigh the offense's side about twice as heavily. No predictions here, just the ratings.`;
+  }
+
+  // The 3 x 3 grid: offense tier x defense tier, average EPA/play in the game.
+  const TIERS = ["weak", "middle", "strong"];
+  function drawGrid() {
+    const g = D.grid[st.gsplit];
+    const lim = d3.max(Object.values(D.grid).flat(), c => Math.abs(c.epa));
+    S.plot(document.getElementById("grid"), w => Plot.plot({ ...S.plotDefaults(w), height: 300, marginLeft: w < 520 ? 70 : 110, padding: 0.06,
+      x: { label: null, domain: TIERS, tickFormat: t => (w < 520 ? `${t} D` : `${t} defense`) },
+      y: { label: null, domain: TIERS.slice().reverse(), tickFormat: t => (w < 520 ? `${t} O` : `${t} offense`) },
+      color: { type: "diverging", domain: [-lim, lim], pivot: 0, range: ["#2a78d6", "#efeee9", "#eb6834"], legend: true, label: "Offense's EPA/play in the game", tickFormat: "+.2f" },
+      marks: [
+        Plot.cell(g, { x: "def", y: "off", fill: "epa", inset: 1 }),
+        Plot.text(g, { x: "def", y: "off", text: d => f.signed(d.epa, 3), fontSize: 14, fontWeight: 600, fill: "#16181d" }),
+        Plot.tip(g, Plot.pointer({ x: "def", y: "off", title: d => `${d.off} offense vs ${d.def} defense\nAverage ${f.signed(d.epa, 3)} EPA/play in the game · ${d.n} games` })),
+      ] }));
+    document.getElementById("gridcap").textContent = `Every matchup from week ${D.min_week} on, ${D.seasons[0]}–${D.seasons[1]} (${SPLITS[st.gsplit].toLowerCase()}), sorted into thirds by the offense's and the defense's opponent-adjusted EPA/play through the previous week. `
+      + `Each cell is how that offense actually played in the game. Read across a row: the defense changes the result less than reading down a column, where the offense changes it.`;
+  }
+
+  document.getElementById("c").replaceChildren(S.el("label", {}, "Plays", S.seg(Object.entries(SPLITS), st.split, v => { st.split = v; drawGames(); save(); })));
+  document.getElementById("c2").replaceChildren(S.el("label", {}, "Plays", S.seg(Object.entries(SPLITS), st.gsplit, v => { st.gsplit = v; drawGrid(); save(); })));
+  const save = () => U.set({ split: st.split, gsplit: st.gsplit }, DEF);
+  drawGames(); drawGrid();
+})();
+</script>
+```
+
+## Why the offense's numbers travel better
+
+Both sides of a matchup come with a season-to-date number: the offense's EPA per play, and the defense's EPA per play allowed, each adjusted for the opponents faced so far ([how](/nfl/tools/team-efficiency.html)). Put both against what the offense actually did in the next game, and the offense's number lines up about twice as well: a correlation of {{< meta nfl.od_r_off >}} against {{< meta nfl.od_r_def >}} for the defense's. Passing shows the same split ({{< meta nfl.od_pass_r_off >}} against {{< meta nfl.od_pass_r_def >}}, a ratio of {{< meta nfl.od_pass_ratio >}}, interval {{< meta nfl.od_pass_ratio_ci >}}); running is weak on both sides ({{< meta nfl.od_run_r_off >}} and {{< meta nfl.od_run_r_def >}}).
+
+Neither number is a strong guide to a single game; football games are noisy. But the difference matters when the two point in opposite directions, as they do whenever a good offense meets a good defense. A likely reason, not tested here: a defense's results depend more on things it doesn't control from week to week, like the quarterbacks it happens to face and whether the passes it defends are caught or dropped.
+
+## No special "strength on strength" effect
+
+It's tempting to think great-on-great matchups follow their own rules: that an elite defense "neutralizes" an elite offense. In the data they don't. Adding an offense × defense interaction to a model of both sides changed almost nothing (90% interval for its size: {{< meta nfl.od_int_ci >}} EPA per play per standard deviation of each). The grid above shows it plainly: a strong offense facing a strong defense averaged {{< meta nfl.od_ss >}}, close to what the two sides would predict separately, and well above a weak offense against a weak defense ({{< meta nfl.od_ww >}}).
+
+<details class="method" id="method">
+<summary>Method, data, and limits</summary>
+
+**Data.** nflverse play-by-play, regular seasons {{< meta nfl.od_first_season >}}–{{< meta nfl.od_last_season >}}, garbage time removed, with Sparvi's opponent-adjusted EPA per play ([model](/nfl/tools/team-efficiency.html)). Every game from week {{< meta nfl.od_min_week >}} on gives two matchups (each offense against the other team's defense): {{< meta nfl.od_n >}} in all, from {{< meta nfl.od_n_games >}} games.
+
+**The test.** The outcome is the offense's raw EPA per play in that game. The predictors are the offense's adjusted EPA per play and the defense's adjusted EPA per play allowed, both through the previous week, so nothing from the game itself is used. The ratio is the offense's correlation with the outcome divided by the defense's. A linear fit with both sides standardized gives the same picture ({{< meta nfl.od_b_off >}} EPA per play per standard deviation for the offense, {{< meta nfl.od_b_def >}} for the defense). Intervals come from 2,000 bootstrap resamples of games, keeping both matchups of a game together. The grid sorts matchups into thirds on each side; each cell has at least {{< meta nfl.od_cell_n >}} matchups.
+
+**What it can't tell you.** These are averages over many games; any one game can go the other way. Season-to-date numbers early in the year rest on few games, which is why the test starts at week {{< meta nfl.od_min_week >}}. Injuries, weather, and quarterback changes aren't in the ratings. The table of this week's games shows ratings, not predictions.
+
+Code: [`nfl/offense_defense/`](https://github.com/matt-hardman15/sparvi-site/tree/main/nfl/offense_defense) · Data: [nflverse](https://github.com/nflverse) play-by-play (CC-BY 4.0). Sparvi is not affiliated with the NFL or any club.
+
+**Model version.** [{{< meta models.nfl_team_efficiency >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/nfl/team_efficiency/card.yml) ({{< meta models.nfl_team_efficiency_status >}}).
+
+</details>

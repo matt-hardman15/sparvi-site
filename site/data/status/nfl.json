@@ -4,7 +4,7 @@
  "data_through": {
   "season": 2026,
   "week": 10,
-  "last_game": "2026-11-12"
+  "last_game": "2026-11-16"
  },
  "n_checks": 137,
  "n_failed": 0,
@@ -19,7 +19,7 @@
   "pbp_2023": 49665,
   "pbp_2024": 49492,
   "pbp_2025": 48771,
-  "pbp_2026": 24002,
+  "pbp_2026": 26246,
   "schedules": 3033,
   "team_stats_2016": 32,
   "team_stats_2017": 32,
@@ -238,7 +238,7 @@
   {
    "name": "pbp_2019: wp missing",
    "ok": true,
-   "detail": "0.58% (limit 5%)"
+   "detail": "0.59% (limit 5%)"
   },
   {
    "name": "team_stats_2019: columns and types",
@@ -593,7 +593,7 @@
   {
    "name": "pbp_2026: row count",
    "ok": true,
-   "detail": "24,002 rows (last accepted 24,002)"
+   "detail": "26,246 rows (last accepted 24,002)"
   },
   {
    "name": "pbp_2026: one row per game_id + play_id",

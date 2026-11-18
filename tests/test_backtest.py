@@ -8,7 +8,7 @@ import pytest
 from synthetic_statcast import write_fixture
 
 import ingest.snapshot as snap
-from backtest import leakage, metrics, runner
+from backtest import ci, leakage, metrics, runner
 from backtest.asof import SNAPSHOTS_START, Loader
 from backtest.splits import season_folds
 from sparvi.config import baseball
@@ -98,6 +98,36 @@ def test_gate_is_strict_about_the_interval():
     assert runner.gate(ev_mae, {"beats_baseline": "elo", "ci_excludes_zero": True})["passed"]
 
 
+def test_gate_against_several_baselines_needs_every_one():
+    ev = {"metric": "recall", "point": 0.30, "baselines": {
+        "a": {"value": 0.20, "paired": {"est": 0.10, "ci90": [0.04, 0.16]}},
+        "b": {"value": 0.27, "paired": {"est": 0.03, "ci90": [-0.01, 0.07]}}}}
+    assert runner.gate(ev, {"beats_baseline": ["a"], "ci_excludes_zero": True})["passed"]
+    g = runner.gate(ev, {"beats_baseline": ["a", "b"], "ci_excludes_zero": True})
+    assert not g["passed"] and g["gap"] == 0.03 and g["per_baseline"]["b"]["ci90_low"] == -0.01
+
+
+def test_recall_metric_and_training_cutoff():
+    assert metrics.recall([1.0, 0.5, 0.0, 0.9], [1, 1, 1, 0]) == 0.5          # mean credit over the positive rows
+    assert metrics.higher_is_better("recall")
+    f = season_folds(2023, 2023, train_window=1, decision_month_day="05-01", train_until_month_day="05-01")[0]
+    assert f.train_until == pd.Timestamp("2023-05-01") and f.decision_date == pd.Timestamp("2023-05-01")
+    assert season_folds(2023, 2023, train_window=1)[0].train_until == pd.Timestamp("2021-12-31 23:59:59")
+
+
+def test_ci_compares_a_fast_run_with_the_same_fold():
+    full = {"kind": "full", "folds": [2021, 2022], "evaluation": {"metric": "recall", "point": 0.15, "by_fold": {"2021": 0.18, "2022": 0.12}}}
+    fast = {"kind": "fast", "folds": [2022], "evaluation": {"metric": "recall", "point": 0.12}, "leakage": {}, "gate": {"passed": True}}
+    m = SimpleNamespace(card={"backtest": {}, "experimental": None})
+    assert ci.comparable_point(fast, full) == 0.12
+    assert ci.judge(m, fast, full) == (True, [])                       # not "worse than 0.15": that's two folds pooled
+    old = {"kind": "full", "folds": [2021, 2022], "evaluation": {"metric": "recall", "point": 0.15}}
+    ok, notes = ci.judge(m, fast, old)                                   # older report without per-fold scores
+    assert ok and "skipped" in notes[0]
+    assert ci.comparable_point({**fast, "evaluation": {"metric": "recall", "point": 0.10}}, full) == 0.12
+    assert not ci.judge(m, {**fast, "evaluation": {"metric": "recall", "point": 0.10}}, full)[0]
+
+
 def test_paired_bootstrap_is_seeded_and_blocked():
     rng = np.random.default_rng(0)
     df = pd.DataFrame({"entity_id": np.repeat(range(50), 3), "y": rng.normal(size=150)})
@@ -146,9 +176,75 @@ def test_model_code_reads_data_only_through_the_loader():
 
     from sparvi.config import ROOT
     bad = []
-    for p in list((ROOT / "models").rglob("*.py")) + list((ROOT / "features").rglob("*.py") if (ROOT / "features").exists() else []):
+    model_code = [ROOT / "cfb" / "fit" / "model.py"]          # feature code that lives beside its sport
+    for p in list((ROOT / "models").rglob("*.py")) + list((ROOT / "features").rglob("*.py") if (ROOT / "features").exists() else [])             + [q for q in model_code if q.exists()]:
         text = p.read_text(encoding="utf-8")
         for pat in (r"read_parquet\(", r"read_csv\(", r"\bRAW\b", r"data/raw", r"duckdb\.(sql|connect)\("):
             if re.search(pat, text):
                 bad.append(f"{p.relative_to(ROOT)}: {pat}")
     assert not bad, "read through backtest.asof.Loader instead:\n" + "\n".join(bad)
+
+
+def _toy_perm(signal: float):
+    """A model whose shuffled-label predictions correlate with the outcome by `signal` (a leak) plus seed noise."""
+    ids = [f"e{i}" for i in range(200)]
+    y = np.random.default_rng(0).normal(size=200)
+
+    def fit(loader, fold, permute_seed=None):
+        return {"seed": permute_seed}
+
+    def predict(fitted, loader, fold):
+        noise = np.random.default_rng(fitted["seed"] or 0).normal(size=200)
+        return pd.DataFrame({"entity_id": ids, "point": signal * y + noise})
+
+    return SimpleNamespace(fit=fit, predict=predict, outcome=lambda loader, fold: pd.DataFrame({"entity_id": ids, "y": y}))
+
+
+def test_label_permutation_over_several_seeds():
+    """permutation_seeds (Matt, Nov 15): the mean shuffled-label r across seeds must include zero; a leak present in
+    every seed still fails."""
+    spec = {"primary_metric": "pearson_r", "permutation_seeds": 10}
+    clean = leakage.label_permutation(_toy_perm(0.0), FOLD, spec=spec)
+    assert clean["passed"] is True and clean["seeds"] == 10 and len(clean["r_by_seed"]) == 10
+    assert leakage.label_permutation(_toy_perm(0.5), FOLD, spec=spec)["passed"] is False
+
+
+def test_gate_in_every_segment():
+    """pass_gate.each_segment (CFB-PROJ, Matt): one weak segment fails the model even if the pooled rows pass."""
+    rng = np.random.default_rng(3)
+    rows = []
+    for seg, skill in (("QB", 0.8), ("RB", 0.8), ("TE", 0.0)):
+        y = rng.normal(size=300)
+        base = y * 0.3 + rng.normal(size=300)
+        rows.append(pd.DataFrame({"seg": seg, "y": y, "point": y * skill + rng.normal(size=300) * 0.5, "carry": base,
+                                  "player": [f"{seg}{i}" for i in range(300)], "fold": 2021}))
+    df = pd.concat(rows, ignore_index=True)
+    spec = {"primary_metric": "pearson_r", "baselines": ["carry"], "block": "player", "segment": "seg", "bootstrap": 300}
+    ev = runner.evaluate(df, spec)
+    assert set(ev["segments"]) == {"QB", "RB", "TE"}
+    g = {"beats_baseline": ["carry"], "ci_excludes_zero": True}
+    assert runner.gate_all(ev, g)["passed"]                                   # pooled: passes
+    each = runner.gate_all(ev, {**g, "each_segment": True})
+    assert not each["passed"] and each["checks"] == {"QB": True, "RB": True, "TE": False}
+
+
+def test_not_applicable_needs_a_reason_and_never_waives_timing():
+    """A card may declare label permutation not applicable only with a written reason; timing tests can't be waived."""
+    ok = leakage.not_applicable("label_permutation", {"label_permutation": "structural model: skill comes from roster composition"})
+    assert ok["passed"] is True and "roster" in ok["not_applicable"]
+    assert leakage.not_applicable("label_permutation", {"label_permutation": ""})["passed"] is False
+    assert leakage.not_applicable("future_poisoning", {"future_poisoning": "a long enough reason to pass the length check"})["passed"] is False
+    assert leakage.not_applicable("label_permutation", {}) is None
+
+
+def test_ci_runs_only_the_models_a_change_touches():
+    """backtest.ci --changed (Matt, Nov 16): a PR runs the backtests of the models whose code or folder it touches;
+    harness files run every model; site files and committed reports run none."""
+    pick = lambda files: ci.selected(files)  # noqa: E731
+    names = lambda files: sorted(m.name for m in pick(files))  # noqa: E731
+    assert names(["site/index.qmd", "README.md"]) == []
+    assert names(["models/cfb/system_fit/backtest/1.1.8.json", "backtest/runs/runs.jsonl"]) == []
+    assert names(["cfb/proj/pit.py"]) == ["cfb_player_projection"]
+    assert names(["baseball/pitch_quality/train.py"]) == ["stuff_plus"]
+    assert "cfb_player_profile" in names(["cfb/profile/features.yml"]) and "stuff_plus" not in names(["cfb/profile/features.yml"])
+    assert pick(["backtest/leakage.py"]) is None and pick(["uv.lock"]) is None

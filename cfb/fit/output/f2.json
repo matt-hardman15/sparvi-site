@@ -1,0 +1,392 @@
+{
+ "seasons": [
+  2014,
+  2025
+ ],
+ "groups": {
+  "QB": {
+   "player_seasons": 2319,
+   "features": [
+    "qb_rush_share",
+    "qb_rush_explosive",
+    "qb_sack",
+    "qb_comp",
+    "qb_explosive",
+    "qb_int",
+    "height",
+    "weight"
+   ],
+   "explained": [
+    0.2215,
+    0.2034,
+    0.1521,
+    0.1162
+   ],
+   "loadings": {
+    "D1": {
+     "qb_rush_share": -0.184,
+     "qb_rush_explosive": 0.01,
+     "qb_sack": -0.341,
+     "qb_comp": 0.378,
+     "qb_explosive": 0.312,
+     "qb_int": -0.345,
+     "height": 0.479,
+     "weight": 0.511
+    },
+    "D2": {
+     "qb_rush_share": 0.195,
+     "qb_rush_explosive": 0.304,
+     "qb_sack": -0.1,
+     "qb_comp": 0.476,
+     "qb_explosive": 0.458,
+     "qb_int": -0.259,
+     "height": -0.465,
+     "weight": -0.374
+    },
+    "D3": {
+     "qb_rush_share": 0.453,
+     "qb_rush_explosive": 0.612,
+     "qb_sack": 0.39,
+     "qb_comp": -0.18,
+     "qb_explosive": 0.249,
+     "qb_int": 0.178,
+     "height": 0.222,
+     "weight": 0.306
+    },
+    "D4": {
+     "qb_rush_share": 0.139,
+     "qb_rush_explosive": -0.275,
+     "qb_sack": 0.697,
+     "qb_comp": 0.227,
+     "qb_explosive": -0.201,
+     "qb_int": -0.568,
+     "height": 0.028,
+     "weight": 0.064
+    }
+   },
+   "split_half_cosine": [
+    0.951,
+    0.952,
+    0.982,
+    0.986
+   ],
+   "label_ari": {
+    "2": 0.69,
+    "3": 0.37,
+    "4": 0.529,
+    "5": 0.383,
+    "6": 0.224,
+    "7": 0.299,
+    "8": 0.258
+   },
+   "persistence": {
+    "pairs": {
+     "stayed": 811,
+     "moved": 160
+    },
+    "year_to_year_r": {
+     "D1": {
+      "stayed": 0.785,
+      "moved": 0.722
+     },
+     "D2": {
+      "stayed": 0.736,
+      "moved": 0.656
+     },
+     "D3": {
+      "stayed": 0.662,
+      "moved": 0.482
+     },
+     "D4": {
+      "stayed": 0.322,
+      "moved": 0.321
+     }
+    }
+   },
+   "labels": {
+    "k": 2,
+    "means": {
+     "T1": {
+      "qb_rush_share": -0.58,
+      "qb_rush_explosive": -0.31,
+      "qb_sack": -0.23,
+      "qb_comp": -0.0,
+      "qb_explosive": -0.13,
+      "qb_int": -0.02,
+      "height": 0.28,
+      "weight": 0.2
+     },
+     "T2": {
+      "qb_rush_share": 0.55,
+      "qb_rush_explosive": 0.31,
+      "qb_sack": 0.23,
+      "qb_comp": 0.0,
+      "qb_explosive": 0.12,
+      "qb_int": 0.01,
+      "height": -0.29,
+      "weight": -0.21
+     }
+    }
+   }
+  },
+  "RB": {
+   "player_seasons": 4421,
+   "features": [
+    "rb_carry_share",
+    "rb_target_share",
+    "rb_run10",
+    "rb_run20",
+    "rb_stuff",
+    "rb_goal_line",
+    "rb_short",
+    "height",
+    "weight"
+   ],
+   "explained": [
+    0.2174,
+    0.1881,
+    0.1546,
+    0.1378
+   ],
+   "loadings": {
+    "D1": {
+     "rb_carry_share": 0.222,
+     "rb_target_share": 0.328,
+     "rb_run10": 0.499,
+     "rb_run20": 0.467,
+     "rb_stuff": 0.022,
+     "rb_goal_line": -0.244,
+     "rb_short": 0.01,
+     "height": -0.374,
+     "weight": -0.42
+    },
+    "D2": {
+     "rb_carry_share": 0.327,
+     "rb_target_share": 0.175,
+     "rb_run10": 0.308,
+     "rb_run20": 0.265,
+     "rb_stuff": -0.428,
+     "rb_goal_line": 0.219,
+     "rb_short": 0.29,
+     "height": 0.438,
+     "weight": 0.437
+    },
+    "D3": {
+     "rb_carry_share": -0.279,
+     "rb_target_share": -0.258,
+     "rb_run10": -0.041,
+     "rb_run20": -0.114,
+     "rb_stuff": -0.574,
+     "rb_goal_line": -0.133,
+     "rb_short": 0.612,
+     "height": -0.25,
+     "weight": -0.24
+    },
+    "D4": {
+     "rb_carry_share": 0.572,
+     "rb_target_share": 0.49,
+     "rb_run10": -0.395,
+     "rb_run20": -0.423,
+     "rb_stuff": -0.038,
+     "rb_goal_line": 0.056,
+     "rb_short": 0.218,
+     "height": -0.152,
+     "weight": -0.149
+    }
+   },
+   "split_half_cosine": [
+    0.984,
+    0.987,
+    0.9,
+    0.906
+   ],
+   "label_ari": {
+    "2": 0.68,
+    "3": 0.545,
+    "4": 0.613,
+    "5": 0.358,
+    "6": 0.343,
+    "7": 0.251,
+    "8": 0.298
+   },
+   "persistence": {
+    "pairs": {
+     "stayed": 1681,
+     "moved": 234
+    },
+    "year_to_year_r": {
+     "D1": {
+      "stayed": 0.658,
+      "moved": 0.604
+     },
+     "D2": {
+      "stayed": 0.655,
+      "moved": 0.552
+     },
+     "D3": {
+      "stayed": 0.51,
+      "moved": 0.366
+     },
+     "D4": {
+      "stayed": 0.376,
+      "moved": 0.28
+     }
+    }
+   },
+   "labels": {
+    "k": 4,
+    "means": {
+     "T1": {
+      "rb_carry_share": -0.69,
+      "rb_target_share": -0.46,
+      "rb_run10": -0.07,
+      "rb_run20": -0.09,
+      "rb_stuff": 0.13,
+      "rb_goal_line": -0.54,
+      "rb_short": 0.02,
+      "height": -0.62,
+      "weight": -0.69
+     },
+     "T2": {
+      "rb_carry_share": -0.46,
+      "rb_target_share": -0.58,
+      "rb_run10": -0.49,
+      "rb_run20": -0.44,
+      "rb_stuff": -0.1,
+      "rb_goal_line": 0.47,
+      "rb_short": -0.0,
+      "height": 0.56,
+      "weight": 0.64
+     },
+     "T3": {
+      "rb_carry_share": 0.5,
+      "rb_target_share": 0.49,
+      "rb_run10": 1.01,
+      "rb_run20": 0.97,
+      "rb_stuff": -0.21,
+      "rb_goal_line": -0.04,
+      "rb_short": 0.08,
+      "height": -0.01,
+      "weight": -0.05
+     },
+     "T4": {
+      "rb_carry_share": 0.65,
+      "rb_target_share": 0.56,
+      "rb_run10": -0.56,
+      "rb_run20": -0.57,
+      "rb_stuff": 0.25,
+      "rb_goal_line": -0.09,
+      "rb_short": -0.1,
+      "height": -0.12,
+      "weight": -0.11
+     }
+    }
+   }
+  },
+  "REC": {
+   "player_seasons": 6824,
+   "features": [
+    "rec_target_share",
+    "rec_ypr",
+    "rec_catch",
+    "rec_explosive",
+    "rec_redzone_share",
+    "rec_third_share",
+    "height",
+    "weight",
+    "is_te"
+   ],
+   "explained": [
+    0.3236,
+    0.2076,
+    0.1493,
+    0.1043
+   ],
+   "loadings": {
+    "D1": {
+     "rec_target_share": -0.173,
+     "rec_ypr": -0.23,
+     "rec_catch": 0.03,
+     "rec_explosive": -0.156,
+     "rec_redzone_share": 0.347,
+     "rec_third_share": -0.038,
+     "height": 0.429,
+     "weight": 0.544,
+     "is_te": 0.539
+    },
+    "D2": {
+     "rec_target_share": 0.068,
+     "rec_ypr": 0.345,
+     "rec_catch": 0.53,
+     "rec_explosive": 0.657,
+     "rec_redzone_share": -0.016,
+     "rec_third_share": -0.342,
+     "height": 0.168,
+     "weight": 0.125,
+     "is_te": 0.057
+    },
+    "D3": {
+     "rec_target_share": 0.226,
+     "rec_ypr": 0.617,
+     "rec_catch": -0.494,
+     "rec_explosive": 0.118,
+     "rec_redzone_share": 0.029,
+     "rec_third_share": 0.364,
+     "height": 0.382,
+     "weight": 0.161,
+     "is_te": -0.062
+    },
+    "D4": {
+     "rec_target_share": 0.923,
+     "rec_ypr": -0.168,
+     "rec_catch": -0.011,
+     "rec_explosive": -0.161,
+     "rec_redzone_share": 0.095,
+     "rec_third_share": -0.285,
+     "height": 0.018,
+     "weight": 0.036,
+     "is_te": 0.048
+    }
+   },
+   "split_half_cosine": [
+    0.999,
+    0.981,
+    0.98,
+    0.659
+   ],
+   "label_ari": {
+    "2": 1.0,
+    "3": 0.371,
+    "4": 0.224,
+    "5": 0.196,
+    "6": 0.221,
+    "7": 0.303,
+    "8": 0.294
+   },
+   "persistence": {
+    "pairs": {
+     "stayed": 2365,
+     "moved": 287
+    },
+    "year_to_year_r": {
+     "D1": {
+      "stayed": 0.946,
+      "moved": 0.914
+     },
+     "D2": {
+      "stayed": 0.325,
+      "moved": -0.113
+     },
+     "D3": {
+      "stayed": 0.574,
+      "moved": 0.222
+     },
+     "D4": {
+      "stayed": 0.464,
+      "moved": 0.117
+     }
+    }
+   }
+  }
+ }
+}

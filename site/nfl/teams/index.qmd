@@ -1,0 +1,28 @@
+---
+no-chart-libs: true
+title: "NFL teams"
+pagetitle: "NFL team efficiency pages: all 32 teams"
+description: "Every NFL team's offense and defense in opponent-adjusted EPA per play and success rate, week by week, 2016–2026, with pass and run splits."
+page-layout: article
+---
+
+Each team page shows its offense and defense week by week in EPA per play and success rate, opponent-adjusted, with pass and run splits and every game. Records and ranks below are through week 10 of 2026; net EPA per play is offense minus defense allowed, opponent-adjusted. To compare all 32 at once, use the [team efficiency tool](/nfl/tools/team-efficiency.html).
+
+```{=html}
+<h2>AFC East</h2>
+<ul class="team-index"><li><a href="/nfl/teams/buf/">Buffalo Bills</a> <span class="muted">8–1 · 7th in net EPA/play</span></li><li><a href="/nfl/teams/mia/">Miami Dolphins</a> <span class="muted">1–8 · 29th in net EPA/play</span></li><li><a href="/nfl/teams/ne/">New England Patriots</a> <span class="muted">5–5 · 17th in net EPA/play</span></li><li><a href="/nfl/teams/nyj/">New York Jets</a> <span class="muted">2–8 · 26th in net EPA/play</span></li></ul>
+<h2>AFC North</h2>
+<ul class="team-index"><li><a href="/nfl/teams/bal/">Baltimore Ravens</a> <span class="muted">4–6 · 16th in net EPA/play</span></li><li><a href="/nfl/teams/cin/">Cincinnati Bengals</a> <span class="muted">7–2 · 3rd in net EPA/play</span></li><li><a href="/nfl/teams/cle/">Cleveland Browns</a> <span class="muted">6–4 · 20th in net EPA/play</span></li><li><a href="/nfl/teams/pit/">Pittsburgh Steelers</a> <span class="muted">6–3 · 21st in net EPA/play</span></li></ul>
+<h2>AFC South</h2>
+<ul class="team-index"><li><a href="/nfl/teams/hou/">Houston Texans</a> <span class="muted">3–6 · 15th in net EPA/play</span></li><li><a href="/nfl/teams/ind/">Indianapolis Colts</a> <span class="muted">3–7 · 27th in net EPA/play</span></li><li><a href="/nfl/teams/jax/">Jacksonville Jaguars</a> <span class="muted">7–2 · 2nd in net EPA/play</span></li><li><a href="/nfl/teams/ten/">Tennessee Titans</a> <span class="muted">1–8 · 31st in net EPA/play</span></li></ul>
+<h2>AFC West</h2>
+<ul class="team-index"><li><a href="/nfl/teams/den/">Denver Broncos</a> <span class="muted">7–2 · 12th in net EPA/play</span></li><li><a href="/nfl/teams/kc/">Kansas City Chiefs</a> <span class="muted">7–2 · 5th in net EPA/play</span></li><li><a href="/nfl/teams/lv/">Las Vegas Raiders</a> <span class="muted">4–6 · 28th in net EPA/play</span></li><li><a href="/nfl/teams/lac/">Los Angeles Chargers</a> <span class="muted">1–8 · 32nd in net EPA/play</span></li></ul>
+<h2>NFC East</h2>
+<ul class="team-index"><li><a href="/nfl/teams/dal/">Dallas Cowboys</a> <span class="muted">4–6 · 19th in net EPA/play</span></li><li><a href="/nfl/teams/nyg/">New York Giants</a> <span class="muted">5–3–1 · 13th in net EPA/play</span></li><li><a href="/nfl/teams/phi/">Philadelphia Eagles</a> <span class="muted">2–7 · 25th in net EPA/play</span></li><li><a href="/nfl/teams/was/">Washington Commanders</a> <span class="muted">3–5–1 · 22nd in net EPA/play</span></li></ul>
+<h2>NFC North</h2>
+<ul class="team-index"><li><a href="/nfl/teams/chi/">Chicago Bears</a> <span class="muted">7–2 · 6th in net EPA/play</span></li><li><a href="/nfl/teams/det/">Detroit Lions</a> <span class="muted">7–2 · 9th in net EPA/play</span></li><li><a href="/nfl/teams/gb/">Green Bay Packers</a> <span class="muted">6–4 · 8th in net EPA/play</span></li><li><a href="/nfl/teams/min/">Minnesota Vikings</a> <span class="muted">7–2 · 14th in net EPA/play</span></li></ul>
+<h2>NFC South</h2>
+<ul class="team-index"><li><a href="/nfl/teams/atl/">Atlanta Falcons</a> <span class="muted">3–7 · 24th in net EPA/play</span></li><li><a href="/nfl/teams/car/">Carolina Panthers</a> <span class="muted">4–5 · 18th in net EPA/play</span></li><li><a href="/nfl/teams/no/">New Orleans Saints</a> <span class="muted">3–6 · 23rd in net EPA/play</span></li><li><a href="/nfl/teams/tb/">Tampa Bay Buccaneers</a> <span class="muted">3–6 · 10th in net EPA/play</span></li></ul>
+<h2>NFC West</h2>
+<ul class="team-index"><li><a href="/nfl/teams/ari/">Arizona Cardinals</a> <span class="muted">3–7 · 30th in net EPA/play</span></li><li><a href="/nfl/teams/la/">Los Angeles Rams</a> <span class="muted">6–4 · 4th in net EPA/play</span></li><li><a href="/nfl/teams/sf/">San Francisco 49ers</a> <span class="muted">8–1 · 1st in net EPA/play</span></li><li><a href="/nfl/teams/sea/">Seattle Seahawks</a> <span class="muted">6–4 · 11th in net EPA/play</span></li></ul>
+```

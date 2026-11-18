@@ -7,7 +7,7 @@ season = 2026: train 2024, grade 2025, predict 2026).
 
 Writes:
   robustness.json         the Stuff+ test (the Stuff+ article reads this; keys unchanged)
-  yoy_pairs.csv           pitcher pairs behind it (the Stuff+ article's explorer)
+  yoy_pairs.csv           pitcher pairs behind it (the Stuff+ article's explorer; the free-agent article's history test)
   metrics_location.json   the side-by-side validation for the stuff-or-command article: split-half
                           reliability, out-of-sample year-over-year with bootstrap intervals, the
                           Pitching+-vs-Stuff+ comparison, and the Triple-A -> MLB check
@@ -27,9 +27,8 @@ TRAIN = P - 1
 BOOT, BOOT_SEED = 2000, SEED
 
 tr = load("mlb", TRAIN)
+models = fit_kinds(tr)                      # bagged, same settings as train.py
 rng = np.random.default_rng(BOOT_SEED)
-val_p = set(rng.choice(tr["pitcher"].unique(), size=int(0.15 * tr["pitcher"].nunique()), replace=False))
-models = fit_kinds(tr, tr["pitcher"].isin(val_p))
 
 d_prev, d_cur = load("mlb", P), load("mlb", Y)
 predict_all(models, d_prev)
@@ -73,8 +72,10 @@ res = {
                              seeds={"lightgbm": SEED, "split_and_bootstrap": BOOT_SEED}),
 }
 (OUT / "robustness.json").write_text(json.dumps(res, indent=2), encoding="utf-8")
-yy[["pitcher", "name_prev", "team_cur", "xrv100_prev", "rv100_prev", "rv100_cur", "pitches_prev", "pitches_cur"]].to_csv(
-    OUT / "yoy_pairs.csv", index=False)
+# Location+ and Pitching+ columns too (out of sample like Stuff+): the free-agent article tests whether results that
+# trailed or ran ahead of the grades moved toward them the next season.
+yy[["pitcher", "name_prev", "team_cur", "xrv100_prev", "xrv100_loc_prev", "xrv100_pitching_prev", "rv100_prev", "rv100_cur",
+    "pitches_prev", "pitches_cur"]].to_csv(OUT / "yoy_pairs.csv", index=False)
 
 m = json.loads((OUT / "metrics.json").read_text(encoding="utf-8"))
 loc = {

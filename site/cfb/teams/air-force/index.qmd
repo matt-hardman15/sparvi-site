@@ -1,0 +1,24 @@
+---
+title: "Air Force Falcons"
+pagetitle: "Air Force football: power rating by week"
+description: "Air Force (Mountain West) power rating and opponent-adjusted offense and defense, week by week, with AP and CFP ranks and every game, 2014–2026."
+image: preview.png
+page-layout: full
+---
+
+```{=html}
+<div id="team-root" data-team="Air Force"></div>
+<p class="page-summary">Through week 11 of 2026, Air Force is 8–2. Its power rating, +0.0 points against an average FBS team, ranks 69th of 138; it is unranked in the AP poll.</p>
+<p class="note team-sub" style="border-left:4px solid #003594;padding-left:.6rem">Mountain West: <a href="/cfb/teams/hawai-i/">Hawai&#x27;i</a> · <a href="/cfb/teams/nevada/">Nevada</a> · <a href="/cfb/teams/new-mexico/">New Mexico</a> · <a href="/cfb/teams/north-dakota-state/">North Dakota State</a> · <a href="/cfb/teams/northern-illinois/">Northern Illinois</a> · <a href="/cfb/teams/san-jose-state/">San José State</a> · <a href="/cfb/teams/unlv/">UNLV</a> · <a href="/cfb/teams/utep/">UTEP</a> · <a href="/cfb/teams/wyoming/">Wyoming</a> · <a href="/cfb/teams/">All FBS teams</a> · <a href="/cfb/tools/team-ratings.html?team=Air Force">Compare with every FBS team</a></p>
+<!-- The season's numbers as plain HTML; the interactive page below removes this once it runs. -->
+<div id="team-static">
+<h3>2026 through week 11</h3>
+<div class="stat-row"><div class="stat"><div class="v">8–2</div><div class="k">Record</div></div><div class="stat"><div class="v">+0.0</div><div class="k">Power rating · 69th of 138</div></div><div class="stat"><div class="v">NR / NR</div><div class="k">AP / CFP rank · latest polls</div></div><div class="stat"><div class="v">+0.180</div><div class="k">Offense EPA/play · 66th of 138</div></div><div class="stat"><div class="v">+0.047</div><div class="k">Defense EPA/play · 76th of 138 (allowed)</div></div></div>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th class=l>Opponent-adjusted EPA/play</th><th>Value</th><th>Rank</th></tr></thead><tbody><tr><td class=l>Offense · all plays</td><td>+0.180</td><td>66th of 138</td></tr><tr><td class=l>Offense · passes</td><td>-0.067</td><td>132nd of 138</td></tr><tr><td class=l>Offense · runs</td><td>+0.204</td><td>19th of 138</td></tr><tr><td class=l>Defense (allowed) · all plays</td><td>+0.047</td><td>76th of 138</td></tr><tr><td class=l>Defense (allowed) · passes</td><td>+0.098</td><td>78th of 138</td></tr><tr><td class=l>Defense (allowed) · runs</td><td>0.000</td><td>65th of 138</td></tr></tbody></table></div>
+<h3>Results</h3>
+<div class="s-table-wrap"><table class="s-table static"><thead><tr><th>Wk</th><th class=l>Opponent</th><th class=l>Result</th><th>Off EPA/play</th><th>Def EPA/play</th><th>Off success</th></tr></thead><tbody><tr><td>1</td><td class=l>vs Duquesne</td><td class=l>W 34–0</td><td>+0.394</td><td>-0.290</td><td>52.7%</td></tr><tr><td>2</td><td class=l>vs <a href="/cfb/teams/north-dakota-state/">North Dakota State</a></td><td class=l>L 32–38</td><td>+0.244</td><td>+0.124</td><td>51.5%</td></tr><tr><td>4</td><td class=l>@ <a href="/cfb/teams/nevada/">Nevada</a></td><td class=l>W 36–33</td><td>+0.272</td><td>+0.147</td><td>43.4%</td></tr><tr><td>5</td><td class=l>vs <a href="/cfb/teams/navy/">Navy</a></td><td class=l>W 14–9</td><td>-0.139</td><td>-0.013</td><td>36.1%</td></tr><tr><td>6</td><td class=l>@ <a href="/cfb/teams/northern-illinois/">Northern Illinois</a></td><td class=l>W 28–7</td><td>+0.354</td><td>-0.120</td><td>64.7%</td></tr><tr><td>7</td><td class=l>vs <a href="/cfb/teams/unlv/">UNLV</a></td><td class=l>W 41–31</td><td>+0.441</td><td>+0.231</td><td>52.3%</td></tr><tr><td>8</td><td class=l>@ <a href="/cfb/teams/wyoming/">Wyoming</a></td><td class=l>L 14–28</td><td>+0.091</td><td>+0.381</td><td>51.9%</td></tr><tr><td>9</td><td class=l>vs <a href="/cfb/teams/uconn/">UConn</a></td><td class=l>W 35–26</td><td>+0.237</td><td>+0.238</td><td>53.2%</td></tr><tr><td>10</td><td class=l>@ <a href="/cfb/teams/army/">Army</a></td><td class=l>W 24–21</td><td>+0.117</td><td>+0.048</td><td>48.3%</td></tr><tr><td>11</td><td class=l>vs <a href="/cfb/teams/san-jose-state/">San José State</a></td><td class=l>W 24–3</td><td>+0.092</td><td>-0.196</td><td>42.1%</td></tr></tbody></table></div>
+<p class="note">Single games are raw (not opponent-adjusted), garbage time removed.</p>
+</div>
+```
+
+{{< include ../_team.qmd >}}

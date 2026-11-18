@@ -11,9 +11,9 @@
   "aaa_affiliates_2025": 30,
   "aaa_affiliates_2026": 30,
   "batter_heights": 1463,
-  "milb_players_2026": 9740,
+  "milb_players_2026": 9800,
   "statcast_aaa_2025": 671257,
-  "statcast_aaa_2026": 671556,
+  "statcast_aaa_2026": 671555,
   "statcast_mlb_2024": 711899,
   "statcast_mlb_2025": 712528,
   "statcast_mlb_2026": 716792
@@ -92,7 +92,7 @@
   {
    "name": "statcast_aaa_2026: row count",
    "ok": true,
-   "detail": "671,556 rows (last accepted 671,556)"
+   "detail": "671,555 rows (last accepted 671,556)"
   },
   {
    "name": "statcast_aaa_2026: one row per game_pk + at_bat_number + pitch_number",
@@ -387,7 +387,7 @@
   {
    "name": "milb_players_2026: row count",
    "ok": true,
-   "detail": "9,740 rows (last accepted 9,740)"
+   "detail": "9,800 rows (last accepted 9,740)"
   },
   {
    "name": "milb_players_2026: one row per player_id + level + team_id",

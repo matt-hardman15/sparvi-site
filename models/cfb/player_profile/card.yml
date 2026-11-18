@@ -1,0 +1,100 @@
+# Model card (PLAN-scout A2). Change `code` files only with a new version: python -m sparvi.registry --help
+name: cfb_player_profile
+title: CFB player profile
+sport: cfb
+status: champion
+version: 1.1.0
+owner: Matt
+spec: 'A broad, position-specific profile for college football QBs, RBs, WRs, and TEs: efficiency, risk, situational,
+  usage, and style components (cfb/profile/features.yml), each normalized for the competition faced and shrunk by
+  how reliable it is. The basis for the player comparison tool (PLAYER-COMPS) and the portal board.'
+target: Each component's per-opportunity value (rates, averages, shares) from FBS plays outside garbage time
+method: 'Source adapters turn each data source into one long events table (cfb/profile/events.py). For each registered
+  feature: opponent adjustment by a team-level additive fit (value ~ offense + defense, ridge, centered) so each
+  play is credited net of what that defense allowed in the same stat; then empirical Bayes shrinkage toward the
+  position mean with per-feature play-to-play noise and between-player spread; then percentiles within position.
+  New stats and sources are added in features.yml / an adapter, with no change to the engine.'
+history: 'Replaces PLAYER-ADJ (single EPA/play rating). Its v1 (penalty toward zero) and v2 (opponent unit offsets,
+  teammate ridge, priors) were pre-registered on 2026-11-14 and each run once: v1 r 0.311 vs raw 0.326 (481 transfers),
+  v2 0.394 vs 0.403 (2,342 players); both failed the strict gate. Matt redirected the item to a broad component
+  profile (one number is not what a coach searches on).'
+code:
+- cfb/profile/engine.py
+- cfb/profile/events.py
+- cfb/profile/features.yml
+- ingest/cfb/play_players.py
+- football/common/filters.py
+training_data:
+- data/raw/cfb/plays_*.parquet
+- data/raw/cfb/games_*.parquet
+- data/raw/cfb/players/play_players_*.parquet
+- data/raw/cfb/players/roster_*.parquet
+artifacts:
+- cfb/profile/output/validation.json
+validation:
+  file: cfb/profile/output/validation.json
+  metrics:
+    r_movers_adjusted: movers.adjusted.r
+    r_movers_raw: movers.raw.r
+    edge_movers: movers.edge.est
+    n_movers: movers.n_players
+    r_all_adjusted: all.adjusted.r
+    r_all_raw: all.raw.r
+    split_half_adjusted: split_half.adjusted
+    split_half_raw: split_half.raw
+    opponent_corr_raw: opponent.raw
+    opponent_corr_adjusted: opponent.adjusted
+eval:
+  set: 'Every opponent-adjusted feature, outcome seasons 2021-2025: player-feature pairs with the feature''s minimum
+    opportunities in seasons t-1 and t. Predictor: season t-1 value (raw, or adjusted and shrunk); target: season
+    t opponent-adjusted value; standardized within feature. Primary on movers (team changed).'
+  set_keys:
+    first_outcome_season: seasons.first
+    last_outcome_season: seasons.last
+    n_movers: movers.n_players
+  primary: r_movers_adjusted
+  higher_is_better: true
+live_window:
+  unit: seasons
+  min: 1
+published_in: []
+backtest:
+  preregistered_at: '2026-11-14'
+  module: models/cfb/player_profile/backtest.py
+  target: 'For every opponent-adjusted feature: the season-t opponent-adjusted value of players who changed teams
+    (movers), standardized within feature; players with the feature minimum in seasons t-1 and t'
+  decision_dates: February 1 of the outcome season (after the bowls and the January portal window)
+  splits:
+    type: walk_forward
+    first_test: 2021
+    last_test: 2025
+    train_window: 1
+    predictor_lag: 1
+    decision: 02-01
+    fast_folds: 1
+  group_by: 'none: the profile has no fitted weights; each season''s values come from that season''s plays alone'
+  block: player
+  permutation_seeds: 10
+  baselines:
+  - last_season
+  primary_metric: pearson_r
+  bootstrap: 2000
+  seed: 7
+  pass_gate:
+    beats_baseline: last_season
+    min_skill: 0.0
+    ci_excludes_zero: true
+  gate_decided: 'Matt, 2026-11-14: strict (the 90% interval of the edge over the raw season t-1 values must exclude
+    zero), same as Stuff+'
+  secondary: 'Reported, not gating: the same test on every player (stayers and movers); per-feature results; raw
+    target instead of adjusted; split-half reliability (odd vs. even games), adjusted vs. raw; correlation of player-game
+    values with the opponent''s allowed level, raw vs. adjusted (closer to zero is better).'
+  reproduction: Exact on the same machine (deterministic sparse solves). Official runs happen in CI.
+  vault:
+    seasons:
+    - 2026
+    note: Season 2026 outcomes are sealed; scored once after the season completes (January 2027).
+    accesses: 0
+experimental: 'its pre-registered test (do components carry over when a player changes teams?) tied raw: edge +0.000,
+  90% interval -0.017 to +0.018. Secondary: more reliable within a season and nearly independent of opponent strength;
+  team context (line, teammates, scheme) is the next layer (PROFILE-CONTEXT)'
