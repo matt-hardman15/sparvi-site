@@ -67,7 +67,14 @@ jobs:
           SITE_PATHS: '^(site/|sparvi/|football/common/|sparvi\.toml$|pyproject\.toml$|uv\.lock$|\.python-version$|build\.sh$|\.github/workflows/check\.yml$|tests/(test_site|conftest)\.py$|(.*/)?export_site_data\.py$|(nfl|cfb)/team_pages\.py$|cfb/thumb\.py$)'
         run: |
           if [ -z "$PR" ]; then echo "site=true" >> "$GITHUB_OUTPUT"; exit 0; fi   # run by hand: check everything
-          gh api "repos/${{ github.repository }}/pulls/$PR/files" --paginate --jq '.[].filename' > files.txt
+          # GitHub sometimes answers 500 ("diff temporarily unavailable") right after a push: retry before failing
+          # (on failure `site` runs anyway).
+          ok=""
+          for i in 1 2 3 4 5; do
+            if gh api "repos/${{ github.repository }}/pulls/$PR/files" --paginate --jq '.[].filename' > files.txt; then ok=1; break; fi
+            echo "files API failed (attempt $i); retrying in $((i * 15))s"; sleep $((i * 15))
+          done
+          [ -n "$ok" ] || { echo "could not list the pull request's files"; exit 1; }
           echo "$(wc -l < files.txt) files changed"
           if grep -E "$SITE_PATHS" files.txt; then echo "site=true" >> "$GITHUB_OUTPUT"; else echo "site=false" >> "$GITHUB_OUTPUT"; fi
 
