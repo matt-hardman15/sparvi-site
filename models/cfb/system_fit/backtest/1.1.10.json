@@ -1,10 +1,10 @@
 {
-  "run_id": "2ccd6b5d1618",
+  "run_id": "8cabae732cc5",
   "model": "cfb_system_fit",
   "version": "1.1.10",
   "kind": "full",
-  "ran_at": "2026-11-18T19:41:20Z",
-  "code_sha": "02316fe7513409f9474c0474512495badeb6d4b3",
+  "ran_at": "2026-11-18T22:53:10Z",
+  "code_sha": "e3d73c9356b3cd4e745e3ae4f5e78d5bb91bb133",
   "lockfile": "e6f7c7528ac332cf",
   "preregistered_at": "2026-11-15",
   "spec": {
@@ -220,7 +220,8 @@
     "too_good": {
       "passed": true,
       "recall": 0.14802631578947367,
-      "ceiling": 0.9
+      "bound": 0.9,
+      "direction": "must stay below"
     },
     "entity_overlap": {
       "passed": true,
