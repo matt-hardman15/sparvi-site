@@ -3,7 +3,7 @@ name: nfl_team_efficiency
 title: NFL opponent adjustment
 sport: nfl
 status: champion
-version: 1.0.0
+version: 1.0.1
 owner: Matt
 spec: Ridge regression of play EPA on offense, defense, and home field; a team's adjusted EPA/play is its own minus
   the ridge strength of the opponents it faced. Lambda chosen on next-week margin MAE.

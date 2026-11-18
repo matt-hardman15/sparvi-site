@@ -33,7 +33,7 @@ from sparvi.provenance import provenance
 CFG = nfl()
 OUT = Path(__file__).parent / "output"
 DB = Path(os.environ.get("FOOTBALL_DB_PATH", ROOT / "football" / "dbt" / "football.duckdb"))
-GRID = [25, 50, 100, 200, 400, 800, 1600, 3200]
+GRID = [25, 50, 100, 200, 400, 800, 1600, 3200, 6400, 12800]   # past the minimum on both sides (NFL-LAMBDA)
 MIN_WEEK = 3          # first week whose ratings predict the next week in the search
 SEARCH_GT = "no_gt"   # the tool's default view: garbage time removed, all plays
 
