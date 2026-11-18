@@ -22,7 +22,7 @@ env:
 jobs:
   refresh:
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 180   # a first run, or one after nflverse revises past seasons, recomputes every season's fourth-down decisions
     steps:
       # Pushes with the deploy key (the one actor the main-branch ruleset exempts); see refresh-baseball.yml.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -66,10 +66,27 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
         run: uv run python -m ingest.snapshot nfl --require
 
-      - name: Rebuild football pipeline, adjustment, export, team pages
+      # Past seasons' fourth-down decision rows (play-level, never committed): reused when their inputs are unchanged
+      # (nfl/fourth/decisions.py checks a fingerprint per season), so most weeks only the current season is recomputed.
+      - name: Restore fourth-down decision rows
+        if: steps.checks.outputs.ok == 'true'
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: nfl/fourth/output/decisions_*.parquet
+          key: nfl-fourth-decisions-${{ github.run_id }}
+          restore-keys: nfl-fourth-decisions-
+
+      - name: Rebuild football pipeline, adjustment, fourth-down decisions, export, team pages
         id: build
         if: steps.checks.outputs.ok == 'true'
         run: uv run nfl/build.sh
+
+      - name: Save fourth-down decision rows
+        if: steps.build.outcome == 'success'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: nfl/fourth/output/decisions_*.parquet
+          key: nfl-fourth-decisions-${{ github.run_id }}
 
       - name: Render (fails on unresolved prose numbers)
         id: render

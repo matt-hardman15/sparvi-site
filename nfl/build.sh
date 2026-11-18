@@ -15,5 +15,8 @@ CFB_FIRST=$(python -m sparvi.config cfb.first_season)
 # NFL plays). Both sports' season vars are passed because dbt parses every model.
 (cd football/dbt && DBT_PROFILES_DIR=. dbt build --select stg_nfl_plays+ nfl_reconcile_team_stats   --vars "{nfl_season: $SEASON, nfl_first_season: $FIRST, cfb_season: $CFB_SEASON, cfb_first_season: $CFB_FIRST}")
 python nfl/team_efficiency/adjusted.py
+# Fourth-down decisions (F4): a season is recomputed only when its code or raw inputs changed (about 12 minutes each);
+# the play-level rows stay in nfl/fourth/output/ (gitignored; the workflow caches them), the export publishes aggregates.
+python -m nfl.fourth.decisions
 python nfl/export_site_data.py
 python nfl/team_pages.py
