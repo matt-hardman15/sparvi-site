@@ -102,4 +102,5 @@ backtest:
     - 2026
     note: Season 2026 plays are sealed until the season completes (February 2027).
     accesses: 0
-experimental: pre-registered Nov 18, 2026; the backtest hasn't run yet
+experimental: 'its latest backtest run didn''t clear the strict gate. Shown only in that case: 1.0.1 passed on 2026-11-18
+  (2020-2025, 246,692 plays: Brier 0.158 vs. 0.170 for the margin-by-time baseline, edge 90% interval 0.008 to 0.015)'

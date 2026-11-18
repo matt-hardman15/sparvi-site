@@ -42,3 +42,6 @@ baseball/pitch_quality/output/models/
 # Generated from the model registry at render time (deploy.yml, check.yml, build.sh); never committed.
 site/_generated/models.yml
 site/data/models/registry.json
+
+# Fourth-down decisions (play-level; the export publishes aggregates)
+nfl/fourth/output/decisions_*.parquet

@@ -3,27 +3,29 @@ name: nfl_fg_make
 title: NFL field-goal make probability
 sport: nfl
 status: champion
-version: 1.0.0
+version: 2.0.0
 owner: Matt
-spec: Logistic regression on kick distance. Development tried a distance spline with roof, temperature, wind and
-  season; it tied distance alone (Brier 0.1209 vs 0.1207), so distance alone is the model (Matt, Nov 18).
+spec: 'Logistic regression on kick distance and its square, fit on the last three seasons before the one being predicted
+  (nfl/fourth/fg.py). Replaces 1.0.0 (distance only, every season since 2016), which failed its calibration gate:
+  too few makes predicted from long range, and further behind each season.'
 target: A field-goal attempt is good (blocks count as misses)
-method: Logistic regression on kick distance
+method: Logistic regression (effectively unpenalized, lbfgs) on kick distance and (distance - 40)^2 / 100; last
+  three seasons
 code:
 - nfl/fourth/data.py
-- nfl/fourth/models.py
+- nfl/fourth/fg.py
 - nfl/fourth/harness.py
 - models/nfl/fg_make/backtest.py
 training_data:
 - data/raw/nfl/pbp_*.parquet
 - data/raw/nfl/state/pbp_state_*.parquet
 artifacts:
-- nfl/fourth/output/development.json
+- nfl/fourth/output/development_fg.json
 validation:
-  file: nfl/fourth/output/development.json
+  file: nfl/fourth/output/development_fg.json
   metrics:
-    dev_brier: models.fg_make.scores.baseline
-    dev_brier_best_rich: models.fg_make.scores.logit_full_C1p0
+    dev_brier: scores.distance_squared_last3
+    dev_brier_1_0_0: scores.distance_only_1_0_0
 eval:
   set: 'Development: validation seasons 2018 (trained on 2016-2017) and 2019 (trained on 2016-2018).'
   set_keys:
@@ -51,14 +53,14 @@ backtest:
     decision: +1:03-01
     resolve: +1:03-01
     fast_folds: 1
-  training: 'Fold t trains on seasons 2016..t-1 (an expanding window) as of Sept 1 of t. Settings fixed from development:
-    Development used 2016-2019 only (nfl/fourth/develop.py -> nfl/fourth/output/development.json: validation seasons
-    2018 and 2019); the 2020-2025 folds and the 2026 vault never informed a choice.'
+  training: 'Fold t trains on the last three seasons before t (t-3..t-1) as of Sept 1 of t. The spec was chosen
+    on Nov 18, 2026, after 1.0.0''s 2020-2025 backtest was read (Matt): on those folds this version''s calibration
+    error is 0.016 (1.0.0: 0.026), so they are not a clean test of it. The 2026 vault is.'
   rows: Every field-goal attempt of season t (blocked kicks are misses).
   known_hindsight: 'Seasons before 2026-11-13 come from the current nflverse files, not as they stood then (revision_safe:
     false). The model inputs here are raw game facts (score, clock, down, distance, field position, timeouts, kick
     distance, roof, weather), which nflverse rarely revises; its model columns (EPA, WP), revised Nov 17 2026, are
-    never read.'
+    never read. 2.0.0: the functional form and the three-season window were chosen with the 2020-2025 folds in view.'
   group_by: game_id
   block: game_id
   baselines: []
@@ -79,7 +81,10 @@ backtest:
   secondary: 'Reported, not gating: log loss, Brier, the reliability table, per fold, and (win probability) the
     same on 4th-down plays only.'
   limits: No injuries, personnel, play calls, or game-specific information; weather is the stadium reading; team
-    strength is point margin, not opponent-adjusted efficiency. Betting lines are never an input.
+    strength is point margin, not opponent-adjusted efficiency. Betting lines are never an input. Long attempts
+    are tried mostly by strong kickers in good conditions, so make rates past about 55 yards flatter the average
+    kicker; the square term extrapolates poorly past the distances teams try, so the decision engine offers no kick
+    beyond the 99th percentile of attempted distances.
   reproduction: Deterministic (single-thread LightGBM with a fixed seed; closed-form tables; lbfgs logistic). Official
     runs happen in CI.
   not_applicable:
@@ -92,4 +97,11 @@ backtest:
     - 2026
     note: Season 2026 plays are sealed until the season completes (February 2027).
     accesses: 0
-experimental: pre-registered Nov 18, 2026; the backtest hasn't run yet
+experimental: 'chosen after version 1.0.0 failed its calibration gate on 2020-2025 (error 0.026 against a noise
+  bar of 0.014: too few makes predicted from 50+ yards). Those seasons were read before this version was specified,
+  so they are not a clean test of it; the 2026 season is, scored in February 2027'
+history:
+- version: 1.0.0
+  status: retired
+  until: '2026-11-18'
+  reason: failed its pre-registered calibration gate (run on main, 2026-11-18)

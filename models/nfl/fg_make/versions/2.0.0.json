@@ -1,0 +1,35 @@
+{
+  "model": "nfl_fg_make",
+  "version": "2.0.0",
+  "status": "champion",
+  "registered": "2026-11-18",
+  "note": "F4-V2 (major: new spec, Matt Nov 18 2026): distance and its square on the last three seasons, after 1.0.0 failed its calibration gate on 2020-2025. Registered as champion by that decision; the development seasons (2018-2019) can't show the era effect it addresses.",
+  "code_hash": "a97efd69acf9abe073b779ffef9d836e98953b56c04706dadbdd1bd11c74e613",
+  "code_files": {
+    "nfl/fourth/data.py": "69124cd746f1a1a3d12ab0c86bda59245c270df2a8b2df62a665491cef229c62",
+    "nfl/fourth/fg.py": "7e14dc049d38979ea02a9b642bd85b3ccde740f0936314840ab5696b497cd0b6",
+    "nfl/fourth/harness.py": "b3ff8773b322279f819bb85f12bd2546162f8a87543f8295b40552f1aae82e67",
+    "models/nfl/fg_make/backtest.py": "26091efa367e49af069aeea0460011cd99f1dff8f131434756e4b7a559ad3e7b"
+  },
+  "training_data": "not hashed (raw data not present)",
+  "artifacts": {
+    "nfl/fourth/output/development_fg.json": "1f398862cf6c230662f620b7cb4591104f4275cedad2977569568fd8d59be6f2"
+  },
+  "eval": {
+    "set": "Development: validation seasons 2018 (trained on 2016-2017) and 2019 (trained on 2016-2018).",
+    "set_keys": {
+      "seasons": [
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    "primary": "dev_brier",
+    "higher_is_better": false
+  },
+  "metrics": {
+    "dev_brier": 0.12052,
+    "dev_brier_1_0_0": 0.1207
+  }
+}
