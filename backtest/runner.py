@@ -36,7 +36,7 @@ def load_module(path: str):
 def folds_for(spec: dict, fast: bool):
     s = spec["splits"]
     fs = season_folds(s["first_test"], s["last_test"], s.get("train_window"), s.get("decision", "03-01"), s.get("predictor_lag", 1),
-                      s.get("train_until"))
+                      s.get("train_until"), s.get("resolve"), s.get("first_train"))
     return fs[-s.get("fast_folds", 1):] if fast else fs
 
 
@@ -66,6 +66,10 @@ def evaluate(df: pd.DataFrame, spec: dict, segments: bool = True) -> dict:
         out["baselines"][b] = {"value": metrics.score(metric, df[b], df["y"]),
                                "paired": metrics.paired_bootstrap(df.reset_index(drop=True), metric, "point", b, "y", block,
                                                                   n=spec.get("bootstrap", 2000), seed=spec.get("seed", 7))}
+    noise = (spec.get("pass_gate") or {}).get("calibration_noise")
+    if noise:   # F4's calibration gate: the ECE must sit below what perfect calibration shows on these rows by chance
+        out["ece_noise"] = metrics.ece_noise(df["point"], q=noise.get("quantile", 0.9), draws=noise.get("draws", 2000),
+                                             seed=spec.get("seed", 7))
     if segments and spec.get("segment"):
         out["segments"] = {str(k): evaluate(g.reset_index(drop=True), spec, segments=False) for k, g in df.groupby(spec["segment"])}
     return out
@@ -73,8 +77,19 @@ def evaluate(df: pd.DataFrame, spec: dict, segments: bool = True) -> dict:
 
 def gate(ev: dict, g: dict) -> dict:
     """The pre-registered pass gate. Comparisons are oriented so 'better' is positive. beats_baseline is one baseline
-    or a list; with a list, every check must hold against each of them (gap and lower bound are the worst)."""
+    or a list; with a list, every check must hold against each of them (gap and lower bound are the worst). A gate with
+    no beats_baseline (a calibration gate, e.g. F4's lookup-table components) checks min_point alone."""
     sign = 1 if metrics.higher_is_better(ev["metric"]) else -1
+    if not g.get("beats_baseline"):
+        if g.get("calibration_noise"):
+            bar = ev["ece_noise"]["bar"]
+            ok = ev["point"] < bar
+            return {"checks": {"calibration_noise": ok}, "passed": ok, "gap": bar - ev["point"], "per_baseline": {},
+                    "noise_bar": bar}
+        if "min_point" not in g:
+            raise ValueError("a gate without beats_baseline needs min_point or calibration_noise")
+        ok = ev["point"] >= g["min_point"] if sign > 0 else ev["point"] <= g["min_point"]
+        return {"checks": {"min_point": ok}, "passed": ok, "gap": sign * (ev["point"] - g["min_point"]), "per_baseline": {}}
     names = g["beats_baseline"] if isinstance(g["beats_baseline"], list) else [g["beats_baseline"]]
     gaps, los = [], []
     for b in names:

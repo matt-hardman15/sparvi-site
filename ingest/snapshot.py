@@ -50,6 +50,8 @@ def nfl_tables() -> list[Table]:
     cfg = nfl()
     d = RAW / "nfl"
     t = [Table(f"pbp_{s}", d / f"pbp_{s}.parquet", ("game_id", "play_id"), day_after("game_date")) for s in cfg.seasons]
+    t += [Table(f"pbp_state_{s}", d / "state" / f"pbp_state_{s}.parquet", ("game_id", "play_id"), day_after("game_date"))
+          for s in cfg.seasons]
     t += [Table(f"team_stats_{s}", d / f"team_stats_{s}.parquet", ("season", "team", "season_type")) for s in cfg.seasons]
     # The source's own team codes (ingest/nfl/pull.py normalizes the working copies).
     t.append(Table("schedules", d / "source" / "schedules.parquet", ("game_id",), _schedule_available))

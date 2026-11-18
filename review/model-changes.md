@@ -2,6 +2,36 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-18 · NFL win probability and net punt 1.0.0 → 1.0.1 (leakage test only; the models are unchanged)
+The first CI run (fast fold, 2025) failed both models' shuffled-label test, one seed, in the better-than-null direction
+(Brier -0.0034, 90% -0.0062 to -0.0006; punt MAE -0.025 yd, -0.041 to -0.009). No leak behind it: (1) win
+probability's monotone constraint is a prior that keeps a leading-teams-win tilt on shuffled outcomes (seed 1 AUC 0.574
+with it, 0.493 without); (2) single seeds swing widely (punt shuffled-label correlation over five seeds +0.06, +0.02,
++0.17, -0.14, +0.06). Matt (Nov 18): the shuffled-label fit drops the monotone constraint, and the test averages 10
+seeds. With 10 seeds both shuffled-label models were significantly *worse* than the null (Brier +0.0055, 90% +0.004 to
++0.007; punts +0.011 yd, +0.001 to +0.022), as noise-fit models should be, so (Matt) the loss-metric test is one-sided:
+it fails only if the shuffled-label model is significantly better than the null. Both pass on 2025. Changed before the
+full 2020-2025 run; the models, gates and folds are as pre-registered.
+
+## 2026-11-18 · New: NFL win probability, fourth-down conversion, field-goal make, net punt 1.0.0 (F4, pre-registered)
+The four inputs to the fourth-down decision tool (F4). Raw game facts only (nflverse's own EPA/WP columns and betting
+lines are never inputs); new raw table `state/pbp_state_{season}` for the game state. Development on 2016-2019 only
+(`nfl/fourth/develop.py`; validation seasons 2018 and 2019):
+- win probability: LightGBM, monotone in margin and strength, Brier 0.1491 vs. 0.1589 for a margin-by-time logistic.
+- net punt: LightGBM L1, MAE 6.57 vs. 6.65 yards for a field-position bucket mean.
+- fourth-down conversion: nothing beat the yards-to-go rate table (best logistic, with 3rd downs as extra rows, 0.2335
+  vs. 0.2327), so the table is the model.
+- field goal: a distance spline with roof, temperature, wind and season tied distance alone (0.1209 vs. 0.1207), so
+  the distance-only logistic is the model.
+
+Gates (Matt): win probability and punts must beat their baseline with the 90% interval of the edge (by game) above
+zero; conversion and field goals pass if pooled ECE is below the 90th percentile of the ECE perfectly calibrated
+predictions show on the same plays (a fixed ECE < 0.02 was dropped before registration: at ~550 attempts a season,
+noise alone gives ~0.05). Backtest: walk-forward 2020-2025, expanding training from 2016; 2026 sealed. Harness
+changes: Brier, log loss and ECE metrics, the calibration gate, fold dates in the next calendar year, an expanding
+window that needs `first_train` (it silently trained on one season before; no card used it), and the "too good"
+check now respects metrics where lower is better.
+
 ## 2026-11-17 · CFB system fit 1.1.9 → 1.1.10; CFB player projection 1.2.1 → 1.2.2 (patch: board openings)
 Matt: the 2027 board said about 48% of Kansas's QB dropbacks were leaving with no portal entries; its starter (Isaiah
 Marshall, 86% of dropbacks) is an underclassman who hasn't entered. `model.availability` (F0 role availability; the
