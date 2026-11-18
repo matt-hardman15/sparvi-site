@@ -27,7 +27,34 @@ def recall(credit, y) -> float:
     return float(c[y == 1].mean())
 
 
-METRICS = {"pearson_r": (pearson, True), "mae": (mae, False), "rmse": (rmse, False), "recall": (recall, True)}
+def brier(p, y) -> float:
+    """Mean squared error of a probability against a 0/1 outcome (lower is better)."""
+    return float(np.mean((np.asarray(p, float) - np.asarray(y, float)) ** 2))
+
+
+def log_loss(p, y) -> float:
+    """Mean negative log likelihood of a 0/1 outcome; probabilities are clipped to [1e-6, 1 - 1e-6]."""
+    p, y = np.clip(np.asarray(p, float), 1e-6, 1 - 1e-6), np.asarray(y, float)
+    return float(-np.mean(y * np.log(p) + (1 - y) * np.log(1 - p)))
+
+
+def calibration(p, y, bins: int = 10) -> list[dict]:
+    """Reliability table (reported, not gating): equal-count bins of the prediction, mean predicted vs. observed."""
+    d = pd.DataFrame({"p": np.asarray(p, float), "y": np.asarray(y, float)})
+    d["bin"] = pd.qcut(d["p"].rank(method="first"), bins, labels=False)
+    g = d.groupby("bin").agg(n=("y", "size"), predicted=("p", "mean"), observed=("y", "mean"))
+    return [{k: (int(v) if k == "n" else round(float(v), 4)) for k, v in r.items()} for r in g.to_dict("records")]
+
+
+def ece(p, y, bins: int = 10) -> float:
+    """Expected calibration error: the count-weighted mean |predicted - observed| over equal-count bins."""
+    t = calibration(p, y, bins)
+    n = sum(r["n"] for r in t)
+    return float(sum(r["n"] * abs(r["predicted"] - r["observed"]) for r in t) / n)
+
+
+METRICS = {"pearson_r": (pearson, True), "mae": (mae, False), "rmse": (rmse, False), "recall": (recall, True),
+           "brier": (brier, False), "log_loss": (log_loss, False)}
 
 
 def score(metric: str, pred, y) -> float:

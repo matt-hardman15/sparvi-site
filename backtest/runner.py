@@ -36,7 +36,7 @@ def load_module(path: str):
 def folds_for(spec: dict, fast: bool):
     s = spec["splits"]
     fs = season_folds(s["first_test"], s["last_test"], s.get("train_window"), s.get("decision", "03-01"), s.get("predictor_lag", 1),
-                      s.get("train_until"))
+                      s.get("train_until"), s.get("resolve"), s.get("first_train"))
     return fs[-s.get("fast_folds", 1):] if fast else fs
 
 

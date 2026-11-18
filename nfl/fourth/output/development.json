@@ -1,0 +1,72 @@
+{
+  "seasons": [
+    2016,
+    2017,
+    2018,
+    2019
+  ],
+  "validation": {
+    "2018": [
+      2016,
+      2017
+    ],
+    "2019": [
+      2016,
+      2017,
+      2018
+    ]
+  },
+  "models": {
+    "win_prob": {
+      "metric": "brier",
+      "n": 158613,
+      "scores": {
+        "lgb_r150_l7": 0.14899,
+        "lgb_r150_l15": 0.14914,
+        "lgb_r300_l7": 0.14927,
+        "lgb_r300_l15": 0.14997,
+        "lgb_r300_l31": 0.1507,
+        "lgb_r600_l15": 0.1509,
+        "baseline": 0.15893
+      }
+    },
+    "conversion": {
+      "metric": "brier",
+      "n": 2190,
+      "scores": {
+        "logit_full_C0.1": 0.23773,
+        "logit_full_C1.0": 0.23785,
+        "logit_ytg_cat_strength_C0.1": 0.23453,
+        "logit_ytg_cat_strength_C1.0": 0.23411,
+        "logit_ytg_cat_C0.1": 0.23439,
+        "logit_ytg_cat_C1.0": 0.23395,
+        "logit_with3rd_C0.1": 0.23354,
+        "logit_with3rd_C1.0": 0.23358,
+        "baseline": 0.23273
+      }
+    },
+    "fg_make": {
+      "metric": "brier",
+      "n": 4122,
+      "scores": {
+        "logit_full_C0.1": 0.1226,
+        "logit_full_C1.0": 0.12085,
+        "logit_full_C10.0": 0.121,
+        "logit_dist_season_C0.1": 0.12289,
+        "logit_dist_season_C1.0": 0.12108,
+        "logit_dist_season_C10.0": 0.12112,
+        "baseline": 0.1207
+      }
+    },
+    "punt_net": {
+      "metric": "mae",
+      "n": 9485,
+      "scores": {
+        "lgb_r75": 6.57288,
+        "lgb_r150": 6.58493,
+        "lgb_r300": 6.60079,
+        "baseline": 6.65018
+      }
+    }
+  }
+}
