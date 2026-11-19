@@ -304,4 +304,55 @@ write_json(OUT / "fourth_downs.json", {
                 "hi": r4(r.margin_hi), "cost": r4(r.cost)} for r in fd_costly.itertuples()],
 })
 
+# Prose numbers for the article: complete seasons only (the current season is in the explorer, labeled).
+fd_done = fd_league[fd_league["season"] < CFG.season]
+fd_tm_done = fd_teams[fd_teams["season"] < CFG.season]
+tot = fd_done[["decisions", "clear_go", "went_on_clear_go", "clear_kick", "went_on_clear_kick", "toss_up", "cost", "cost_passive"]].sum()
+first, last = fd_done.iloc[0], fd_done.iloc[-1]
+# Change in the go rate on clear go calls, first to last complete season, with a 90% interval (two proportions).
+p1, p2, n1, n2 = first["go_rate_clear"], last["go_rate_clear"], first["clear_go"], last["clear_go"]
+se = (p1 * (1 - p1) / n1 + p2 * (1 - p2) / n2) ** 0.5
+d_lo, d_hi = 100 * (p2 - p1 - 1.645 * se), 100 * (p2 - p1 + 1.645 * se)
+rng_txt = f"90% interval {d_lo:+.0f} to {d_hi:+.0f} points"
+trend = (f"That rise is more than chance alone would produce ({rng_txt})." if d_lo > 0 else
+         f"That drop is more than chance alone would produce ({rng_txt})." if d_hi < 0 else
+         f"A difference that size is within what chance alone produces ({rng_txt}).")
+
+
+def _bt(model: str) -> dict:
+    v = MODEL_STATUS[model]["version"]
+    return json.loads((ROOT / "models" / "nfl" / model.removeprefix("nfl_") / "backtest" / f"{v}.json").read_text(encoding="utf-8"))
+
+
+bt_wp, bt_cv, bt_fg, bt_pt = (_bt(m) for m in FOURTH_MODELS[:1] + FOURTH_MODELS[1:2] + FOURTH_MODELS[2:3] + FOURTH_MODELS[3:])
+eng_now = fd_meta[str(CFG.season)]
+N |= {
+    "fd_first_season": str(int(first["season"])), "fd_last_complete": str(int(last["season"])),
+    "fd_n": f"{int(tot['decisions']):,}", "fd_toss_share": pct(tot["toss_up"] / tot["decisions"]),
+    "fd_clear_go_n": f"{int(tot['clear_go']):,}", "fd_go_rate": pct(tot["went_on_clear_go"] / tot["clear_go"]),
+    "fd_aggr_rate": pct(tot["went_on_clear_kick"] / tot["clear_kick"]),
+    "fd_passive_share": pct(tot["cost_passive"] / tot["cost"]),
+    "fd_cost_team": f"{fd_tm_done['cost'].mean():.1f}", "fd_cost_max": f"{fd_tm_done['cost'].max():.1f}",
+    "fd_go_rate_first": pct(p1), "fd_go_rate_last": pct(p2), "fd_trend_sentence": trend,
+    "fd_boot": str(eng_now["bootstrap"]), "fd_p_block": f"{100 * eng_now['p_block']:.1f}%",
+    "fd_fg_max": str(int(eng_now["fg_max_yardline"] + eng_now["fg_snap"])), "fd_punt_min": str(__import__("nfl.fourth.decide", fromlist=["x"]).PUNT_MIN_YARDLINE),
+    "fd_wp_brier": f"{bt_wp['evaluation']['point']:.3f}", "fd_wp_base": f"{bt_wp['evaluation']['baselines']['baseline']['value']:.3f}",
+    "fd_punt_mae": f"{bt_pt['evaluation']['point']:.2f}", "fd_punt_base": f"{bt_pt['evaluation']['baselines']['baseline']['value']:.2f}",
+    "fd_conv_ece": f"{bt_cv['evaluation']['point']:.3f}", "fd_conv_bar": f"{bt_cv['gate']['noise_bar']:.3f}",
+    "fd_fg_ece": f"{bt_fg['evaluation']['point']:.3f}", "fd_fg_bar": f"{bt_fg['gate']['noise_bar']:.3f}",
+}
+# Claims the fourth-down article makes. If one stops holding, rewrite the sentence.
+if not tot["toss_up"] / tot["decisions"] > 0.5:
+    raise StaleProse("Fourth downs: 'most fourth downs are toss-ups' no longer holds.")
+if not tot["cost_passive"] / tot["cost"] > 0.9:
+    raise StaleProse("Fourth downs: 'the cost is almost all from kicking when going was better' (over 90%) no longer holds.")
+if not tot["went_on_clear_kick"] / tot["clear_kick"] < 0.1:
+    raise StaleProse("Fourth downs: 'teams rarely go when kicking is clearly better' (under 10%) no longer holds.")
+if not tot["went_on_clear_go"] / tot["clear_go"] < 0.75:
+    raise StaleProse("Fourth downs: the article is built on teams passing up a real share of clear go calls; that no longer holds.")
+if not (bt_wp["passed"] and bt_cv["passed"] and bt_pt["passed"]) or bt_fg["passed"]:
+    raise StaleProse("Fourth downs: the method box says win probability, conversion and punts passed and field goals did not; a backtest changed.")
+if not bt_fg["evaluation"]["point"] < 0.026:
+    raise StaleProse("Fourth downs: 'the field-goal model replaced a first version that missed by more' no longer holds.")
+
 write_numbers("nfl", N, "nfl/export_site_data.py")
