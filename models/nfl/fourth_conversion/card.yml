@@ -93,4 +93,5 @@ backtest:
     - 2026
     note: Season 2026 plays are sealed until the season completes (February 2027).
     accesses: 0
-experimental: pre-registered Nov 18, 2026; the backtest hasn't run yet
+experimental: 'its latest backtest run didn''t clear the calibration gate. Shown only in that case: 1.0.0 passed on
+  2026-11-18 (2020-2025, 4,856 attempts: calibration error 0.017 against a noise bar of 0.023)'

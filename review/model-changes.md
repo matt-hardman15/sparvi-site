@@ -2,6 +2,34 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-18 · NFL field-goal make probability 1.0.0 → 2.0.0 (major: new spec, F4-V2)
+**Why.** 1.0.0 (logistic on distance, every season since 2016) failed its pre-registered calibration gate on 2020-2025
+(6,609 kicks): pooled calibration error 0.026 against a noise bar of 0.014. Walk-forward, it predicted 65% from 50-54
+yards where 73% were made, and 51% from 55+ where 59% were made; the error grew from 0.024 (2020) to 0.043 (2024).
+Long kicks kept improving and the fit averaged over older seasons. Win probability, net punt and fourth-down
+conversion passed in the same run.
+
+**What changed.** `nfl/fourth/fg.py`: distance and (distance - 40)^2 / 100, fit on the last three seasons before the
+one predicted (Matt, Nov 18). The card's code list swaps `models.py` for `fg.py`, so the other three F4 models are
+untouched. The square term bends upward at long range and extrapolates badly (70 yards: 51%), so the decision engine
+offers no kick beyond the 99th percentile of attempted distances (61 yards on 2023-2025).
+
+**Results.** Development seasons (2018, 2019): Brier 0.1205 vs. 0.1207, no real difference, as expected: the era effect
+isn't in those seasons. On 2020-2025, which were read before this version was specified and so are not a test of it:
+calibration error 0.016 (1.0.0 0.026; noise bar 0.013), Brier 0.1128 (0.1133). Other variants tried on the same seen
+seasons: last three seasons without the square 0.024, all seasons with a season trend 0.023, all seasons with the
+square and a trend 0.016. Every variant still predicts fewer makes than happened (83.9% vs. 85.2%). The clean test is
+the 2026 season (February 2027); until then the version is experimental. Registered as champion by Matt's decision,
+not by `registry promote`: the frozen development set can't show what the change is for.
+
+## 2026-11-18 · NFL opponent adjustment 1.0.0 → 1.0.1 (patch: lambda grid, NFL-LAMBDA)
+The chosen lambda (3200) was the largest value in the search grid, so the search didn't show it was a minimum. The grid
+now runs to 12800. Next-week margin MAE, 2,160 games: 1600 10.3797, 3200 10.3789, 6400 10.3814, 12800 10.3839 (an
+exploratory sweep to 1e8 levels off at 10.3876). Lambda stays 3200; `adjusted_team_week.csv` is byte-identical and no
+published number changes. The curve is nearly flat (0.009 points from 800 up), and at 3200 the adjustment moves a
+team's offense by 0.0025 EPA per play on average: in the NFL the opponent adjustment is close to off, as the method
+note already says.
+
 ## 2026-11-18 · NFL win probability and net punt 1.0.0 → 1.0.1 (leakage test only; the models are unchanged)
 The first CI run (fast fold, 2025) failed both models' shuffled-label test, one seed, in the better-than-null direction
 (Brier -0.0034, 90% -0.0062 to -0.0006; punt MAE -0.025 yd, -0.041 to -0.009). No leak behind it: (1) win
