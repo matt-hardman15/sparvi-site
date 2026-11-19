@@ -1,8 +1,10 @@
 """Stuff+ in the backtest harness (A5): the out-of-sample year-over-year test, as in
 baseball/pitch_quality/robustness.py, with every row read through the point-in-time loader.
 
-Fold (season t): fit the Stuff+ models on season t-2 (train_until = its last day), grade season t-1
-pitchers as of the decision date (March 1 of season t), and score against season t run value.
+Fold (season t): fit the Stuff+ models on the card's training window ending at season t-2 (two seasons since
+Nov 19 2026, as the published model trains; train_until = the last day of t-2), grade season t-1 pitchers as of the
+decision date (March 1 of season t), and score against season t run value. The earlier training season is an MLB
+history season: the backtest workflow restores it from the private snapshots (ingest/baseball/history.py).
 Baseline: last season's run value (RV/100). Pitchers with MIN_PITCHES+ pitches in both seasons.
 """
 from __future__ import annotations

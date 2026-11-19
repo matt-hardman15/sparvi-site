@@ -2,6 +2,18 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-19 · Stuff+ 2.0.0: the backtest trains on two seasons (PQ-TEST-2; no model change)
+The pre-registered test trained on one season (2024) while the published model trains on two. Development folds that
+never read 2026 (outcomes 2024 and 2025, `baseball/pitch_quality/output/development_windows.json`) put a two-season
+model +0.040 in r above a one-season one (90% interval +0.020 to +0.063, 635 pitcher-seasons), so the test understated
+the published model. Matt, Nov 19: change the test to match. The card's `backtest.splits.train_window` goes 1 → 2
+(train 2023 and 2024, grade 2025, score against 2026); target, baseline, metric, strict gate, seed and test season are
+unchanged. This amends a pre-registered block after its one-season 2026 result was seen (run 063ae43be446: r 0.307
+vs. 0.193 for last season's results, passed); the card's `amended` entry records that. 2023 is an MLB history season:
+the backtest workflow restores it from the private snapshots (`ingest/baseball/history.py`). Local dry run on the new
+block, before CI's official run (324 pitchers, leakage tests not run): r 0.319 vs. 0.193, edge +0.127, 90% interval
++0.021 to +0.228, gate passed.
+
 ## 2026-11-18 · NFL field-goal make probability 1.0.0 → 2.0.0 (major: new spec, F4-V2)
 **Why.** 1.0.0 (logistic on distance, every season since 2016) failed its pre-registered calibration gate on 2020-2025
 (6,609 kicks): pooled calibration error 0.026 against a noise bar of 0.014. Walk-forward, it predicted 65% from 50-54

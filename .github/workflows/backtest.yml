@@ -127,6 +127,38 @@ jobs:
           restore-keys: baseball-raw-cur-${{ steps.cfg.outputs.season }}-
           fail-on-cache-miss: true
 
+      # The Stuff+ backtest trains on two seasons; the earlier one is an MLB history season, which the refresh never
+      # pulls (PQ-TEST-2). It comes from this workflow's own cache, or on a miss from the private R2 snapshots. The
+      # Monday run keeps the cache from expiring, so pull requests without secrets (Dependabot) still find it.
+      - name: History season for the Stuff+ backtest
+        if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'baseball') }}
+        id: hist_cfg
+        run: echo "season=$(( ${{ steps.cfg.outputs.season }} - 3 ))" >> "$GITHUB_OUTPUT"
+
+      - name: Restore the history season (cache)
+        if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'baseball') }}
+        id: hist
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: data/raw/statcast_mlb_${{ steps.hist_cfg.outputs.season }}.parquet
+          key: baseball-history-${{ steps.hist_cfg.outputs.season }}-v1
+
+      - name: Restore the history season (R2 snapshots)
+        if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'baseball') && steps.hist.outputs.cache-hit != 'true' }}
+        env:
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: uv run python -m ingest.baseball.history restore ${{ steps.hist_cfg.outputs.season }}
+
+      - name: Save the history season
+        if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'baseball') && steps.hist.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: data/raw/statcast_mlb_${{ steps.hist_cfg.outputs.season }}.parquet
+          key: baseball-history-${{ steps.hist_cfg.outputs.season }}-v1
+
       # College football (PLAYER-ADJ): the cfb workflow's raw-data cache, including CFBD's cached responses, from which
       # the play-player links are parsed (no API calls). A miss leaves the CFB backtest without data, and it fails.
       # nflverse needs no key and no quota (~1 min for every season); nothing to cache.
