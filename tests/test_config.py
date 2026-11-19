@@ -8,11 +8,14 @@ def test_seasons_derive_from_one_number():
     assert b.train_seasons == [2025, 2026]
     assert b.past_seasons == [2025, 2026]
     assert b.prev == 2026
+    assert b.history_seasons == []
+    assert Baseball(season=2027, n_mlb=3, n_aaa=2, season_windows={}, history_first=2021).history_seasons == [2021, 2022, 2023, 2024]
 
 
 def test_real_config_has_windows_for_every_season():
     b = baseball()
-    assert all(s in b.season_windows for s in b.mlb_seasons)
+    assert all(s in b.season_windows for s in b.history_seasons + b.mlb_seasons)
+    assert not set(b.history_seasons) & set(b.mlb_seasons)
     assert _cli("baseball.season") == str(b.season)
     assert _cli("baseball.mlb_seasons") == " ".join(map(str, b.mlb_seasons))
 
@@ -35,3 +38,17 @@ def test_nfl_seasons_from_config():
     n = nfl()
     assert n.seasons[0] == n.first_season and n.seasons[-1] == n.season
     assert n.past_seasons == n.seasons[:-1]
+
+
+def test_history_seasons_are_optional_everywhere():
+    """PQ-WINDOW: the history seasons are pulled by hand for model development. CI and the refresh never have them,
+    so they are snapshot tables (and loader tables) only where the file exists, and never a site-pipeline season."""
+    from ingest.snapshot import baseball_tables
+    from sparvi.config import RAW
+
+    b = baseball()
+    names = {t.name for t in baseball_tables()}
+    for s in b.history_seasons:
+        assert (f"statcast_mlb_{s}" in names) == (RAW / f"statcast_mlb_{s}.parquet").exists()
+        assert s not in b.mlb_seasons and s not in b.train_seasons and s not in b.aaa_seasons
+    assert _cli("baseball.mlb_seasons") == " ".join(map(str, b.mlb_seasons))     # what build.sh and the workflows read

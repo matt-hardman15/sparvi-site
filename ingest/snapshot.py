@@ -23,7 +23,13 @@ def baseball_tables() -> list[Table]:
     t = [Table(f"statcast_{lvl}_{s}", RAW / f"statcast_{lvl}_{s}.parquet",
                ("game_pk", "at_bat_number", "pitch_number"), day_after("game_date"))
          for lvl, seasons in (("aaa", cfg.aaa_seasons), ("mlb", cfg.mlb_seasons)) for s in seasons]
-    t.append(Table("batter_heights", RAW / "batter_heights.parquet", ("batter",)))
+    # History seasons (PQ-WINDOW): pulled by hand for model development; a table only where the file exists, so CI
+    # and the refresh, which never pull them, are unaffected.
+    t += [Table(f"statcast_mlb_{s}", RAW / f"statcast_mlb_{s}.parquet", ("game_pk", "at_bat_number", "pitch_number"),
+                day_after("game_date")) for s in cfg.history_seasons if (RAW / f"statcast_mlb_{s}.parquet").exists()]
+    # Heights are looked up for the batters in whatever seasons are on the machine; one without the history seasons
+    # has fewer, which is not a deletion.
+    t.append(Table("batter_heights", RAW / "batter_heights.parquet", ("batter",), grow_only=True))
     t.append(Table(f"milb_players_{cfg.season}", RAW / f"milb_players_{cfg.season}.parquet", ("player_id", "level", "team_id")))
     t += [Table(f"aaa_affiliates_{s}", RAW / f"aaa_affiliates_{s}.parquet", ("team_id",)) for s in cfg.aaa_seasons]
     rosters = sorted(RAW.glob("rosters_40man_*.parquet"))       # dated files from pull_rosters.py; newest wins
