@@ -37,7 +37,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from features import WOBA_SCALE, build_features
+from features import FEATURE_SETS, WOBA_SCALE, build_features
 from train import MIN_PITCHES, SEED, fit_kinds, pitcher_season, predict_all, xrv100  # noqa: F401  (MIN_PITCHES: query strings)
 
 from backtest.asof import Loader
@@ -107,11 +107,17 @@ def context_neutral(tr: pd.DataFrame, by_count: bool) -> pd.Series:
     return out.fillna(tr["rv_x"])          # an outcome description outside the table: the published target
 
 
+FIT_COLS = sorted({c for cols in FEATURE_SETS.values() for c in cols}) + ["rv_x", "pitcher", "group"]
+TARGET_COLS = ["rv", "description", "estimated_woba_using_speedangle", "woba_value"]      # balls, strikes are features
+
+
 def _train(loader, seasons, as_of, heights, target: str) -> pd.DataFrame:
-    tr = pd.concat([_pitches(loader, s, as_of, heights) for s in seasons], ignore_index=True)
+    """Training rows with only the columns a fit reads (a season's full frame is several times larger, and three of
+    them at once ran the machine out of memory). Dropping unused columns doesn't change a fit."""
+    tr = pd.concat([_pitches(loader, s, as_of, heights)[FIT_COLS + TARGET_COLS] for s in seasons], ignore_index=True)
     if target != "rv_x":
         tr["rv_x"] = context_neutral(tr, by_count=target == "cn_count")      # fit_kinds trains on the rv_x column
-    return tr
+    return tr[FIT_COLS]
 
 
 def run(variants: dict[int, dict[str, tuple[list[int], str]]], ref: str, kinds: list[str]) -> dict:
