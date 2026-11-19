@@ -45,3 +45,4 @@ site/data/models/registry.json
 
 # Fourth-down decisions (play-level; the export publishes aggregates)
 nfl/fourth/output/decisions_*.parquet
+nfl/fourth/output/grid_*.json
