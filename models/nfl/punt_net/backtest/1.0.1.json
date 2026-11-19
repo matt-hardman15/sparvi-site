@@ -1,10 +1,10 @@
 {
-  "run_id": "15d0c481c4a3",
+  "run_id": "738bf3763498",
   "model": "nfl_punt_net",
   "version": "1.0.1",
   "kind": "full",
-  "ran_at": "2026-11-19T02:48:01Z",
-  "code_sha": "cdd09cdacd303fdbc2100a581998430cf332ad0d",
+  "ran_at": "2026-11-19T23:23:22Z",
+  "code_sha": "8252eccb4384f20537b0e721bcd3a45ef275f20c",
   "lockfile": "39654de38b4c91ec",
   "preregistered_at": "2026-11-18",
   "spec": {
