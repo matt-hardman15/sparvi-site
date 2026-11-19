@@ -19,4 +19,5 @@ python nfl/team_efficiency/adjusted.py
 # the play-level rows stay in nfl/fourth/output/ (gitignored; the workflow caches them), the export publishes aggregates.
 python -m nfl.fourth.decisions
 python nfl/export_site_data.py
+python nfl/fourth/thumb.py
 python nfl/team_pages.py
