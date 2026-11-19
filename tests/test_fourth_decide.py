@@ -125,3 +125,17 @@ def test_field_goal_model_bends_and_uses_recent_seasons():
     assert F.predict(everything, [50])[0] < F.predict(recent, [50])[0] - 0.05   # older, worse seasons pull it down
     p = F.predict(recent, np.arange(20, 62))
     assert (np.diff(p) < 0).all()                                         # longer is harder across the range it saw
+
+
+def test_summary_leaves_out_the_end_of_each_half_and_reconciles():
+    from nfl.fourth import summary as S
+
+    d = pd.DataFrame({
+        "season": 2025, "posteam": ["A", "A", "B", "B", "B"], "game_half": ["Half1", "Half2", "Half2", "Overtime", "Half1"],
+        "half_seconds_remaining": [900.0, 121.0, 120.0, 500.0, 60.0], "call": ["go", "kick", "go", "go", "toss-up"],
+        "choice": ["punt", "go", "go", "fg", "punt"], "cost": [0.05, 0.02, 0.0, 0.07, 0.0]})
+    assert list(S._late(d)) == [False, False, True, True, True]
+    t = S.team_seasons(d[~S._late(d)].reset_index(drop=True))
+    a = t.iloc[0]
+    assert (a["team"], a["decisions"], a["clear_go"], a["went_on_clear_go"], a["went_on_clear_kick"]) == ("A", 2, 1, 0, 1)
+    assert a["cost"] == pytest.approx(0.07) and a["cost_passive"] == pytest.approx(0.05) and a["cost_aggressive"] == pytest.approx(0.02)

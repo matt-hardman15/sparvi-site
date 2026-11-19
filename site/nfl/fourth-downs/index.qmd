@@ -1,0 +1,204 @@
+---
+title: "Fourth downs: when going for it wins, and what kicking costs"
+pagetitle: "NFL fourth-down decisions: go, kick, or toss-up"
+description: "Every NFL fourth-down decision since 2020, valued by win probability: where going for it clearly beats kicking, how often teams go, and what it costs them."
+date: 2026-11-18
+categories: [NFL, decisions]
+image: thumb.png
+card-key: nfl.fd_go_rate
+card-prefix: ""
+card-suffix: ""
+card-label: "how often teams go when going is clearly the better call"
+---
+
+::: {.finding}
+From {{< meta nfl.fd_first_season >}} through {{< meta nfl.fd_last_complete >}}, NFL teams made {{< meta nfl.fd_n >}} fourth-down decisions outside the last two minutes of a half. In {{< meta nfl.fd_toss_share >}} of them going for it and kicking were too close to call. In the {{< meta nfl.fd_clear_go_n >}} where going was clearly better, teams went {{< meta nfl.fd_go_rate >}} of the time, and {{< meta nfl.fd_passive_share >}} of the win probability given up on clear calls came from kicking, not from going when they shouldn't have.
+:::
+
+::: {.so-what}
+- **The cost of fourth downs is almost all on one side.** Teams rarely go when kicking is clearly better ({{< meta nfl.fd_aggr_rate >}} of those calls). The losses come from punts and field goals on plays where going was the better bet.
+- **Most fourth downs aren't worth an argument.** A decision counts here only when the whole 90% interval favors one choice. That leaves {{< meta nfl.fd_toss_share >}} as toss-ups, where neither call can be called a mistake.
+- **A season of clear calls is worth about {{< meta nfl.fd_cost_team >}} wins to a typical team**, the sum of the win probability it gave up; the most cautious team-seasons gave up {{< meta nfl.fd_cost_max >}}.
+:::
+
+## When should a team go?
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c"></div>
+  <div id="map" class="plot-host"><div class="loading">Loading…</div></div>
+  <p class="caption" id="mapcap"></p>
+</div>
+```
+
+## Who goes when they should?
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c2"></div>
+  <div id="trend" class="plot-host"></div>
+  <p class="caption" id="trendcap"></p>
+  <div id="teams"></div>
+  <p class="caption" id="teamcap"></p>
+</div>
+```
+
+## The costliest calls
+
+```{=html}
+<div class="explorer">
+  <div id="costly"></div>
+  <p class="caption" id="costcap"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt, U = S.urlState;
+  const [D, teamList] = await Promise.all([S.load("/data/nfl/fourth_downs.json"), S.load("/data/nfl/teams.json")]);
+  const teams = new Map(teamList.map(t => [t.id, t]));
+  const VIEWS = { call: "Call", margin: "Margin" };
+  const DEF = { view: "call", season: String(D.season) };
+  const st = { view: VIEWS[U.get("view")] ? U.get("view") : DEF.view,
+               season: D.seasons.map(String).includes(U.get("season")) ? U.get("season") : DEF.season };
+  const save = () => U.set({ view: st.view, season: st.season }, DEF);
+  const spot = (y) => (y === 50 ? "midfield" : y > 50 ? `own ${100 - y}` : `opp. ${y}`);
+  const wp = (v) => (v == null ? "not offered" : f.pct(v, 1));
+  const CALL = { go: "Go for it", kick: "Kick", "toss-up": "Toss-up" };
+  const COLOR = { go: "#eb6834", kick: "#2a78d6", "toss-up": "#d9d8d3" };
+  const kickName = (g) => (g.kick === "fg" ? "field goal" : "punt");
+
+  // ---- the chart of standard situations: yards from the goal line x yards to go -------------------------
+  function drawMap() {
+    const lim = d3.max(D.grid, g => Math.abs(g.m));
+    const xs = d3.range(1, 100), ys = d3.range(1, d3.max(D.grid, g => g.t) + 1);
+    S.plot(document.getElementById("map"), w => Plot.plot({ ...S.plotDefaults(w), height: 330, marginLeft: 46, marginBottom: 40, padding: 0,
+      x: { domain: xs, label: "Yards from the opponent's goal line →", ticks: [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 99], tickFormat: y => spot(y) },
+      y: { domain: ys.slice().reverse(), label: "↑ Yards to go", tickFormat: t => String(t) },
+      color: st.view === "call"
+        ? { type: "ordinal", domain: ["go", "toss-up", "kick"], range: [COLOR.go, COLOR["toss-up"], COLOR.kick], legend: true, tickFormat: c => CALL[c] }
+        : { type: "diverging", domain: [-lim, lim], pivot: 0, range: ["#2a78d6", "#efeee9", "#eb6834"], legend: true,
+            label: "Win probability of going minus the best kick", tickFormat: v => f.signed(100 * v, 0) + " pts" },
+      marks: [
+        Plot.cell(D.grid, { x: "y", y: "t", fill: st.view === "call" ? "call" : "m", inset: 0 }),
+        Plot.tip(D.grid, Plot.pointer({ x: "y", y: "t", title: g =>
+          `4th & ${g.t} at the ${spot(g.y)}: ${CALL[g.call]}\n`
+          + `Go ${wp(g.go)} · field goal ${wp(g.fg)} · punt ${wp(g.punt)}\n`
+          + `Going vs. the ${kickName(g)}: ${f.signed(100 * g.m, 1)} pts (90% interval ${f.signed(100 * g.lo, 1)} to ${f.signed(100 * g.hi, 1)})\n`
+          + `Chance to convert ${f.pct(g.pc, 0)}` + (g.fg == null ? "" : ` · field goal good ${f.pct(g.pf, 0)}`) })),
+      ] }));
+    const n = d3.rollup(D.grid, v => v.length, g => g.call);
+    document.getElementById("mapcap").textContent = (st.view === "call"
+      ? `Orange: going for it is clearly better (the whole 90% interval favors it). Blue: kicking is clearly better. Gray: too close to call. `
+        + `Of ${D.grid.length} situations, ${n.get("go") ?? 0} are a clear go, ${n.get("kick") ?? 0} a clear kick and ${n.get("toss-up") ?? 0} toss-ups. `
+      : `Win probability of going for it minus the better of a field goal or punt, in percentage points. Orange favors going, blue favors kicking. `)
+      + `A standard situation: tie game, 10:00 left in the second quarter, outdoors, evenly matched teams, all timeouts. Real games move the answer: `
+      + `trailing late favors going, protecting a lead favors kicking. Model fit on ${D.engine.train_seasons[0]}–${D.engine.train_seasons.at(-1)}. Hover for the numbers.`;
+  }
+
+  // ---- league trend and the team table -----------------------------------------------------------------
+  function drawTrend() {
+    const L = D.league.map(l => ({ ...l, partial: l.season === D.season }));
+    S.plot(document.getElementById("trend"), w => Plot.plot({ ...S.plotDefaults(w), height: 230,
+      x: { label: null, tickFormat: d => String(d), ticks: L.map(l => l.season) },
+      y: { label: "↑ Went for it on clear go calls", domain: [0, d3.max(L, l => l.rate) * 1.25], tickFormat: v => f.pct(v, 0), grid: true },
+      marks: [
+        Plot.line(L, { x: "season", y: "rate", stroke: "#0f5257", strokeWidth: 2 }),
+        Plot.dot(L, { x: "season", y: "rate", r: 5, fill: l => (l.partial ? "#fff" : "#0f5257"), stroke: "#0f5257", strokeWidth: 2 }),
+        Plot.tip(L, Plot.pointerX({ x: "season", y: "rate", title: l =>
+          `${l.season}${l.partial ? ` (through week ${D.last_week})` : ""}\nWent on ${l.went_go} of ${l.clear_go} clear go calls (${f.pct(l.rate, 1)})\n`
+          + `Went on ${l.went_kick} of ${l.clear_kick} clear kick calls\n${l.toss} of ${f.int(l.n)} decisions were toss-ups` })),
+      ] }));
+    document.getElementById("trendcap").textContent = `The share of clear go calls on which the league went for it, by season. `
+      + `Each season is judged by a model fit only on earlier seasons. The open dot is ${D.season}, through week ${D.last_week}.`;
+  }
+  let teamTable = null, costTable = null;
+  function drawTeams() {
+    const rows = D.teams.filter(t => String(t.season) === st.season);
+    const rate = d3.scaleLinear().domain(d3.extent(rows, r => r.rate)).range([0, 100]);
+    const cost = d3.scaleLinear().domain(d3.extent(rows, r => r.cost)).range([100, 0]);
+    const cols = [
+      { key: "team", label: "Team", align: "l", html: r => S.nflTeamLink(r.team, teams.get(r.team)?.nick ?? r.team), sortVal: r => r.team },
+      { key: "cost", label: "Given up", fmt: v => f.num(v, 2), heat: "pct", heatVal: r => cost(r.cost),
+        title: "Sum over clear calls of the best choice's win probability minus the actual choice's; 1.00 is one win's worth" },
+      { key: "n", label: "Decisions", fmt: f.int },
+      { key: "clear_go", label: "Clear go calls", fmt: f.int, title: "Decisions where the whole 90% interval favors going for it" },
+      { key: "went_go", label: "Went", fmt: f.int },
+      { key: "rate", label: "Go rate", fmt: v => f.pct(v, 0), heat: "pct", heatVal: r => (r.rate == null ? null : rate(r.rate)) },
+      { key: "went_kick", label: "Went on clear kicks", fmt: f.int, title: "Went for it where kicking was clearly better" },
+      { key: "toss", label: "Toss-ups", fmt: f.int },
+    ];
+    teamTable ||= S.table(document.getElementById("teams"), cols, { sortKey: "cost", desc: false, pageSize: 32 });
+    teamTable.update(rows);
+    const part = +st.season === D.season ? `, through week ${D.last_week}` : "";
+    document.getElementById("teamcap").textContent = `${st.season}${part}, outside the last two minutes of a half. A clear go call is a fourth down where going for it beats the best kick across the whole 90% interval; `
+      + `toss-ups count for nothing. "Given up" is win probability: it adds up what each wrong clear call cost, and 1.00 is one win's worth (orange is less, blue is more). `
+      + `It measures decisions only: a team that converts or fails is judged the same.`;
+    const c = D.costly.filter(r => String(r.season) === st.season).map(r => ({ ...r,
+      clock: r.ot ? "OT" : `Q${Math.min(4, 4 - Math.floor((r.sec - 1) / 900))} ${Math.floor((r.sec % 900 || 900) / 60)}:${String((r.sec % 900 || 900) % 60).padStart(2, "0")}` }));
+    const ccols = [
+      { key: "week", label: "Week", fmt: (v, r) => String(v) + (r.post ? " (playoffs)" : ""), align: "l" },
+      { key: "team", label: "Team", align: "l", html: r => S.nflTeamLink(r.team, teams.get(r.team)?.nick ?? r.team), sortVal: r => r.team },
+      { key: "opp", label: "Opponent", align: "l", html: r => S.nflTeamLink(r.opp, teams.get(r.opp)?.nick ?? r.opp), sortVal: r => r.opp },
+      { key: "t", label: "Situation", align: "l", fmt: (v, r) => `4th & ${r.t}, ${spot(r.y)}`, sortVal: r => r.y },
+      { key: "sd", label: "Score", fmt: v => (v === 0 ? "tied" : f.signed(v, 0)) },
+      { key: "clock", label: "Clock", align: "l", sortVal: r => -r.sec },
+      { key: "did", label: "Did", align: "l", fmt: v => ({ go: "went", fg: "field goal", punt: "punt" })[v] },
+      { key: "cost", label: "Given up", fmt: v => f.num(100 * v, 1) + " pts" },
+      { key: "go", label: "Go", fmt: v => f.pct(v, 1) },
+      { key: "kick", label: "Best kick", fmt: v => f.pct(v, 1) },
+    ];
+    costTable ||= S.table(document.getElementById("costly"), ccols, { sortKey: "cost", desc: true, pageSize: 15 });
+    costTable.update(c);
+    document.getElementById("costcap").textContent = `The ${c.length} clear calls of ${st.season}${part} that gave up the most win probability. "Go" and "Best kick" are the offense's chance to win with each choice; `
+      + `"Given up" is the gap to what the team did. Score is the offense's lead (+) or deficit (−). Every one is a call the model is confident about, and the model sees no injuries, matchups, or weather beyond wind and roof.`;
+  }
+
+  document.getElementById("c").replaceChildren(S.el("label", {}, "Show", S.seg(Object.entries(VIEWS), st.view, v => { st.view = v; drawMap(); save(); })));
+  document.getElementById("c2").replaceChildren(S.select("Season", D.seasons.slice().reverse().map(s => [String(s), String(s)]), st.season, v => { st.season = v; drawTeams(); save(); }));
+  drawMap(); drawTrend(); drawTeams();
+})();
+</script>
+```
+
+## How a fourth down is valued
+
+Each choice is worth the offense's chance to win the game afterward, averaged over what can happen next. Going for it either converts, and the offense keeps the ball somewhere past the line to gain, or fails, and the opponent takes over near the spot. A field goal is good or it isn't. A punt nets some number of yards, lands in the end zone, or is blocked. Each of those outcomes leads to a new game situation, and a win probability model says how often teams have won from it.
+
+Four models feed the calculation: win probability from any game situation, the chance a fourth-down try converts, the chance a field goal is good, and how far a punt nets. All four are fit only on seasons before the one being judged, so the {{< meta nfl.fd_last_complete >}} decisions were valued by models that had never seen {{< meta nfl.fd_last_complete >}}.
+
+## Why the end of a half is left out
+
+A fourth down with a minute left is a different problem: the clock, the timeouts and the kneel-down decide what each choice is worth. The win probability model here is accurate over a game as a whole but not in those moments. It rates a team with the ball and a one-score lead in the final 40 seconds at {{< meta nfl.fd_sure_pred >}} when such teams won {{< meta nfl.fd_sure_won >}} of the time. An error of a few points is larger than the difference between going and kicking, so decisions in the last {{< meta nfl.fd_late_minutes >}} minutes of either half and in overtime, {{< meta nfl.fd_late_share >}} of all fourth downs, are not judged at all.
+
+## Why most calls are toss-ups
+
+The gap between going and kicking is usually small: a point or two of win probability. The models behind it are estimates, so the gap has an interval around it. Refitting every model {{< meta nfl.fd_boot >}} times on resampled games gives that interval, and a decision counts as clear only when the whole interval sits on one side of zero.
+
+By that standard {{< meta nfl.fd_toss_share >}} of judged fourth downs since {{< meta nfl.fd_first_season >}} are toss-ups. That share is a statement about this model's precision as much as about football: a steadier win probability model would call more of them. It also means the clear calls are the ones worth arguing about, and on those the pattern is one-sided. Teams went on {{< meta nfl.fd_go_rate >}} of clear go calls and on {{< meta nfl.fd_aggr_rate >}} of clear kick calls.
+
+## Are teams getting bolder?
+
+In {{< meta nfl.fd_first_season >}} the league went for it on {{< meta nfl.fd_go_rate_first >}} of clear go calls; in {{< meta nfl.fd_last_complete >}} it was {{< meta nfl.fd_go_rate_last >}}. {{< meta nfl.fd_trend_sentence >}} The seasons aren't judged by the same model (each uses every earlier season), so small moves from year to year can come from the model as well as from the coaches.
+
+<details class="method" id="method">
+<summary>Method, data, and limits</summary>
+
+**Data.** nflverse play-by-play, {{< meta nfl.first_season >}}–{{< meta nfl.season >}}, regular season and playoffs. A decision is a fourth-down run or pass, field-goal try, or punt in a game with a winner, plays wiped out by penalty excluded: {{< meta nfl.fd_n >}} judged decisions in {{< meta nfl.fd_first_season >}}–{{< meta nfl.fd_last_complete >}}, plus {{< meta nfl.season >}} through week {{< meta nfl.last_week >}}.
+
+**What isn't judged.** Decisions in the last {{< meta nfl.fd_late_minutes >}} minutes of either half and in overtime ({{< meta nfl.fd_late_n >}}, {{< meta nfl.fd_late_share >}} of all fourth downs) are left out. There the clock decides what a choice is worth, and the win probability model isn't reliable: on seasons it hadn't seen, teams with the ball and a one-score lead in the final 40 seconds won {{< meta nfl.fd_sure_won >}} of the time ({{< meta nfl.fd_sure_n >}} plays) and the model gave them {{< meta nfl.fd_sure_pred >}}. Its calibration error is {{< meta nfl.fd_ece_rest >}} over the rest of the game, {{< meta nfl.fd_ece_last_min >}} in the last minute and {{< meta nfl.fd_ece_ot >}} in overtime. Errors that size are bigger than the gaps between going and kicking. The end of the first half is left out for a different reason: the calculation treats the second-half kickoff simply. These are the fourth downs people argue about most, and this page has nothing to say about them yet.
+
+**The four models, and how each did on seasons it hadn't seen ({{< meta nfl.fd_first_season >}}–{{< meta nfl.fd_last_complete >}}).**
+
+- *Win probability*: gradient-boosted trees on score, time, down, distance, field position, timeouts, home field, the second-half kickoff, and team strength (point margin so far). Brier score {{< meta nfl.fd_wp_brier >}} against {{< meta nfl.fd_wp_base >}} for a score-and-time baseline. [{{< meta models.nfl_win_prob >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/nfl/win_prob/card.yml) ({{< meta models.nfl_win_prob_status >}}).
+- *Conversion*: the conversion rate of fourth-down tries by yards to go. Calibration error {{< meta nfl.fd_conv_ece >}}, inside what chance alone produces ({{< meta nfl.fd_conv_bar >}}). [{{< meta models.nfl_fourth_conversion >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/nfl/fourth_conversion/card.yml) ({{< meta models.nfl_fourth_conversion_status >}}).
+- *Net punt*: gradient-boosted trees on field position, roof, wind and season. Off by {{< meta nfl.fd_punt_mae >}} yards on average against {{< meta nfl.fd_punt_base >}} for a field-position table. [{{< meta models.nfl_punt_net >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/nfl/punt_net/card.yml) ({{< meta models.nfl_punt_net_status >}}).
+- *Field goals*: kick distance and its square, fit on the last three seasons. Calibration error {{< meta nfl.fd_fg_ece >}} against a chance level of {{< meta nfl.fd_fg_bar >}}: it did not pass, and it still predicts slightly fewer makes than happen. It replaced a first version that missed by more. [{{< meta models.nfl_fg_make >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/nfl/fg_make/card.yml) ({{< meta models.nfl_fg_make_status >}}).
+
+**Putting them together.** Yards gained on a converted or failed try come from past fourth-down plays with a similar distance to go; punt outcomes are the model's prediction plus the spread of past punts from that part of the field, with touchbacks and blocked punts ({{< meta nfl.fd_p_block >}} of punts). After a change of possession the opponent's win probability comes from the same model with the situation flipped. A kick is offered only up to {{< meta nfl.fd_fg_max >}} yards, the longest distance teams try with any regularity; a punt only from {{< meta nfl.fd_punt_min >}} or more yards out.
+
+**Intervals.** Every model and table is refit {{< meta nfl.fd_boot >}} times on games drawn with replacement, and each decision's go-minus-kick gap is recomputed each time. The interval is the middle 90% of those. It covers how uncertain the models are; it does not cover what they leave out.
+
+**What it can't tell you.** The models don't know who is hurt, who the kicker or quarterback is, the matchup, or the weather beyond wind and roof. Team strength is a season-to-date point margin. A touchdown counts 7; returns for scores, safeties and penalties aren't modeled; overtime is valued as the model sees it. Long field goals are tried mostly by strong kickers in good conditions, so their make rates flatter an average kicker. A clear call here is clear to this model, and "win probability given up" is the model's estimate, not a fact about the game.
+
+Code: [`nfl/fourth/`](https://github.com/matt-hardman15/sparvi-site/tree/main/nfl/fourth) · Data: [nflverse](https://github.com/nflverse) play-by-play (CC-BY 4.0). Team numbers: [team efficiency](/nfl/tools/team-efficiency.html) · [all teams](/nfl/teams/) · [offense vs. defense](/nfl/offense-or-defense/). Sparvi is not affiliated with the NFL or any club.
+
+</details>

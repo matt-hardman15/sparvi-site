@@ -263,4 +263,110 @@ if not oa["ci90"]["b_int"][0] < 0 < oa["ci90"]["b_int"][1]:
     raise StaleProse("NFL offense/defense article: 'no strength-on-strength effect' (interaction interval spans zero) no longer holds.")
 if not cell[("strong", "strong")]["epa"] > cell[("weak", "weak")]["epa"]:
     raise StaleProse("NFL offense/defense article: 'a strong offense against a strong defense did better than a weak one against a weak defense' no longer holds.")
+# ---- Fourth-down decisions (nfl/fourth; article site/nfl/fourth-downs/) -----------------------------------------
+# Aggregates only: team-season totals, the league by season, the standard-situation chart, and a short list of the
+# costliest clear calls. The decision rows themselves stay in nfl/fourth/output (gitignored).
+from nfl.fourth import decisions as FD  # noqa: E402
+from nfl.fourth import summary as FS  # noqa: E402
+from nfl.fourth.decide import PUNT_MIN_YARDLINE  # noqa: E402
+
+FOURTH_MODELS = ["nfl_win_prob", "nfl_fourth_conversion", "nfl_fg_make", "nfl_punt_net"]
+MODEL_STATUS |= {m: require_passing(m) for m in FOURTH_MODELS}
+fd_meta = json.loads((FS.OUT / "decisions.json").read_text(encoding="utf-8"))["seasons"]
+fd_seasons = [s for s in range(FD.FIRST_DECIDED, CFG.season + 1)]
+if sorted(map(int, fd_meta)) != fd_seasons:
+    raise SchemaError(f"fourth downs: decisions cover {sorted(fd_meta)}, expected {fd_seasons}; run python -m nfl.fourth.decisions")
+fd = FS.load(fd_seasons)
+fd_late, fd_all = FS.late_share([s for s in fd_seasons if s < CFG.season])
+fd_teams, fd_league, fd_costly = FS.team_seasons(fd), FS.league(fd), FS.costliest(fd)
+if set(fd_teams["team"]) != set(TEAM_IDS):
+    raise SchemaError("fourth downs: team codes don't match teams.parquet")
+fd_grid = json.loads((FS.OUT / f"grid_{CFG.season}.json").read_text(encoding="utf-8"))
+GRID_MAX_YTG = 10
+r4 = lambda v: None if v is None or pd.isna(v) else round(float(v), 4)  # noqa: E731
+write_json(OUT / "fourth_downs.json", {
+    "season": CFG.season, "seasons": fd_seasons, "last_week": meta["last_week"], "bootstrap": fd_meta[str(CFG.season)]["bootstrap"],
+    "engine": {k: fd_meta[str(CFG.season)][k] for k in ("train_seasons", "p_block", "fg_snap", "fg_max_yardline", "kick_start", "runoff")},
+    # Standard situation (tie game, 10:00 left in the 2nd quarter, outdoors, even teams): y = yards from the goal
+    # line, t = yards to go; win probability of each choice, go minus the best kick (m) with its 90% interval.
+    "grid": [{"y": g["yardline_100"], "t": g["ydstogo"], "go": r4(g["wp_go"]), "fg": r4(g["wp_fg"]), "punt": r4(g["wp_punt"]),
+              "m": r4(g["margin"]), "lo": r4(g["margin_lo"]), "hi": r4(g["margin_hi"]), "call": g["call"], "kick": g["kick"],
+              "pc": r4(g["p_convert"]), "pf": r4(g["p_fg"])} for g in fd_grid if g["ydstogo"] <= GRID_MAX_YTG],
+    "teams": [{"season": int(r.season), "team": r.team, "n": int(r.decisions), "went": int(r.went), "clear_go": int(r.clear_go),
+               "went_go": int(r.went_on_clear_go), "clear_kick": int(r.clear_kick), "went_kick": int(r.went_on_clear_kick),
+               "toss": int(r.toss_up), "cost": r4(r.cost), "cost_passive": r4(r.cost_passive), "cost_aggr": r4(r.cost_aggressive),
+               "rate": r4(r.go_rate_clear)} for r in fd_teams.itertuples()],
+    "league": [{"season": int(r.season), "n": int(r.decisions), "clear_go": int(r.clear_go), "went_go": int(r.went_on_clear_go),
+                "clear_kick": int(r.clear_kick), "went_kick": int(r.went_on_clear_kick), "toss": int(r.toss_up),
+                "cost": r4(r.cost), "cost_passive": r4(r.cost_passive), "rate": r4(r.go_rate_clear)} for r in fd_league.itertuples()],
+    "costly": [{"season": int(r.season), "week": int(r.week), "post": r.season_type != "REG", "team": r.team, "opp": r.opponent,
+                "t": int(r.ydstogo), "y": int(r.yardline_100), "sd": int(r.score_differential), "sec": int(r.game_seconds_remaining),
+                "ot": r.game_half == "Overtime",
+                "did": r.choice, "go": r4(r.wp_go), "kick": r4(r.wp_kick), "actual": r4(r.wp_actual), "lo": r4(r.margin_lo),
+                "hi": r4(r.margin_hi), "cost": r4(r.cost)} for r in fd_costly.itertuples()],
+})
+
+# Prose numbers for the article: complete seasons only (the current season is in the explorer, labeled).
+LC = json.loads((FS.OUT / "late_calibration.json").read_text(encoding="utf-8"))
+lc_b = {b["bucket"]: b for b in LC["buckets"]}
+fd_done = fd_league[fd_league["season"] < CFG.season]
+fd_tm_done = fd_teams[fd_teams["season"] < CFG.season]
+tot = fd_done[["decisions", "clear_go", "went_on_clear_go", "clear_kick", "went_on_clear_kick", "toss_up", "cost", "cost_passive"]].sum()
+first, last = fd_done.iloc[0], fd_done.iloc[-1]
+# Change in the go rate on clear go calls, first to last complete season, with a 90% interval (two proportions).
+p1, p2, n1, n2 = first["go_rate_clear"], last["go_rate_clear"], first["clear_go"], last["clear_go"]
+se = (p1 * (1 - p1) / n1 + p2 * (1 - p2) / n2) ** 0.5
+d_lo, d_hi = 100 * (p2 - p1 - 1.645 * se), 100 * (p2 - p1 + 1.645 * se)
+rng_txt = f"90% interval {d_lo:+.0f} to {d_hi:+.0f} points"
+trend = (f"That rise is more than chance alone would produce ({rng_txt})." if d_lo > 0 else
+         f"That drop is more than chance alone would produce ({rng_txt})." if d_hi < 0 else
+         f"A difference that size is within what chance alone produces ({rng_txt}).")
+
+
+def _bt(model: str) -> dict:
+    v = MODEL_STATUS[model]["version"]
+    return json.loads((ROOT / "models" / "nfl" / model.removeprefix("nfl_") / "backtest" / f"{v}.json").read_text(encoding="utf-8"))
+
+
+bt_wp, bt_cv, bt_fg, bt_pt = (_bt(m) for m in FOURTH_MODELS)
+eng_now = fd_meta[str(CFG.season)]
+N |= {
+    "fd_first_season": str(int(first["season"])), "fd_last_complete": str(int(last["season"])),
+    "fd_n": f"{int(tot['decisions']):,}", "fd_toss_share": pct(tot["toss_up"] / tot["decisions"]),
+    "fd_clear_go_n": f"{int(tot['clear_go']):,}", "fd_go_rate": pct(tot["went_on_clear_go"] / tot["clear_go"]),
+    "fd_aggr_rate": pct(tot["went_on_clear_kick"] / tot["clear_kick"]),
+    "fd_passive_share": pct(tot["cost_passive"] / tot["cost"]),
+    "fd_cost_team": f"{fd_tm_done['cost'].mean():.1f}", "fd_cost_max": f"{fd_tm_done['cost'].max():.1f}",
+    "fd_go_rate_first": pct(p1), "fd_go_rate_last": pct(p2), "fd_trend_sentence": trend,
+    "fd_late_share": pct(fd_late / fd_all), "fd_late_n": f"{fd_late:,}", "fd_late_minutes": str(FS.LATE_SECONDS // 60),
+    "fd_ece_rest": f"{LC['ece_judged']:.3f}", "fd_ece_last_min": f"{lc_b['4th quarter, last 1:00']['ece']:.3f}",
+    "fd_ece_ot": f"{lc_b['overtime']['ece']:.3f}", "fd_sure_n": f"{LC['leading_late']['plays']:,}",
+    "fd_sure_pred": f"{100 * LC['leading_late']['predicted']:.1f}%", "fd_sure_won": f"{100 * LC['leading_late']['won']:.1f}%",
+    "fd_boot": str(eng_now["bootstrap"]), "fd_p_block": f"{100 * eng_now['p_block']:.1f}%",
+    "fd_fg_max": str(int(eng_now["fg_max_yardline"] + eng_now["fg_snap"])), "fd_punt_min": str(PUNT_MIN_YARDLINE),
+    "fd_wp_brier": f"{bt_wp['evaluation']['point']:.3f}", "fd_wp_base": f"{bt_wp['evaluation']['baselines']['baseline']['value']:.3f}",
+    "fd_punt_mae": f"{bt_pt['evaluation']['point']:.2f}", "fd_punt_base": f"{bt_pt['evaluation']['baselines']['baseline']['value']:.2f}",
+    "fd_conv_ece": f"{bt_cv['evaluation']['point']:.3f}", "fd_conv_bar": f"{bt_cv['gate']['noise_bar']:.3f}",
+    "fd_fg_ece": f"{bt_fg['evaluation']['point']:.3f}", "fd_fg_bar": f"{bt_fg['gate']['noise_bar']:.3f}",
+}
+# Claims the fourth-down article makes. If one stops holding, rewrite the sentence.
+if LC["late_seconds"] != FS.LATE_SECONDS or LC["seasons"] != [s for s in fd_seasons if s < CFG.season]:
+    raise SchemaError("fourth downs: late_calibration.json is out of date; run python -m nfl.fourth.late_check")
+if not (lc_b["4th quarter, last 1:00"]["ece"] > 1.25 * LC["ece_judged"] and lc_b["overtime"]["ece"] > 2 * LC["ece_judged"]
+        and LC["leading_late"]["won"] - LC["leading_late"]["predicted"] > 0.02):
+    raise StaleProse("Fourth downs: the reasons given for not judging the end of each half and overtime (worse calibration in the "
+                     "last minute and overtime; late leads rated too low) no longer hold.")
+if not tot["toss_up"] / tot["decisions"] > 0.5:
+    raise StaleProse("Fourth downs: 'most fourth downs are toss-ups' no longer holds.")
+if not tot["cost_passive"] / tot["cost"] > 0.9:
+    raise StaleProse("Fourth downs: 'the cost is almost all from kicking when going was better' (over 90%) no longer holds.")
+if not tot["went_on_clear_kick"] / tot["clear_kick"] < 0.1:
+    raise StaleProse("Fourth downs: 'teams rarely go when kicking is clearly better' (under 10%) no longer holds.")
+if not tot["went_on_clear_go"] / tot["clear_go"] < 0.75:
+    raise StaleProse("Fourth downs: the article is built on teams passing up a real share of clear go calls; that no longer holds.")
+if not (bt_wp["passed"] and bt_cv["passed"] and bt_pt["passed"]) or bt_fg["passed"]:
+    raise StaleProse("Fourth downs: the method box says win probability, conversion and punts passed and field goals did not; a backtest changed.")
+if not bt_fg["evaluation"]["point"] < 0.026:
+    raise StaleProse("Fourth downs: 'the field-goal model replaced a first version that missed by more' no longer holds.")
+
 write_numbers("nfl", N, "nfl/export_site_data.py")

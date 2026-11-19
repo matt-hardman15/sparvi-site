@@ -120,9 +120,10 @@ def main() -> None:
         out.to_parquet(f, index=False)
         (OUT / f"grid_{t}.json").write_text(json.dumps(grid_rows), encoding="utf-8", newline="\n")
         meta["seasons"][str(t)] = info | {"inputs": fp}
+        # Written after every season, so a stopped run keeps what it finished.
+        meta["seasons"] = dict(sorted(meta["seasons"].items()))
+        meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8", newline="\n")
         print(f"{t}: {info['decisions']:,} decisions, calls {info['calls']}", flush=True)
-    meta["seasons"] = dict(sorted(meta["seasons"].items()))
-    meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8", newline="\n")
 
 
 if __name__ == "__main__":
