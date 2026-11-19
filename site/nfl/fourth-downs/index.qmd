@@ -2,7 +2,7 @@
 title: "Fourth downs: when going for it wins, and what kicking costs"
 pagetitle: "NFL fourth-down decisions: go, kick, or toss-up"
 description: "Every NFL fourth-down decision since 2020, valued by win probability: where going for it clearly beats kicking, how often teams go, and what it costs them."
-date: 2026-11-19
+date: 2026-11-18
 categories: [NFL, decisions]
 image: thumb.png
 card-key: nfl.fd_go_rate
@@ -12,7 +12,7 @@ card-label: "how often teams go when going is clearly the better call"
 ---
 
 ::: {.finding}
-From {{< meta nfl.fd_first_season >}} through {{< meta nfl.fd_last_complete >}}, NFL teams made {{< meta nfl.fd_n >}} fourth-down decisions. In {{< meta nfl.fd_toss_share >}} of them going for it and kicking were too close to call. In the {{< meta nfl.fd_clear_go_n >}} where going was clearly better, teams went {{< meta nfl.fd_go_rate >}} of the time, and {{< meta nfl.fd_passive_share >}} of the win probability given up on clear calls came from kicking, not from going when they shouldn't have.
+From {{< meta nfl.fd_first_season >}} through {{< meta nfl.fd_last_complete >}}, NFL teams made {{< meta nfl.fd_n >}} fourth-down decisions outside the last two minutes of a half. In {{< meta nfl.fd_toss_share >}} of them going for it and kicking were too close to call. In the {{< meta nfl.fd_clear_go_n >}} where going was clearly better, teams went {{< meta nfl.fd_go_rate >}} of the time, and {{< meta nfl.fd_passive_share >}} of the win probability given up on clear calls came from kicking, not from going when they shouldn't have.
 :::
 
 ::: {.so-what}
@@ -117,20 +117,20 @@ From {{< meta nfl.fd_first_season >}} through {{< meta nfl.fd_last_complete >}},
     const cost = d3.scaleLinear().domain(d3.extent(rows, r => r.cost)).range([100, 0]);
     const cols = [
       { key: "team", label: "Team", align: "l", html: r => S.nflTeamLink(r.team, teams.get(r.team)?.nick ?? r.team), sortVal: r => r.team },
+      { key: "cost", label: "Given up", fmt: v => f.num(v, 2), heat: "pct", heatVal: r => cost(r.cost),
+        title: "Sum over clear calls of the best choice's win probability minus the actual choice's; 1.00 is one win's worth" },
       { key: "n", label: "Decisions", fmt: f.int },
       { key: "clear_go", label: "Clear go calls", fmt: f.int, title: "Decisions where the whole 90% interval favors going for it" },
       { key: "went_go", label: "Went", fmt: f.int },
       { key: "rate", label: "Go rate", fmt: v => f.pct(v, 0), heat: "pct", heatVal: r => (r.rate == null ? null : rate(r.rate)) },
       { key: "went_kick", label: "Went on clear kicks", fmt: f.int, title: "Went for it where kicking was clearly better" },
       { key: "toss", label: "Toss-ups", fmt: f.int },
-      { key: "cost", label: "Win prob. given up", fmt: v => f.num(v, 2), heat: "pct", heatVal: r => cost(r.cost),
-        title: "Sum over clear calls of the best choice's win probability minus the actual choice's; 1.00 is one win's worth" },
     ];
     teamTable ||= S.table(document.getElementById("teams"), cols, { sortKey: "cost", desc: false, pageSize: 32 });
     teamTable.update(rows);
     const part = +st.season === D.season ? `, through week ${D.last_week}` : "";
-    document.getElementById("teamcap").textContent = `${st.season}${part}. A clear go call is a fourth down where going for it beats the best kick across the whole 90% interval; `
-      + `toss-ups count for nothing. "Win prob. given up" adds up what each wrong clear call cost (orange is less, blue is more). `
+    document.getElementById("teamcap").textContent = `${st.season}${part}, outside the last two minutes of a half. A clear go call is a fourth down where going for it beats the best kick across the whole 90% interval; `
+      + `toss-ups count for nothing. "Given up" is win probability: it adds up what each wrong clear call cost, and 1.00 is one win's worth (orange is less, blue is more). `
       + `It measures decisions only: a team that converts or fails is judged the same.`;
     const c = D.costly.filter(r => String(r.season) === st.season).map(r => ({ ...r,
       clock: r.ot ? "OT" : `Q${Math.min(4, 4 - Math.floor((r.sec - 1) / 900))} ${Math.floor((r.sec % 900 || 900) / 60)}:${String((r.sec % 900 || 900) % 60).padStart(2, "0")}` }));
@@ -142,9 +142,9 @@ From {{< meta nfl.fd_first_season >}} through {{< meta nfl.fd_last_complete >}},
       { key: "sd", label: "Score", fmt: v => (v === 0 ? "tied" : f.signed(v, 0)) },
       { key: "clock", label: "Clock", align: "l", sortVal: r => -r.sec },
       { key: "did", label: "Did", align: "l", fmt: v => ({ go: "went", fg: "field goal", punt: "punt" })[v] },
+      { key: "cost", label: "Given up", fmt: v => f.num(100 * v, 1) + " pts" },
       { key: "go", label: "Go", fmt: v => f.pct(v, 1) },
       { key: "kick", label: "Best kick", fmt: v => f.pct(v, 1) },
-      { key: "cost", label: "Given up", fmt: v => f.num(100 * v, 1) + " pts" },
     ];
     costTable ||= S.table(document.getElementById("costly"), ccols, { sortKey: "cost", desc: true, pageSize: 15 });
     costTable.update(c);
@@ -165,11 +165,15 @@ Each choice is worth the offense's chance to win the game afterward, averaged ov
 
 Four models feed the calculation: win probability from any game situation, the chance a fourth-down try converts, the chance a field goal is good, and how far a punt nets. All four are fit only on seasons before the one being judged, so the {{< meta nfl.fd_last_complete >}} decisions were valued by models that had never seen {{< meta nfl.fd_last_complete >}}.
 
+## Why the end of a half is left out
+
+A fourth down with a minute left is a different problem: the clock, the timeouts and the kneel-down decide what each choice is worth. The win probability model here is accurate over a game as a whole but not in those moments. It rates a team with the ball and a one-score lead in the final 40 seconds at {{< meta nfl.fd_sure_pred >}} when such teams won {{< meta nfl.fd_sure_won >}} of the time. An error of a few points is larger than the difference between going and kicking, so decisions in the last {{< meta nfl.fd_late_minutes >}} minutes of either half and in overtime, {{< meta nfl.fd_late_share >}} of all fourth downs, are not judged at all.
+
 ## Why most calls are toss-ups
 
 The gap between going and kicking is usually small: a point or two of win probability. The models behind it are estimates, so the gap has an interval around it. Refitting every model {{< meta nfl.fd_boot >}} times on resampled games gives that interval, and a decision counts as clear only when the whole interval sits on one side of zero.
 
-By that standard {{< meta nfl.fd_toss_share >}} of fourth downs since {{< meta nfl.fd_first_season >}} are toss-ups. That share is a statement about this model's precision as much as about football: a steadier win probability model would call more of them. It also means the clear calls are the ones worth arguing about, and on those the pattern is one-sided. Teams went on {{< meta nfl.fd_go_rate >}} of clear go calls and on {{< meta nfl.fd_aggr_rate >}} of clear kick calls.
+By that standard {{< meta nfl.fd_toss_share >}} of judged fourth downs since {{< meta nfl.fd_first_season >}} are toss-ups. That share is a statement about this model's precision as much as about football: a steadier win probability model would call more of them. It also means the clear calls are the ones worth arguing about, and on those the pattern is one-sided. Teams went on {{< meta nfl.fd_go_rate >}} of clear go calls and on {{< meta nfl.fd_aggr_rate >}} of clear kick calls.
 
 ## Are teams getting bolder?
 
@@ -178,7 +182,9 @@ In {{< meta nfl.fd_first_season >}} the league went for it on {{< meta nfl.fd_go
 <details class="method" id="method">
 <summary>Method, data, and limits</summary>
 
-**Data.** nflverse play-by-play, {{< meta nfl.first_season >}}–{{< meta nfl.season >}}, regular season and playoffs. A decision is a fourth-down run or pass, field-goal try, or punt in a game with a winner, plays wiped out by penalty excluded: {{< meta nfl.fd_n >}} decisions in {{< meta nfl.fd_first_season >}}–{{< meta nfl.fd_last_complete >}}, plus {{< meta nfl.season >}} through week {{< meta nfl.last_week >}}.
+**Data.** nflverse play-by-play, {{< meta nfl.first_season >}}–{{< meta nfl.season >}}, regular season and playoffs. A decision is a fourth-down run or pass, field-goal try, or punt in a game with a winner, plays wiped out by penalty excluded: {{< meta nfl.fd_n >}} judged decisions in {{< meta nfl.fd_first_season >}}–{{< meta nfl.fd_last_complete >}}, plus {{< meta nfl.season >}} through week {{< meta nfl.last_week >}}.
+
+**What isn't judged.** Decisions in the last {{< meta nfl.fd_late_minutes >}} minutes of either half and in overtime ({{< meta nfl.fd_late_n >}}, {{< meta nfl.fd_late_share >}} of all fourth downs) are left out. There the clock decides what a choice is worth, and the win probability model isn't reliable: on seasons it hadn't seen, teams with the ball and a one-score lead in the final 40 seconds won {{< meta nfl.fd_sure_won >}} of the time ({{< meta nfl.fd_sure_n >}} plays) and the model gave them {{< meta nfl.fd_sure_pred >}}. Its calibration error is {{< meta nfl.fd_ece_rest >}} over the rest of the game, {{< meta nfl.fd_ece_last_min >}} in the last minute and {{< meta nfl.fd_ece_ot >}} in overtime. Errors that size are bigger than the gaps between going and kicking. The end of the first half is left out for a different reason: the calculation treats the second-half kickoff simply. These are the fourth downs people argue about most, and this page has nothing to say about them yet.
 
 **The four models, and how each did on seasons it hadn't seen ({{< meta nfl.fd_first_season >}}–{{< meta nfl.fd_last_complete >}}).**
 

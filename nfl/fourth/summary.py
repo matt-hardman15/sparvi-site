@@ -9,6 +9,13 @@ Definitions (the page states them):
     cost          win probability given up on clear calls (best choice minus the actual one); it sums over a team's
                   decisions, so 1.0 is one full win's worth of chances
 Every team total must equal the sum of its decision rows (checked here; PLAN-football F4 "done when").
+
+Not judged: decisions in the last LATE_SECONDS of either half and in overtime. There the clock decides what a
+choice is worth, and the win-probability model, well calibrated over the game as a whole, is not reliable: on
+held-out seasons a team with the ball and a lead in the final 40 seconds won 99.8% of the time and was rated 95.9%,
+and calibration error in the last minute and in overtime is well above the rest of the game
+(nfl/fourth/late_check.py -> output/late_calibration.json). Errors that size are larger than the gaps being judged.
+`load()` drops those rows; `late_share()` reports how many there were.
 """
 from __future__ import annotations
 
@@ -19,10 +26,27 @@ import pandas as pd
 
 OUT = Path(__file__).resolve().parent / "output"
 TOP = 15                    # costliest calls listed per season
+LATE_SECONDS = 120          # the last two minutes of each half are not judged (see above)
+
+
+def _all(seasons) -> pd.DataFrame:
+    return pd.concat([pd.read_parquet(OUT / f"decisions_{s}.parquet") for s in seasons], ignore_index=True)
+
+
+def _late(d: pd.DataFrame) -> pd.Series:
+    return (d["game_half"] == "Overtime") | (d["half_seconds_remaining"] <= LATE_SECONDS)
 
 
 def load(seasons) -> pd.DataFrame:
-    return pd.concat([pd.read_parquet(OUT / f"decisions_{s}.parquet") for s in seasons], ignore_index=True)
+    """The judged decisions: everything except the end of each half and overtime."""
+    d = _all(seasons)
+    return d[~_late(d)].reset_index(drop=True)
+
+
+def late_share(seasons) -> tuple[int, int]:
+    """(decisions not judged, all decisions)."""
+    d = _all(seasons)
+    return int(_late(d).sum()), int(len(d))
 
 
 def _agg(d: pd.DataFrame, by: list[str]) -> pd.DataFrame:

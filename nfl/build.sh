@@ -18,6 +18,7 @@ python nfl/team_efficiency/adjusted.py
 # Fourth-down decisions (F4): a season is recomputed only when its code or raw inputs changed (about 12 minutes each);
 # the play-level rows stay in nfl/fourth/output/ (gitignored; the workflow caches them), the export publishes aggregates.
 python -m nfl.fourth.decisions
+python -m nfl.fourth.late_check     # where the win-probability model can be trusted (about a minute)
 python nfl/export_site_data.py
 python nfl/fourth/thumb.py
 python nfl/team_pages.py

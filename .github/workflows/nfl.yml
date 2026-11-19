@@ -22,7 +22,7 @@ env:
 jobs:
   refresh:
     runs-on: ubuntu-24.04
-    timeout-minutes: 180   # a first run, or one after nflverse revises past seasons, recomputes every season's fourth-down decisions
+    timeout-minutes: 240   # a first run, or one after nflverse revises past seasons, recomputes every season's fourth-down decisions
     steps:
       # Pushes with the deploy key (the one actor the main-branch ruleset exempts); see refresh-baseball.yml.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1

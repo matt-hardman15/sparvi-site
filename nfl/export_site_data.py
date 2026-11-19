@@ -268,6 +268,7 @@ if not cell[("strong", "strong")]["epa"] > cell[("weak", "weak")]["epa"]:
 # costliest clear calls. The decision rows themselves stay in nfl/fourth/output (gitignored).
 from nfl.fourth import decisions as FD  # noqa: E402
 from nfl.fourth import summary as FS  # noqa: E402
+from nfl.fourth.decide import PUNT_MIN_YARDLINE  # noqa: E402
 
 FOURTH_MODELS = ["nfl_win_prob", "nfl_fourth_conversion", "nfl_fg_make", "nfl_punt_net"]
 MODEL_STATUS |= {m: require_passing(m) for m in FOURTH_MODELS}
@@ -276,6 +277,7 @@ fd_seasons = [s for s in range(FD.FIRST_DECIDED, CFG.season + 1)]
 if sorted(map(int, fd_meta)) != fd_seasons:
     raise SchemaError(f"fourth downs: decisions cover {sorted(fd_meta)}, expected {fd_seasons}; run python -m nfl.fourth.decisions")
 fd = FS.load(fd_seasons)
+fd_late, fd_all = FS.late_share([s for s in fd_seasons if s < CFG.season])
 fd_teams, fd_league, fd_costly = FS.team_seasons(fd), FS.league(fd), FS.costliest(fd)
 if set(fd_teams["team"]) != set(TEAM_IDS):
     raise SchemaError("fourth downs: team codes don't match teams.parquet")
@@ -305,6 +307,8 @@ write_json(OUT / "fourth_downs.json", {
 })
 
 # Prose numbers for the article: complete seasons only (the current season is in the explorer, labeled).
+LC = json.loads((FS.OUT / "late_calibration.json").read_text(encoding="utf-8"))
+lc_b = {b["bucket"]: b for b in LC["buckets"]}
 fd_done = fd_league[fd_league["season"] < CFG.season]
 fd_tm_done = fd_teams[fd_teams["season"] < CFG.season]
 tot = fd_done[["decisions", "clear_go", "went_on_clear_go", "clear_kick", "went_on_clear_kick", "toss_up", "cost", "cost_passive"]].sum()
@@ -324,7 +328,7 @@ def _bt(model: str) -> dict:
     return json.loads((ROOT / "models" / "nfl" / model.removeprefix("nfl_") / "backtest" / f"{v}.json").read_text(encoding="utf-8"))
 
 
-bt_wp, bt_cv, bt_fg, bt_pt = (_bt(m) for m in FOURTH_MODELS[:1] + FOURTH_MODELS[1:2] + FOURTH_MODELS[2:3] + FOURTH_MODELS[3:])
+bt_wp, bt_cv, bt_fg, bt_pt = (_bt(m) for m in FOURTH_MODELS)
 eng_now = fd_meta[str(CFG.season)]
 N |= {
     "fd_first_season": str(int(first["season"])), "fd_last_complete": str(int(last["season"])),
@@ -334,14 +338,24 @@ N |= {
     "fd_passive_share": pct(tot["cost_passive"] / tot["cost"]),
     "fd_cost_team": f"{fd_tm_done['cost'].mean():.1f}", "fd_cost_max": f"{fd_tm_done['cost'].max():.1f}",
     "fd_go_rate_first": pct(p1), "fd_go_rate_last": pct(p2), "fd_trend_sentence": trend,
+    "fd_late_share": pct(fd_late / fd_all), "fd_late_n": f"{fd_late:,}", "fd_late_minutes": str(FS.LATE_SECONDS // 60),
+    "fd_ece_rest": f"{LC['ece_judged']:.3f}", "fd_ece_last_min": f"{lc_b['4th quarter, last 1:00']['ece']:.3f}",
+    "fd_ece_ot": f"{lc_b['overtime']['ece']:.3f}", "fd_sure_n": f"{LC['leading_late']['plays']:,}",
+    "fd_sure_pred": f"{100 * LC['leading_late']['predicted']:.1f}%", "fd_sure_won": f"{100 * LC['leading_late']['won']:.1f}%",
     "fd_boot": str(eng_now["bootstrap"]), "fd_p_block": f"{100 * eng_now['p_block']:.1f}%",
-    "fd_fg_max": str(int(eng_now["fg_max_yardline"] + eng_now["fg_snap"])), "fd_punt_min": str(__import__("nfl.fourth.decide", fromlist=["x"]).PUNT_MIN_YARDLINE),
+    "fd_fg_max": str(int(eng_now["fg_max_yardline"] + eng_now["fg_snap"])), "fd_punt_min": str(PUNT_MIN_YARDLINE),
     "fd_wp_brier": f"{bt_wp['evaluation']['point']:.3f}", "fd_wp_base": f"{bt_wp['evaluation']['baselines']['baseline']['value']:.3f}",
     "fd_punt_mae": f"{bt_pt['evaluation']['point']:.2f}", "fd_punt_base": f"{bt_pt['evaluation']['baselines']['baseline']['value']:.2f}",
     "fd_conv_ece": f"{bt_cv['evaluation']['point']:.3f}", "fd_conv_bar": f"{bt_cv['gate']['noise_bar']:.3f}",
     "fd_fg_ece": f"{bt_fg['evaluation']['point']:.3f}", "fd_fg_bar": f"{bt_fg['gate']['noise_bar']:.3f}",
 }
 # Claims the fourth-down article makes. If one stops holding, rewrite the sentence.
+if LC["late_seconds"] != FS.LATE_SECONDS or LC["seasons"] != [s for s in fd_seasons if s < CFG.season]:
+    raise SchemaError("fourth downs: late_calibration.json is out of date; run python -m nfl.fourth.late_check")
+if not (lc_b["4th quarter, last 1:00"]["ece"] > 1.25 * LC["ece_judged"] and lc_b["overtime"]["ece"] > 2 * LC["ece_judged"]
+        and LC["leading_late"]["won"] - LC["leading_late"]["predicted"] > 0.02):
+    raise StaleProse("Fourth downs: the reasons given for not judging the end of each half and overtime (worse calibration in the "
+                     "last minute and overtime; late leads rated too low) no longer hold.")
 if not tot["toss_up"] / tot["decisions"] > 0.5:
     raise StaleProse("Fourth downs: 'most fourth downs are toss-ups' no longer holds.")
 if not tot["cost_passive"] / tot["cost"] > 0.9:
