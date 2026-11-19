@@ -612,6 +612,18 @@ def act_nfl_offense_defense(p):
     seg(p, "#c2", "Runs"); assert query(p)["gsplit"] == "run" and "runs" in p.text_content("#gridcap")
 
 
+def act_nfl_fourth_downs(p):
+    assert "fourth-down decisions" in p.text_content(".finding") and "%" in p.text_content(".finding")
+    assert p.locator("#map svg rect").count() >= 500 and "clear go" in p.text_content("#mapcap")
+    seg(p, "#c", "Margin"); assert query(p)["view"] == "margin" and "percentage points" in p.text_content("#mapcap")
+    seg(p, "#c", "Call"); assert "view" not in query(p)
+    assert p.locator("#trend svg circle").count() >= 6
+    assert rows(p, "#teams") == 32 and rows(p, "#costly") >= 5
+    first = nth_option(p, "#c2", "Season", 1)
+    select(p, "#c2", "Season", first); assert query(p)["season"] == first and first in p.text_content("#teamcap")
+    assert rows(p, "#teams") == 32 and first in p.text_content("#costcap")
+
+
 def act_nfl_jax(p):
     assert "Jacksonville" in p.text_content(".finding") and "%" in p.text_content(".finding")
     assert p.locator("#lines svg text", has_text="JAX").count() >= 1
@@ -679,6 +691,7 @@ PAGES = [
     ("nfl", "/nfl/", act_nfl_index),
     ("nfl-jax-article", "/nfl/is-jacksonville-the-best/", act_nfl_jax),
     ("nfl-offense-or-defense", "/nfl/offense-or-defense/", act_nfl_offense_defense),
+    ("nfl-fourth-downs", "/nfl/fourth-downs/", act_nfl_fourth_downs),
     ("nfl-team-efficiency", "/nfl/tools/team-efficiency.html", act_nfl_efficiency),
     ("nfl-team", "/nfl/teams/kc/", act_nfl_team),
     ("nfl-teams-index", "/nfl/teams/", act_nfl_teams_index),
