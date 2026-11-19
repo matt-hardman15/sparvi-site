@@ -61,5 +61,5 @@ def costliest(d: pd.DataFrame, top: int = TOP) -> pd.DataFrame:
     c = d[d["cost"] > 0].sort_values(["season", "cost", "game_id", "play_id"], ascending=[True, False, True, True])
     c = c.groupby("season").head(top)
     cols = ["season", "week", "season_type", "posteam", "defteam", "ydstogo", "yardline_100", "score_differential",
-            "game_seconds_remaining", "choice", "call", "wp_go", "wp_kick", "wp_actual", "margin", "margin_lo", "margin_hi", "cost"]
+            "game_seconds_remaining", "game_half", "choice", "call", "wp_go", "wp_kick", "wp_actual", "margin", "margin_lo", "margin_hi", "cost"]
     return c[cols].rename(columns={"posteam": "team", "defteam": "opponent"}).reset_index(drop=True)

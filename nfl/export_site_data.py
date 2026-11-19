@@ -263,4 +263,45 @@ if not oa["ci90"]["b_int"][0] < 0 < oa["ci90"]["b_int"][1]:
     raise StaleProse("NFL offense/defense article: 'no strength-on-strength effect' (interaction interval spans zero) no longer holds.")
 if not cell[("strong", "strong")]["epa"] > cell[("weak", "weak")]["epa"]:
     raise StaleProse("NFL offense/defense article: 'a strong offense against a strong defense did better than a weak one against a weak defense' no longer holds.")
+# ---- Fourth-down decisions (nfl/fourth; article site/nfl/fourth-downs/) -----------------------------------------
+# Aggregates only: team-season totals, the league by season, the standard-situation chart, and a short list of the
+# costliest clear calls. The decision rows themselves stay in nfl/fourth/output (gitignored).
+from nfl.fourth import decisions as FD  # noqa: E402
+from nfl.fourth import summary as FS  # noqa: E402
+
+FOURTH_MODELS = ["nfl_win_prob", "nfl_fourth_conversion", "nfl_fg_make", "nfl_punt_net"]
+MODEL_STATUS |= {m: require_passing(m) for m in FOURTH_MODELS}
+fd_meta = json.loads((FS.OUT / "decisions.json").read_text(encoding="utf-8"))["seasons"]
+fd_seasons = [s for s in range(FD.FIRST_DECIDED, CFG.season + 1)]
+if sorted(map(int, fd_meta)) != fd_seasons:
+    raise SchemaError(f"fourth downs: decisions cover {sorted(fd_meta)}, expected {fd_seasons}; run python -m nfl.fourth.decisions")
+fd = FS.load(fd_seasons)
+fd_teams, fd_league, fd_costly = FS.team_seasons(fd), FS.league(fd), FS.costliest(fd)
+if set(fd_teams["team"]) != set(TEAM_IDS):
+    raise SchemaError("fourth downs: team codes don't match teams.parquet")
+fd_grid = json.loads((FS.OUT / f"grid_{CFG.season}.json").read_text(encoding="utf-8"))
+GRID_MAX_YTG = 10
+r4 = lambda v: None if v is None or pd.isna(v) else round(float(v), 4)  # noqa: E731
+write_json(OUT / "fourth_downs.json", {
+    "season": CFG.season, "seasons": fd_seasons, "last_week": meta["last_week"], "bootstrap": fd_meta[str(CFG.season)]["bootstrap"],
+    "engine": {k: fd_meta[str(CFG.season)][k] for k in ("train_seasons", "p_block", "fg_snap", "fg_max_yardline", "kick_start", "runoff")},
+    # Standard situation (tie game, 10:00 left in the 2nd quarter, outdoors, even teams): y = yards from the goal
+    # line, t = yards to go; win probability of each choice, go minus the best kick (m) with its 90% interval.
+    "grid": [{"y": g["yardline_100"], "t": g["ydstogo"], "go": r4(g["wp_go"]), "fg": r4(g["wp_fg"]), "punt": r4(g["wp_punt"]),
+              "m": r4(g["margin"]), "lo": r4(g["margin_lo"]), "hi": r4(g["margin_hi"]), "call": g["call"], "kick": g["kick"],
+              "pc": r4(g["p_convert"]), "pf": r4(g["p_fg"])} for g in fd_grid if g["ydstogo"] <= GRID_MAX_YTG],
+    "teams": [{"season": int(r.season), "team": r.team, "n": int(r.decisions), "went": int(r.went), "clear_go": int(r.clear_go),
+               "went_go": int(r.went_on_clear_go), "clear_kick": int(r.clear_kick), "went_kick": int(r.went_on_clear_kick),
+               "toss": int(r.toss_up), "cost": r4(r.cost), "cost_passive": r4(r.cost_passive), "cost_aggr": r4(r.cost_aggressive),
+               "rate": r4(r.go_rate_clear)} for r in fd_teams.itertuples()],
+    "league": [{"season": int(r.season), "n": int(r.decisions), "clear_go": int(r.clear_go), "went_go": int(r.went_on_clear_go),
+                "clear_kick": int(r.clear_kick), "went_kick": int(r.went_on_clear_kick), "toss": int(r.toss_up),
+                "cost": r4(r.cost), "cost_passive": r4(r.cost_passive), "rate": r4(r.go_rate_clear)} for r in fd_league.itertuples()],
+    "costly": [{"season": int(r.season), "week": int(r.week), "post": r.season_type != "REG", "team": r.team, "opp": r.opponent,
+                "t": int(r.ydstogo), "y": int(r.yardline_100), "sd": int(r.score_differential), "sec": int(r.game_seconds_remaining),
+                "ot": r.game_half == "Overtime",
+                "did": r.choice, "go": r4(r.wp_go), "kick": r4(r.wp_kick), "actual": r4(r.wp_actual), "lo": r4(r.margin_lo),
+                "hi": r4(r.margin_hi), "cost": r4(r.cost)} for r in fd_costly.itertuples()],
+})
+
 write_numbers("nfl", N, "nfl/export_site_data.py")

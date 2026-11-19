@@ -1,0 +1,82 @@
+{
+  "seasons": {
+    "2020": {
+      "train_seasons": [
+        2016,
+        2017,
+        2018,
+        2019
+      ],
+      "decisions": 3408,
+      "bootstrap": 50,
+      "p_block": 0.004930759546789761,
+      "fg_snap": 18.0,
+      "fg_max_yardline": 40.0,
+      "runoff": {
+        "go": 8.0,
+        "fg": 4.0,
+        "punt": 9.0
+      },
+      "kick_start": 74.17319277108433,
+      "calls": {
+        "go": 582,
+        "kick": 415,
+        "toss-up": 2411
+      },
+      "inputs": "ba7369a3eef62617d1adcca98df005557acd6ae068ff85c98802f8a2e6854757"
+    },
+    "2021": {
+      "train_seasons": [
+        2016,
+        2017,
+        2018,
+        2019,
+        2020
+      ],
+      "decisions": 3790,
+      "bootstrap": 50,
+      "p_block": 0.005206073752711497,
+      "fg_snap": 18.0,
+      "fg_max_yardline": 40.0,
+      "runoff": {
+        "go": 8.0,
+        "fg": 4.0,
+        "punt": 9.0
+      },
+      "kick_start": 74.04153467089053,
+      "calls": {
+        "go": 704,
+        "kick": 464,
+        "toss-up": 2622
+      },
+      "inputs": "7675ec1f07fabcda72f00decc088c29352e6b8f663e7843328ffba5832a30613"
+    },
+    "2022": {
+      "train_seasons": [
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021
+      ],
+      "decisions": 3856,
+      "bootstrap": 50,
+      "p_block": 0.005323803967327888,
+      "fg_snap": 18.0,
+      "fg_max_yardline": 40.0,
+      "runoff": {
+        "go": 8.0,
+        "fg": 4.0,
+        "punt": 9.0
+      },
+      "kick_start": 74.47937062937064,
+      "calls": {
+        "go": 792,
+        "kick": 595,
+        "toss-up": 2469
+      },
+      "inputs": "db8e580a8ae5bd01ce38bb2f59abfa2b5062c608606bac55b1ae6ecaef795f3c"
+    }
+  }
+}
