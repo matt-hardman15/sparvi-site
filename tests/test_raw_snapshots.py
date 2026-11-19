@@ -109,3 +109,21 @@ def test_head_coach_is_public_when_hired():
                       "hire_date": ["2023-12-03T00:00:00.000Z", "2015-01-01T00:00:00.000Z", None, "2024-10-10T00:00:00.000Z"]})
     got = _coach_available(d, pd.Timestamp("2026-01-01", tz="UTC")).tolist()
     assert got == [pd.Timestamp("2023-12-03"), pd.Timestamp("2023-12-01"), pd.Timestamp("2024-09-01"), pd.Timestamp("2024-10-10")]
+
+
+def test_grow_only_tables_keep_rows_a_pull_did_not_need(tmp_path):
+    """Batter heights (PQ-WINDOW): a machine without the history seasons looks up fewer batters. That is not a
+    deletion, and when the full file is snapshotted again nothing is re-inserted."""
+    path, store = tmp_path / "h.parquet", LocalStore(tmp_path / "b")
+    t = Table("heights", path, ("batter",), grow_only=True)
+    full = pd.DataFrame({"batter": [1, 2, 3, 4], "height_in": [70, 72, 74, 76]})
+    full.to_parquet(path, index=False)
+    snapshot(store, "baseball", t, T0)
+    full.iloc[:2].to_parquet(path, index=False)                       # a pull that only needed two of them
+    s1 = snapshot(store, "baseball", t, T1)
+    assert (s1["inserts"], s1["updates"], s1["deletes"]) == (0, 0, 0) and not s1["files"]
+    full.assign(height_in=[70, 72, 74, 77]).to_parquet(path, index=False)   # the full file again, one value revised
+    s2 = snapshot(store, "baseball", t, T1 + pd.Timedelta(days=1))
+    assert (s2["inserts"], s2["updates"], s2["deletes"]) == (0, 1, 0)
+    df, _ = read_asof(store, "baseball", "heights", T1 + pd.Timedelta(days=2))
+    assert sorted(df["batter"]) == [1, 2, 3, 4]

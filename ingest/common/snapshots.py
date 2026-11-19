@@ -134,6 +134,8 @@ class Table:
     key: tuple[str, ...]                          # one row per key (the data checks enforce it)
     available_at: Callable[[pd.DataFrame, pd.Timestamp], pd.Series] | None = None   # None: when first seen
     drop: tuple[str, ...] = ()                    # columns not worth versioning (e.g. the pull date)
+    grow_only: bool = False                       # a lookup that only gains rows: a key missing from this pull is
+                                                  # kept, not recorded as deleted (the pull just didn't need it)
 
 
 def day_after(col: str):
@@ -184,6 +186,10 @@ def snapshot(store, sport: str, t: Table, ingested_at: pd.Timestamp, allow_mass_
         both = m[m["_merge"] == "both"]
         upd = both.loc[both["_row_hash"] != both["_row_hash_prev"], "index"].astype(int).to_numpy()
         deleted = m.loc[m["_merge"] == "right_only", key]
+        if t.grow_only:      # keep the absent keys in the state, so they aren't re-inserted or deleted later
+            gone = m.loc[m["_merge"] == "right_only", key].assign(_row_hash=m.loc[m["_merge"] == "right_only", "_row_hash_prev"])
+            cur = pd.concat([cur, gone], ignore_index=True)
+            deleted = deleted.iloc[0:0]
         if not allow_mass_update and len(upd) > max(MAX_UPDATE_SHARE * len(prev), MIN_MASS_UPDATE):
             raise RuntimeError(f"{t.name}: {len(upd):,} of {len(prev):,} rows changed at once. That's more like a "
                                "format or library change than real revisions; rerun with --allow-mass-update if it's real.")
