@@ -31,6 +31,7 @@ Writes output/development_windows.json / output/development_targets.json.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
@@ -55,6 +56,18 @@ OUTCOME_CLASS = {
     "foul": "foul", "foul_bunt": "foul", "bunt_foul_tip": "foul", "foul_pitchout": "foul",
     "hit_by_pitch": "hit_by_pitch", "hit_into_play": "in_play",
 }
+
+
+CACHE = OUT / "dev_cache"       # pitcher-level grades per fit (gitignored)
+
+
+def _code_key() -> str:
+    """Changes when the training or feature code does, so cached fits never outlive the code that made them."""
+    here = Path(__file__).resolve().parent
+    h = hashlib.sha256()
+    for f in ("train.py", "features.py", "develop.py"):
+        h.update((here / f).read_bytes().replace(b"\r\n", b"\n"))
+    return h.hexdigest()[:10]
 
 
 def folds() -> dict[int, dict[str, list[int]]]:
@@ -116,19 +129,29 @@ def run(variants: dict[int, dict[str, tuple[list[int], str]]], ref: str, kinds: 
         fold = {"grade_season": t - 1, "outcome_season": t, "variants": {}}
         cols = {}
         for name, (seasons, target) in vs.items():
-            tr = _train(loader, seasons, f"{t - 1}-03-01", heights, target)
-            models = fit_kinds(tr, kinds=kinds)
-            d = graded.copy()
-            predict_all(models, d)
-            ps = pitcher_season(d).query("pitches >= @MIN_PITCHES").merge(
-                outcome[["pitcher", "rv100"]].rename(columns={"rv100": "y"}), on="pitcher")
+            # Each fit takes 10-30 minutes: keep its pitcher-level grades, so a stopped run resumes where it was.
+            tag = f"{t}_{'-'.join(map(str, seasons))}_{target}_{'-'.join(kinds)}_{_code_key()}"
+            f_ps, f_info = CACHE / f"{tag}.parquet", CACHE / f"{tag}.json"
+            if f_ps.exists() and f_info.exists():
+                ps, info = pd.read_parquet(f_ps), json.loads(f_info.read_text(encoding="utf-8"))
+            else:
+                tr = _train(loader, seasons, f"{t - 1}-03-01", heights, target)
+                models = fit_kinds(tr, kinds=kinds)
+                d = graded.copy()
+                predict_all(models, d)
+                ps = pitcher_season(d).query("pitches >= @MIN_PITCHES").merge(
+                    outcome[["pitcher", "rv100"]].rename(columns={"rv100": "y"}), on="pitcher")
+                info = {"train_pitches": int(len(tr)),
+                        "trees": {f"{k}/{g}": [m.best_iteration for m in bag] for k in kinds for g, bag in models[k].items()}}
+                del tr, models, d
+                CACHE.mkdir(exist_ok=True)
+                ps.to_parquet(f_ps, index=False)
+                f_info.write_text(json.dumps(info), encoding="utf-8")
             for k in kinds:
                 cols[f"{name}|{k}"] = ps.set_index("pitcher")[xrv100(k)]
-            fold["variants"][name] = {"train_seasons": seasons, "target": target, "train_pitches": int(len(tr)), "n": int(len(ps)),
+            fold["variants"][name] = {"train_seasons": seasons, "target": target, "n": int(len(ps)),
                                       "r": {k: float(ps[xrv100(k)].corr(ps["y"])) for k in kinds},
-                                      "r_last_season_results": float(ps["rv100"].corr(ps["y"])),
-                                      "trees": {f"{k}/{g}": [m.best_iteration for m in bag]
-                                                for k in kinds for g, bag in models[k].items()}}
+                                      "r_last_season_results": float(ps["rv100"].corr(ps["y"])), **info}
             print(f"  outcome {t}, {name} (train {seasons}, target {target}): "
                   + ", ".join(f"{k} r {fold['variants'][name]['r'][k]:.4f}" for k in kinds)
                   + f"; last season's results {fold['variants'][name]['r_last_season_results']:.4f}", flush=True)
