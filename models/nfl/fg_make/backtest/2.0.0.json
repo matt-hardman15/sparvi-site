@@ -1,0 +1,185 @@
+{
+  "run_id": "0bdf2da196cc",
+  "model": "nfl_fg_make",
+  "version": "2.0.0",
+  "kind": "full",
+  "ran_at": "2026-11-19T00:00:40Z",
+  "code_sha": "0c0a45b9e977ca32bc94dcce5de6c0aee5357c0c",
+  "lockfile": "e6f7c7528ac332cf",
+  "preregistered_at": "2026-11-18",
+  "spec": {
+    "preregistered_at": "2026-11-18",
+    "module": "models/nfl/fg_make/backtest.py",
+    "target": "Whether the kick was good",
+    "decision_dates": "Each play's own snap. Models are fit before season t (training data through Sept 1 of t: seasons 2016..t-1 including their playoffs); each play is predicted from its pre-snap state and from team ratings built only from earlier games (nfl/fourth/data.ratings), so the fold's decision date is the end of season t (March 1 of t+1) and the leakage concern is the training cutoff, which the audit checks.",
+    "splits": {
+      "type": "walk_forward",
+      "first_test": 2020,
+      "last_test": 2025,
+      "train_window": null,
+      "first_train": 2016,
+      "predictor_lag": 0,
+      "train_until": "09-01",
+      "decision": "+1:03-01",
+      "resolve": "+1:03-01",
+      "fast_folds": 1
+    },
+    "training": "Fold t trains on the last three seasons before t (t-3..t-1) as of Sept 1 of t. The spec was chosen on Nov 18, 2026, after 1.0.0's 2020-2025 backtest was read (Matt): on those folds this version's calibration error is 0.016 (1.0.0: 0.026), so they are not a clean test of it. The 2026 vault is.",
+    "rows": "Every field-goal attempt of season t (blocked kicks are misses).",
+    "known_hindsight": "Seasons before 2026-11-13 come from the current nflverse files, not as they stood then (revision_safe: false). The model inputs here are raw game facts (score, clock, down, distance, field position, timeouts, kick distance, roof, weather), which nflverse rarely revises; its model columns (EPA, WP), revised Nov 17 2026, are never read. 2.0.0: the functional form and the three-season window were chosen with the 2020-2025 folds in view.",
+    "group_by": "game_id",
+    "block": "game_id",
+    "baselines": [],
+    "baseline_definitions": {},
+    "primary_metric": "ece",
+    "bootstrap": 2000,
+    "seed": 7,
+    "pass_gate": {
+      "calibration_noise": {
+        "quantile": 0.9,
+        "draws": 2000
+      }
+    },
+    "gate_decided": "Matt, 2026-11-18: strict for each F4 model. Win probability and punts must beat their baseline with the 90% interval of the edge (bootstrap by game) above zero. Conversion and field goals, whose models are the simple tables because nothing beat them in development, pass if their pooled ECE is below the 90th percentile of the ECE that perfectly calibrated predictions would show on the same plays (2,000 simulated draws).",
+    "too_good": 0.0,
+    "null_baseline": "null",
+    "secondary": "Reported, not gating: log loss, Brier, the reliability table, per fold, and (win probability) the same on 4th-down plays only.",
+    "limits": "No injuries, personnel, play calls, or game-specific information; weather is the stadium reading; team strength is point margin, not opponent-adjusted efficiency. Betting lines are never an input. Long attempts are tried mostly by strong kickers in good conditions, so make rates past about 55 yards flatter the average kicker; the square term extrapolates poorly past the distances teams try, so the decision engine offers no kick beyond the 99th percentile of attempted distances.",
+    "reproduction": "Deterministic (single-thread LightGBM with a fixed seed; closed-form tables; lbfgs logistic). Official runs happen in CI.",
+    "not_applicable": {
+      "label_permutation": "The model is a lookup table fit to outcomes; fit to shuffled outcomes it predicts the base rate, which is calibrated by construction, so a shuffled-label run can't separate a leak from no leak under a calibration gate. The timestamp and future-poisoning tests still check that no later data is read (Matt, 2026-11-18)."
+    },
+    "vault": {
+      "seasons": [
+        2026
+      ],
+      "note": "Season 2026 plays are sealed until the season completes (February 2027).",
+      "accesses": 0
+    }
+  },
+  "folds": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "evaluation": {
+    "metric": "ece",
+    "n": 6609,
+    "point": 0.015551202905129343,
+    "baselines": {},
+    "by_fold": {
+      "2020": 0.025552512315270913,
+      "2021": 0.023338754646840144,
+      "2022": 0.03685067873303171,
+      "2023": 0.03216214995483287,
+      "2024": 0.03131715265866212,
+      "2025": 0.017
+    },
+    "ece_noise": {
+      "q": 0.9,
+      "draws": 2000,
+      "bar": 0.013091827810561346,
+      "median": 0.009600877591163563
+    }
+  },
+  "gate": {
+    "checks": {
+      "calibration_noise": false
+    },
+    "passed": false,
+    "gap": -0.0024593750945679973,
+    "per_baseline": {},
+    "noise_bar": 0.013091827810561346
+  },
+  "leakage": {
+    "timestamp": {
+      "passed": true,
+      "folds": [
+        {
+          "fold": 2020,
+          "fit_max_available_at": "2020-02-03 00:00:00",
+          "train_until": "2020-09-01 00:00:00",
+          "predict_max_available_at": "2021-02-08 00:00:00",
+          "decision_date": "2021-03-01 00:00:00",
+          "passes": true
+        },
+        {
+          "fold": 2021,
+          "fit_max_available_at": "2021-02-08 00:00:00",
+          "train_until": "2021-09-01 00:00:00",
+          "predict_max_available_at": "2022-02-14 00:00:00",
+          "decision_date": "2022-03-01 00:00:00",
+          "passes": true
+        },
+        {
+          "fold": 2022,
+          "fit_max_available_at": "2022-02-14 00:00:00",
+          "train_until": "2022-09-01 00:00:00",
+          "predict_max_available_at": "2023-02-13 00:00:00",
+          "decision_date": "2023-03-01 00:00:00",
+          "passes": true
+        },
+        {
+          "fold": 2023,
+          "fit_max_available_at": "2023-02-13 00:00:00",
+          "train_until": "2023-09-01 00:00:00",
+          "predict_max_available_at": "2024-02-12 00:00:00",
+          "decision_date": "2024-03-01 00:00:00",
+          "passes": true
+        },
+        {
+          "fold": 2024,
+          "fit_max_available_at": "2024-02-12 00:00:00",
+          "train_until": "2024-09-01 00:00:00",
+          "predict_max_available_at": "2025-02-10 00:00:00",
+          "decision_date": "2025-03-01 00:00:00",
+          "passes": true
+        },
+        {
+          "fold": 2025,
+          "fit_max_available_at": "2025-02-10 00:00:00",
+          "train_until": "2025-09-01 00:00:00",
+          "predict_max_available_at": "2026-02-09 00:00:00",
+          "decision_date": "2026-03-01 00:00:00",
+          "passes": true
+        }
+      ]
+    },
+    "future_poisoning": {
+      "passed": true,
+      "cutoff": "2026-03-01 00:00:00",
+      "n": 1140
+    },
+    "label_permutation": {
+      "passed": true,
+      "not_applicable": "The model is a lookup table fit to outcomes; fit to shuffled outcomes it predicts the base rate, which is calibrated by construction, so a shuffled-label run can't separate a leak from no leak under a calibration gate. The timestamp and future-poisoning tests still check that no later data is read (Matt, 2026-11-18)."
+    },
+    "too_good": {
+      "passed": true,
+      "ece": 0.015551202905129343,
+      "bound": 0.0,
+      "direction": "must stay above"
+    },
+    "entity_overlap": {
+      "passed": true,
+      "not_applicable": "group_by: game_id"
+    },
+    "universe": {
+      "passed": true,
+      "predicted": 1140,
+      "scored": 1140,
+      "no_outcome": 0,
+      "note": "entities without an outcome (retired, injured, too few pitches) can't be scored; they're counted here so survivorship is visible"
+    }
+  },
+  "passed": false,
+  "primary": {
+    "metric": "ece",
+    "point": 0.015551202905129343
+  },
+  "revision_safe": false,
+  "approximate_tables": []
+}
