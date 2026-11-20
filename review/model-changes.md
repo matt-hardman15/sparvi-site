@@ -82,9 +82,9 @@ main, and the 1.1.0 registry record carries 1.0.0's metrics.
   defense in these games would have been wrong. 881 plays are in repaired games. No play names a team outside its game
   (1,508,002 plays), so nothing was dropped.
 - Ratings: the change is in which plays count as garbage time. 2026 week 11: power moves for 10 of 138 teams (largest
-  0.7 points: Oklahoma +8.7 → +9.4, Ole Miss +14.4 → +13.7), rank for 6 teams, by one place each. Across seasons the
-  largest power change in any team-week is 1.5 points (2025) and the largest adjusted EPA/play change 0.149 (2025);
-  2014–2020 move by at most 0.2 points.
+  0.7 points: Oklahoma +8.7 → +9.4, Ole Miss +14.4 → +13.7), rank for 6 teams, by one place each. Adjusted EPA/play
+  changes in 2016, 2017, 2019 and 2021–2026 (largest 0.149, 2025). Power in past seasons can't be compared with main
+  cleanly: main's bowl-week ratings carry the ordering problem below.
 - Plausibility tests on the rebuilt data: 19 of 19 pass, including the one that needs the plays.
 
 **Also fixed: the power rating depended on the CPU it was built on.** Two runs of the rebuild job on the same code and
@@ -93,7 +93,9 @@ with no change in adjusted EPA moved by up to 2.4). `elo_by_week` takes each tea
 ordered games by week with an unstable sort, and every bowl and playoff game shares one week: which game came "last"
 for a team that played two was left to the sort, whose order differs between CPUs. It now orders by week, kickoff
 time and game id (`tests/test_cfb.py`). The backtest is untouched (it reads each game's own pre-game Elo); published
-ratings for bowl weeks, and any week a team played twice, can change at the next rebuild and are then stable.
+ratings for bowl weeks, and any week a team played twice, can change at the next rebuild and are then stable. Two
+runs of the job on the fixed code agree exactly (against main: 2022 339 team-weeks, largest 4.4 points; 2023 295,
+3.6; 2025 285, 2.6).
 ## 2026-11-20 · Fourth-down chart: standard situations fixed (no model change)
 The chart on `/nfl/fourth-downs/` called 4th-and-3 through 4th-and-7 from inside the offense's own 10 a clear go.
 Cause: `nfl/fourth/decisions.grid` set `recv_2h = 0.5` ("unknown"). The win-probability model is trees, so 0.5 fell on
