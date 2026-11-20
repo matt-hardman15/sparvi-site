@@ -1,7 +1,7 @@
 ---
 title: "Stuff or command? Splitting pitching into what the ball does and where it goes"
 pagetitle: "Stuff or command? Location+ and Pitching+"
-description: "Location+ grades where a pitch crosses the plate. It's a steady trait, but it barely predicts next season, and adding it to Stuff+ doesn't help."
+description: "Location+ grades what a pitch's location was worth given the pitch. It is steady and predicts next season, but less well than Stuff+."
 date: 2026-11-12
 categories: [Baseball, pitching, models]
 image: thumb.png
@@ -13,20 +13,20 @@ card-label: "Location+ from one season to the next"
 
 ::: {.finding}
 [The finding]{.label}
-**Location+**, a grade for where each pitch crossed the plate in the count it was thrown, is a steady trait: it held from one half of a season to the other at r = {{< meta baseball.loc_split_loc >}} and from {{< meta baseball.season_prev >}} to {{< meta baseball.season >}} at r = {{< meta baseball.loc_self_loc >}}, {{< meta baseball.loc_finding_forecast >}} ({{< meta baseball.loc_yoy_n >}} MLB pitchers).
+**Location+**, a grade for what each pitch's location was worth given the pitch that was thrown, is a steady trait: it held from one half of a season to the other at r = {{< meta baseball.loc_split_loc >}} and from {{< meta baseball.season_prev >}} to {{< meta baseball.season >}} at r = {{< meta baseball.loc_self_loc >}}. {{< meta baseball.loc_finding_forecast >}} ({{< meta baseball.loc_yoy_n >}} MLB pitchers).
 :::
 
 ::: {.so-what}
 [So what]{.label}
 
 - {{< meta baseball.loc_sowhat_forecast >}}
-- **Read Location+ as a description of a season, not a forecast.** Within {{< meta baseball.season >}}, among the {{< meta baseball.loc_q_mlb_n >}} MLB pitchers with {{< meta baseball.stuff_min_pitches >}}+ pitches, it tracked results only weakly (r = {{< meta baseball.loc_r_loc_rv >}}, against {{< meta baseball.loc_r_stuff_rv >}} for Stuff+ and {{< meta baseball.loc_r_pitching_rv >}} for both together).
+- **Read Location+ beside Stuff+, not in place of it.** Within {{< meta baseball.season >}}, among the {{< meta baseball.loc_q_mlb_n >}} MLB pitchers with {{< meta baseball.stuff_min_pitches >}}+ pitches, it tracked results at r = {{< meta baseball.loc_r_loc_rv >}}, against {{< meta baseball.loc_r_stuff_rv >}} for Stuff+ and {{< meta baseball.loc_r_pitching_rv >}} for both together. The two grades are nearly unrelated (r = {{< meta baseball.loc_r_stuff_loc >}}), so each says something the other doesn't.
 - **Don't project a Triple-A pitcher on his command grade.** {{< meta baseball.loc_aaa_sentence >}}. Triple-A Stuff+ carried more (r = {{< meta baseball.loc_aaa_stuff >}}), though that sample is small too.
 :::
 
 ## Three grades, four tests
 
-[Stuff+](/baseball/stuff-plus/) grades a pitch on what the ball does: velocity, movement, spin, and release. It ignores where the pitch goes. Location+ is the mirror image: it sees only where the pitch crossed the plate, the count, and whether pitcher and batter are on the same side. Pitching+ sees everything both models see. All three are trained on the same target (run value, with batted-ball luck removed) and put on the same scale, where 100 is an average qualified MLB pitcher from {{< meta baseball.scale_ref_season >}} and 10 points is one standard deviation. Actual results (run value per 100 pitches) are the baseline to beat.
+[Stuff+](/baseball/stuff-plus/) grades a pitch on what the ball does: velocity, movement, spin, and release. It ignores where the pitch goes. Pitching+ adds where the pitch crossed the plate, the count, and whether pitcher and batter are on the same side. Location+ is the part of Pitching+ that the location accounts for: the model's value for the pitch where it was thrown, minus the value of the same pitch in the same count when the model isn't told where it went. A fastball at the knees and a slider at the knees are each judged as that pitch in that spot. All three are trained on the same target (run value, with batted-ball luck removed) and put on the same scale, where 100 is an average qualified MLB pitcher from {{< meta baseball.scale_ref_season >}} and 10 points is one standard deviation. Actual results (run value per 100 pitches) are the baseline to beat.
 
 Pick a test. Each one asks a different question of the same pitchers.
 
@@ -44,11 +44,11 @@ Pick a test. Each one asks a different question of the same pitchers.
   const names = { stuff: "Stuff+", loc: "Location+", pitching: "Pitching+", results: "Actual results" };
   const TESTS = {
     next: { label: "Predicts next season", rows: k => ({ r: L.yoy.r_next_rv[k].r, lo: L.yoy.r_next_rv[k].ci90[0], hi: L.yoy.r_next_rv[k].ci90[1] }),
-      cap: `Correlation between each ${P} measure and the same pitcher's ${Y} run value, ${L.yoy.n} MLB pitchers with ${L.min_pitches}+ pitches in both seasons. The models were trained on ${L.seasons.train} only, so neither season was seen in training. Bars: 90% bootstrap intervals (${L.yoy.bootstrap_samples.toLocaleString()} resamples). This is the test that matters for a projection: look at how far Location+ sits from the others.` },
+      cap: `Correlation between each ${P} measure and the same pitcher's ${Y} run value, ${L.yoy.n} MLB pitchers with ${L.min_pitches}+ pitches in both seasons. The models were trained on ${L.seasons.train} only, so neither season was seen in training. Bars: 90% bootstrap intervals (${L.yoy.bootstrap_samples.toLocaleString()} resamples). This is the test that matters for a projection: look at where Location+ sits against actual results and against Stuff+.` },
     split: { label: "Stable within a season", rows: k => ({ r: L.split_half[k] }),
       cap: `Split-half reliability: each pitcher's pitches split into alternating halves, graded separately, and correlated (qualified ${Y} holdout pitchers). Higher means the grade measures something steady about the pitcher rather than noise. All three grades beat actual results here.` },
     self: { label: "Stable year to year", rows: k => ({ r: L.yoy.r_self[k] }),
-      cap: `Each measure in ${P} against the same measure in ${Y}, same ${L.yoy.n} pitchers, out of sample. Location+ repeats well from season to season even though it doesn't predict next season's results.` },
+      cap: `Each measure in ${P} against the same measure in ${Y}, same ${L.yoy.n} pitchers, out of sample. Location+ repeats from season to season less than Stuff+ and far more than actual results.` },
     aaa: { label: "Triple-A to MLB", rows: k => ({ r: L.aaa_to_mlb[k] }),
       cap: `${P} Triple-A grade against the same pitcher's ${Y} MLB run value, ${L.aaa_to_mlb.n} pitchers who moved up. A small sample, so read only the broad pattern.` },
   };
@@ -72,13 +72,13 @@ Pick a test. Each one asks a different question of the same pitchers.
 </script>
 ```
 
-## Location is real, but it doesn't carry forward
+## Location carries forward, but less than stuff
 
 The stability numbers say Location+ measures something about the pitcher, not just luck. Split-half reliability is {{< meta baseball.loc_split_loc >}}, well below Stuff+ ({{< meta baseball.loc_split_stuff >}}, which is nearly fixed by a pitcher's arm) but far above actual results ({{< meta baseball.loc_split_results >}}). Year to year, Location+ repeats at {{< meta baseball.loc_self_loc >}}, against {{< meta baseball.loc_self_results >}} for results.
 
-That steadiness doesn't turn into a forecast. {{< meta baseball.loc_next_sentence >}} {{< meta baseball.pitching_vs_stuff_sentence >}} {{< meta baseball.pitching_vs_results_sentence >}}
+{{< meta baseball.loc_next_sentence >}} {{< meta baseball.loc_vs_stuff_sentence >}} {{< meta baseball.pitching_vs_stuff_sentence >}} {{< meta baseball.pitching_vs_results_sentence >}}
 
-Why would a steady trait predict so little? The data here can't settle it, but a few explanations fit. Among those same {{< meta baseball.loc_q_mlb_n >}} pitchers, Stuff+ and Location+ were slightly negatively related (r = {{< meta baseball.loc_r_stuff_loc >}}): pitchers with less stuff tend to live on the edges, so a high location grade often comes attached to stuff that hitters can square up when a pitch misses. Location+ also grades where the ball ended up, not where the catcher set up, so it can't tell a well-executed pitch from a lucky miss. And the value of a location depends on sequencing and on how hitters adjust, neither of which the model sees.
+Why doesn't location add to a forecast that already has Stuff+? The data here can't settle it, but a few explanations fit. Location is less steady than stuff: a pitcher keeps his arm from one season to the next more than he keeps his spots. Location+ also grades where the ball ended up, not where the catcher set up, so it can't tell a well-executed pitch from a lucky miss. And the value of a location depends on sequencing and on how hitters adjust, neither of which the model sees. With {{< meta baseball.loc_yoy_n >}} pitchers, a small gain from adding location would also be hard to detect.
 
 ```{=html}
 <div class="explorer">
@@ -113,7 +113,7 @@ Why would a steady trait predict so little? The data here can't settle it, but a
         Plot.text(hi.slice(0, 8), { x: "stuff_plus", y: "loc_plus", text: "name", dy: -12, fontWeight: 600 }),
         Plot.tip(d, Plot.pointer({ x: "stuff_plus", y: "loc_plus", title: x => `${x.name} (${x.team}, ${x.role})\nStuff+ ${f.num(x.stuff_plus, 0)} · Location+ ${f.num(x.loc_plus, 0)} · Pitching+ ${f.num(x.pitching_plus, 0)}\nRV+ ${f.num(x.rv_plus, 0)} · ${f.int(x.pitches)} pitches` }))] }));
     const r = S.corr(d, "stuff_plus", "loc_plus");
-    document.getElementById("cap2").textContent = `${meta.season} ${st.level === "AAA" ? "Triple-A" : "MLB"}, ${d.length} pitchers at their role's pitch minimum. Stuff+ vs. Location+: r = ${f.num(r, 2)}. Each dashed line is 100, an average ${meta.scale_reference.reference_season} MLB pitcher. Color is actual results: look at how orange (good results) spreads across the top-left and bottom-right corners, where one grade carries the other. Hover for details; search to highlight.`;
+    document.getElementById("cap2").textContent = `${meta.season} ${st.level === "AAA" ? "Triple-A" : "MLB"}, ${d.length} pitchers at their role's pitch minimum. Stuff+ vs. Location+: r = ${f.num(r, 2)}. Each dashed line is 100, an average ${meta.scale_reference.reference_season} MLB pitcher. Color is actual results: look for orange (good results) toward the top and the right, where either grade is high. Hover for details; search to highlight.`;
   }
   controls(); draw();
 })();
@@ -131,19 +131,21 @@ The models grade Triple-A pitchers on the MLB scale. The average qualified Tripl
 
 **Data.** Pitch-level Statcast from Baseball Savant: MLB {{< meta baseball.mlb_span >}} and Triple-A {{< meta baseball.aaa_span >}}, the same pitches as [Stuff+](/baseball/stuff-plus/#method). Batter heights come from the MLB Stats API.
 
-**Location+ features.** Horizontal location, mirrored by batter side so positive always means inside; height, scaled to the batter's rulebook strike zone (0 at the bottom, 1 at the top); balls; strikes; and whether pitcher and batter throw and hit from the same side. One model per pitch group (fastballs, breaking balls, offspeed), so a slider at the knees is judged against other breaking balls.
+**Pitching+ features.** Every Stuff+ input, plus horizontal location, mirrored by batter side so positive always means inside; height, scaled to the batter's rulebook strike zone (0 at the bottom, 1 at the top); balls; strikes; and whether pitcher and batter throw and hit from the same side. One model per pitch group (fastballs, breaking balls, offspeed).
+
+**Location+.** A second model per pitch group sees everything Pitching+ sees except the two location inputs. A pitch's location value is the Pitching+ prediction minus this model's prediction, and a pitcher's Location+ is the average over his pitches, put on the grade scale. It answers what the location added for that pitch in that count, so a slider at the knees is judged as a slider.
+
+**Earlier version.** Before {{< meta models.location_plus >}}, Location+ was a model on location and count alone, with no knowledge of the pitch. It was about as steady, but in the same year-over-year test it predicted next season's run value at r = {{< meta baseball.loc_v2_next >}}, and this article reported that location did not carry forward. The version here was chosen on earlier seasons and then tested once on {{< meta baseball.season >}}; the test and the change are recorded in the [model card](https://github.com/matt-hardman15/sparvi-site/tree/main/models/baseball/location_plus/card.yml) and the [change log](https://github.com/matt-hardman15/sparvi-site/blob/main/review/model-changes.md).
 
 **The strike zone changed in the data.** In {{< meta baseball.season >}}, Statcast's zone top and bottom are fixed for each batter at {{< meta baseball.loc_zone_top >}} and {{< meta baseball.loc_zone_bottom >}} of his listed height, the rulebook zone used by the automated ball-strike system. In earlier seasons they were set from the batter's stance on each pitch, which gives a taller zone. Using those fields would grade the same pitch differently across seasons, so every season here uses the height-based zone instead.
-
-**Pitching+ features.** Every Stuff+ input plus every Location+ input, in one model per pitch group.
 
 **Target, model, and scale.** Same as Stuff+: run value from the pitcher's side with batted-ball luck replaced by expected outcomes, LightGBM with wide leaves (`min_data_in_leaf = 500`), each pitch group an average of ten models trained on different nine-tenths of the pitchers, trained on MLB {{< meta baseball.train_span >}} (retraining with a different seed moves a pitcher's Location+ by {{< meta baseball.stab_loc_mean >}} points on average and Pitching+ by {{< meta baseball.stab_pitching_mean >}}), and scaled against qualified {{< meta baseball.scale_ref_season >}} MLB pitchers, frozen for the season. On that scale {{< meta baseball.season >}}'s qualified MLB pitchers average {{< meta baseball.loc_mean_mlb_cur >}} on Location+. Pitch-level grades are scaled within pitch group.
 
 **Validation.** The year-over-year test refits all three models on {{< meta baseball.loc_train_season >}} only, grades {{< meta baseball.season_prev >}}, and predicts {{< meta baseball.season >}} run value, so neither season touches training. Intervals are 90% bootstrap intervals over pitchers ({{< meta baseball.loc_boot >}} resamples), with each gap computed within the same resample. Differences: Pitching+ minus Stuff+ {{< meta baseball.loc_gap_pitching_minus_stuff >}} ({{< meta baseball.loc_gap_pitching_minus_stuff_ci >}}); Location+ minus Stuff+ {{< meta baseball.loc_gap_loc_minus_stuff >}} ({{< meta baseball.loc_gap_loc_minus_stuff_ci >}}); Pitching+ minus results {{< meta baseball.loc_gap_pitching_minus_results >}} ({{< meta baseball.loc_gap_pitching_minus_results_ci >}}).
 
-**Checks.** Pitch-level R² on the {{< meta baseball.season >}} holdout is {{< meta baseball.loc_holdout_r2 >}} for Location+ and {{< meta baseball.loc_holdout_r2_pitching >}} for Pitching+, against {{< meta baseball.loc_holdout_r2_stuff >}} for Stuff+. That gap doesn't mean location is the better grade: where a pitch lands and the count decide whether it's a ball or a strike, so location explains more of any single pitch, but it averages out over a season in a way stuff doesn't.
+**Checks.** Pitch-level R² on the {{< meta baseball.season >}} holdout is {{< meta baseball.loc_holdout_r2_pitching >}} for Pitching+, against {{< meta baseball.loc_holdout_r2_stuff >}} for Stuff+; the location value on its own accounts for {{< meta baseball.loc_holdout_r2 >}}. That gap doesn't mean location is the better grade: where a pitch lands and the count decide whether it's a ball or a strike, so location explains more of any single pitch, but it averages out over a season in a way stuff doesn't.
 
-**What this can't tell you.** Location+ is not command. It sees where the pitch ended up, not where it was aimed, so a pitcher who misses his spot into a good location gets credit. It also doesn't account for catcher framing, the umpire, sequencing, or the hitter's plan. Correlations here are between seasons for the same pitchers; they don't say that improving location wouldn't help a pitcher, only that last season's location grade didn't predict this season's results.
+**What this can't tell you.** Location+ is not command. It sees where the pitch ended up, not where it was aimed, so a pitcher who misses his spot into a good location gets credit. It also doesn't account for catcher framing, the umpire, sequencing, or the hitter's plan. Correlations here are between seasons for the same pitchers; they don't say what would happen to a pitcher who improved his location.
 
 Code: [`baseball/pitch_quality/`](https://github.com/matt-hardman15/sparvi-site/tree/main/baseball/pitch_quality)
 

@@ -72,7 +72,7 @@ Of the {{< meta baseball.fa_n >}} free-agent pitchers who threw {{< meta basebal
       { key: "role", label: "Role", align: "l", title: "SP, RP, or Swing, from his starts this season" },
       { key: "pitches", label: "Pitches", fmt: f.int },
       { key: "stuff_plus", label: "Stuff+", html: r => iv(r, "stuff"), heat: "plus", heatVal: r => r.stuff_plus, title: "What the ball does; 100 = average MLB pitcher; 90% interval in parentheses" },
-      { key: "loc_plus", label: "Location+", fmt: v => f.num(v, 0), heat: "plus", heatVal: r => r.loc_plus, title: "Where the pitches crossed the plate, in the count" },
+      { key: "loc_plus", label: "Location+", fmt: v => f.num(v, 0), heat: "plus", heatVal: r => r.loc_plus, title: "What his locations added, given the pitch and the count" },
       { key: "pitching_plus", label: "Pitching+", html: r => iv(r, "pitching"), heat: "plus", heatVal: r => r.pitching_plus, title: "Stuff and location together; 90% interval in parentheses" },
       { key: "rv_plus", label: "Results", fmt: v => f.num(v, 0), heat: "plus", heatVal: r => r.rv_plus, title: "Actual run value (RV+) on the same scale" },
       { key: "gap", label: "Gap", fmt: v => { const g = Math.round(v); return g > 0 ? `+${g}` : g < 0 ? `−${-g}` : "0"; }, title: "Results minus Pitching+: negative means results trailed the grades" },

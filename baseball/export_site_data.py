@@ -592,8 +592,15 @@ if not SH["results"] < SH["loc"] < SH["stuff"]:
     raise StaleProse("Stuff-or-command article: Location+ is more reliable within a season than results, less than Stuff+.")
 if not YO["r_self"]["loc"] > YO["r_self"]["results"]:
     raise StaleProse("Stuff-or-command article: Location+ carries from one season to the next better than results do.")
-if not YO["gaps"]["loc_minus_stuff"]["ci90"][1] < 0:
-    raise StaleProse("Stuff-or-command article: Stuff+ predicts next season reliably better than Location+.")
+if not YO["r_self"]["loc"] < YO["r_self"]["stuff"]:
+    raise StaleProse("Stuff-or-command article: Location+ repeats from season to season less than Stuff+.")
+if not YO["r_next_rv"]["loc"]["r"] < YO["r_next_rv"]["stuff"]["r"]:
+    raise StaleProse("Stuff-or-command article: Stuff+ predicted next season better than Location+ (point estimates).")
+# What Location+ was before 3.0.0 (a model on location and count alone), from that version's record.
+LOC_V2 = read_json(HERE.parent / "models" / "baseball" / "location_plus" / "versions" / "2.0.0.json")["metrics"]
+N["loc_v2_next"] = r2(LOC_V2["r_next_rv"])
+if not abs(LOC_V2["r_next_rv"]) < 0.05 < YO["r_next_rv"]["loc"]["r"]:
+    raise StaleProse("Stuff-or-command article: the earlier Location+ did not predict next season and this one does.")
 
 # The rest is worded from the intervals, so a refresh (or the Linux vs Windows model builds) can't strand it.
 lr, (llo, lhi) = YO["r_next_rv"]["loc"]["r"], YO["r_next_rv"]["loc"]["ci90"]
@@ -602,6 +609,13 @@ N["loc_next_sentence"] = (
     "that runs across zero: no detectable signal." if llo <= 0 <= lhi else
     f"Location+ on its own predicted next season's run value at r = {r2(lr)} ({ci_words(llo, lhi)}), "
     + ("a real but small signal." if llo > 0 else "in the wrong direction."))
+ls_ = YO["gaps"]["loc_minus_stuff"]
+N["loc_vs_stuff_sentence"] = (
+    f"Stuff+ predicted it at r = {r2(YO['r_next_rv']['stuff']['r'])} and last season's results at "
+    f"{r2(YO['r_next_rv']['results']['r'])}. The gap between Location+ and Stuff+ ({signed2(ls_['est'])}, interval "
+    f"{signed2(ls_['ci90'][0])} to {signed2(ls_['ci90'][1])}) "
+    + ("stays below zero, though its high end is close to it." if ls_["ci90"][1] < 0 else
+       "includes zero, so the two can't be separated on this sample."))
 pg = YO["gaps"]["pitching_minus_stuff"]
 N["pitching_vs_stuff_sentence"] = (
     f"Pitching+, which adds location and count to the same stuff inputs, predicted it at r = {N['loc_next_pitching']}, "
@@ -614,7 +628,10 @@ N["pitching_vs_stuff_sentence"] = (
 N["loc_finding_forecast"] = (
     "but it did almost nothing to predict next season's run value, and adding it to Stuff+ didn't improve the forecast"
     if llo <= 0 <= lhi and pg["ci90"][0] <= 0 <= pg["ci90"][1] else
-    "and adding it to Stuff+ improved the forecast" if pg["ci90"][0] > 0 else
+    f"It predicted next season's run value on its own (r = {r2(lr)}), and adding it to Stuff+ improved the forecast"
+    if pg["ci90"][0] > 0 else
+    f"It predicted next season's run value on its own (r = {r2(lr)}, interval {ci_words(llo, lhi)}), but a forecast "
+    "that already had Stuff+ didn't reliably improve when location was added" if llo > 0 else
     "but adding it to Stuff+ didn't improve the forecast")
 N["loc_sowhat_forecast"] = (
     f"**Forecast with Stuff+.** Adding location (Pitching+) predicted next season no better ({N['loc_next_pitching']} "
@@ -645,10 +662,10 @@ N |= {"loc_q_mlb_n": f"{len(qm):,}", "loc_r_stuff_loc": r2(cs.loc["stuff_plus", 
                                for _, d in qm.sort_values("loc_plus", ascending=False).head(5).iterrows()),
       "pitching_top_mlb": "; ".join(f"{d['name']} ({d['team']}, {d['pitching_plus']:.0f})"
                                     for _, d in qm.sort_values("pitching_plus", ascending=False).head(5).iterrows())}
-if not cs.loc["stuff_plus", "loc_plus"] < 0:
-    raise StaleProse("Stuff-or-command article: among qualified MLB pitchers, better stuff goes with slightly worse location.")
-if not cs.loc["loc_plus", "rv_plus"] < cs.loc["stuff_plus", "rv_plus"] < cs.loc["pitching_plus", "rv_plus"]:
-    raise StaleProse("Stuff-or-command article: within a season, Pitching+ tracks results best, then Stuff+, then Location+.")
+if not abs(cs.loc["stuff_plus", "loc_plus"]) < 0.2:
+    raise StaleProse("Stuff-or-command article: among qualified MLB pitchers, Stuff+ and Location+ are nearly unrelated.")
+if not max(cs.loc["loc_plus", "rv_plus"], cs.loc["stuff_plus", "rv_plus"]) < cs.loc["pitching_plus", "rv_plus"]:
+    raise StaleProse("Stuff-or-command article: within a season, Pitching+ tracks results better than either part.")
 if not cs.loc["loc_plus", "rv_plus"] > 0:
     raise StaleProse("Stuff-or-command article: within a season, Location+ goes with better results.")
 for k in ["loc", "pitching"]:
