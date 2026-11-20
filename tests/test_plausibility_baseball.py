@@ -87,7 +87,9 @@ def test_pitching_plus_that_is_not_its_components_fails(root, tmp_path):
     """A Triple-A Pitching+ whose gap to 100 is twice what the model gives: far more than stuff plus location."""
     edit(root, "snapshots_grades_aaa", shift("pitching_plus", 0, scale=1.0))     # unchanged: still passes
     assert run(root, tmp_path)[0]
-    edit(root, "snapshots_grades_aaa", shift("pitching_plus", -8))
+    # Every pitcher's gap to 100 doubled, so the league's doubles whatever the data. (A fixed 8-point shift stopped
+    # tripping the check when Location+ 3.0.0 moved the true ratio from 1.14 to 0.97: 8 points then left it at 1.47.)
+    edit(root, "snapshots_grades_aaa", shift("pitching_plus", 0, scale=2.0))
     ok, results = run(root, tmp_path)
     name = "Triple-A Pitching+ shortfall equals the Stuff+ and Location+ shortfalls combined, in runs"
     assert not ok and name in failed(results) and "ratio" in results[name]["detail"]
