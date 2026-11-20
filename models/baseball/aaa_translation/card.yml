@@ -58,6 +58,7 @@ backtest:
   module: models/baseball/aaa_translation/backtest.py
   code:
   - baseball/aaa_translation/develop.py
+  - baseball/aaa_translation/small_sample.py
   target: 'The same metric in MLB in the outcome season, players with 50-149 PA/BF in Triple-A and 100+ in MLB.
     Hitters: chase, zone swing, zone contact, whiff, K%, BB%, hard-hit rate, EV90, xwOBA, wOBA. Pitchers: K%, BB%,
     CSW, whiff, chase, xwOBA allowed. One row per player x pair type x metric, in units of the metric''s MLB spread
@@ -91,7 +92,17 @@ backtest:
     and the interval of their mean across shuffles includes zero either way (-0.010 to +0.005 with 5; -0.002 to
     +0.006 with 20): a shuffled fit applies one random slope to every test player, an error the harness''s bootstrap
     over players cannot see. Twelve shuffles on the 2025 development fold show the same. The gate, metric, pool
-    and baselines are as pre-registered.'
+    and baselines are as pre-registered. Second amendment, 2026-11-20 (Matt), after the official run of the block
+    as first amended (passed: scaled RMSE 0.872 vs 0.900): each metric''s own sample count is taken as PA or BF
+    times that metric''s Triple-A-wide count per PA, instead of the exact count, because the site applies the translation
+    from files that carry PA and BF only. Chosen on the development folds, where the two are the same (50-149 pool,
+    both folds: hitters 0.8629 and 0.8629, pitchers 0.9596 and 0.9598; individual predictions differ by 0.006 to
+    0.009 MLB SDs on average, 0.2 at most). The candidate is now fit by baseball/aaa_translation/small_sample.py,
+    the code the site''s constants come from. Also decided with it and not part of the test: a hard switch to the
+    published line at 150 (a blend across 150 was no more accurate on the development folds: 0.8338 vs 0.8337 for
+    hitters, 0.9499 vs 0.9507 for pitchers), and the site''s constants are fit by hand on every pair on file and
+    committed, because the refresh has no history seasons. The gate, metric, pool and baselines are unchanged; the
+    block is rerun as amended and that run is the one of record.'
   too_good: 0.3
   bootstrap: 2000
   seed: 7
