@@ -2,6 +2,9 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-20 · NFL win probability 1.0.1 → 2.0.0 (promoted)
+Frozen eval set: Development: validation seasons 2018 (trained on 2016-2017) and 2019 (trained on 2016-2018).. dev_brier: 0.1491 → 0.147. Live: not yet available (no ledger forecasts).
+
 ## 2026-11-20 · Fourth-down chart: standard situations fixed (no model change)
 The chart on `/nfl/fourth-downs/` called 4th-and-3 through 4th-and-7 from inside the offense's own 10 a clear go.
 Cause: `nfl/fourth/decisions.grid` set `recv_2h = 0.5` ("unknown"). The win-probability model is trees, so 0.5 fell on

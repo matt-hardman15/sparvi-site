@@ -34,6 +34,7 @@ import pandas as pd
 
 from nfl.fourth import fg as F
 from nfl.fourth import models as M
+from nfl.fourth import wp as W
 from nfl.fourth.data import load_plays, scrimmage
 
 TD_POINTS, FG_POINTS = 7, 3
@@ -67,7 +68,7 @@ def _nodes(values: pd.Series, by: np.ndarray, n_buckets: int) -> np.ndarray:
 
 @dataclass
 class Engine:
-    wp: object
+    wp: object                   # win-probability model (wp.py: trees on a logistic baseline with field position)
     conv: pd.Series              # conversion rate by yards to go (the registered table)
     fg: object                   # field-goal model (fg.py: distance and its square, last three seasons)
     fg_max: float                # longest kick offered, as yards from the goal line (FG_SUPPORT)
@@ -213,7 +214,7 @@ def fit(d: pd.DataFrame) -> Engine:
     recent = fgs[fgs["season"] > fgs["season"].max() - F.WINDOW]
     snap = float((fgs["kick_distance"] - fgs["yardline_100"]).median())
     return Engine(
-        wp=M.fit_wp(scrimmage(d)), conv=M.fit_conv_baseline(d[d["converted"].notna()]), fg=F.fit(fgs), punt=pm,
+        wp=W.fit(scrimmage(d)), conv=M.fit_conv_baseline(d[d["converted"].notna()]), fg=F.fit(fgs), punt=pm,
         fg_max=float(np.floor(recent["kick_distance"].quantile(FG_SUPPORT)) - snap),
         extra=_nodes((ok["yards_gained"] - ok["ydstogo"]).clip(lower=0), _bucket(ok["ydstogo"], YTG_BUCKETS), len(YTG_BUCKETS)),
         short=_nodes(bad["yards_gained"], _bucket(bad["ydstogo"], YTG_BUCKETS), len(YTG_BUCKETS)),

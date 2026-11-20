@@ -19,11 +19,11 @@
       },
       "kick_start": 74.17319277108433,
       "calls": {
-        "go": 582,
-        "kick": 415,
-        "toss-up": 2411
+        "go": 746,
+        "kick": 583,
+        "toss-up": 2079
       },
-      "inputs": "63eaacf0b3d98a2525762008f1f8f87d33596f78ec863d6b5a7cea22442ce475"
+      "inputs": "50eb5a3c847d9f667b6390e7f575dae08b675c984fdfe9ec9204e08823a46bcb"
     },
     "2021": {
       "train_seasons": [
@@ -45,11 +45,11 @@
       },
       "kick_start": 74.04153467089053,
       "calls": {
-        "go": 704,
-        "kick": 464,
-        "toss-up": 2622
+        "go": 929,
+        "kick": 749,
+        "toss-up": 2112
       },
-      "inputs": "7994ed47f44afbddba1ec883607cfbb6b5855700d206f4a55e54d28a9416cbe9"
+      "inputs": "bcb4722e894c502d58b98deea81147e60fdcaa88737a1a9a1a488ef1f3965c4e"
     },
     "2022": {
       "train_seasons": [
@@ -72,11 +72,11 @@
       },
       "kick_start": 74.47937062937064,
       "calls": {
-        "go": 792,
-        "kick": 595,
-        "toss-up": 2469
+        "go": 1038,
+        "kick": 896,
+        "toss-up": 1922
       },
-      "inputs": "ce1f24422928fb67b3cd2ac17bda26ce96e478c38ef09218a050da972e15fac3"
+      "inputs": "a9a4565bc7acdcb367a3611637ce0c67ebffbed25ba1a6b5f97e2bce909c3972"
     },
     "2023": {
       "train_seasons": [
@@ -100,11 +100,11 @@
       },
       "kick_start": 74.20588235294117,
       "calls": {
-        "go": 750,
-        "kick": 748,
-        "toss-up": 2536
+        "go": 983,
+        "kick": 1064,
+        "toss-up": 1987
       },
-      "inputs": "a8e78c86a1dc976c00793769330f10c9a8456c0ec5983af35f0054da70e2874d"
+      "inputs": "a3433a720a19feba0a11cb9acef8fe88e18386fd3e9a52734a200c26c0146202"
     },
     "2024": {
       "train_seasons": [
@@ -129,11 +129,11 @@
       },
       "kick_start": 74.43096085409253,
       "calls": {
-        "go": 726,
-        "kick": 780,
-        "toss-up": 2299
+        "go": 988,
+        "kick": 1136,
+        "toss-up": 1681
       },
-      "inputs": "b47a860bf902e80e4fca6dd192da064bdc2874ea5d93f019f7d4a153dc0f33b6"
+      "inputs": "a3ff939b484c9479e1f2dd32e647cc97f492c258f6312b9a0925c7f37da07e4f"
     },
     "2025": {
       "train_seasons": [
@@ -159,11 +159,11 @@
       },
       "kick_start": 69.9210072438772,
       "calls": {
-        "go": 821,
-        "kick": 732,
-        "toss-up": 2239
+        "go": 1112,
+        "kick": 1091,
+        "toss-up": 1589
       },
-      "inputs": "bc064b52b4c0c23ea600e11b202d0462aa648f77221f6a597eaddb5484396861"
+      "inputs": "c67dd3d706ad18a1c1fa6ab683c6722fa71b796bddf57eb5021cab40deb278a8"
     },
     "2026": {
       "train_seasons": [
@@ -190,11 +190,11 @@
       },
       "kick_start": 69.058986814712,
       "calls": {
-        "go": 409,
-        "kick": 432,
-        "toss-up": 1178
+        "go": 613,
+        "kick": 622,
+        "toss-up": 784
       },
-      "inputs": "a055839b7ae7a71c07ac23fe05c2ee4e4572dc048b2895439a12594a91a92a6e"
+      "inputs": "fd5cf72dbbcb346182c5c3a8a935f278b107097079ebd2931efd5b65cd89bf1e"
     }
   }
 }

@@ -15,6 +15,7 @@ import pandas as pd
 from backtest import metrics
 from backtest.asof import Loader
 from nfl.fourth import models as M
+from nfl.fourth import wp as W
 from nfl.fourth.data import FIRST_SEASON, load_plays, scrimmage
 from nfl.fourth.decisions import FIRST_DECIDED
 from nfl.fourth.summary import LATE_SECONDS
@@ -30,7 +31,7 @@ def main() -> None:
     for t in seasons:
         tr = scrimmage(load_plays(loader, range(FIRST_SEASON, t), f"{t}-09-01"))
         te = scrimmage(load_plays(loader, [t], f"{t + 1}-03-01"))
-        parts.append(te.assign(p=M.predict_wp(M.fit_wp(tr), te)))
+        parts.append(te.assign(p=M.predict_wp(W.fit(tr), te)))
     a = pd.concat(parts, ignore_index=True)
     hs, h2 = a["half_seconds_remaining"], a["half2"] == 1
     a["bucket"] = np.select([a["ot"] == 1, h2 & (hs <= 60), h2 & (hs <= LATE_SECONDS), hs <= LATE_SECONDS],

@@ -3,16 +3,20 @@ name: nfl_win_prob
 title: NFL win probability
 sport: nfl
 status: champion
-version: 1.0.1
+version: 2.0.0
 owner: Matt
-spec: LightGBM (150 rounds, 15 leaves, learning rate 0.05) on score margin, margin scaled by time left, time left
-  in game and half, half, overtime, down, distance, field position, both teams' timeouts, home, who receives the
-  2nd-half kickoff, and the team-strength gap; monotone increasing in margin and strength.
+spec: Logistic baseline (score margin scaled by time left, home, team-strength gap, who receives the 2nd-half kickoff,
+  and a cubic in field position), then LightGBM (150 rounds, 15 leaves, learning rate 0.05) boosted from its log-odds
+  on score margin, margin scaled by time left, time left in game and half, half, overtime, down, distance, field
+  position, both teams' timeouts, home, who receives the 2nd-half kickoff, and the team-strength gap; trees monotone
+  increasing in margin and strength.
 target: The offense wins the game (ties excluded)
-method: LightGBM binary, monotone constraints, deterministic single thread
+method: Logistic regression (lbfgs), then LightGBM binary from its log-odds, monotone constraints, deterministic
+  single thread
 code:
 - nfl/fourth/data.py
 - nfl/fourth/models.py
+- nfl/fourth/wp.py
 - nfl/fourth/harness.py
 - models/nfl/win_prob/backtest.py
 training_data:
@@ -23,7 +27,7 @@ artifacts:
 validation:
   file: nfl/fourth/output/development.json
   metrics:
-    dev_brier: models.win_prob.scores.lgb_r150_l15
+    dev_brier: models.win_prob.scores.glm_lgb_r150_l15
     dev_brier_baseline: models.win_prob.scores.baseline
 eval:
   set: 'Development: validation seasons 2018 (trained on 2016-2017) and 2019 (trained on 2016-2018).'
@@ -60,7 +64,9 @@ backtest:
   known_hindsight: 'Seasons before 2026-11-13 come from the current nflverse files, not as they stood then (revision_safe:
     false). The model inputs here are raw game facts (score, clock, down, distance, field position, timeouts, kick
     distance, roof, weather), which nflverse rarely revises; its model columns (EPA, WP), revised Nov 17 2026, are
-    never read.'
+    never read. Version 2.0.0 was chosen (Matt, 2026-11-20) after the 2020-2025 backtest of 1.0.1 was read: it showed
+    1.0.1 rating teams inside their own 6 about 4 points too high. Those seasons are therefore not a clean test
+    of 2.0.0; the 2026 season is.'
   group_by: game_id
   block: game_id
   baselines:
@@ -104,3 +110,8 @@ backtest:
     accesses: 0
 experimental: 'its latest backtest run didn''t clear the strict gate. Shown only in that case: 1.0.1 passed on 2026-11-18
   (2020-2025, 246,692 plays: Brier 0.158 vs. 0.170 for the margin-by-time baseline, edge 90% interval 0.008 to 0.015)'
+challengers: []
+history:
+- version: 1.0.1
+  status: retired
+  until: '2026-11-20'

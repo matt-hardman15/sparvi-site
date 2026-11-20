@@ -1,0 +1,59 @@
+{
+  "model": "nfl_win_prob",
+  "version": "2.0.0",
+  "status": "challenger",
+  "registered": "2026-11-20",
+  "note": "Trees boosted from a logistic baseline with field position (nfl/fourth/wp.py); fixes the overrating of the ball deep in a team's own end found in the fourth-down chart audit (PR #104).",
+  "code_hash": "53bcba1e120b2757bdc4119916fd66cecdde8b5fd98b5604d0ef5a0c27f47a2a",
+  "code_files": {
+    "nfl/fourth/data.py": "69124cd746f1a1a3d12ab0c86bda59245c270df2a8b2df62a665491cef229c62",
+    "nfl/fourth/models.py": "ebb127746fcff193f244f1265feb8fde3ceb434ab2dc3455dc2c5e89a0d996bc",
+    "nfl/fourth/wp.py": "85c6021e0a586d48d8333297e112c3c4ae3d45cee545c5b7ce9382344c89a633",
+    "nfl/fourth/harness.py": "b3ff8773b322279f819bb85f12bd2546162f8a87543f8295b40552f1aae82e67",
+    "models/nfl/win_prob/backtest.py": "d8406db326837e84b5011e1516ed90c1f75f829d044fefb9ca4d35933b8eaccc"
+  },
+  "training_data": {
+    "data/raw/nfl/pbp_2016.parquet": "9af68a89522d56675accda9e6b8928fe34bc93444b01f75d2685c0fd39a2c993",
+    "data/raw/nfl/pbp_2017.parquet": "38045069b9fb294aafadaabed28e6f5de21c85f96e632bc1a7ba7c29f9e13fd6",
+    "data/raw/nfl/pbp_2018.parquet": "8a53d2ee066751ddfe2d7ae8f03e2611f533b180454ae6a5e68c251643d8c3ed",
+    "data/raw/nfl/pbp_2019.parquet": "d01b4edfd3796f9db433f4baaf5ea828ee613ed57a5e83adee3d7e9fd6c7ed79",
+    "data/raw/nfl/pbp_2020.parquet": "a08d28011add9de38815c326ee87e9f5e29fe9a742534c47364a9391623bb6d2",
+    "data/raw/nfl/pbp_2021.parquet": "25e4e60655ea8d3a143aa36e3b5d2bbd68e141bf5e874aa76ad9e9bd7b14ed70",
+    "data/raw/nfl/pbp_2022.parquet": "a2630bf777a973a48421328634f6768dfcdc9d8d6a5eab53feceb8da1a371663",
+    "data/raw/nfl/pbp_2023.parquet": "3849e1d2915eeb4dd7c5ad3332c398bc29df42223d57554a6ef3d2b2819f1350",
+    "data/raw/nfl/pbp_2024.parquet": "1b2ad40f70ab22893db2daf55249791a96ce9c61db32f15eb17ee22e2bd977ea",
+    "data/raw/nfl/pbp_2025.parquet": "6eeb0bd0c8e35e9ee5f7599470fbf79e124a42edc7dd22260ed066ff428771e2",
+    "data/raw/nfl/pbp_2026.parquet": "7f21dda7be901c5dbb50a8a130abe51b3548514e6b3f6ea238788b747ad5dc9a",
+    "data/raw/nfl/state/pbp_state_2016.parquet": "1f51e93163f9e9dad8bcb4171b06fa5fe1e114a5b301f7235c81ae003b7f862a",
+    "data/raw/nfl/state/pbp_state_2017.parquet": "aca5ffb153f692af2539a89917b8a15ae3baf5c31e568ea97fe2ea62818c90b0",
+    "data/raw/nfl/state/pbp_state_2018.parquet": "725a5c2c242a330091e5eb5ed7eeb3436eb2a63d40a8fe841938318b90a3a22f",
+    "data/raw/nfl/state/pbp_state_2019.parquet": "1a5e1522bf3d11262044b6abc8ed66b3a1527093b7967fcb47478f839d6d1c3f",
+    "data/raw/nfl/state/pbp_state_2020.parquet": "7a941e31a7003fcda60a70a6697e485e5c39017e0fc3dba2d1964c6987c3bbd7",
+    "data/raw/nfl/state/pbp_state_2021.parquet": "1f07fb6ec0da0c5b158fb2a75d568ec2b7e2c9fdf41d4864c1c2888a8a7a97a9",
+    "data/raw/nfl/state/pbp_state_2022.parquet": "62429c861cf2200dfbed491d141352c728d54322f3ffe9efeb4349036c83d6e2",
+    "data/raw/nfl/state/pbp_state_2023.parquet": "bef8453c7264a1c891f0cb759a24abbe94d231cc4d1f33b743256eec8bd63467",
+    "data/raw/nfl/state/pbp_state_2024.parquet": "9ec7e6f861ca5c23d52acb88aa80e39d2abb89aaebfe8894825370cb07371639",
+    "data/raw/nfl/state/pbp_state_2025.parquet": "035dd67c82c94edfc524ba44a98eee684277dd17cb8da317c1076d6f51cad0d9",
+    "data/raw/nfl/state/pbp_state_2026.parquet": "ce53cd3a38d184babaa27405c6b1a6d00096c071356b0576b65f7d8b916ef0e8"
+  },
+  "artifacts": {
+    "nfl/fourth/output/development.json": "48385cd3e5b91a84c58ab9d82b0c016c16d39a3886bf41c8553eb4e59956fa90"
+  },
+  "eval": {
+    "set": "Development: validation seasons 2018 (trained on 2016-2017) and 2019 (trained on 2016-2018).",
+    "set_keys": {
+      "seasons": [
+        2016,
+        2017,
+        2018,
+        2019
+      ]
+    },
+    "primary": "dev_brier",
+    "higher_is_better": false
+  },
+  "metrics": {
+    "dev_brier": 0.14699,
+    "dev_brier_baseline": 0.15893
+  }
+}

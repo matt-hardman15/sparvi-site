@@ -15,6 +15,7 @@ import numpy as np
 from backtest import metrics
 from backtest.asof import Loader
 from nfl.fourth import models as M
+from nfl.fourth import wp as W
 from nfl.fourth.data import load_plays, scrimmage
 
 OUT = Path(__file__).resolve().parent / "output"
@@ -42,6 +43,7 @@ def main() -> None:
     s = scrimmage(d)
     wp = {f"lgb_r{r}_l{lv}": (partial(M.fit_wp, rounds=r, params={"num_leaves": lv}), M.predict_wp)
           for r, lv in ((150, 7), (150, 15), (300, 7), (300, 15), (300, 31), (600, 15))}
+    wp["glm_lgb_r150_l15"] = (W.fit, W.predict)      # 2.0.0 (wp.py): the same trees on a logistic baseline with field position
     wp["baseline"] = (M.fit_wp_baseline, M.predict_wp_baseline)
     run("win_prob", s, "win", wp, "brier")
 

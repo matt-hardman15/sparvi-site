@@ -12,39 +12,39 @@
     {
       "bucket": "rest of the game",
       "plays": 212982,
-      "ece": 0.0156,
+      "ece": 0.0189,
       "brier": 0.1621
     },
     {
       "bucket": "last 2:00 of the first half",
       "plays": 19256,
-      "ece": 0.0165,
-      "brier": 0.1639
+      "ece": 0.0254,
+      "brier": 0.1641
     },
     {
       "bucket": "4th quarter, 2:00 to 1:00",
       "plays": 7207,
-      "ece": 0.0134,
-      "brier": 0.0819
+      "ece": 0.0162,
+      "brier": 0.0817
     },
     {
       "bucket": "4th quarter, last 1:00",
       "plays": 5773,
-      "ece": 0.0225,
-      "brier": 0.085
+      "ece": 0.0158,
+      "brier": 0.0813
     },
     {
       "bucket": "overtime",
       "plays": 1474,
-      "ece": 0.0567,
-      "brier": 0.2201
+      "ece": 0.0579,
+      "brier": 0.2163
     }
   ],
-  "ece_judged": 0.0156,
-  "ece_late": 0.0117,
+  "ece_judged": 0.0189,
+  "ece_late": 0.0207,
   "leading_late": {
     "plays": 617,
-    "predicted": 0.9591,
+    "predicted": 0.9736,
     "won": 0.9984
   }
 }

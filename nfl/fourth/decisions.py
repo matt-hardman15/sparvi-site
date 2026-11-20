@@ -46,7 +46,7 @@ def _fingerprint(season: int, boot: int) -> str:
     """Code and raw inputs behind one season's file: the engine and model code, and the raw files it reads."""
     h = hashlib.sha256(f"{season}|{boot}".encode())
     here = Path(__file__).resolve().parent
-    for f in [here / "decide.py", here / "decisions.py", here / "models.py", here / "data.py", here / "fg.py"]:
+    for f in [here / "decide.py", here / "decisions.py", here / "models.py", here / "data.py", here / "fg.py", here / "wp.py"]:
         h.update(f.read_bytes().replace(b"\r\n", b"\n"))
     for s in range(FIRST_SEASON, season + 1):
         for f in (RAW / "nfl" / f"pbp_{s}.parquet", RAW / "nfl" / "state" / f"pbp_state_{s}.parquet"):

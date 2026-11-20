@@ -2,11 +2,11 @@
 Baseline: logistic regression on the score margin scaled by time left, plus home field."""
 from __future__ import annotations
 
-import lightgbm as lgb
 import numpy as np
 
 from nfl.fourth import harness as H
 from nfl.fourth import models as M
+from nfl.fourth import wp as W
 from nfl.fourth.data import scrimmage
 
 
@@ -18,11 +18,8 @@ def fit(loader, fold, permute_seed: int | None = None) -> dict:
         tr["win"] = np.where(tr["game_id"].map(flip) == 1, 1 - tr["win"], tr["win"])
         # Without the monotone constraint: it's a prior (more points and a stronger team never lower the chance to
         # win) that keeps a real-world tilt even on shuffled outcomes, which is not a data leak (Matt, 2026-11-18).
-        t = M._prep(tr)
-        free = lgb.train(M.WP_PARAMS, lgb.Dataset(t[M.WP_FEATURES].to_numpy(float), t["win"].to_numpy(float)),
-                         num_boost_round=M.WP_ROUNDS)
-        return {"m": free, "b": M.fit_wp_baseline(tr), "rate": float(tr["win"].mean())}
-    return {"m": M.fit_wp(tr), "b": M.fit_wp_baseline(tr), "rate": float(tr["win"].mean())}
+        return {"m": W.fit(tr, monotone=False), "b": M.fit_wp_baseline(tr), "rate": float(tr["win"].mean())}
+    return {"m": W.fit(tr), "b": M.fit_wp_baseline(tr), "rate": float(tr["win"].mean())}
 
 
 def predict(fitted, loader, fold):
