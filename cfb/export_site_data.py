@@ -42,7 +42,8 @@ RATES = {"epa": ("epa_play", 3), "sr": ("success_rate", 3), "pass_epa": ("pass_e
          "pass_sr": ("pass_success_rate", 3), "run_epa": ("run_epa_play", 3), "run_sr": ("run_success_rate", 3),
          "expl": ("explosive_rate", 3), "to": ("turnover_rate", 3), "plays": ("plays", 0)}
 ADJ = {"epa_adj": "all", "pass_epa_adj": "pass", "run_epa_adj": "run"}
-TOP = ["games", "power", "rank", "elo", "ap", "cfp"]
+# pw_epa and pw_elo: the power rating's two parts in points (power = pw_epa + pw_elo before rounding).
+TOP = ["games", "power", "pw_epa", "pw_elo", "rank", "elo", "ap", "cfp"]
 FIELDS_STD = TOP + [f"{s}_{k}" for s in ("off", "def") for k in [*RATES, *ADJ]]
 FIELDS_LAST4 = ["games"] + [f"{s}_{k}" for s in ("off", "def") for k in RATES]
 
@@ -112,6 +113,8 @@ for season in CFG.seasons:
                 if win == "std":
                     p = pw[pw["team"] == t].set_index("week").reindex(weeks)
                     s["power"] = [clean(v, 1) for v in p["power"]]
+                    s["pw_epa"] = [clean(v, 1) for v in p["power_epa"]]
+                    s["pw_elo"] = [clean(v, 1) for v in p["power_elo"]]
                     s["rank"] = [clean(v, 0) for v in p["rank"]]
                     s["elo"] = [clean(v, 0) for v in p["elo"]]
                     for key, poll in POLLS.items():
@@ -177,7 +180,8 @@ meta = {
     "min_week": M["min_week"], "trailing_weeks": DBT_VARS["cfb_trailing_weeks"],
     "defs": {"explosive_pass_yds": DBT_VARS["explosive_pass_yds"], "explosive_run_yds": DBT_VARS["explosive_run_yds"],
              "garbage_margin": {str(k): v for k, v in CFB_GARBAGE_MARGIN.items()}},
-    "power_model": {k: pm[k] for k in ("home_points", "points_per_net_epa", "points_per_elo")},
+    "power_model": {**{k: pm[k] for k in ("home_points", "points_per_net_epa", "points_per_elo")},
+                    "components": pm.get("components", {})},
     "poll_week": poll_week,
 }
 # The current gaps between the AP poll and the power rating, for the article (as of the latest week).
@@ -216,6 +220,10 @@ N = {
     "wt_ours_vs_wepa": f2(-wt["ours_minus_wepa_mae"]),
     "wt_ours_vs_wepa_ci": f"{-wt['ours_minus_wepa_mae_ci90'][1]:.2f} to {-wt['ours_minus_wepa_mae_ci90'][0]:.2f}",
     "pm_home": f"{pm['home_points']:.1f}",
+    # The blend's fitted weights, as printed on the tool and in the methods text.
+    "pm_net": f"{pm['points_per_net_epa']:.1f}", "pm_elo": f"{pm['points_per_elo']:.4f}",
+    "pm_net_tenth": f"{0.1 * pm['points_per_net_epa']:.1f}", "pm_elo_100": f"{100 * pm['points_per_elo']:.1f}",
+    "pm_n_games": f"{pm['n_games']:,}",
     "pl_n_games": f"{PL['n_games']:,}", "pl_ap_right": f"{100 * PL['ap_right']:.1f}%", "pl_power_right": f"{100 * PL['power_right']:.1f}%",
     "pl_n_disagree": f"{PL['n_disagree']:,}", "pl_disagree_right": f"{100 * PL['power_right_when_disagree']:.0f}%",
     "pl_disagree_ci": f"{100 * PL['power_right_when_disagree_ci90'][0]:.0f}% to {100 * PL['power_right_when_disagree_ci90'][1]:.0f}%",

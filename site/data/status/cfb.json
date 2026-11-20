@@ -5237,7 +5237,8 @@
    "home": "Middle Tennessee",
    "away": "Marshall",
    "result": "27-24",
-   "pbp": "58-45"
+   "pbp": "58-45",
+   "class": "over"
   },
   {
    "season": 2015,
@@ -5245,7 +5246,8 @@
    "home": "UNLV",
    "away": "Hawai'i",
    "result": "41-21",
-   "pbp": "55-43"
+   "pbp": "55-43",
+   "class": "over"
   },
   {
    "season": 2015,
@@ -5253,7 +5255,8 @@
    "home": "Idaho",
    "away": "Ohio",
    "result": "28-45",
-   "pbp": "51-57"
+   "pbp": "51-57",
+   "class": "over"
   },
   {
    "season": 2016,
@@ -5261,7 +5264,8 @@
    "home": "Northern Illinois",
    "away": "Central Michigan",
    "result": "28-34",
-   "pbp": "21-21"
+   "pbp": "21-21",
+   "class": "under"
   },
   {
    "season": 2016,
@@ -5269,7 +5273,8 @@
    "home": "Virginia Tech",
    "away": "Liberty",
    "result": "36-13",
-   "pbp": "53-27"
+   "pbp": "53-27",
+   "class": "over"
   },
   {
    "season": 2017,
@@ -5277,7 +5282,8 @@
    "home": "Western Kentucky",
    "away": "Middle Tennessee",
    "result": "41-38",
-   "pbp": "100-80"
+   "pbp": "100-80",
+   "class": "over"
   },
   {
    "season": 2017,
@@ -5285,7 +5291,8 @@
    "home": "Nevada",
    "away": "San José State",
    "result": "59-14",
-   "pbp": "98-15"
+   "pbp": "98-15",
+   "class": "over"
   },
   {
    "season": 2020,
@@ -5293,7 +5300,8 @@
    "home": "New Mexico",
    "away": "San José State",
    "result": "21-38",
-   "pbp": "38-21"
+   "pbp": "38-21",
+   "class": "swapped"
   },
   {
    "season": 2020,
@@ -5301,7 +5309,8 @@
    "home": "San José State",
    "away": "Hawai'i",
    "result": "35-24",
-   "pbp": "24-35"
+   "pbp": "24-35",
+   "class": "swapped"
   },
   {
    "season": 2020,
@@ -5309,7 +5318,8 @@
    "home": "UCLA",
    "away": "Stanford",
    "result": "47-48",
-   "pbp": "41-34"
+   "pbp": "41-34",
+   "class": "under"
   },
   {
    "season": 2021,
@@ -5317,7 +5327,8 @@
    "home": "Missouri",
    "away": "Tennessee",
    "result": "24-62",
-   "pbp": "34-94"
+   "pbp": "34-94",
+   "class": "over"
   },
   {
    "season": 2021,
@@ -5325,7 +5336,8 @@
    "home": "Tennessee",
    "away": "South Alabama",
    "result": "60-14",
-   "pbp": "71-15"
+   "pbp": "71-15",
+   "class": "over"
   },
   {
    "season": 2021,
@@ -5333,7 +5345,8 @@
    "home": "South Alabama",
    "away": "Southern Miss",
    "result": "31-7",
-   "pbp": "32-21"
+   "pbp": "32-21",
+   "class": "over"
   },
   {
    "season": 2021,
@@ -5341,7 +5354,8 @@
    "home": "Rice",
    "away": "Southern Miss",
    "result": "24-19",
-   "pbp": "49-32"
+   "pbp": "49-32",
+   "class": "over"
   },
   {
    "season": 2021,
@@ -5349,7 +5363,8 @@
    "home": "Marshall",
    "away": "Western Kentucky",
    "result": "21-53",
-   "pbp": "43-87"
+   "pbp": "43-87",
+   "class": "over"
   },
   {
    "season": 2021,
@@ -5357,7 +5372,8 @@
    "home": "Pittsburgh",
    "away": "Massachusetts",
    "result": "51-7",
-   "pbp": "37-0"
+   "pbp": "37-0",
+   "class": "under"
   },
   {
    "season": 2021,
@@ -5365,7 +5381,8 @@
    "home": "Duke",
    "away": "Pittsburgh",
    "result": "29-54",
-   "pbp": "39-54"
+   "pbp": "39-54",
+   "class": "over"
   },
   {
    "season": 2021,
@@ -5373,7 +5390,8 @@
    "home": "Oklahoma State",
    "away": "Tulsa",
    "result": "28-23",
-   "pbp": "43-35"
+   "pbp": "43-35",
+   "class": "over"
   },
   {
    "season": 2021,
@@ -5381,7 +5399,8 @@
    "home": "Baylor",
    "away": "Iowa State",
    "result": "31-29",
-   "pbp": "57-33"
+   "pbp": "57-33",
+   "class": "over"
   },
   {
    "season": 2021,
@@ -5389,7 +5408,8 @@
    "home": "Akron",
    "away": "Temple",
    "result": "24-45",
-   "pbp": "24-69"
+   "pbp": "24-69",
+   "class": "over"
   },
   {
    "season": 2021,
@@ -5397,7 +5417,8 @@
    "home": "Northern Illinois",
    "away": "Bowling Green",
    "result": "34-26",
-   "pbp": "46-27"
+   "pbp": "46-27",
+   "class": "over"
   },
   {
    "season": 2021,
@@ -5405,7 +5426,8 @@
    "home": "Western Michigan",
    "away": "Akron",
    "result": "45-40",
-   "pbp": "62-40"
+   "pbp": "62-40",
+   "class": "over"
   },
   {
    "season": 2021,
@@ -5413,7 +5435,8 @@
    "home": "California",
    "away": "Sacramento State",
    "result": "42-30",
-   "pbp": "57-30"
+   "pbp": "57-30",
+   "class": "over"
   },
   {
    "season": 2021,
@@ -5421,7 +5444,8 @@
    "home": "Utah",
    "away": "Colorado",
    "result": "28-13",
-   "pbp": "29-27"
+   "pbp": "29-27",
+   "class": "over"
   },
   {
    "season": 2021,
@@ -5429,7 +5453,8 @@
    "home": "Nevada",
    "away": "Air Force",
    "result": "39-41",
-   "pbp": "24-24"
+   "pbp": "24-24",
+   "class": "under"
   },
   {
    "season": 2022,
@@ -5437,7 +5462,8 @@
    "home": "Kentucky",
    "away": "Miami (OH)",
    "result": "37-13",
-   "pbp": "62-32"
+   "pbp": "62-32",
+   "class": "over"
   },
   {
    "season": 2022,
@@ -5445,7 +5471,8 @@
    "home": "Alabama",
    "away": "UL Monroe",
    "result": "63-7",
-   "pbp": "113-15"
+   "pbp": "113-15",
+   "class": "over"
   },
   {
    "season": 2022,
@@ -5453,7 +5480,8 @@
    "home": "West Virginia",
    "away": "Kansas",
    "result": "42-55",
-   "pbp": "51-62"
+   "pbp": "51-62",
+   "class": "over"
   },
   {
    "season": 2022,
@@ -5461,7 +5489,8 @@
    "home": "App State",
    "away": "North Carolina",
    "result": "61-63",
-   "pbp": "111-127"
+   "pbp": "111-127",
+   "class": "over"
   },
   {
    "season": 2022,
@@ -5469,7 +5498,8 @@
    "home": "Virginia Tech",
    "away": "Boston College",
    "result": "27-10",
-   "pbp": "41-20"
+   "pbp": "41-20",
+   "class": "over"
   },
   {
    "season": 2022,
@@ -5477,7 +5507,8 @@
    "home": "San José State",
    "away": "Western Michigan",
    "result": "34-6",
-   "pbp": "49-13"
+   "pbp": "49-13",
+   "class": "over"
   },
   {
    "season": 2022,
@@ -5485,7 +5516,8 @@
    "home": "Ball State",
    "away": "Western Michigan",
    "result": "30-37",
-   "pbp": "61-59"
+   "pbp": "61-59",
+   "class": "over"
   },
   {
    "season": 2022,
@@ -5493,7 +5525,8 @@
    "home": "Bowling Green",
    "away": "Eastern Kentucky",
    "result": "57-59",
-   "pbp": "38-38"
+   "pbp": "38-38",
+   "class": "under"
   },
   {
    "season": 2022,
@@ -5501,7 +5534,8 @@
    "home": "Troy",
    "away": "Alabama A&M",
    "result": "38-17",
-   "pbp": "35-3"
+   "pbp": "35-3",
+   "class": "under"
   },
   {
    "season": 2022,
@@ -5509,7 +5543,8 @@
    "home": "Arkansas State",
    "away": "UL Monroe",
    "result": "45-28",
-   "pbp": "77-43"
+   "pbp": "77-43",
+   "class": "over"
   },
   {
    "season": 2022,
@@ -5517,7 +5552,8 @@
    "home": "UTSA",
    "away": "Houston",
    "result": "35-37",
-   "pbp": "30-24"
+   "pbp": "30-24",
+   "class": "under"
   },
   {
    "season": 2022,
@@ -5525,7 +5561,8 @@
    "home": "Florida International",
    "away": "Louisiana Tech",
    "result": "42-34",
-   "pbp": "27-27"
+   "pbp": "27-27",
+   "class": "under"
   },
   {
    "season": 2022,
@@ -5533,7 +5570,8 @@
    "home": "UAB",
    "away": "UTSA",
    "result": "38-44",
-   "pbp": "31-31"
+   "pbp": "31-31",
+   "class": "under"
   },
   {
    "season": 2023,
@@ -5541,7 +5579,8 @@
    "home": "North Carolina",
    "away": "South Carolina",
    "result": "31-17",
-   "pbp": "17-31"
+   "pbp": "17-31",
+   "class": "swapped"
   },
   {
    "season": 2023,
@@ -5549,7 +5588,8 @@
    "home": "Sam Houston",
    "away": "Florida International",
    "result": "27-33",
-   "pbp": "20-20"
+   "pbp": "20-20",
+   "class": "under"
   },
   {
    "season": 2023,
@@ -5557,7 +5597,8 @@
    "home": "North Carolina",
    "away": "Duke",
    "result": "47-45",
-   "pbp": "36-36"
+   "pbp": "36-36",
+   "class": "under"
   },
   {
    "season": 2023,
@@ -5565,7 +5606,8 @@
    "home": "Akron",
    "away": "Kent State",
    "result": "31-27",
-   "pbp": "31-53"
+   "pbp": "31-53",
+   "class": "over"
   },
   {
    "season": 2023,
@@ -5573,7 +5615,8 @@
    "home": "Eastern Michigan",
    "away": "Akron",
    "result": "30-27",
-   "pbp": "17-17"
+   "pbp": "17-17",
+   "class": "under"
   },
   {
    "season": 2023,
@@ -5581,7 +5624,8 @@
    "home": "UNLV",
    "away": "Bryant",
    "result": "44-14",
-   "pbp": "74-14"
+   "pbp": "74-14",
+   "class": "over"
   },
   {
    "season": 2023,
@@ -5589,7 +5633,8 @@
    "home": "San Diego State",
    "away": "Utah State",
    "result": "24-32",
-   "pbp": "17-17"
+   "pbp": "17-17",
+   "class": "under"
   },
   {
    "season": 2023,
@@ -5597,7 +5642,8 @@
    "home": "Eastern Michigan",
    "away": "South Alabama",
    "result": "10-59",
-   "pbp": "59-10"
+   "pbp": "59-10",
+   "class": "swapped"
   },
   {
    "season": 2023,
@@ -5605,7 +5651,8 @@
    "home": "Iowa State",
    "away": "Memphis",
    "result": "26-36",
-   "pbp": "36-36"
+   "pbp": "36-36",
+   "class": "over"
   },
   {
    "season": 2024,
@@ -5613,7 +5660,8 @@
    "home": "California",
    "away": "UC Davis",
    "result": "31-13",
-   "pbp": "14-13"
+   "pbp": "14-13",
+   "class": "under"
   },
   {
    "season": 2024,
@@ -5621,7 +5669,8 @@
    "home": "Louisville",
    "away": "Georgia Tech",
    "result": "31-19",
-   "pbp": "45-19"
+   "pbp": "45-19",
+   "class": "over"
   },
   {
    "season": 2024,
@@ -5629,7 +5678,8 @@
    "home": "Miami (OH)",
    "away": "Cincinnati",
    "result": "16-27",
-   "pbp": "17-38"
+   "pbp": "17-38",
+   "class": "over"
   },
   {
    "season": 2024,
@@ -5637,7 +5687,8 @@
    "home": "UTEP",
    "away": "Kennesaw State",
    "result": "43-35",
-   "pbp": "53-35"
+   "pbp": "53-35",
+   "class": "over"
   },
   {
    "season": 2024,
@@ -5645,7 +5696,8 @@
    "home": "Utah State",
    "away": "New Mexico",
    "result": "45-50",
-   "pbp": "14-0"
+   "pbp": "14-0",
+   "class": "under"
   },
   {
    "season": 2024,
@@ -5653,7 +5705,8 @@
    "home": "UTSA",
    "away": "Coastal Carolina",
    "result": "44-15",
-   "pbp": "15-44"
+   "pbp": "15-44",
+   "class": "swapped"
   },
   {
    "season": 2025,
@@ -5661,7 +5714,8 @@
    "home": "Mississippi State",
    "away": "Texas",
    "result": "38-45",
-   "pbp": "62-59"
+   "pbp": "62-59",
+   "class": "over"
   },
   {
    "season": 2025,
@@ -5669,7 +5723,8 @@
    "home": "Oregon State",
    "away": "Fresno State",
    "result": "27-36",
-   "pbp": "27-26"
+   "pbp": "27-26",
+   "class": "under"
   },
   {
    "season": 2025,
@@ -5677,7 +5732,8 @@
    "home": "Georgia Tech",
    "away": "Temple",
    "result": "45-24",
-   "pbp": "38-14"
+   "pbp": "38-14",
+   "class": "under"
   },
   {
    "season": 2025,
@@ -5685,7 +5741,8 @@
    "home": "Florida International",
    "away": "Liberty",
    "result": "34-27",
-   "pbp": "54-47"
+   "pbp": "54-47",
+   "class": "over"
   },
   {
    "season": 2026,
@@ -5693,7 +5750,8 @@
    "home": "Colorado State",
    "away": "Oregon State",
    "result": "26-56",
-   "pbp": "32-68"
+   "pbp": "32-68",
+   "class": "over"
   }
  ]
 }

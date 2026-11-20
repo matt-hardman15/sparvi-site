@@ -1,0 +1,69 @@
+{
+  "model": "nfl_team_efficiency",
+  "version": "2.0.0",
+  "status": "champion",
+  "registered": "2026-11-20",
+  "note": "NFL-SCHED (major): the schedule correction uses its own penalties (300 plays for offense strengths, 800 for defense strengths, chosen by held-out-game EPA/play) instead of the forecast penalty (3200, unchanged, chosen on next-week margins). Adjusted numbers change (largest correction 2026 week 10: 0.019 offense, 0.038 defense; before 0.008, 0.011); shrunk ratings and their margin MAE do not. Champion by this change, not by promote: the frozen evaluation (margin MAE of the shrunk ratings) is untouched by it.",
+  "code_hash": "b5b53ca3ecacd4e1e77adb2e334ec766a94d1d67c75f41f275b4f7ceb6df83d6",
+  "code_files": {
+    "nfl/team_efficiency/adjusted.py": "a35aced9f2c52c69b23005bb10493a9d23ea35d85ba3287e67aef535a840b3a6",
+    "football/common/adjust.py": "51195656b6b4b76d2811b393a0c7b87ab513283b56f9f9fde5d0a792e50db204",
+    "football/common/simulate.py": "332d3cfbecd1bd68b0517eb108e493ef1d8ba8ebb312487c0797ce124e9054e6",
+    "football/dbt/models/staging/stg_nfl_plays.sql": "c60831f4df6ca09e3ee594fecada871f564d2f0945c19fe003cede3a9730292a"
+  },
+  "training_data": {
+    "data/raw/nfl/pbp_2016.parquet": "9af68a89522d56675accda9e6b8928fe34bc93444b01f75d2685c0fd39a2c993",
+    "data/raw/nfl/pbp_2017.parquet": "38045069b9fb294aafadaabed28e6f5de21c85f96e632bc1a7ba7c29f9e13fd6",
+    "data/raw/nfl/pbp_2018.parquet": "8a53d2ee066751ddfe2d7ae8f03e2611f533b180454ae6a5e68c251643d8c3ed",
+    "data/raw/nfl/pbp_2019.parquet": "d01b4edfd3796f9db433f4baaf5ea828ee613ed57a5e83adee3d7e9fd6c7ed79",
+    "data/raw/nfl/pbp_2020.parquet": "a08d28011add9de38815c326ee87e9f5e29fe9a742534c47364a9391623bb6d2",
+    "data/raw/nfl/pbp_2021.parquet": "25e4e60655ea8d3a143aa36e3b5d2bbd68e141bf5e874aa76ad9e9bd7b14ed70",
+    "data/raw/nfl/pbp_2022.parquet": "a2630bf777a973a48421328634f6768dfcdc9d8d6a5eab53feceb8da1a371663",
+    "data/raw/nfl/pbp_2023.parquet": "3849e1d2915eeb4dd7c5ad3332c398bc29df42223d57554a6ef3d2b2819f1350",
+    "data/raw/nfl/pbp_2024.parquet": "1b2ad40f70ab22893db2daf55249791a96ce9c61db32f15eb17ee22e2bd977ea",
+    "data/raw/nfl/pbp_2025.parquet": "6eeb0bd0c8e35e9ee5f7599470fbf79e124a42edc7dd22260ed066ff428771e2",
+    "data/raw/nfl/pbp_2026.parquet": "7f21dda7be901c5dbb50a8a130abe51b3548514e6b3f6ea238788b747ad5dc9a",
+    "data/raw/nfl/schedules.parquet": "d6e373d47223ca654c480e7bd11a06006a924f741124a843c601b84632312bdd"
+  },
+  "artifacts": {
+    "nfl/team_efficiency/output/adjustment.json": "72f637d3a7c7823aa92bfdf7634782bf167657ec16886f65dc0902d0fde645bc"
+  },
+  "eval": {
+    "set": "Every regular-season game from week 3 on, complete seasons in the window, predicted from ratings through the prior week (leave-one-season-out).",
+    "set_keys": {
+      "seasons": [
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "min_week": 3
+    },
+    "primary": "mae_ridge",
+    "higher_is_better": false
+  },
+  "metrics": {
+    "mae_ridge": 10.378931726105161,
+    "mae_adjusted": 10.478181422139954,
+    "mae_raw": 10.47155015597792,
+    "mae_home_only": 11.104256894732336,
+    "lambda": 3200,
+    "n_games": 2160,
+    "lambda_schedule": [
+      300,
+      800
+    ],
+    "schedule_skill": 0.12157755623867805,
+    "schedule_skill_at_forecast_lambda": 0.06275188399452747,
+    "sim_recovered_full_season": 0.7273624642238408,
+    "sim_recovered_at_forecast_lambda": 0.3919187862131588,
+    "correction_off_max": 0.018628587511169123,
+    "correction_def_max": 0.03800985608817936
+  }
+}

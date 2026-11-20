@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from football.common.pages import League, game_log, ordinal, ordn, signed, split_fact, splits, tiles
 
-__all__ = ["League", "power_str", "static_block", "summary"]
+__all__ = ["League", "power_rank", "power_str", "static_block", "summary"]
 
 
 def power_str(x: float | None) -> str:
@@ -20,6 +20,17 @@ def power_str(x: float | None) -> str:
 
 def power_n(L: League) -> int:
     return sum(L.val(t, "power") is not None for t in L.series)
+
+
+def power_rank(L: League, tid: str, short: bool = False) -> str:
+    """The team's power rank as the pages print it. The rank comes from the unrounded rating (adjusted.py), so two
+    teams showing the same rounded rating can hold different ranks; teams whose ratings are exactly equal share one,
+    marked "tied for 5th" (short: "T-5th"), the same way the ratings tool marks it."""
+    rank = L.val(tid, "rank")
+    if rank is None:
+        return "—"
+    tied = sum(L.val(t, "rank") == rank for t in L.series) > 1
+    return ("T-" if short else "tied for ") * tied + ordinal(rank)
 
 
 def summary(L: League, t: dict, season: int, current_season: int, last_listed: int) -> tuple[str, dict]:
@@ -34,7 +45,7 @@ def summary(L: League, t: dict, season: int, current_season: int, last_listed: i
     s = f"{when} {t['name']} {'is' if current else 'went'} {record}."
     if power is not None:
         s += f" {'Its' if current else 'Its final'} power rating, {power_str(power)} points against an average FBS team, " \
-             f"{'ranks' if current else 'ranked'} {ordinal(rank)} of {n}"
+             f"{'ranks' if current else 'ranked'} {power_rank(L, tid)} of {n}"
         s += (f"; the AP poll {'has' if current else 'had'} it {ordinal(ap)}." if ap else
               f"; {'it is' if current else 'it was'} unranked in the AP poll.")
         # One more fact, by rule: best or worst power rating in its conference this season, else a top/bottom-3 split.
@@ -44,7 +55,7 @@ def summary(L: League, t: dict, season: int, current_season: int, last_listed: i
             s += f" That is the {'highest' if tid == conf[0] else 'lowest'} power rating in the {t['conf']}."
         elif fact := split_fact(L, tid):
             s += " " + fact
-    return s, {"record": record, "power": power, "rank": rank, "n": n, "week": L.week, "current": current}
+    return s, {"record": record, "power": power, "rank": rank, "rank_str": power_rank(L, tid, short=True), "n": n, "week": L.week, "current": current}
 
 
 def static_block(L: League, t: dict, season: int, current: bool, team_href) -> str:
@@ -55,7 +66,7 @@ def static_block(L: League, t: dict, season: int, current: bool, team_href) -> s
     ap, cfp = L.val(tid, "ap"), L.val(tid, "cfp")
     return "\n".join([
         f"<h3>{season} {'through week ' + str(L.week) if current else 'final'}</h3>",
-        tiles([("Record", L.record(tid)), (f"Power rating · {ordn(L.val(tid, 'rank'))} of {power_n(L)}", power_str(L.val(tid, "power"))),
+        tiles([("Record", L.record(tid)), (f"Power rating · {power_rank(L, tid, short=True)} of {power_n(L)}", power_str(L.val(tid, "power"))),
                ("AP / CFP rank · latest polls", f"{ap or 'NR'} / {cfp or 'NR'}"),
                (f"Offense EPA/play · {ordn(ro)} of {n}", signed(L.val(tid, "off_epa_adj"))),
                (f"Defense EPA/play · {ordn(rd)} of {n} (allowed)", signed(L.val(tid, "def_epa_adj")))]),

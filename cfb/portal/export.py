@@ -28,6 +28,15 @@ from sparvi.config import ROOT, cfb
 from sparvi.io import write_json
 
 OUT = ROOT / "site" / "data" / "cfb" / "portal"
+# The portal window for season t opens in January of t (one winter window since the 2025-26 cycle; before that,
+# December and a spring window). A window with no entrants yet is listed with this month so the board can say when
+# it opens instead of showing an empty list with only a build date.
+PORTAL_OPENS_MONTH = 1
+
+
+def opens(t: int) -> str:
+    """YYYY-MM of the month the portal window for season t opens."""
+    return f"{t}-{PORTAL_OPENS_MONTH:02d}"
 MODEL = "cfb_system_fit"
 PROJ_MODEL = "cfb_player_projection"
 
@@ -68,7 +77,7 @@ def export(t: int, as_of: pd.Timestamp) -> dict:
     stamp = registry.stamp(MODEL)
     head = {"window": t, "as_of": str(as_of.date()), "model": stamp["label"], "model_state": st["state"],
             "model_reason": st.get("reason"), "proj_model": registry.stamp(PROJ_MODEL)["label"], "proj_state": pst["state"],
-            "proj_reason": pst.get("reason"), "entrants": int(len(res["players"])),
+            "proj_reason": pst.get("reason"), "entrants": int(len(res["players"])), "opens": opens(t),
             "membership_from": res.get("membership_from")}
     OUT.mkdir(parents=True, exist_ok=True)
     write_json(OUT / f"board_{t}.json", {**head, "tier_rules": {str(k): v for k, v in B.TIER_RULES.items()},
@@ -76,7 +85,7 @@ def export(t: int, as_of: pd.Timestamp) -> dict:
     numbers = {"horizon_years": B.HORIZON_YEARS, "strengths_n": B.N_STRENGTHS, "similar_seasons": B.SIMILAR_SEASONS, "last_cohort": B.LAST_COHORT,
                "backup_min": dict(LB.BACKUP_MIN)}
     write_json(OUT / f"programs_{t}.json", {**head, "top": B.TOP_FIT, "numbers": numbers, "programs": res["programs"]})
-    return {"window": t, "as_of": str(as_of.date()), "players": int(len(res["players"])), "result": res}
+    return {"window": t, "as_of": str(as_of.date()), "players": int(len(res["players"])), "opens": opens(t), "result": res}
 
 
 def main() -> None:

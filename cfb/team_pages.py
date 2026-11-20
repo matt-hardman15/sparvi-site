@@ -23,8 +23,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 from PIL import Image  # noqa: E402
 
-from cfb.team_summary import League, power_str, static_block, summary  # noqa: E402
-from football.common.pages import ordinal  # noqa: E402
+from cfb.team_summary import League, power_rank, power_str, static_block, summary  # noqa: E402
 from sparvi import plotstyle as ps  # noqa: E402
 from sparvi.config import ROOT, cfb  # noqa: E402
 
@@ -137,7 +136,7 @@ for t in teams:
     ax.set_title(f"{name} · {last} {through}", loc="left", fontsize=13, fontweight="bold")
     foot = f"Record {num['record']}"
     if num["power"] is not None:
-        foot += f" · power rating {power_str(num['power'])}, {ordinal(num['rank'])} of {num['n']} FBS teams"
+        foot += f" · power rating {power_str(num['power'])}, {num['rank_str']} of {num['n']} FBS teams"
     ax.text(0.0, -0.3, foot + " · sparvi.io", transform=ax.transAxes, fontsize=9, color=ps.MUTED)
     fig.subplots_adjust(bottom=0.27, top=0.88, left=0.11, right=0.97)
     # A 64-color palette PNG: a quarter of the size, and the weekly refresh commits all of these.
@@ -155,7 +154,7 @@ confs: dict[str, list] = {}
 for t in now:
     confs.setdefault(t["conf"], []).append(t)
 item = lambda t: (f'<li><a href="{href(t)}">{html.escape(t["name"])}</a> <span class="muted">{L.record(t["id"])}'  # noqa: E731
-                  + (f' · {ordinal(L.val(t["id"], "rank"))} in power rating' if L.val(t["id"], "rank") else "") + "</span></li>")
+                  + (f' · {power_rank(L, t["id"], short=True)} in power rating' if L.val(t["id"], "rank") else "") + "</span></li>")
 blocks = [f'<h2>{html.escape(c)}</h2>\n<ul class="team-index">{"".join(item(t) for t in sorted(confs[c], key=lambda t: t["name"]))}</ul>'
           for c in sorted(confs)]
 gone = sorted((t for t in teams if CFG.season not in t["seasons"]), key=lambda t: t["name"])

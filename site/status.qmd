@@ -1,13 +1,17 @@
 ---
 title: "Data status"
 pagetitle: "Data status: the checks behind every refresh"
-description: "Each data refresh is checked before anything is rebuilt: columns and types, row counts, duplicates, missing values, and freshness, sport by sport."
+description: "Each data refresh is checked before anything is rebuilt, and every tool's numbers are tested for plausibility before they are published, sport by sport."
 ---
 
-Before any page is rebuilt, each sport's new data goes through a set of checks: the columns and types
-the models rely on, row counts (a pull may not lose more than 1% of the rows it had), duplicates,
-missing values, and whether the data is current. If a check fails, that sport's update stops and the
-site keeps showing the last data that passed. This page shows the most recent result for each sport.
+Every update goes through two sets of tests before it is published. **Data checks** run on each sport's new
+data before anything is rebuilt: the columns and types the models rely on, row counts (a pull may not lose
+more than 1% of the rows it had), duplicates, missing values, and whether the data is current.
+**Plausibility tests** run on what the rebuild produced, tool by tool: whether the numbers can be true. A
+"+" metric averages 100 on the scale its label states; an opponent adjustment moves teams by a real but
+bounded amount; ranks follow the values they rank; a fourth-down chart offers no impossible choice; no team
+is credited with plays from a game it didn't play. If a test of either kind fails, that sport's update stops
+and the site keeps showing the last data that passed. This page shows the most recent result for each sport.
 
 ```{=html}
 <div id="status"><div class="loading">Loading…</div></div>
@@ -20,25 +24,51 @@ site keeps showing the last data that passed. This page shows the most recent re
   const through = (k, d) => k === "nfl" || k === "cfb"
     ? (d.week ? `${d.season} season through week ${d.week} (last game ${d.last_game})` : "no games yet")
     : Object.entries(d).map(([lvl, day]) => `${lvl === "mlb" ? "MLB" : "Triple-A"} through ${day}`).join(" · ");
+  const tryLoad = async url => { try { return await S.load(url); } catch (e) { return null; } };
+  const mark = ok => ok === true ? "✓" : ok === false ? "✗" : "–";
+  const table = (checks, withTool) => S.el("div", { class: "table-wrap" }, S.el("table", { class: "s-table status-table" },
+    S.el("thead", {}, S.el("tr", {}, S.el("th", {}, ""), withTool ? S.el("th", {}, "Tool") : "", S.el("th", {}, "Test"), S.el("th", {}, "Result"))),
+    S.el("tbody", {}, checks.map(c => S.el("tr", { class: c.ok === false ? "status-fail" : "" },
+      S.el("td", {}, mark(c.ok)), withTool ? S.el("td", {}, c.tool) : "", S.el("td", {}, c.name), S.el("td", {}, c.detail))))));
+  // One block per kind of test: a badge line, the failures spelled out, and every result behind a disclosure.
+  const block = (title, st, kind, withTool, extra) => {
+    if (!st) return S.el("div", { class: "status-block" }, S.el("h3", {}, title), S.el("p", {}, "No result yet."));
+    const failed = st.checks.filter(c => c.ok === false);
+    const tools = withTool ? [...new Set(st.checks.map(c => c.tool))] : [];
+    return S.el("div", { class: "status-block" },
+      S.el("h3", {}, title),
+      S.el("p", { class: "status-line" },
+        S.el("span", { class: st.ok ? "status-badge ok" : "status-badge fail" }, st.ok ? `All ${kind} passed` : `${st.n_failed} of ${st.n_checks} ${kind} failed`),
+        " ", st.ok ? `${st.n_checks} ${kind}` + (withTool ? ` across ${tools.length} tools` : "") + ". " : "The site is showing the last data that passed. ",
+        st.n_not_run ? `${st.n_not_run} need the full rebuild and have not run yet. ` : "", extra || ""),
+      failed.length ? S.el("ul", { class: "status-failures" }, failed.map(c => S.el("li", {}, `${withTool ? c.tool + ": " : ""}${c.name}: ${c.detail}`))) : "",
+      S.el("details", {}, S.el("summary", {}, `Every ${withTool ? "test" : "check"} (${st.n_checks})`), table(st.checks, withTool)));
+  };
+  const DECISION = { keep: "kept", repair_teams: "teams repaired", repair_scores: "score fields repaired", keep_no_score: "kept, score ignored", exclude: "excluded", pending: "awaiting the next rebuild" };
   const cards = await Promise.all(sports.map(async ([key, label, source]) => {
-    let st;
-    try { st = await S.load(`/data/status/${key}.json`); } catch (e) { return S.el("section", { class: "status-card" }, S.el("h2", {}, label), S.el("p", {}, "No status yet.")); }
-    const failed = st.checks.filter(c => !c.ok);
-    const rows = st.checks.map(c => S.el("tr", { class: c.ok ? "" : "status-fail" },
-      S.el("td", {}, c.ok ? "✓" : "✗"), S.el("td", {}, c.name), S.el("td", {}, c.detail)));
+    const [st, pl, integ] = await Promise.all([tryLoad(`/data/status/${key}.json`), tryLoad(`/data/status/${key}_plausibility.json`),
+                                               key === "cfb" ? tryLoad("/data/status/cfb_pbp_integrity.json") : null]);
+    if (!st && !pl) return S.el("section", { class: "status-card" }, S.el("h2", {}, label), S.el("p", {}, "No status yet."));
+    const gaps = (st && st.score_gaps) || [];
+    // College football: each game whose play-by-play score disagrees with the result by 9+ points, and what the
+    // pipeline does with it (the rule and the decisions come from the build; older status files list the games only).
+    const decided = integ && integ.games && integ.games.length;
+    const gapList = decided
+      ? S.el("details", {}, S.el("summary", {}, `Games whose play-by-play final score is off by 9+ points (${integ.games.length}), and what is done with each`),
+          S.el("ul", { class: "note" }, (integ.rule || []).map(r => S.el("li", {}, r))),
+          integ.built ? "" : S.el("p", { class: "note" }, "These decisions are from the rule applied to the scores alone; games marked as awaiting the next rebuild are decided from their plays when the ratings are next rebuilt."),
+          S.el("div", { class: "table-wrap" }, S.el("table", { class: "s-table status-table" },
+            S.el("thead", {}, S.el("tr", {}, ["Season", "Game", "Result", "Play-by-play", "Problem", "Decision"].map(h => S.el("th", {}, h)))),
+            S.el("tbody", {}, integ.games.map(g => S.el("tr", {}, S.el("td", {}, String(g.season)), S.el("td", {}, `${g.away} at ${g.home}`),
+              S.el("td", {}, g.result), S.el("td", {}, g.pbp), S.el("td", { title: (integ.classes || {})[g.class] || "" }, g.class),
+              S.el("td", { title: g.what || "" }, DECISION[g.decision] || g.decision)))))))
+      : gaps.length ? S.el("details", {}, S.el("summary", {}, `Games whose play-by-play final score is off by 9+ points (${gaps.length})`),
+          S.el("ul", {}, gaps.map(g => S.el("li", {}, `${g.season}: ${g.away} at ${g.home}, result ${g.result}, play-by-play ${g.pbp}`)))) : "";
     return S.el("section", { class: "status-card", id: `status-${key}` },
       S.el("h2", {}, label),
-      S.el("p", { class: "status-line" },
-        S.el("span", { class: st.ok ? "status-badge ok" : "status-badge fail" }, st.ok ? "All checks passed" : `${st.n_failed} of ${st.n_checks} checks failed`),
-        " ", st.ok ? `${st.n_checks} checks. ` : "The site is showing the last data that passed. ",
-        through(key, st.data_through || {}), "."),
-      failed.length ? S.el("ul", { class: "status-failures" }, failed.map(c => S.el("li", {}, `${c.name}: ${c.detail}`))) : "",
-      S.el("details", {}, S.el("summary", {}, `Every check (${st.n_checks})`),
-        S.el("div", { class: "table-wrap" }, S.el("table", { class: "s-table status-table" },
-          S.el("thead", {}, S.el("tr", {}, S.el("th", {}, ""), S.el("th", {}, "Check"), S.el("th", {}, "Result"))),
-          S.el("tbody", {}, rows)))),
-      (st.score_gaps || []).length ? S.el("details", {}, S.el("summary", {}, `Games whose play-by-play final score is off by 9+ points (${st.score_gaps.length}; kept in the ratings)`),
-        S.el("ul", {}, st.score_gaps.map(g => S.el("li", {}, `${g.season}: ${g.away} at ${g.home}, result ${g.result}, play-by-play ${g.pbp}`)))) : "",
+      block("Data checks", st, "checks", false, st ? through(key, st.data_through || {}) + "." : ""),
+      gapList,
+      block("Plausibility tests", pl, "tests", true),
       S.el("p", { class: "note" }, `Source: ${source}.`));
   }));
   document.getElementById("status").replaceChildren(...cards);
@@ -47,7 +77,9 @@ site keeps showing the last data that passed. This page shows the most recent re
 ```
 
 ::: {.note}
-The checks are defined in [`ingest/`](https://github.com/matt-hardman15/sparvi-site/tree/main/ingest), and
+The data checks are defined in [`ingest/`](https://github.com/matt-hardman15/sparvi-site/tree/main/ingest), and
 the columns and rules each sport's data must meet are in
-[`contracts/`](https://github.com/matt-hardman15/sparvi-site/tree/main/contracts).
+[`contracts/`](https://github.com/matt-hardman15/sparvi-site/tree/main/contracts). The plausibility tests are in
+[`plausibility/`](https://github.com/matt-hardman15/sparvi-site/tree/main/plausibility); a test marked "–" needs
+data that exists only during a full rebuild and shows its result from the last one.
 :::

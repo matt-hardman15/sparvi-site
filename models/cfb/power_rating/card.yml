@@ -3,7 +3,7 @@ name: cfb_power_rating
 title: CFB power rating
 sport: cfb
 status: champion
-version: 1.0.0
+version: 1.1.0
 owner: Matt
 spec: 'Opponent-adjusted efficiency (ridge on play EPA, lambda chosen on next-week margins) combined with CFBD''s
   Elo: points vs. an average FBS team on a neutral field. Chosen by Matt (Nov 13, 2026) because efficiency alone
@@ -15,6 +15,7 @@ code:
 - cfb/adjusted_ratings/adjusted.py
 - football/common/adjust.py
 - football/dbt/models/staging/stg_cfb_plays.sql
+- football/dbt/models/intermediate/int_cfb_game_integrity.sql
 training_data:
 - data/raw/cfb/plays_*.parquet
 - data/raw/cfb/games_*.parquet

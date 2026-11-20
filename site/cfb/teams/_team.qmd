@@ -71,7 +71,7 @@
     const tile = (label, value, sub) => S.el("div", { class: "stat" }, S.el("div", { class: "v" }, value), S.el("div", { class: "k" }, `${label} · ${sub}`));
     document.getElementById("tiles").replaceChildren(S.el("div", { class: "stat-row" },
       tile("Record", `${rec[0]}–${rec[1]}${rec[2] ? "–" + rec[2] : ""}`, `through ${weekLabel(W)}`),
-      tile("Power rating", power == null ? "—" : f.signed(power, 1), `${ord(prank)} of ${vals("power").length}`),
+      tile("Power rating", power == null ? "—" : f.signed(power, 1), `${vals("rank").filter(x => x === prank).length > 1 ? "T-" : ""}${ord(prank)} of ${vals("power").length}`),
       tile("AP / CFP rank", `${ap ?? "NR"} / ${cfp ?? "NR"}`, "latest polls"),
       tile("Offense EPA/play", f.signed(at(me, cum("off"), k), 3), `${ord(rank(cum("off"), false))} of ${vals(cum("off")).length}`),
       tile("Defense EPA/play", f.signed(at(me, cum("def"), k), 3), `${ord(rank(cum("def"), true))} of ${vals(cum("def")).length} (allowed)`)));
@@ -89,7 +89,7 @@
         Plot.line(pw, { x: "week", y: "v", stroke: "#0f5257", strokeWidth: 2.2 }),
         Plot.dot(pw, { x: "week", y: "v", r: 3, fill: "#0f5257", fillOpacity: d => (d.week < meta.min_week ? 0.35 : 1) }),
         Plot.ruleX([W], { stroke: "#0f5257", strokeWidth: 1.5, strokeDasharray: "4,3" }),
-        Plot.tip(pw, Plot.pointer({ x: "week", y: "v", title: d => `Through ${weekLabel(d.week)}: power ${f.signed(d.v, 1)} (#${d.rank})`
+        Plot.tip(pw, Plot.pointer({ x: "week", y: "v", title: d => `Through ${weekLabel(d.week)}: power ${f.signed(d.v, 1)} (#${d.rank}, from the unrounded rating)`
           + (d.ap ? ` · AP ${d.ap}` : "") + (d.cfp ? ` · CFP ${d.cfp}` : "") + (d.elo != null ? `\nElo ${d.elo}` : "") })),
       ] }));
     document.getElementById("pcap").textContent = `${T.name}'s power rating after each week of ${st.season}: how many points better than an average FBS team (the dashed line) it should be on a neutral field. `

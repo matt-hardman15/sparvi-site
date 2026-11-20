@@ -123,6 +123,6 @@ It's tempting to think great-on-great matchups follow their own rules: that an e
 
 Code: [`nfl/offense_defense/`](https://github.com/matt-hardman15/sparvi-site/tree/main/nfl/offense_defense) · Data: [nflverse](https://github.com/nflverse) play-by-play (CC-BY 4.0). Sparvi is not affiliated with the NFL or any club.
 
-**Model version.** [{{< meta models.nfl_team_efficiency >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/nfl/team_efficiency/card.yml) ({{< meta models.nfl_team_efficiency_status >}}).
+**Model version.** [1.0.1](https://github.com/matt-hardman15/sparvi-site/blob/main/models/nfl/team_efficiency/versions/1.0.1.json), the version current when this was published. Since November 20, 2026 the team efficiency tool corrects for schedule more strongly (version 2.0.0), so the study's numbers (the correlations and the grid of past matchups) are left as published, while this week's matchups above use the current version.
 
 </details>

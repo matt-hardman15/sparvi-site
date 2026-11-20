@@ -10,6 +10,7 @@ behind them in explorers readers can filter and check. Live at **https://sparvi.
 | `sparvi.toml` | Each sport's current season and windows: the only place a season is set |
 | `sparvi/` | Shared Python package: config, site-data writers with schema checks, provenance, plot style |
 | `ingest/` | Stage 1 (PLAN-scout A0): each sport's pulls and the **data checks** that run before any build (`ingest/<sport>/checks.py`, shared code in `ingest/common/`). Results go to `site/data/status/<sport>.json` and the `/status/` page |
+| `plausibility/` | **Plausibility tests** on what each tool publishes, run after a build and before anything is committed (`python -m plausibility <sport>`): a "+" metric averages 100 on the scale its label states, opponent adjustments have a real but bounded size, ranks follow the values they rank, the fourth-down grid offers no impossible choice, no team is credited in a game it didn't play. Results go to `site/data/status/<sport>_plausibility.json` and `/status/`, next to the data checks; a failure blocks publishing the same way |
 | `ingest/snapshot.py` | After the checks pass, an append-only snapshot of every raw table goes to a private Cloudflare R2 bucket: only new, changed, and deleted rows, each with `_ingested_at` and `_available_at`. `ingest/common/asof.py` reads a table as it stood on any date (for revision-safe backtests). The working files in `data/raw/` are unchanged |
 | `contracts/` | What each sport's raw files must look like for the stages after ingest: columns and types, keys, allowed missing values. The checks enforce them, and the synthetic test fixtures are shaped by them |
 | `ingest/baseball/pull.py` | Pulls pitch-level Statcast (MLB, Triple-A), MLB Stats API rosters, Triple-A affiliates per season (for farm-system rankings), and batter heights (for the strike zone) into `data/raw/` (not committed) |
@@ -24,9 +25,9 @@ behind them in explorers readers can filter and check. Live at **https://sparvi.
 | `baseball/aaa_translation/` | Triple-A -> MLB translation: which numbers carry, how much they shift, what predicts MLB production, and per-metric translation lines (`analysis.py`, `thumb.py`) |
 | `baseball/export_site_data.py` | Writes aggregated JSON for the site and the numbers quoted in article prose (no pitch-level data is published) |
 | `ingest/nfl/pull.py` | NFL play-by-play, schedules, teams, and team stats from nflverse (CC-BY 4.0) into `data/raw/nfl/` (not committed; ~30 seconds) |
-| `football/common/` | Football definitions shared by the NFL and (later) college sections: garbage-time filter, opponent adjustment (ridge), team codes |
+| `football/common/` | Football definitions shared by the NFL and college sections: garbage-time filter, opponent adjustment (ridge; `simulate.py` tests it against seasons with known team strengths), team codes |
 | `football/dbt/` | dbt + DuckDB project for football (`nfl_*` models): efficiency plays, team-game sums, weekly windows (season to date, last 4 weeks), season totals, game logs, and a reconciliation against nflverse team stats |
-| `nfl/team_efficiency/` | Opponent adjustment as of every week, and the choice of its ridge penalty by next-week margin prediction |
+| `nfl/team_efficiency/` | Opponent adjustment as of every week, with two ridge penalties: one for forecasting (chosen by next-week margin prediction) and a lighter one for the schedule correction the site shows (chosen by held-out-game EPA/play) |
 | `nfl/export_site_data.py`, `nfl/team_pages.py` | NFL site data and prose numbers; the 32 static team pages and their preview images |
 | `ingest/cfb/` | College football from CollegeFootballData.com (`pull.py`: cached responses, a call log, a monthly-quota reserve; `checks.py`: contract, coverage, and the score check). Needs `CFBD_API_KEY` (`.env` locally, an Actions secret) |
 | `cfb/` | `adjusted_ratings/adjusted.py`: opponent-adjusted ratings, the backtest against Elo, WEPA, SP+, and betting lines, and the power rating (efficiency + Elo); `polls.py`: AP poll vs. power rating; `export_site_data.py`; `build.sh` |
@@ -72,6 +73,11 @@ GitHub Actions deploys to GitHub Pages:
   is rebuilt, the site keeps the last data that passed, the failure shows on `/status/`, and the run
   ends red. A source changing a column or type fails the checks until `contracts/` and the code
   that reads it are updated together.
+- **Plausibility tests**: after a rebuild, each refresh runs its sport's plausibility tests on the rebuilt numbers
+  (`plausibility/<sport>.py`). If one fails, the rebuilt data is not committed, the site keeps the last data that
+  passed, the failure shows on `/status/`, and the run ends red. `deploy` reruns the tests that need only the
+  committed site data and stops on a failure, and `check` runs them on every pull request, so implausible numbers
+  can't reach the live site by another route.
 - **Snapshots**: after the checks, both refreshes record what the pull returned in a private R2 bucket
   (secrets `R2_ENDPOINT`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`; locally the same
   names in `.env`). Snapshots are never overwritten or deleted. A failed snapshot still updates the
@@ -92,7 +98,7 @@ and an `export_site_data.py` that writes `site/data/<sport>/` and `site/_generat
 through the shared `sparvi` package, plus a `[<sport>]` section in `sparvi.toml` and its own
 `refresh-<sport>.yml` on its own calendar. Pages go in `site/<sport>/` and reuse
 `site/assets/js/sparvi.js` (tables, charts, percentile bars, controls) and `site/assets/css/sparvi.css`,
-so every sport looks like one site. Also add `_generated/<sport>.yml` to `metadata-files` in
+so every sport looks like one site. Add a `plausibility/<sport>.py` with a test for every tool, and run it after the build in the refresh workflow. Also add `_generated/<sport>.yml` to `metadata-files` in
 `site/_quarto.yml`, the sport to the navbar and home-page sport strip, and its pages to `tests/test_site.py`.
 
 Football specifics: the NFL and college football share `football/common/` (one garbage-time rule per

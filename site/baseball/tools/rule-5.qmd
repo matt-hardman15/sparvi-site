@@ -20,6 +20,10 @@ Every {{< meta baseball.season >}} Triple-A player who is likely eligible for th
   const S = Sparvi, f = S.fmt, U = S.urlState;
   const [pitchers, hitters, meta] = await Promise.all(["rule5_pitchers", "rule5_hitters", "meta"].map(n => S.load(`/data/baseball/${n}.json`)));
   const R5 = meta.rule5, MIN_DEFAULT = 50;
+  // Scales (S.SCALES): the "+" grades are on the MLB scale (100 = average qualified MLB pitcher), not a Triple-A one;
+  // hitters' percentile columns are on the Triple-A scale (qualified Triple-A hitters).
+  const REF = meta.scale_reference.reference_season, MLB_SCALE = S.SCALES.mlbAaa(REF), SM = meta.stuff_metrics;
+  const aaaAvg = k => f.num(SM[`aaa_mean_${k}_plus_qualified`], 0);
   const DEF = { side: "pitchers", org: "", role: "all", pos: "all" };
   const POS = [["all", "All"], ["C", "Catchers"], ["IF", "Infield"], ["OF", "Outfield"]];
   const st = { side: U.get("side", DEF.side), org: U.get("org", DEF.org), role: U.get("role", DEF.role), q: "",
@@ -45,19 +49,20 @@ Every {{< meta baseball.season >}} Triple-A player who is likely eligible for th
       S.search("Find a player", "Name", v => { st.q = v; draw(); }, st.q)].filter(Boolean));
   }
   const statusCell = r => `<span class="r5-status r5-${r.status.split(" ")[0].toLowerCase()}" title="${r.reason.replace(/"/g, "&quot;")}">${r.status}</span>`;
-  const pc = (key, label, title) => ({ key, label, fmt: v => v == null ? "—" : Math.round(v), heat: "pct", heatVal: r => r[key], title });
+  const AAA_PCT = `Triple-A scale: percentile among qualified Triple-A hitters (${meta.min_pa_qualified}+ PA), 50 = the Triple-A median, higher is better`;
+  const pc = (key, label, title) => ({ key, label, fmt: v => v == null ? "—" : Math.round(v), heat: "pct", heatVal: r => r[key], title: (title ? title + ". " : "") + AAA_PCT + "." });
   const pCols = [
     { key: "name", label: "Pitcher", align: "l", html: r => S.playerLink(r.player_id, r.name) },
     { key: "org", label: "Org", align: "l" }, { key: "age", label: "Age" },
     { key: "role", label: "Role", align: "l", title: "SP starter · RP reliever · Swing (see glossary)" },
     { key: "bf", label: "BF" },
-    { key: "stuff_plus", label: "Stuff+", heat: "plus", fmt: v => f.num(v, 0) },
-    { key: "loc_plus", label: "Loc+", heat: "plus", fmt: v => f.num(v, 0), title: "Location+: where his pitches crossed the plate. Steady for a pitcher, but it hasn't carried from Triple-A to MLB results (see the stuff-or-command article)." },
-    { key: "pitching_plus", label: "Pitching+", heat: "plus", fmt: v => f.num(v, 0), title: "Stuff and location together" },
+    { key: "stuff_plus", label: "Stuff+", heat: "plus", fmt: v => f.num(v, 0), title: `What the ball does: velocity, movement, spin, release. ${MLB_SCALE}. Qualified Triple-A pitchers average ${aaaAvg("stuff")}.` },
+    { key: "loc_plus", label: "Loc+", heat: "plus", fmt: v => f.num(v, 0), title: `Location+: where his pitches crossed the plate. Steady for a pitcher, but it hasn't carried from Triple-A to MLB results (see the stuff-or-command article). ${MLB_SCALE}. Qualified Triple-A pitchers average ${aaaAvg("loc")}.` },
+    { key: "pitching_plus", label: "Pitching+", heat: "plus", fmt: v => f.num(v, 0), title: `Stuff and location together, from its own model (not an average of the other two). ${MLB_SCALE}. Qualified Triple-A pitchers average ${aaaAvg("pitching")}.` },
     { key: "k_pct", label: "K%", fmt: v => f.pct(v) }, { key: "bb_pct", label: "BB%", fmt: v => f.pct(v) },
     { key: "k_bb_pct", label: "K−BB%", fmt: v => f.pct(v), title: "Strikeout rate minus walk rate" },
     { key: "csw_pct", label: "CSW%", fmt: v => f.pct(v) }, { key: "fb_velo", label: "FB velo", fmt: v => f.num(v) },
-    { key: "best_pt_stuff", label: "Best pitch", html: r => r.best_pt ? `${r.best_pt} <span class="muted">${f.num(r.best_pt_stuff, 0)}</span>` : "—", title: "His highest-graded pitch (50+ thrown) and its Stuff+" },
+    { key: "best_pt_stuff", label: "Best pitch", html: r => r.best_pt ? `${r.best_pt} <span class="muted">${f.num(r.best_pt_stuff, 0)}</span>` : "—", title: `His highest-graded pitch (50+ thrown) and its Stuff+. MLB scale within its pitch group: 100 = the average ${REF} MLB pitch of that group (fastballs, breaking balls, or offspeed).` },
     { key: "mlb_g", label: "MLB G", fmt: v => v || "—", title: `MLB games in ${meta.season}. Players outrighted off a 40-man stay on the board.` },
     { key: "status", label: "Eligibility", align: "l", html: statusCell, title: "Estimated from signing date and age; hover for the reasoning" },
   ];
@@ -71,7 +76,7 @@ Every {{< meta baseball.season >}} Triple-A player who is likely eligible for th
     { key: "name", label: "Hitter", align: "l", html: r => S.playerLink(r.player_id, r.name) },
     { key: "org", label: "Org", align: "l" }, { key: "age", label: "Age" },
     { key: "pa", label: "PA" },
-    pc("chase_pct_pctl", "Chase pctl", "Percentile vs qualified Triple-A hitters; higher = chases less"),
+    pc("chase_pct_pctl", "Chase pctl", "Higher = chases less"),
     pc("zone_contact_pct_pctl", "Z-Contact pctl"), pc("ev90_pctl", "EV90 pctl", "90th-percentile exit velocity"),
     pc("hard_hit_pct_pctl", "Hard-hit pctl"),
     { key: "xwoba", label: "xwOBA", fmt: f.woba },
@@ -99,7 +104,7 @@ Every {{< meta baseball.season >}} Triple-A player who is likely eligible for th
     const X = pitch ? "stuff_plus" : "chase_pct_pctl", Y = pitch ? "k_bb_pct" : "ev90_pctl";
     const pts = base.filter(d => d[X] != null && d[Y] != null);
     S.plot(host, w => Plot.plot({ ...S.plotDefaults(w), height: 340, grid: true,
-      x: pitch ? { label: "Stuff+ →", nice: true } : { label: "Chase percentile (higher = more disciplined) →", domain: [0, 100] },
+      x: pitch ? { label: "Stuff+ (MLB scale: 100 = MLB average) →", nice: true } : { label: "Chase percentile (higher = more disciplined) →", domain: [0, 100] },
       y: pitch ? { label: "↑ K−BB%", tickFormat: "%", nice: true } : { label: "↑ EV90 percentile", domain: [0, 100] },
       marks: [
         pitch ? Plot.ruleX([100], { stroke: "#8a8b8f", strokeDasharray: "3,3" }) : Plot.ruleX([50], { stroke: "#8a8b8f", strokeDasharray: "3,3" }),
@@ -114,7 +119,7 @@ K−BB ${f.pct(d.k_bb_pct)} · ${d.bf} BF`
     const who = pitch ? (st.role === "all" ? "pitchers" : S.ROLES[st.role].toLowerCase())
       : ({ all: "hitters", C: "catchers", IF: "infielders", OF: "outfielders" })[st.pos];
     document.getElementById("scap").textContent = (pitch
-      ? `${rows.length} ${who} with ${st.min ?? MIN_DEFAULT}+ BF. Upper right is the profile that tends to translate: MLB-caliber stuff (right of the dashed line at 100) and a strong strikeout-to-walk margin.`
+      ? `${rows.length} ${who} with ${st.min ?? MIN_DEFAULT}+ BF. Upper right is the profile that tends to translate: MLB-caliber stuff (right of the dashed line at 100) and a strong strikeout-to-walk margin. Stuff+, Loc+, and Pitching+ are on the MLB scale (100 = the average qualified MLB pitcher of ${REF}), not a Triple-A one: qualified Triple-A pitchers average ${aaaAvg("stuff")}, ${aaaAvg("loc")}, and ${aaaAvg("pitching")}. K%, BB%, CSW%, and velocity are raw Triple-A numbers.`
       : `${rows.length} ${who} with ${st.min ?? MIN_DEFAULT}+ PA (by the position he played most). Upper right: disciplined swing decisions and top-end contact quality. Percentiles are against qualified Triple-A hitters (${meta.min_pa_qualified}+ PA). The table adds each hitter's line, the positions he played, and his fielding.`)
       + (hi.length ? ` Orange: ${st.org || "search matches"}.` : " Pick an organization or search a name to highlight players.");
   }
@@ -124,5 +129,7 @@ K−BB ${f.pct(d.k_bb_pct)} · ${d.bf} BF`
 ```
 
 ::: {.note}
+**Scales.** Stuff+, Loc+, Pitching+, and the best pitch's grade are on the **MLB scale**: 100 is the average qualified MLB pitcher of {{< meta baseball.scale_ref_season >}} and 10 points is one standard deviation, so 100 here means major-league-average, and the typical qualified Triple-A pitcher is about {{< meta baseball.stuff_aaa_mean >}} Stuff+, {{< meta baseball.loc_mean_aaa_cur >}} Location+, and {{< meta baseball.pitching_mean_aaa_cur >}} Pitching+ (Pitching+ is its own model; shortfalls in stuff and location add up, so its Triple-A average is below both). Hitters' percentile columns are on the **Triple-A scale**: percentiles among qualified Triple-A hitters. Rates, velocity, and slash lines are raw Triple-A numbers.
+
 {{< meta baseball.season >}} regular-season Triple-A data. 40-man rosters as of {{< meta baseball.r5_snapshot >}}; the protection deadline is {{< meta baseball.r5_deadline >}} and the Rule 5 Draft is scheduled for {{< meta baseball.r5_draft >}}. Players who elected free agency after the season or were released aren't under contract and can't be drafted, so they're excluded. Hitters' lines, positions, and fielding are {{< meta baseball.season >}} Triple-A season totals from the MLB Stats API; fielding percentage counts errors, not range, so read it as a check, not a grade. Eligibility statuses: **Eligible** (signing date and age known), **Likely eligible** (signing date estimated from the draft year), **Unknown** (no signing record found). How the estimate works and how it checked out: [method](/baseball/rule-5/#method).
 :::

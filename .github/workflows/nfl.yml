@@ -92,21 +92,34 @@ jobs:
             nfl/fourth/output/grid_*.json
           key: nfl-fourth-decisions-${{ github.run_id }}
 
+      # Plausibility tests (plausibility/nfl.py) on what the build produced: can the numbers each tool shows be
+      # true? Like a failed data check, a failure publishes nothing: the rebuilt data is not committed, the site keeps
+      # the last data that passed, the failure is committed to site/data/status/nfl_plausibility.json (shown on
+      # /status/), and the run ends red.
+      - name: Plausibility tests
+        id: plausibility
+        if: steps.build.outcome == 'success'
+        run: |
+          if uv run python -m plausibility nfl; then echo "ok=true" >> "$GITHUB_OUTPUT"
+          else echo "ok=false" >> "$GITHUB_OUTPUT"; fi
+
       - name: Render (fails on unresolved prose numbers)
         id: render
-        if: steps.checks.outputs.ok == 'true'
+        if: steps.plausibility.outputs.ok == 'true'
         run: |
           cd site && quarto render && cd ..
           if grep -rl "?meta:" docs --include=*.html; then echo "unresolved prose numbers"; exit 1; fi
 
-      # The data-check status every run; the rebuilt data only when the build and render passed.
+      # The data-check and plausibility status every run; the rebuilt data only when the build, the plausibility
+      # tests, and the render passed.
       - name: Commit refreshed data
         if: ${{ !cancelled() && steps.checks.outcome == 'success' && steps.build.outcome != 'failure' && steps.render.outcome != 'failure' }}
         run: |
           git config user.name "sparvi-bot"
           git config user.email "sparvi-bot@users.noreply.github.com"
           git add site/data/status/nfl.json
-          if [ "${{ steps.checks.outputs.ok }}" = "true" ]; then
+          if [ "${{ steps.plausibility.outcome }}" = "success" ]; then git add site/data/status/nfl_plausibility.json; fi
+          if [ "${{ steps.plausibility.outputs.ok }}" = "true" ]; then
             git add site/data/nfl site/_generated/nfl.yml nfl/*/output site/nfl/teams
           fi
           if git diff --cached --quiet; then echo "No data changes."; exit 0; fi
@@ -119,6 +132,12 @@ jobs:
         if: steps.checks.outputs.ok == 'false'
         run: |
           echo "::error::NFL data checks failed; the site still serves the last good data. See /status/."
+          exit 1
+
+      - name: Fail the run if a plausibility test failed
+        if: steps.plausibility.outputs.ok == 'false'
+        run: |
+          echo "::error::NFL plausibility tests failed; the rebuilt data was not published. See /status/."
           exit 1
 
       - name: Fail the run if the snapshot failed
