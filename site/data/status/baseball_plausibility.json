@@ -9,19 +9,19 @@
    "tool": "Stuff+ leaderboard",
    "name": "MLB league mean of Stuff+ is 100 on the MLB scale (final date, pitch-weighted)",
    "ok": true,
-   "detail": "mean 99.13 (expected 100 ± 2)"
+   "detail": "mean 99.12 (expected 100 ± 2)"
   },
   {
    "tool": "Stuff+ leaderboard",
    "name": "MLB league mean of Location+ is 100 on the MLB scale (final date, pitch-weighted)",
    "ok": true,
-   "detail": "mean 100.05 (expected 100 ± 2)"
+   "detail": "mean 99.94 (expected 100 ± 2)"
   },
   {
    "tool": "Stuff+ leaderboard",
    "name": "MLB league mean of Pitching+ is 100 on the MLB scale (final date, pitch-weighted)",
    "ok": true,
-   "detail": "mean 99.26 (expected 100 ± 2)"
+   "detail": "mean 99.24 (expected 100 ± 2)"
   },
   {
    "tool": "Stuff+ leaderboard",
@@ -69,13 +69,13 @@
    "tool": "Stuff+ leaderboard",
    "name": "Triple-A league mean of Location+ is below MLB's and inside 75-98 (MLB scale)",
    "ok": true,
-   "detail": "Triple-A 84.6, MLB 100.1 (final date, pitch-weighted)"
+   "detail": "Triple-A 84.4, MLB 99.9 (final date, pitch-weighted)"
   },
   {
    "tool": "Stuff+ leaderboard",
    "name": "Triple-A league mean of Pitching+ is below MLB's and inside 75-98 (MLB scale)",
    "ok": true,
-   "detail": "Triple-A 84.6, MLB 99.3 (final date, pitch-weighted)"
+   "detail": "Triple-A 84.6, MLB 99.2 (final date, pitch-weighted)"
   },
   {
    "tool": "Stuff+ leaderboard",
@@ -93,13 +93,13 @@
    "tool": "Stuff+ leaderboard",
    "name": "Triple-A Pitching+ shortfall equals the Stuff+ and Location+ shortfalls combined, in runs",
    "ok": true,
-   "detail": "Pitching+ 0.563 vs Stuff+ 0.204 + Location+ 0.363 = 0.567 runs per 100 pitches (ratio 0.99, allowed 0.75 to 1.5); in MLB SDs: 1.54 vs 0.88 and 1.54"
+   "detail": "Pitching+ 0.563 vs Stuff+ 0.203 + Location+ 0.377 = 0.580 runs per 100 pitches (ratio 0.97, allowed 0.75 to 1.5); in MLB SDs: 1.54 vs 0.88 and 1.56"
   },
   {
    "tool": "Stuff+ leaderboard",
    "name": "The Pitching+ reference SD is larger than either component's and smaller than their sum",
    "ok": true,
-   "detail": "Stuff+ 0.231, Location+ 0.236, Pitching+ 0.365 runs per 100 pitches"
+   "detail": "Stuff+ 0.230, Location+ 0.241, Pitching+ 0.365 runs per 100 pitches"
   },
   {
    "tool": "Stuff+ leaderboard",
@@ -123,13 +123,13 @@
    "tool": "Stuff+ leaderboard",
    "name": "MLB fastball pitch grades average 100 within their group (±3)",
    "ok": true,
-   "detail": "Stuff+ 101.0, Location+ 101.9, Pitching+ 101.7"
+   "detail": "Stuff+ 101.0, Location+ 101.8, Pitching+ 101.7"
   },
   {
    "tool": "Stuff+ leaderboard",
    "name": "MLB breaking pitch grades average 100 within their group (±3)",
    "ok": true,
-   "detail": "Stuff+ 100.8, Location+ 98.8, Pitching+ 99.5"
+   "detail": "Stuff+ 100.8, Location+ 98.9, Pitching+ 99.5"
   },
   {
    "tool": "Stuff+ leaderboard",
@@ -141,19 +141,19 @@
    "tool": "Stuff+ leaderboard",
    "name": "Triple-A fastball pitch grades average below 100 and above 80 (MLB scale)",
    "ok": true,
-   "detail": "Stuff+ 94.5, Location+ 92.1, Pitching+ 91.4"
+   "detail": "Stuff+ 94.6, Location+ 92.0, Pitching+ 91.4"
   },
   {
    "tool": "Stuff+ leaderboard",
    "name": "Triple-A breaking pitch grades average below 100 and above 80 (MLB scale)",
    "ok": true,
-   "detail": "Stuff+ 95.6, Location+ 91.0, Pitching+ 91.6"
+   "detail": "Stuff+ 95.6, Location+ 90.9, Pitching+ 91.6"
   },
   {
    "tool": "Stuff+ leaderboard",
    "name": "Triple-A offspeed pitch grades average below 100 and above 80 (MLB scale)",
    "ok": true,
-   "detail": "Stuff+ 95.3, Location+ 89.8, Pitching+ 90.9"
+   "detail": "Stuff+ 95.3, Location+ 89.7, Pitching+ 90.9"
   },
   {
    "tool": "Stuff+ leaderboard",
@@ -453,13 +453,13 @@
    "tool": "Triple-A translation",
    "name": "The average Triple-A Stuff+ translates to a below-average MLB grade (MLB scale)",
    "ok": true,
-   "detail": "translated 95.9 (allowed 75 to 100)"
+   "detail": "translated 95.8 (allowed 75 to 100)"
   },
   {
    "tool": "Triple-A translation",
    "name": "The average Triple-A Pitching+ translates to a below-average MLB grade (MLB scale)",
    "ok": true,
-   "detail": "translated 93.4 (allowed 75 to 100)"
+   "detail": "translated 93.3 (allowed 75 to 100)"
   },
   {
    "tool": "Triple-A translation",
