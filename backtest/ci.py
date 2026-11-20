@@ -26,7 +26,8 @@ HARNESS = ("backtest/", ".github/workflows/backtest.yml", "pyproject.toml", "uv.
 
 
 def selected(changed: list[str], models=None) -> list | None:
-    """The models a change touches: a file in a model's card `code` list or in its folder (not its committed reports).
+    """The models a change touches: a file in a model's card `code` list, in its backtest block's `code` list (a
+    candidate's own files) or in its folder (not its committed reports).
     None means every model (a harness file changed). Paths are repo-relative with forward slashes."""
     changed = [c.strip().replace(chr(92), "/") for c in changed if c.strip()]
     if any(c.startswith(HARNESS) and not c.startswith("backtest/runs/") for c in changed):
@@ -34,6 +35,7 @@ def selected(changed: list[str], models=None) -> list | None:
     out = []
     for m in models or [m for m in registry.models() if "backtest" in m.card]:
         own = {p.relative_to(m.root).as_posix() for p in m.files("code")}
+        own |= set(m.card["backtest"].get("code", []))      # a candidate's code that the champion's `code` list doesn't hold
         folder = m.dir.relative_to(m.root).as_posix() + "/"
         reports = folder + "backtest/"
         if any(c in own or (c.startswith(folder) and not c.startswith(reports)) for c in changed):

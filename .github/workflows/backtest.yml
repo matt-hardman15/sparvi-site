@@ -159,6 +159,45 @@ jobs:
           path: data/raw/statcast_mlb_${{ steps.hist_cfg.outputs.season }}.parquet
           key: baseball-history-${{ steps.hist_cfg.outputs.season }}-v1
 
+      # The Triple-A translation's backtest (M5-EB) fits on Triple-A seasons before the site's window, which the
+      # refresh never pulls either: same cache-then-snapshots route.
+      - name: Triple-A history seasons for the translation backtest
+        if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'baseball') }}
+        id: aaa_hist_cfg
+        run: |
+          seasons=$(uv run python -c "from sparvi.config import baseball; print(' '.join(map(str, baseball().aaa_history_seasons)))")
+          echo "seasons=$seasons" >> "$GITHUB_OUTPUT"
+          echo "key=baseball-aaa-history-${seasons// /-}-v1" >> "$GITHUB_OUTPUT"
+          {
+            echo "paths<<EOF"
+            for y in $seasons; do echo "data/raw/statcast_aaa_${y}.parquet"; done
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Restore the Triple-A history seasons (cache)
+        if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'baseball') && steps.aaa_hist_cfg.outputs.seasons != '' }}
+        id: aaa_hist
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: ${{ steps.aaa_hist_cfg.outputs.paths }}
+          key: ${{ steps.aaa_hist_cfg.outputs.key }}
+
+      - name: Restore the Triple-A history seasons (R2 snapshots)
+        if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'baseball') && steps.aaa_hist_cfg.outputs.seasons != '' && steps.aaa_hist.outputs.cache-hit != 'true' }}
+        env:
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: uv run python -m ingest.baseball.history restore $(for y in ${{ steps.aaa_hist_cfg.outputs.seasons }}; do echo "aaa:$y"; done)
+
+      - name: Save the Triple-A history seasons
+        if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'baseball') && steps.aaa_hist_cfg.outputs.seasons != '' && steps.aaa_hist.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: ${{ steps.aaa_hist_cfg.outputs.paths }}
+          key: ${{ steps.aaa_hist_cfg.outputs.key }}
+
       # College football (PLAYER-ADJ): the cfb workflow's raw-data cache, including CFBD's cached responses, from which
       # the play-player links are parsed (no API calls). A miss leaves the CFB backtest without data, and it fails.
       # nflverse needs no key and no quota (~1 min for every season); nothing to cache.
