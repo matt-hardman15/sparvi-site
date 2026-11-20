@@ -1,0 +1,189 @@
+{
+  "run_id": "62a210424102",
+  "model": "location_plus",
+  "version": "3.0.0",
+  "kind": "full",
+  "ran_at": "2026-11-20T15:05:36Z",
+  "code_sha": "992e6453133b26f7f61e80b0f3b55beb1b20c4af",
+  "lockfile": "39654de38b4c91ec",
+  "preregistered_at": "2026-11-19",
+  "spec": {
+    "preregistered_at": "2026-11-19",
+    "candidate": "3.0.0",
+    "candidate_spec": "Location value given shape: the prediction of a model on shape, count, batter side and location, minus the prediction of the same model without location, averaged over a pitcher's pitches. Chosen on development folds that never read 2026 (baseball/pitch_quality/output/development_location.json: outcomes 2024 and 2025; r with next-season RV/100 +0.147, 90% interval +0.077 to +0.210, against +0.030 for the published features). train.py is unchanged until this test passes; the report is written as 3.0.0 and does not validate the published version.",
+    "module": "models/baseball/location_plus/backtest.py",
+    "target": "Next-season run value per 100 pitches (RV/100), MLB pitchers with 500+ pitches in both seasons",
+    "decision_dates": "season start (March 1 of the outcome season)",
+    "splits": {
+      "type": "walk_forward",
+      "first_test": 2026,
+      "last_test": 2026,
+      "train_window": 2,
+      "predictor_lag": 1,
+      "decision": "03-01",
+      "fast_folds": 1
+    },
+    "group_by": "none: a pitch-level model; pitcher identity is not a feature",
+    "block": "entity_id",
+    "baselines": [
+      "published_location",
+      "stuff",
+      "last_season"
+    ],
+    "primary_metric": "pearson_r",
+    "report_partial_given": "stuff",
+    "bootstrap": 2000,
+    "seed": 7,
+    "pass_gate": {
+      "beats_baseline": "published_location",
+      "min_skill": 0.0,
+      "ci_excludes_zero": true
+    },
+    "gate_decided": "Matt, 2026-11-19: strict (the 90% interval of the edge must exclude zero), measured against the published Location+ features trained on the same fold. The partial correlation with next-season RV/100 given Stuff+ is reported with its interval and is not part of the gate. Chosen with the development folds in view (baseball/pitch_quality/output/development_location_gates.json): a gain in r over Stuff+ alone could not pass at this sample size (about +0.015 on a partial r of 0.10). Stuff+ and last season's results are reported baselines.",
+    "reproduction": "Exact on the same machine; across machines tolerance \u00b10.01 in r (Matt, 2026-11-13). Official runs happen in CI.",
+    "vault": {
+      "seasons": [],
+      "note": "No sealed season yet: the only test season is 2026. The 2027 season becomes the vault when it completes.",
+      "accesses": 0
+    }
+  },
+  "folds": [
+    2026
+  ],
+  "evaluation": {
+    "metric": "pearson_r",
+    "n": 324,
+    "point": 0.1568488532300491,
+    "baselines": {
+      "published_location": {
+        "value": 0.014301709992143157,
+        "paired": {
+          "est": 0.14254714323790593,
+          "ci90": [
+            0.07552169083623524,
+            0.2027385931760967
+          ],
+          "n": 324,
+          "blocks": 324,
+          "bootstrap": 2000,
+          "seed": 7
+        }
+      },
+      "stuff": {
+        "value": 0.31757520495148467,
+        "paired": {
+          "est": -0.16072635172143557,
+          "ci90": [
+            -0.28302305822061996,
+            -0.029047083408160843
+          ],
+          "n": 324,
+          "blocks": 324,
+          "bootstrap": 2000,
+          "seed": 7
+        }
+      },
+      "last_season": {
+        "value": 0.19259585980517263,
+        "paired": {
+          "est": -0.03574700657512353,
+          "ci90": [
+            -0.1514432139100538,
+            0.08974668872476259
+          ],
+          "n": 324,
+          "blocks": 324,
+          "bootstrap": 2000,
+          "seed": 7
+        }
+      }
+    },
+    "by_fold": {
+      "2026": 0.1568488532300491
+    },
+    "partial_r": {
+      "given": "stuff",
+      "est": 0.12932125893988855,
+      "ci90": [
+        0.03974978750762709,
+        0.2232867770551223
+      ],
+      "n": 324,
+      "blocks": 324,
+      "bootstrap": 2000,
+      "seed": 7
+    }
+  },
+  "gate": {
+    "checks": {
+      "beats_baseline": true,
+      "min_skill": true,
+      "ci_excludes_zero": true
+    },
+    "passed": true,
+    "gap": 0.14254714323790593,
+    "per_baseline": {
+      "published_location": {
+        "gap": 0.14254714323790593,
+        "ci90_low": 0.07552169083623524
+      }
+    }
+  },
+  "leakage": {
+    "timestamp": {
+      "passed": true,
+      "folds": [
+        {
+          "fold": 2026,
+          "fit_max_available_at": "2024-10-01 00:00:00",
+          "train_until": "2024-12-31 23:59:59",
+          "predict_max_available_at": "2025-09-29 00:00:00",
+          "decision_date": "2026-03-01 00:00:00",
+          "passes": true
+        }
+      ]
+    },
+    "future_poisoning": {
+      "passed": true,
+      "cutoff": "2026-03-01 00:00:00",
+      "n": 478
+    },
+    "label_permutation": {
+      "passed": true,
+      "r": -0.08079323447405193,
+      "ci90": [
+        -0.17576705101519852,
+        0.012982292002390896
+      ],
+      "n": 324
+    },
+    "too_good": {
+      "passed": true,
+      "r": 0.1568488532300491,
+      "ceiling": 0.9
+    },
+    "entity_overlap": {
+      "passed": true,
+      "not_applicable": "group_by: none: a pitch-level model; pitcher identity is not a feature"
+    },
+    "universe": {
+      "passed": true,
+      "predicted": 478,
+      "scored": 324,
+      "no_outcome": 154,
+      "note": "entities without an outcome (retired, injured, too few pitches) can't be scored; they're counted here so survivorship is visible"
+    }
+  },
+  "passed": true,
+  "primary": {
+    "metric": "pearson_r",
+    "point": 0.1568488532300491,
+    "published_location": 0.014301709992143157,
+    "stuff": 0.31757520495148467,
+    "last_season": 0.19259585980517263
+  },
+  "revision_safe": false,
+  "approximate_tables": [
+    "batter_heights"
+  ]
+}
