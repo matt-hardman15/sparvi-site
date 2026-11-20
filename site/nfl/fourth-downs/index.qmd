@@ -66,12 +66,14 @@ From {{< meta nfl.fd_first_season >}} through {{< meta nfl.fd_last_complete >}},
   const COLOR = { go: "#eb6834", kick: "#2a78d6", "toss-up": "#d9d8d3" };
   const kickName = (g) => (g.kick === "fg" ? "field goal" : "punt");
 
-  // ---- the chart of standard situations: yards from the goal line x yards to go -------------------------
+  // ---- the chart of standard situations: field position x yards to go ------------------------------------
+  // The offense moves left to right: its own 1 (99 yards from the goal line) is at the left edge, the opponent's 1
+  // at the right.
   function drawMap() {
     const lim = d3.max(D.grid, g => Math.abs(g.m));
-    const xs = d3.range(1, 100), ys = d3.range(1, d3.max(D.grid, g => g.t) + 1);
+    const xs = d3.range(99, 0, -1), ys = d3.range(1, d3.max(D.grid, g => g.t) + 1);
     S.plot(document.getElementById("map"), w => Plot.plot({ ...S.plotDefaults(w), height: 330, marginLeft: 46, marginBottom: 40, padding: 0,
-      x: { domain: xs, label: "Yards from the opponent's goal line →", ticks: [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 99], tickFormat: y => spot(y) },
+      x: { domain: xs, label: "Field position", ticks: [99, 90, 80, 70, 60, 50, 40, 30, 20, 10, 1], tickFormat: y => spot(y) },
       y: { domain: ys.slice().reverse(), label: "↑ Yards to go", tickFormat: t => String(t) },
       color: st.view === "call"
         ? { type: "ordinal", domain: ["go", "toss-up", "kick"], range: [COLOR.go, COLOR["toss-up"], COLOR.kick], legend: true, tickFormat: c => CALL[c] }
@@ -90,7 +92,7 @@ From {{< meta nfl.fd_first_season >}} through {{< meta nfl.fd_last_complete >}},
       ? `Orange: going for it is clearly better (the whole 90% interval favors it). Blue: kicking is clearly better. Gray: too close to call. `
         + `Of ${D.grid.length} situations, ${n.get("go") ?? 0} are a clear go, ${n.get("kick") ?? 0} a clear kick and ${n.get("toss-up") ?? 0} toss-ups. `
       : `Win probability of going for it minus the better of a field goal or punt, in percentage points. Orange favors going, blue favors kicking. `)
-      + `A standard situation: tie game, 10:00 left in the second quarter, outdoors, evenly matched teams, all timeouts. Real games move the answer: `
+      + `The offense moves left to right, from its own goal line to the opponent's. A standard situation: tie game, 10:00 left in the second quarter, outdoors, evenly matched teams, all timeouts. Real games move the answer: `
       + `trailing late favors going, protecting a lead favors kicking. Model fit on ${D.engine.train_seasons[0]}–${D.engine.train_seasons.at(-1)}. Hover for the numbers.`;
   }
 
@@ -202,3 +204,7 @@ In {{< meta nfl.fd_first_season >}} the league went for it on {{< meta nfl.fd_go
 Code: [`nfl/fourth/`](https://github.com/matt-hardman15/sparvi-site/tree/main/nfl/fourth) · Data: [nflverse](https://github.com/nflverse) play-by-play (CC-BY 4.0). Team numbers: [team efficiency](/nfl/tools/team-efficiency.html) · [all teams](/nfl/teams/) · [offense vs. defense](/nfl/offense-or-defense/). Sparvi is not affiliated with the NFL or any club.
 
 </details>
+
+::: {.correction}
+*Corrected Nov. 20, 2026:* The chart under "When should a team go?" overstated going for it. Its standard situation was valued as if whichever team had the ball next would also receive the second-half kickoff, which credited a conversion with a possession the offense might not get, and it was set at 15:00 left in the second quarter, not the 10:00 stated. With both fixed, clear go calls on the chart fell from 199 to 85 of 945 situations and clear kicks rose from 20 to 194. Inside the offense's own 10, 40 of 100 situations had been a clear go, including fourth-and-3 through fourth-and-7; now 13 are, all on fourth-and-1 or fourth-and-2. The chart also now reads left to right from the offense's own goal line to the opponent's. The team and league numbers, the trend and the costliest calls are unchanged: decisions on real plays did not have the error.
+:::
