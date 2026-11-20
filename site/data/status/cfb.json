@@ -3,10 +3,10 @@
  "ok": true,
  "data_through": {
   "season": 2026,
-  "week": 11,
-  "last_game": "2026-11-15"
+  "week": 12,
+  "last_game": "2026-11-20"
  },
- "n_checks": 1011,
+ "n_checks": 1037,
  "n_failed": 0,
  "rows": {
   "games_2014": 868,
@@ -34,7 +34,7 @@
   "lines_2023": 3072,
   "lines_2024": 3172,
   "lines_2025": 3289,
-  "lines_2026": 2165,
+  "lines_2026": 2300,
   "play_players_2014": 171229,
   "play_players_2015": 173083,
   "play_players_2016": 171319,
@@ -42,12 +42,12 @@
   "play_players_2018": 173628,
   "play_players_2019": 173613,
   "play_players_2020": 111461,
-  "play_players_2021": 162808,
-  "play_players_2022": 253114,
-  "play_players_2023": 250638,
-  "play_players_2024": 268245,
-  "play_players_2025": 288655,
-  "play_players_2026": 222290,
+  "play_players_2021": 162966,
+  "play_players_2022": 253116,
+  "play_players_2023": 250720,
+  "play_players_2024": 269024,
+  "play_players_2025": 313892,
+  "play_players_2026": 273114,
   "player_ppa_2014": 3035,
   "player_ppa_2015": 3082,
   "player_ppa_2016": 3226,
@@ -60,7 +60,7 @@
   "player_ppa_2023": 4649,
   "player_ppa_2024": 4403,
   "player_ppa_2025": 5551,
-  "player_ppa_2026": 5477,
+  "player_ppa_2026": 5480,
   "player_stats_2014": 40210,
   "player_stats_2015": 41273,
   "player_stats_2016": 98529,
@@ -73,7 +73,7 @@
   "player_stats_2023": 132228,
   "player_stats_2024": 135294,
   "player_stats_2025": 141637,
-  "player_stats_2026": 158781,
+  "player_stats_2026": 159045,
   "player_usage_2014": 3035,
   "player_usage_2015": 3082,
   "player_usage_2016": 3226,
@@ -86,7 +86,7 @@
   "player_usage_2023": 4649,
   "player_usage_2024": 4403,
   "player_usage_2025": 5551,
-  "player_usage_2026": 5477,
+  "player_usage_2026": 5480,
   "player_wepa_2014": 508,
   "player_wepa_2015": 647,
   "player_wepa_2016": 813,
@@ -112,7 +112,7 @@
   "plays_2023": 250659,
   "plays_2024": 276483,
   "plays_2025": 291073,
-  "plays_2026": 249407,
+  "plays_2026": 250923,
   "portal_2021": 1770,
   "portal_2022": 2273,
   "portal_2023": 2502,
@@ -132,7 +132,7 @@
   "rankings_2023": 975,
   "rankings_2024": 1001,
   "rankings_2025": 1000,
-  "rankings_2026": 626,
+  "rankings_2026": 676,
   "recruits_2014": 3772,
   "recruits_2015": 3516,
   "recruits_2016": 4452,
@@ -2082,7 +2082,7 @@
   {
    "name": "plays_2026: row count",
    "ok": true,
-   "detail": "249,407 rows (last accepted 228,253)"
+   "detail": "250,923 rows (last accepted 249,407)"
   },
   {
    "name": "plays_2026: one row per id",
@@ -2142,7 +2142,7 @@
   {
    "name": "rankings_2026: row count",
    "ok": true,
-   "detail": "626 rows (last accepted 601)"
+   "detail": "676 rows (last accepted 626)"
   },
   {
    "name": "rankings_2026: one row per season + seasonType + week + poll + school",
@@ -2167,7 +2167,7 @@
   {
    "name": "lines_2026: row count",
    "ok": true,
-   "detail": "2,165 rows (last accepted 2,110)"
+   "detail": "2,300 rows (last accepted 2,165)"
   },
   {
    "name": "lines_2026: one row per game_id + provider",
@@ -2372,17 +2372,17 @@
   {
    "name": "games_2026: completed games have results",
    "ok": true,
-   "detail": "751 completed games"
+   "detail": "758 completed games"
   },
   {
    "name": "plays_2026: completed games have play-by-play",
    "ok": true,
-   "detail": "0 of 751 games without plays (0.0%; limit 2%)"
+   "detail": "0 of 758 games without plays (0.0%; limit 2%)"
   },
   {
    "name": "plays_2026: final scores agree with results",
    "ok": true,
-   "detail": "731 of 751 games (97.3%; bar 90%); 1 off by 9+ points"
+   "detail": "738 of 758 games (97.4%; bar 90%); 1 off by 9+ points"
   },
   {
    "name": "games_2026: results are current",
@@ -4077,7 +4077,7 @@
   {
    "name": "roster_2026: row count",
    "ok": true,
-   "detail": "31,590 rows (last accepted 31,579)"
+   "detail": "31,590 rows (last accepted 31,590)"
   },
   {
    "name": "roster_2026: one row per id + team",
@@ -4102,7 +4102,7 @@
   {
    "name": "player_stats_2026: row count",
    "ok": true,
-   "detail": "158,781 rows (last accepted 154,377)"
+   "detail": "159,045 rows (last accepted 158,781)"
   },
   {
    "name": "player_stats_2026: one row per playerId + team + category + statType",
@@ -4132,7 +4132,7 @@
   {
    "name": "player_usage_2026: row count",
    "ok": true,
-   "detail": "5,477 rows (last accepted 5,426)"
+   "detail": "5,480 rows (last accepted 5,477)"
   },
   {
    "name": "player_usage_2026: one row per id + team",
@@ -4157,7 +4157,7 @@
   {
    "name": "player_ppa_2026: row count",
    "ok": true,
-   "detail": "5,477 rows (last accepted 5,426)"
+   "detail": "5,480 rows (last accepted 5,477)"
   },
   {
    "name": "player_ppa_2026: one row per id + team",
@@ -4177,7 +4177,7 @@
   {
    "name": "player_wepa_2026: row count",
    "ok": true,
-   "detail": "844 rows (last accepted 805)"
+   "detail": "844 rows (last accepted 844)"
   },
   {
    "name": "player_wepa_2026: one row per kind + athleteId + team",
@@ -4197,7 +4197,7 @@
   {
    "name": "player_stats_2026: players on the roster",
    "ok": true,
-   "detail": "16,700 of 16,704 players (100.0%; bar 95%)"
+   "detail": "16,714 of 16,718 players (100.0%; bar 95%)"
   },
   {
    "name": "player_usage_2026: same players as PPA",
@@ -4242,7 +4242,17 @@
   {
    "name": "play_players_2014: passers and rushers matched to rosters",
    "ok": true,
-   "detail": "98.4% (want >= 95%)"
+   "detail": "99.1% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2014: completions name a receiver",
+   "ok": true,
+   "detail": "100.0% (want >= 95%); incompletions 77.2% (source text often omits him)"
+  },
+  {
+   "name": "play_players_2014: each FBS team's passers, rushers, receivers matched",
+   "ok": true,
+   "detail": "every FBS team >= 80%"
   },
   {
    "name": "play_players_2015: columns and types",
@@ -4277,7 +4287,17 @@
   {
    "name": "play_players_2015: passers and rushers matched to rosters",
    "ok": true,
-   "detail": "98.1% (want >= 95%)"
+   "detail": "98.9% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2015: completions name a receiver",
+   "ok": true,
+   "detail": "99.9% (want >= 95%); incompletions 78.0% (source text often omits him)"
+  },
+  {
+   "name": "play_players_2015: each FBS team's passers, rushers, receivers matched",
+   "ok": true,
+   "detail": "Georgia Southern rusher 76%"
   },
   {
    "name": "play_players_2016: columns and types",
@@ -4312,7 +4332,17 @@
   {
    "name": "play_players_2016: passers and rushers matched to rosters",
    "ok": true,
-   "detail": "97.7% (want >= 95%)"
+   "detail": "99.0% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2016: completions name a receiver",
+   "ok": true,
+   "detail": "99.9% (want >= 95%); incompletions 76.4% (source text often omits him)"
+  },
+  {
+   "name": "play_players_2016: each FBS team's passers, rushers, receivers matched",
+   "ok": true,
+   "detail": "every FBS team >= 80%"
   },
   {
    "name": "play_players_2017: columns and types",
@@ -4347,7 +4377,17 @@
   {
    "name": "play_players_2017: passers and rushers matched to rosters",
    "ok": true,
-   "detail": "97.1% (want >= 95%)"
+   "detail": "99.0% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2017: completions name a receiver",
+   "ok": true,
+   "detail": "99.9% (want >= 95%); incompletions 76.6% (source text often omits him)"
+  },
+  {
+   "name": "play_players_2017: each FBS team's passers, rushers, receivers matched",
+   "ok": true,
+   "detail": "every FBS team >= 80%"
   },
   {
    "name": "play_players_2018: columns and types",
@@ -4382,7 +4422,17 @@
   {
    "name": "play_players_2018: passers and rushers matched to rosters",
    "ok": true,
-   "detail": "96.6% (want >= 95%)"
+   "detail": "98.9% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2018: completions name a receiver",
+   "ok": true,
+   "detail": "99.9% (want >= 95%); incompletions 76.2% (source text often omits him)"
+  },
+  {
+   "name": "play_players_2018: each FBS team's passers, rushers, receivers matched",
+   "ok": true,
+   "detail": "every FBS team >= 80%"
   },
   {
    "name": "play_players_2019: columns and types",
@@ -4417,7 +4467,17 @@
   {
    "name": "play_players_2019: passers and rushers matched to rosters",
    "ok": true,
-   "detail": "96.7% (want >= 95%)"
+   "detail": "98.9% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2019: completions name a receiver",
+   "ok": true,
+   "detail": "99.9% (want >= 95%); incompletions 76.7% (source text often omits him)"
+  },
+  {
+   "name": "play_players_2019: each FBS team's passers, rushers, receivers matched",
+   "ok": true,
+   "detail": "Old Dominion rusher 77%"
   },
   {
    "name": "play_players_2020: columns and types",
@@ -4452,7 +4512,17 @@
   {
    "name": "play_players_2020: passers and rushers matched to rosters",
    "ok": true,
-   "detail": "98.0% (want >= 95%)"
+   "detail": "98.9% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2020: completions name a receiver",
+   "ok": true,
+   "detail": "98.6% (want >= 95%); incompletions 76.8% (source text often omits him)"
+  },
+  {
+   "name": "play_players_2020: each FBS team's passers, rushers, receivers matched",
+   "ok": true,
+   "detail": "Mississippi State rusher 55%, Arizona State rusher 67%, New Mexico target 75%"
   },
   {
    "name": "play_players_2021: columns and types",
@@ -4462,7 +4532,7 @@
   {
    "name": "play_players_2021: row count",
    "ok": true,
-   "detail": "162,808 rows (last accepted 162,808)"
+   "detail": "162,966 rows (last accepted 162,808)"
   },
   {
    "name": "play_players_2021: one row per play_id + role",
@@ -4487,7 +4557,17 @@
   {
    "name": "play_players_2021: passers and rushers matched to rosters",
    "ok": true,
-   "detail": "98.0% (want >= 95%)"
+   "detail": "99.0% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2021: completions name a receiver",
+   "ok": true,
+   "detail": "99.3% (want >= 95%); incompletions 53.7% (source text often omits him)"
+  },
+  {
+   "name": "play_players_2021: each FBS team's passers, rushers, receivers matched",
+   "ok": true,
+   "detail": "Mississippi State rusher 54%, California rusher 66%, Oklahoma State target 70%, Minnesota rusher 75%"
   },
   {
    "name": "play_players_2022: columns and types",
@@ -4497,7 +4577,7 @@
   {
    "name": "play_players_2022: row count",
    "ok": true,
-   "detail": "253,114 rows (last accepted 253,114)"
+   "detail": "253,116 rows (last accepted 253,114)"
   },
   {
    "name": "play_players_2022: one row per play_id + role",
@@ -4522,7 +4602,17 @@
   {
    "name": "play_players_2022: passers and rushers matched to rosters",
    "ok": true,
-   "detail": "98.4% (want >= 95%)"
+   "detail": "99.0% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2022: completions name a receiver",
+   "ok": true,
+   "detail": "99.5% (want >= 95%); incompletions 46.2% (source text often omits him)"
+  },
+  {
+   "name": "play_players_2022: each FBS team's passers, rushers, receivers matched",
+   "ok": true,
+   "detail": "UL Monroe passer 3%, Mississippi State rusher 55%, UL Monroe rusher 70%, Wyoming target 77%"
   },
   {
    "name": "play_players_2023: columns and types",
@@ -4532,7 +4622,7 @@
   {
    "name": "play_players_2023: row count",
    "ok": true,
-   "detail": "250,638 rows (last accepted 250,638)"
+   "detail": "250,720 rows (last accepted 250,638)"
   },
   {
    "name": "play_players_2023: one row per play_id + role",
@@ -4557,7 +4647,17 @@
   {
    "name": "play_players_2023: passers and rushers matched to rosters",
    "ok": true,
-   "detail": "98.7% (want >= 95%)"
+   "detail": "99.5% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2023: completions name a receiver",
+   "ok": true,
+   "detail": "99.9% (want >= 95%); incompletions 38.0% (source text often omits him)"
+  },
+  {
+   "name": "play_players_2023: each FBS team's passers, rushers, receivers matched",
+   "ok": true,
+   "detail": "Mississippi State rusher 66%"
   },
   {
    "name": "play_players_2024: columns and types",
@@ -4567,7 +4667,7 @@
   {
    "name": "play_players_2024: row count",
    "ok": true,
-   "detail": "268,245 rows (last accepted 268,245)"
+   "detail": "269,024 rows (last accepted 268,245)"
   },
   {
    "name": "play_players_2024: one row per play_id + role",
@@ -4592,7 +4692,17 @@
   {
    "name": "play_players_2024: passers and rushers matched to rosters",
    "ok": true,
-   "detail": "99.2% (want >= 95%)"
+   "detail": "99.8% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2024: completions name a receiver",
+   "ok": true,
+   "detail": "99.9% (want >= 95%); incompletions 20.9% (source text often omits him)"
+  },
+  {
+   "name": "play_players_2024: each FBS team's passers, rushers, receivers matched",
+   "ok": true,
+   "detail": "every FBS team >= 80%"
   },
   {
    "name": "play_players_2025: columns and types",
@@ -4602,7 +4712,7 @@
   {
    "name": "play_players_2025: row count",
    "ok": true,
-   "detail": "288,655 rows (last accepted 288,655)"
+   "detail": "313,892 rows (last accepted 288,655)"
   },
   {
    "name": "play_players_2025: one row per play_id + role",
@@ -4627,7 +4737,17 @@
   {
    "name": "play_players_2025: passers and rushers matched to rosters",
    "ok": true,
-   "detail": "99.3% (want >= 95%)"
+   "detail": "99.8% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2025: completions name a receiver",
+   "ok": true,
+   "detail": "99.9% (want >= 95%); incompletions 93.0% (source text often omits him)"
+  },
+  {
+   "name": "play_players_2025: each FBS team's passers, rushers, receivers matched",
+   "ok": true,
+   "detail": "every FBS team >= 80%"
   },
   {
    "name": "play_players_2026: columns and types",
@@ -4637,7 +4757,7 @@
   {
    "name": "play_players_2026: row count",
    "ok": true,
-   "detail": "222,290 rows (last accepted 203,370)"
+   "detail": "273,114 rows (last accepted 222,290)"
   },
   {
    "name": "play_players_2026: one row per play_id + role",
@@ -4662,7 +4782,17 @@
   {
    "name": "play_players_2026: passers and rushers matched to rosters",
    "ok": true,
-   "detail": "99.4% (want >= 95%)"
+   "detail": "99.9% (want >= 95%)"
+  },
+  {
+   "name": "play_players_2026: completions name a receiver",
+   "ok": true,
+   "detail": "99.9% (want >= 95%); incompletions 94.8% (source text often omits him)"
+  },
+  {
+   "name": "play_players_2026: each FBS team's passers, rushers, receivers matched",
+   "ok": true,
+   "detail": "every FBS team >= 80%"
   },
   {
    "name": "portal_2021: columns and types",

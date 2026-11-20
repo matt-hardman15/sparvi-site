@@ -3,13 +3,13 @@
  "ok": true,
  "n_checks": 19,
  "n_failed": 0,
- "n_not_run": 1,
+ "n_not_run": 0,
  "checks": [
   {
    "tool": "Team ratings",
    "name": "blend weights are published and positive",
    "ok": true,
-   "detail": "19.74 points per 1.00 net EPA/play, 0.0290 per Elo point"
+   "detail": "19.77 points per 1.00 net EPA/play, 0.0290 per Elo point"
   },
   {
    "tool": "Team ratings",
@@ -21,19 +21,19 @@
    "tool": "Team ratings",
    "name": "blend weights printed on the page are the fitted ones",
    "ok": true,
-   "detail": "pm_net: \"19.7\", pm_elo: \"0.0290\""
+   "detail": "pm_net: \"19.8\", pm_elo: \"0.0290\""
   },
   {
    "tool": "Team ratings",
    "name": "power ranks follow the power rating (ranked on the unrounded value; ties share a rank)",
    "ok": true,
-   "detail": "26,517 team-weeks in 207 weeks"
+   "detail": "26,655 team-weeks in 208 weeks"
   },
   {
    "tool": "Team ratings",
    "name": "power rating is centered on the average FBS team every week",
    "ok": true,
-   "detail": "207 weeks within 0.1 points of zero"
+   "detail": "208 weeks within 0.1 points of zero"
   },
   {
    "tool": "Team ratings",
@@ -51,7 +51,7 @@
    "tool": "Team ratings",
    "name": "neither part of the blend is negligible",
    "ok": true,
-   "detail": "smaller part's spread is at least 25% of the rating's (lowest: 2014; expected 5% or more)"
+   "detail": "smaller part's spread is at least 26% of the rating's (lowest: 2014; expected 5% or more)"
   },
   {
    "tool": "Team ratings",
@@ -69,13 +69,13 @@
    "tool": "Team ratings",
    "name": "AP-vs-power gaps use the published power ranks",
    "ok": true,
-   "detail": "25 ranked teams, week 11"
+   "detail": "25 ranked teams, week 12"
   },
   {
    "tool": "Team pages and game logs",
    "name": "every FBS-vs-FBS game is in both teams' logs with the same score",
    "ok": true,
-   "detail": "19,338 team-games"
+   "detail": "19,352 team-games"
   },
   {
    "tool": "Team pages and game logs",
@@ -87,19 +87,19 @@
    "tool": "Play-by-play integrity",
    "name": "every score-gap game has a documented decision",
    "ok": true,
-   "detail": "58 games: 53 keep, 5 pending (5 swapped games are repaired at the next build)"
+   "detail": "61 games: 53 keep, 1 keep_no_score, 7 repair_scores"
   },
   {
    "tool": "Play-by-play integrity",
    "name": "no game with home and away exchanged is used as it came",
    "ok": true,
-   "detail": "5 swapped games; the repair is in the pipeline and takes effect at the next build (the ratings shown still use them as they came)"
+   "detail": "8 swapped games, each repaired or its running score ignored"
   },
   {
    "tool": "Play-by-play integrity",
    "name": "no team's offense or defense is credited in a game it didn't play",
-   "ok": null,
-   "detail": "not run here: needs data/raw/cfb"
+   "ok": true,
+   "detail": "1,508,736 plays, each between its game's two teams"
   },
   {
    "tool": "Portal board",

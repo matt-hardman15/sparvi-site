@@ -16,7 +16,21 @@
   "cfb_pbp_swap_evidence_points": 7,
   "cfb_pbp_exclude_gap": 1000
  },
- "built": false,
+ "built": true,
+ "games_checked": 11080,
+ "by_class": {
+  "match": 10763,
+  "over": 207,
+  "swapped": 8,
+  "under": 102
+ },
+ "by_decision": {
+  "keep": 309,
+  "keep_no_score": 1,
+  "repair_scores": 7
+ },
+ "plays": 1508736,
+ "plays_in_repaired_games": 881,
  "games": [
   {
    "season": 2015,
@@ -111,8 +125,8 @@
    "pbp": "38-21",
    "class": "swapped",
    "gap": 17,
-   "decision": "pending",
-   "what": "repair at the next build: teams or score fields, whichever the game's scoring plays show is exchanged"
+   "decision": "repair_scores",
+   "what": "repaired: the two score fields exchanged (the scoring plays fit the official result as labeled)"
   },
   {
    "season": 2020,
@@ -123,8 +137,8 @@
    "pbp": "24-35",
    "class": "swapped",
    "gap": 11,
-   "decision": "pending",
-   "what": "repair at the next build: teams or score fields, whichever the game's scoring plays show is exchanged"
+   "decision": "repair_scores",
+   "what": "repaired: the two score fields exchanged (the scoring plays fit the official result as labeled)"
   },
   {
    "season": 2020,
@@ -260,6 +274,18 @@
   },
   {
    "season": 2021,
+   "id": 401301056,
+   "home": "Army",
+   "away": "Navy",
+   "result": "13-17",
+   "pbp": "17-13",
+   "class": "swapped",
+   "gap": 4,
+   "decision": "repair_scores",
+   "what": "repaired: the two score fields exchanged (the scoring plays fit the official result as labeled)"
+  },
+  {
+   "season": 2021,
    "id": 401309570,
    "home": "Northern Illinois",
    "away": "Bowling Green",
@@ -329,6 +355,18 @@
    "gap": 25,
    "decision": "keep",
    "what": "kept: teams, yards and EPA don't depend on the score fields; a running score above a team's official final is ignored for garbage time"
+  },
+  {
+   "season": 2022,
+   "id": 401403867,
+   "home": "Florida State",
+   "away": "LSU",
+   "result": "24-23",
+   "pbp": "23-24",
+   "class": "swapped",
+   "gap": 1,
+   "decision": "keep_no_score",
+   "what": "kept as labeled, running score ignored (the scoring plays can't tell which field is exchanged)"
   },
   {
    "season": 2022,
@@ -483,8 +521,8 @@
    "pbp": "17-31",
    "class": "swapped",
    "gap": 14,
-   "decision": "pending",
-   "what": "repair at the next build: teams or score fields, whichever the game's scoring plays show is exchanged"
+   "decision": "repair_scores",
+   "what": "repaired: the two score fields exchanged (the scoring plays fit the official result as labeled)"
   },
   {
    "season": 2023,
@@ -567,8 +605,8 @@
    "pbp": "59-10",
    "class": "swapped",
    "gap": 49,
-   "decision": "pending",
-   "what": "repair at the next build: teams or score fields, whichever the game's scoring plays show is exchanged"
+   "decision": "repair_scores",
+   "what": "repaired: the two score fields exchanged (the scoring plays fit the official result as labeled)"
   },
   {
    "season": 2023,
@@ -651,8 +689,20 @@
    "pbp": "15-44",
    "class": "swapped",
    "gap": 29,
-   "decision": "pending",
-   "what": "repair at the next build: teams or score fields, whichever the game's scoring plays show is exchanged"
+   "decision": "repair_scores",
+   "what": "repaired: the two score fields exchanged (the scoring plays fit the official result as labeled)"
+  },
+  {
+   "season": 2024,
+   "id": 401677093,
+   "home": "USC",
+   "away": "Texas A&M",
+   "result": "35-31",
+   "pbp": "31-35",
+   "class": "swapped",
+   "gap": 4,
+   "decision": "repair_scores",
+   "what": "repaired: the two score fields exchanged (the scoring plays fit the official result as labeled)"
   },
   {
    "season": 2025,
