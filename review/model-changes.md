@@ -2,6 +2,40 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-20 · CFB power rating 1.1.0 → 1.1.1 (patch: week-end Elo skips games against unrated opponents; CFB-AUDIT-NEXT)
+**Why.** Checking the first rebuild after AUDIT-CFB, the largest change against the published ratings was Jacksonville
+State in 2023 week 1: Elo 1499 → 1300, 5.6 points of power. The new game order is right (the later of its two week-1
+games); the value it lands on is not. In the source's games table, a game against a team with no Elo (an FCS opponent)
+leaves the rated team's Elo unchanged (pre-game equals post-game in all 605 such games, 2022-2026), and from 2022 on
+that value is not the one the team carries: the next rated game starts from the previous rated game's post-game value
+(219 of 219 season openers agree with the next game; of the 386 with a rated game before them, 362 differ from it, by
+10 points at the median, more than 25 in 87 and up to 342). `elo_by_week` took a team's Elo from its latest game, so a
+week in which that game was against an FCS opponent published the off-chain value. This was true before AUDIT-CFB as
+well; the stable order only changed which weeks showed it.
+
+**What changed.** `cfb/adjusted_ratings/adjusted.py` `elo_by_week`: games against an opponent with no Elo are skipped,
+so such a week keeps the rating from the team's latest rated game (before its first rated game: that game's pre-game
+value). A team with no rated game at all keeps the old rule. The fit, the blend and the backtest are untouched: the
+backtest reads each game's own pre-game Elo and scores FBS games only.
+
+**Effect** (local raw data pulled Nov 13; ratings rebuilt with 1.1.0 for the comparison). 393 of 26,517 team-weeks get a
+different Elo, about 80 a season from 2022 (none earlier): 0.3 points of power at the median, 9.9 at most (Duke, 2023
+week 2: Elo 1250 → 1592). In 2026, 76 team-weeks, the largest LSU in week 5 (1736 → 1868, 3.8 points). The latest
+published week moves for one team (Wake Forest, 0.2 points). Late November is when most FBS teams with an FCS game
+left play it, so without this the current week's ratings would carry these values after the next refresh.
+
+**Also found, not changed here.** (1) The local rebuild of 1.1.0 reproduces the audit's backtest (power 12.547, Elo
+12.682, power minus Elo −0.135) but not its count of changed team-weeks against main (2023: largest change 5.6 points
+here, 3.6 in the pull request's job). The raw data differs (this machine's pull is two days older than CI's cache), so
+this is not evidence that the order still depends on the machine; compare again after the first refresh on main.
+(2) Three player-level modules (`cfb/proj/pit.py`, `cfb/profile/events.py`, `cfb/fit/systems.py`) decide garbage time
+from the raw score fields. Exchanged score fields don't matter there (they use the absolute margin), but running
+scores above a team's final do: 1,107 plays in 57 games (0.06% of plays, 150 to 240 a season from 2021) are dropped as
+garbage time that the integrity rule would keep. Left for after VAULT-1: those models' Phase 2 pre-registration is
+locked. (3) The 1.1.0 record carries 1.0.0's metrics, and so does this one: the committed outputs are still the last
+refresh's (Nov 15), and this machine's raw data is older than that, so nothing rebuilt here is committed. The first
+refresh on main writes the outputs these versions describe.
+
 ## 2026-11-20 · NFL opponent adjustment 1.0.1 → 2.0.0 (major: the schedule correction gets its own penalty, NFL-SCHED)
 **Why.** The "opponent-adjusted" numbers barely differed from raw: across the 32 teams in 2026 (week 10) the largest
 |adjusted − raw| was 0.008 EPA/play on offense (sd 0.002) and 0.011 on defense (sd 0.003), against a spread between
