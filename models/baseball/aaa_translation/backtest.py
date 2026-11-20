@@ -10,7 +10,8 @@ there.
 Fold (MLB outcome season t). Pairs, as the published model defines them: a player's Triple-A line in season t-1 and his
 MLB line in season t ("across"), and his Triple-A line before his first MLB game of season t and his MLB line that
 season ("within"). Fit on pairs with outcome seasons before t; predict the pairs of season t with 50-149 PA/BF in
-Triple-A; score against MLB lines with 100+ PA/BF. One row per player x pair type x metric, in units of that
+Triple-A; score against MLB lines with 100+ PA/BF. Each metric's own sample is taken as PA or BF times its Triple-A-wide
+count per PA (amended Nov 20 2026: the site's files carry PA and BF only; see the card and small_sample.py). One row per player x pair type x metric, in units of that
 metric's MLB spread (its SD in the training pairs), so one RMSE covers every metric. Baseline on the same rows: the
 published line stretched down to these players.
 
@@ -30,7 +31,8 @@ import pandas as pd
 from sparvi.config import ROOT
 
 sys.path.insert(0, str(ROOT / "baseball" / "aaa_translation"))
-from develop import COLS, METRICS, MIN_AAA, MIN_AAA_WIDE, MIN_MLB, _wls, lines_from, pairs, reliability, shrink  # noqa: E402
+import small_sample  # noqa: E402
+from develop import COLS, METRICS, MIN_AAA, MIN_AAA_WIDE, MIN_MLB, _wls, lines_from, pairs  # noqa: E402
 
 DEBUT_COLS = ["game_pk", "game_date", "game_year", "game_type", "pitcher", "batter", "at_bat_number", "pitch_number",
               "description"]                      # all predict() may read from the outcome season's MLB pitches
@@ -65,28 +67,22 @@ def _train_lines(loader, fold) -> pd.DataFrame:
 
 
 def _fit(lines: pd.DataFrame, before: int, permute_seed: int | None = None) -> dict:
-    """{side: {metric: published line, candidate line, reliability, MLB spread and mean}} from pairs with outcome
-    seasons before `before`."""
+    """{side: {metric: the published line, the candidate's constants, MLB spread and mean}} from pairs with outcome
+    seasons before `before`. The candidate is fit by the code the site's constants come from (small_sample.fit)."""
+    cand = small_sample.fit(lines, before, permute_seed)
     out = {}
-    rng = np.random.default_rng(permute_seed) if permute_seed is not None else None
     for side, ms in METRICS.items():
         P = pairs(lines, side, NO_AGES)
         P = P[P["outcome_season"] < before]
-        rel = reliability(lines, side, before)
         out[side] = {}
-        for m, ncol in ms.items():
-            a, y, n = f"{m}_aaa", f"{m}_mlb", f"{ncol}_aaa"
-            scale = float(P[y].std())
-            tr = P.dropna(subset=[a, y]).copy()
-            if rng is not None:   # label-permutation leakage test: MLB outcomes shuffled across the training pairs
-                tr[y] = rng.permutation(tr[y].to_numpy())
-            pub = tr[tr["pa_aaa"].ge(MIN_AAA)]
+        for m in ms:
+            a, y = f"{m}_aaa", f"{m}_mlb"
+            pub = P.dropna(subset=[a, y])
+            pub = pub[pub["pa_aaa"].ge(MIN_AAA)]
             b_pub = _wls(np.column_stack([np.ones(len(pub)), pub[a]]), pub[y].to_numpy(float),
                          np.minimum(pub["pa_aaa"], pub["pa_mlb"]).to_numpy(float))
-            xs, _ = shrink(tr[a].to_numpy(float), tr[n].to_numpy(float), rel[m])
-            b = _wls(np.column_stack([np.ones(len(tr)), xs]), tr[y].to_numpy(float), tr["pa_mlb"].to_numpy(float))
-            out[side][m] = {"published": b_pub, "candidate": b, "rel": rel[m], "scale": scale, "mean": float(tr[y].mean()),
-                            "n_train": int(len(tr))}
+            c = cand[side][m]
+            out[side][m] = {"published": b_pub, "candidate": c, "scale": c["mlb_sd"], "mean": c["mlb_mean"], "n_train": c["pairs"]}
     return out
 
 
@@ -116,16 +112,16 @@ def predict(fitted, loader, fold) -> pd.DataFrame:
     rows = []
     for side, ms in METRICS.items():
         c = C[C["side"].eq(side)]
-        for m, ncol in ms.items():
+        for m in ms:
             f = fitted[side][m]
             d = c.dropna(subset=[m])
-            x, n = d[m].to_numpy(float), d[ncol].to_numpy(float)
-            xs, _ = shrink(x, n, f["rel"])
+            x = d[m].to_numpy(float)
+            point, _ = small_sample.apply(f["candidate"], x, d["pa"].to_numpy(float))
             ids = side + "|" + d["cohort"] + "|" + d["player_id"].astype(str)
             rows.append(pd.DataFrame({
                 "entity_id": ids + "|" + m, "player": side + "|" + d["player_id"].astype(str), "side": side,
                 "cohort": d["cohort"].to_numpy(), "metric": m, "pa_aaa": d["pa"].to_numpy(),
-                "point": (f["candidate"][0] + f["candidate"][1] * xs) / f["scale"],
+                "point": point / f["scale"],
                 "published_line": (f["published"][0] + f["published"][1] * x) / f["scale"],
                 "train_mean": f["mean"] / f["scale"]}))
     return pd.concat(rows, ignore_index=True)

@@ -446,8 +446,17 @@ def rounded(o, d: int = 4):
 
 
 write_json(OUT / "translation_results.json", rounded(strip(TR), 6))  # 6: tables re-round to match the prose
-write_json(OUT / "translation_fits.json", rounded({"min_aaa": TR["min_aaa"], "band_pct": TR["band_pct"],
-                                                   **{s: TR[s]["fits"] for s in ("hitter", "pitcher")}}, 5))
+# The small-sample line (M5-EB, 2.0.0): constants fitted by hand in aaa_translation/small_sample.py (the refresh has no
+# history seasons) and applied by the pages to lines with 50-149 PA/BF. Only what the formula needs is published.
+SMALL = read_json(HERE / "aaa_translation" / "small_sample.json")
+SMALL_KEYS = ("mean", "k", "talent", "intercept", "slope", "base")
+if not (SMALL["max_pa"] + 1 == TR["min_aaa"] and SMALL["min_pa"] < SMALL["max_pa"]):
+    raise ValueError("small_sample.json: the small-sample line must stop where the published line starts")
+small = {"min_pa": SMALL["min_pa"], "max_pa": SMALL["max_pa"], "z80": SMALL["z80"],
+         **{s: {m: {k: c[k] for k in SMALL_KEYS} for m, c in SMALL[s].items()} for s in ("hitter", "pitcher")}}
+write_json(OUT / "translation_fits.json", {**rounded({"min_aaa": TR["min_aaa"], "band_pct": TR["band_pct"],
+                                                      **{s: TR[s]["fits"] for s in ("hitter", "pitcher")}}, 5),
+                                           "small": rounded(small, 8)})
 trp = pd.read_csv(TR_DIR / "pairs.csv")  # sorted by aaa_translation/analysis.py
 trp = trp.rename(columns={"player_id": "id"})
 trp["name"] = trp["name"].fillna(trp["id"].astype(str))
@@ -761,6 +770,25 @@ N |= {"tr_min_aaa": TR["min_aaa"], "tr_min_mlb": TR["min_mlb"], "tr_boot": f"{TR
 for side, C in (("h", TH), ("p", TP)):
     for co in ("pooled", "across", "within"):
         N[f"tr_{side}_n_{co}"] = f"{C[co]['n']:,}"
+
+
+# The small-sample line (50-149 PA/BF): what the method note says about it, from the committed constants.
+def _half(c: dict, pa: float) -> float:
+    r = pa / (pa + c["k"])
+    return SMALL["z80"] * (c["base"] + c["slope"] ** 2 * c["talent"] * (1 - r)) ** 0.5
+
+
+SH_K, SH_X, SH_C = SMALL["hitter"]["k_pct"], SMALL["hitter"]["xwoba"], SMALL["hitter"]["chase_pct"]
+N |= {"tr_small_min": SMALL["min_pa"], "tr_small_max": SMALL["max_pa"],
+      "tr_small_first_season": min(SMALL["seasons"]["aaa"]), "tr_small_through": SMALL["fitted_through"],
+      "tr_small_h_pairs": f"{SH_K['pairs']:,}", "tr_small_p_pairs": f"{SMALL['pitcher']['k_pct']['pairs']:,}",
+      "tr_small_h_under": f"{SH_K['pairs_under_150']:,}", "tr_small_p_under": f"{SMALL['pitcher']['k_pct']['pairs_under_150']:,}",
+      "tr_small_k_chase": f"{SH_C['k']:.0f}", "tr_small_k_xwoba": f"{SH_X['k']:.0f}",
+      "tr_small_band_k_lo": f"{100 * _half(SH_K, SMALL['min_pa']):.1f}", "tr_small_band_k_hi": f"{100 * _half(SH_K, SMALL['max_pa']):.1f}"}
+if not SH_C["k"] < SH_X["k"]:
+    raise StaleProse("Translation method note: chase rate settles in fewer plate appearances than xwOBA.")
+if not _half(SH_K, SMALL["min_pa"]) > _half(SH_K, SMALL["max_pa"]):
+    raise StaleProse("Translation method note: the small-sample range is wider at 50 PA than at 149.")
     N[f"tr_{side}_players"] = f"{C['pooled']['players']:,}"
     for m, v in C["pooled"]["metrics"].items():
         N[f"tr_{side}_r_{m}"] = r2(v["carryover_r"])

@@ -287,6 +287,33 @@ def _gate_candidates(long: pd.DataFrame, rng) -> dict:
     return out
 
 
+def _design_checks(long: pd.DataFrame) -> dict:
+    """Two choices made for the site's version of the small-sample line (stage 3), on the development folds. Scaled RMSE
+    as in _gate_candidates. `approx` is eb_wide with each metric's sample taken as PA/BF times its Triple-A-wide count
+    per PA (the site's files carry PA and BF only); `switch` uses eb_wide under 150 and the published line from 150;
+    `blend` moves linearly from one to the other between 100 and 200."""
+    d = long.copy()
+    d["switch"] = np.where(d["pa_aaa"] < MIN_AAA, d["eb_wide"], d["raw"])
+    w = np.clip((d["pa_aaa"] - 100) / 100, 0, 1)
+    d["blend"] = (1 - w) * d["eb_wide"] + w * d["raw"]
+
+    def rmse(q, c):
+        return float(np.sqrt((((q[c] - q["y"]) / q["scale"]) ** 2).mean()))
+    out = {}
+    for scope, sel in [("pooled", slice(None))] + [(str(int(t)), d["fold"].eq(t)) for t in sorted(d["fold"].unique())]:
+        q = d[sel]
+        small = q[q["pa_aaa"] < MIN_AAA]
+        gap = ((small["eb_wide"] - small["approx"]).abs() / small["scale"])
+        near = q[q["pa_aaa"].between(MIN_AAA - 10, MIN_AAA + 10)]
+        out[scope] = {
+            "counts_from_pa_50_149": {"players": int(small["player_id"].nunique()), "published": rmse(small, "raw"),
+                                      "exact_counts": rmse(small, "eb_wide"), "from_pa": rmse(small, "approx"),
+                                      "mean_abs_difference_sd": float(gap.mean()), "max_abs_difference_sd": float(gap.max())},
+            "seam_all_50_plus": {"players": int(q["player_id"].nunique()), "switch": rmse(q, "switch"), "blend_100_200": rmse(q, "blend"),
+                                 "step_at_150_sd": float(((near["eb_wide"] - near["raw"]).abs() / near["scale"]).mean())}}
+    return out
+
+
 def _coverage(p: pd.DataFrame) -> dict:
     out = {}
     for name, sub in (("all", p), ("50-149", p[p["pa_aaa"] < MIN_AAA]), ("150-299", p[p["pa_aaa"].between(MIN_AAA, 299)]),
@@ -367,6 +394,14 @@ def main() -> None:
                  "combined": combined(tr, te, side, rel)}
             for m, ncol in METRICS[side].items():
                 p = predict_metric(tr, te, m, ncol, rel[m]).assign(fold=t, metric=m, scale=float(tr[f"{m}_mlb"].std()))
+                if ncol == "pa":
+                    p["approx"] = p["eb_wide"]
+                else:   # the same fit with the metric's sample estimated from PA/BF (stage 3 design check)
+                    A = lines[lines["side"].eq(side) & lines["level"].eq("AAA") & lines["segment"].eq("full")
+                              & lines["season"].lt(t) & lines["pa"].ge(MIN_AAA_WIDE)]
+                    per_pa = float(A[ncol].sum() / A["pa"].sum())
+                    p["approx"] = predict_metric(tr.assign(**{f"{ncol}_aaa": tr["pa_aaa"] * per_pa}),
+                                                 te.assign(**{f"{ncol}_aaa": te["pa_aaa"] * per_pa}), m, ncol, rel[m])["eb_wide"].to_numpy()
                 preds[m].append(p)
                 F["metrics"][m] = {"published_pool": _rmse_edges(p[p["pa_aaa"] >= MIN_AAA], rng),
                                    "small_sample_pool": _rmse_edges(p[p["pa_aaa"] < MIN_AAA], rng), "bands": _coverage(p)}
@@ -375,8 +410,9 @@ def main() -> None:
             p = pd.concat(preds[m], ignore_index=True)
             R["pooled"][m] = {"published_pool": _rmse_edges(p[p["pa_aaa"] >= MIN_AAA], rng),
                               "small_sample_pool": _rmse_edges(p[p["pa_aaa"] < MIN_AAA], rng), "bands": _coverage(p)}
-        R["gate_candidates"] = _gate_candidates(pd.concat([p for ps in preds.values() for p in ps], ignore_index=True),
-                                                np.random.default_rng(SEED + 1))
+        long = pd.concat([p for ps in preds.values() for p in ps], ignore_index=True)
+        R["gate_candidates"] = _gate_candidates(long, np.random.default_rng(SEED + 1))
+        R["design_checks"] = _design_checks(long)
         res[side] = R
         print(f"\n== {side}: folds {folds}, pairs {R['pairs_by_outcome_season']}")
         for m, v in R["pooled"].items():
@@ -391,6 +427,10 @@ def main() -> None:
         for scope, pools in R["gate_candidates"].items():
             print(f"  gate candidates ({scope}): " + "; ".join(
                 f"{k} n {g['players']}: {g['gain_pct']:+.1f}% [{g['ci90'][0]:+.4f},{g['ci90'][1]:+.4f}]" for k, g in pools.items()))
+        dc = R["design_checks"]["pooled"]
+        print(f"  design checks (pooled): 50-149 exact counts {dc['counts_from_pa_50_149']['exact_counts']:.4f}, from PA/BF "
+              f"{dc['counts_from_pa_50_149']['from_pa']:.4f}; all 50+ switch {dc['seam_all_50_plus']['switch']:.4f}, blend "
+              f"{dc['seam_all_50_plus']['blend_100_200']:.4f}; step at 150 {dc['seam_all_50_plus']['step_at_150_sd']:.2f} SD")
         for t, F in R["folds"].items():
             c = F["combined"]
             print(f"  MLB xwOBA, outcome {t} (n {c['n']}, fit on {c['n_train']}): all metrics rmse {c['rmse_all_metrics']:.4f} "

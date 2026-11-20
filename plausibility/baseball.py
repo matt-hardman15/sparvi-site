@@ -356,6 +356,26 @@ def translation(suite: Suite) -> None:
             if not (0 <= v["slope"] <= 1.5 and v["band"][0] < 0 < v["band"][1]):
                 bad.append(f"{side} {k}: slope {v['slope']}, band {v['band']}")
     suite.check(TR, "Every translation line has a slope between 0 and 1.5 and a band around it", not bad, bad[0] if bad else f"{n} lines")
+    # The small-sample line (50-149 PA/BF, aaa_translation 2.0.0): it must start where the main line's minimum leaves off,
+    # shrink more at 50 than at 149, widen its range as the sample shrinks, and send an average Triple-A line to a
+    # believable MLB one (within the range the main line gives for the same value).
+    sm = fits.get("small")
+    if suite.check(TR, "The small-sample translation covers the plate appearances just under the main line's minimum",
+                   bool(sm) and sm["max_pa"] + 1 == fits["min_aaa"] and 25 <= sm["min_pa"] < sm["max_pa"],
+                   f"{sm['min_pa']} to {sm['max_pa']}, main line from {fits['min_aaa']}" if sm else "no small-sample constants"):
+        bad, n = [], 0
+        for side in ("hitter", "pitcher"):
+            for k, c in sm[side].items():
+                n += 1
+                half = [sm["z80"] * math.sqrt(c["base"] + c["slope"] ** 2 * c["talent"] * (1 - pa / (pa + c["k"]))) for pa in (sm["min_pa"], sm["max_pa"])]
+                at_mean = c["intercept"] + c["slope"] * c["mean"]
+                main = fits[side].get(k)
+                ok = (0 < c["slope"] <= 1.5 and 5 <= c["k"] <= 1000 and c["talent"] > 0 and c["base"] >= 0 and half[0] > half[1] > 0
+                      and (main is None or main["band"][0] <= at_mean - (main["intercept"] + main["slope"] * c["mean"]) <= main["band"][1]))
+                if not ok:
+                    bad.append(f"{side} {k}: slope {c['slope']}, k {c['k']}, half-widths {half}, average line -> {at_mean}")
+        suite.check(TR, "Every small-sample line has a positive slope, a believable reliability, a range that widens as the "
+                        "sample shrinks, and agrees with the main line for an average player", not bad, bad[0] if bad else f"{n} lines")
     # A league-average Triple-A pitcher on the MLB scale translates to a below-average big leaguer, not an average one.
     g = suite.load(f"{DATA}/snapshots_grades_aaa.json")
     rows = snap_rows(g, "std", len(g["dates"]) - 1, "pitches")

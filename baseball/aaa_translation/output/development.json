@@ -23,7 +23,23 @@
     "eb_wide",
     "eb_age"
   ],
-  "check_against_mart": null,
+  "check_against_mart": {
+    "lines": 4361,
+    "max_abs_diff": {
+      "pa": 0.0,
+      "bb_pct": 0.0,
+      "chase_pct": 0.0,
+      "csw_pct": 0.0,
+      "ev90": 0.0,
+      "hard_hit_pct": 0.0,
+      "k_pct": 0.0,
+      "whiff_pct": 0.0,
+      "woba": 5.551115123125783e-17,
+      "xwoba": 1.1102230246251565e-16,
+      "zone_contact_pct": 0.0,
+      "zone_swing_pct": 0.0
+    }
+  },
   "hitter": {
     "pairs_by_outcome_season": {
       "2023": {
@@ -4314,6 +4330,56 @@
           ]
         }
       }
+    },
+    "design_checks": {
+      "pooled": {
+        "counts_from_pa_50_149": {
+          "players": 144,
+          "published": 0.9350064125177331,
+          "exact_counts": 0.8629496139619788,
+          "from_pa": 0.8629361799832764,
+          "mean_abs_difference_sd": 0.008734440707768075,
+          "max_abs_difference_sd": 0.2282892843276747
+        },
+        "seam_all_50_plus": {
+          "players": 280,
+          "switch": 0.8336707003861525,
+          "blend_100_200": 0.8337898683122423,
+          "step_at_150_sd": 0.14998833481833532
+        }
+      },
+      "2024": {
+        "counts_from_pa_50_149": {
+          "players": 86,
+          "published": 0.9453714644640608,
+          "exact_counts": 0.8393535815434716,
+          "from_pa": 0.8387341566023848,
+          "mean_abs_difference_sd": 0.008959930264212402,
+          "max_abs_difference_sd": 0.2282892843276747
+        },
+        "seam_all_50_plus": {
+          "players": 170,
+          "switch": 0.8208037620966397,
+          "blend_100_200": 0.8209367788731978,
+          "step_at_150_sd": 0.16875203513543177
+        }
+      },
+      "2025": {
+        "counts_from_pa_50_149": {
+          "players": 79,
+          "published": 0.9232543303317918,
+          "exact_counts": 0.8886445339229081,
+          "from_pa": 0.889271964854045,
+          "mean_abs_difference_sd": 0.008481783734884672,
+          "max_abs_difference_sd": 0.15630281219139538
+        },
+        "seam_all_50_plus": {
+          "players": 185,
+          "switch": 0.8459453963426091,
+          "blend_100_200": 0.8460515767125321,
+          "step_at_150_sd": 0.12610726168748526
+        }
+      }
     }
   },
   "pitcher": {
@@ -6956,6 +7022,56 @@
             0.010608378314313344,
             0.03940955382584764
           ]
+        }
+      }
+    },
+    "design_checks": {
+      "pooled": {
+        "counts_from_pa_50_149": {
+          "players": 240,
+          "published": 1.018062321575385,
+          "exact_counts": 0.9595561434707293,
+          "from_pa": 0.9598285194709877,
+          "mean_abs_difference_sd": 0.006389849410986403,
+          "max_abs_difference_sd": 0.2150171240366386
+        },
+        "seam_all_50_plus": {
+          "players": 392,
+          "switch": 0.9506751390180044,
+          "blend_100_200": 0.9498767730191409,
+          "step_at_150_sd": 0.17021979377278965
+        }
+      },
+      "2024": {
+        "counts_from_pa_50_149": {
+          "players": 143,
+          "published": 1.1384271221105642,
+          "exact_counts": 1.0561997526464106,
+          "from_pa": 1.0563481275398772,
+          "mean_abs_difference_sd": 0.006539329742616291,
+          "max_abs_difference_sd": 0.13523010670352056
+        },
+        "seam_all_50_plus": {
+          "players": 239,
+          "switch": 1.053952422390689,
+          "blend_100_200": 1.0520756229395984,
+          "step_at_150_sd": 0.27554167884182795
+        }
+      },
+      "2025": {
+        "counts_from_pa_50_149": {
+          "players": 121,
+          "published": 0.8604382831666906,
+          "exact_counts": 0.8357753132893001,
+          "from_pa": 0.836230815790549,
+          "mean_abs_difference_sd": 0.006219331106756754,
+          "max_abs_difference_sd": 0.2150171240366386
+        },
+        "seam_all_50_plus": {
+          "players": 227,
+          "switch": 0.8342807090216294,
+          "blend_100_200": 0.83483577213281,
+          "step_at_150_sd": 0.06489790870375124
         }
       }
     }

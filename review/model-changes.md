@@ -2,6 +2,44 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-20 · Triple-A → MLB translation 1.0.0 → 2.0.0 (major: a line for 50-149 PA/BF; M5-EB)
+**Why.** The translation covered players with 150+ PA or batters faced in Triple-A; the tools showed nothing below
+that, which is where most mid-season call-ups are. Stretching the published line down to them treats 60 plate
+appearances like 500.
+
+**What changed.** A second line for 50-149 (`baseball/aaa_translation/small_sample.py`): each Triple-A rate is shrunk
+toward the Triple-A mean by its reliability, pa / (pa + k), and put through a line fit on every pair down to 50,
+weighted by the MLB sample; its 80% range widens as the sample shrinks. Rate metrics only (hitters: chase, zone
+swing, zone contact, whiff, K%, BB%, hard-hit, EV90, xwOBA, wOBA; pitchers: K%, BB%, CSW, whiff, chase, xwOBA).
+Unchanged: the published line for 150+, and Stuff+, Location+, Pitching+ and RV+, which are not translated below 150.
+The pages apply it (`Sparvi.translate`): the Triple-A explorer's translated view lists lines from 50, and player pages
+translate a selected line from 50 with a "small sample" note.
+
+**How it was chosen and tested.** Development folds that never read 2026 (`development.json`): shrinking helped only
+where the published line doesn't reach (fold 2025: 50-149 hitters +3.7%, pitchers +2.9%; at 150+ −1.0% and +0.2%), age
+added nothing, and the combined xwOBA model was no better than xwOBA's own line. Pre-registered Nov 20 (gate, Matt: on
+2026 pairs with 50-149 PA/BF, scaled RMSE beats the published line stretched down, strict, hitters and pitchers
+each). Two dated amendments are in the card: the label-permutation test runs 20 shuffles (row A5-PERM), and each
+metric's sample is taken as PA or BF times its Triple-A-wide count per PA, because the site's files carry PA and BF
+only (development folds, 50-149: hitters 0.8629 with exact counts and 0.8629 from PA; pitchers 0.9596 and 0.9598).
+Result as amended, local run (CI's is the run of record): scaled RMSE 0.872 against 0.900, edge 0.029 (90% interval
+0.017 to 0.041); hitters 0.034 (low end 0.016), pitchers 0.025 (0.010); all leakage tests pass. The first official
+run, before the second amendment, gave the same pooled numbers to three decimals.
+
+**Decided with it (Matt, Nov 20).** A hard switch to the published line at 150: a blend from 100 to 200 was no more
+accurate on the development folds (everyone with 50+: hitters 0.8338 against 0.8337, pitchers 0.9499 against 0.9507),
+and the switch is what was tested. The two lines differ by about 0.15 MLB SDs for a player at 150, and the method note
+says so. The constants are fitted by hand on every pair on file (735 hitter and 954 pitcher pairs, 2023-2026; 283 and
+525 under 150) and committed in `small_sample.json`, because the refresh has no Triple-A history seasons; the build
+reads the file and never refits. Refit each offseason as a minor version.
+
+**Registry.** Registered as champion directly: the card's frozen evaluation (the combined model's cross-validated R²
+on 150+ pairs) is untouched by the addition. The card's backtest block now says what it covers (`covers`), and pages
+print that beside "validated": the 150+ line predates the harness and its port is still A5-port.
+
+**Reported on 2026, not gated** (`test_report.json`, exact counts): at 150+ the candidate is no better (hitters −0.8%,
+pitchers 0.0%); 80% range coverage at 50-149 is 79% and 78% (the published band stretched down: 73% and 75%).
+
 ## 2026-11-20 · CFB power rating 1.1.0 → 1.1.1 (patch: week-end Elo skips games against unrated opponents; CFB-AUDIT-NEXT)
 **Why.** Checking the first rebuild after AUDIT-CFB, the largest change against the published ratings was Jacksonville
 State in 2023 week 1: Elo 1499 → 1300, 5.6 points of power. The new game order is right (the later of its two week-1
