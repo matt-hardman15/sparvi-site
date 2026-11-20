@@ -17,6 +17,7 @@ Model versions: [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman
   <div class="controls" id="c2" style="min-height:64px"></div>
   <div id="scatter" class="plot-host" style="min-height:360px"></div>
   <p class="caption" id="scap"></p>
+  <p class="caption scale-key" id="scalekey" style="min-height:2.9em"></p>
   <div id="t"><div class="loading" style="min-height:760px">Loading…</div></div>
 </div>
 <div class="explorer">
@@ -47,6 +48,11 @@ Model versions: [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman
   const roleHost = S.el("span", { class: "role-host" });
   const reset = () => { st.min = null; };
   const gk = () => `${st.grade}_plus`, gl = () => GRADES[st.grade];
+  // Scale of every "+" column (S.SCALES): the grades are on the MLB scale at both levels; RV+ is the MLB ruler on
+  // results against the selected level's hitters.
+  const REF = meta.scale_reference.reference_season;
+  const gradeScale = () => st.level === "AAA" ? S.SCALES.mlbAaa(REF) : S.SCALES.mlb(REF);
+  const pitchScale = () => `MLB scale within its pitch group${st.level === "AAA" ? ", also for Triple-A pitches" : ""}: 100 = the average ${REF} MLB pitch of that group (fastballs, breaking balls, or offspeed; ${meta.scale_reference.min_pitch_type}+ thrown), 10 points = 1 standard deviation`;
   let slider;
   const teamsOf = {};
   async function loadTeams(lvl) {
@@ -60,7 +66,7 @@ Model versions: [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman
     c.replaceChildren(...[
       S.el("label", {}, "View", S.seg([["pitchers", "Pitchers"], ["pitches", "Individual pitches"]], st.view, v => { st.view = v; reset(); controls(); draw(); })),
       S.el("label", {}, "Grade", S.seg(Object.entries(GRADES), st.grade, v => { st.grade = v; table.pitchers = table.pitches = null; controls(); draw(); })),
-      S.el("label", {}, "Level", S.seg([["MLB", "MLB"], ["AAA", "Triple-A"]], st.level, async v => { st.level = v; st.team = ""; reset(); await loadTeams(v); controls(); draw(); })),
+      S.el("label", {}, "Level", S.seg([["MLB", "MLB"], ["AAA", "Triple-A"]], st.level, async v => { st.level = v; st.team = ""; reset(); table.pitchers = table.pitches = null; await loadTeams(v); controls(); draw(); })),
       S.select("Team", [["", "All teams"], ...teams.map(t => [t, t])], st.team, v => { st.team = v; draw(); }),
       roleHost,
       st.view === "pitches" ? S.select("Pitch group", [["", "All"], ["fastball", "Fastballs"], ["breaking", "Breaking balls"], ["offspeed", "Offspeed"]], st.group, v => { st.group = v; draw(); }) : null,
@@ -84,12 +90,12 @@ Model versions: [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman
     { key: "role", label: "Role", align: "l", title: "SP starter · RP reliever · Swing, as of the selected date (see glossary)" },
     { key: "throws", label: "T", align: "l" },
     { key: "pitches", label: "Pitches", fmt: f.int },
-    { key: "stuff_plus", label: "Stuff+", heat: "plus", fmt: v => f.num(v, 0), title: "What the ball does: velocity, movement, spin, release" },
-    { key: "loc_plus", label: "Loc+", heat: "plus", fmt: v => f.num(v, 0), title: "Location+: where it crossed the plate, in the count" },
-    { key: "pitching_plus", label: "Pitching+", heat: "plus", fmt: v => f.num(v, 0), title: "Stuff and location together" },
-    { key: "delta", label: `Δ ${gl()}`, fmt: v => f.signed(v, 1), title: `Change in ${gl()} since the date in 'Change since'. Sort to find the movers.` },
-    { key: "rv_plus", label: "RV+", heat: "plus", fmt: v => f.num(v, 0), title: "Actual run value on the same scale" },
-    { key: "gap", label: `RV+ − ${gl()}`, fmt: v => f.signed(v, 0), title: `Positive: results better than the ${gl()} grade` },
+    { key: "stuff_plus", label: "Stuff+", heat: "plus", fmt: v => f.num(v, 0), title: `What the ball does: velocity, movement, spin, release. ${gradeScale()}.` },
+    { key: "loc_plus", label: "Loc+", heat: "plus", fmt: v => f.num(v, 0), title: `Location+: where it crossed the plate, in the count. ${gradeScale()}.` },
+    { key: "pitching_plus", label: "Pitching+", heat: "plus", fmt: v => f.num(v, 0), title: `Stuff and location together, from its own model (not an average of the other two). ${gradeScale()}.` },
+    { key: "delta", label: `Δ ${gl()}`, fmt: v => f.signed(v, 1), title: `Change in ${gl()} since the date in 'Change since', in points of the MLB scale. Sort to find the movers.` },
+    { key: "rv_plus", label: "RV+", heat: "plus", fmt: v => f.num(v, 0), title: `Actual run value per 100 pitches. ${S.SCALES.rv(REF, st.level)}.` },
+    { key: "gap", label: `RV+ − ${gl()}`, fmt: v => f.signed(v, 0), title: `Positive: results better than the ${gl()} grade.` + (st.level === "AAA" ? " For Triple-A this mixes results against Triple-A hitters with a grade on the MLB scale, so the league-wide gap is positive; compare pitchers with each other, not with zero." : "") },
   ];
   const pitchCols = () => [
     { key: "name", label: "Pitcher", align: "l", html: r => S.playerLink(r.id, r.name) },
@@ -100,10 +106,10 @@ Model versions: [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman
     { key: "velo", label: "Velo", fmt: v => f.num(v) },
     { key: "ivb", label: "IVB", fmt: v => f.num(v), title: "Induced vertical break, inches" },
     { key: "hb", label: "HB", fmt: v => f.num(v), title: "Horizontal break, inches, arm side positive" },
-    { key: "stuff_plus", label: "Stuff+", heat: "plus", fmt: v => f.num(v, 0) },
-    { key: "loc_plus", label: "Loc+", heat: "plus", fmt: v => f.num(v, 0), title: "Location+ of this pitch, scaled within its pitch group" },
-    { key: "pitching_plus", label: "Pitching+", heat: "plus", fmt: v => f.num(v, 0) },
-    { key: "delta", label: `Δ ${gl()}`, fmt: v => f.signed(v, 1), title: "Change since the date in 'Change since'" },
+    { key: "stuff_plus", label: "Stuff+", heat: "plus", fmt: v => f.num(v, 0), title: `Stuff+ of this pitch. ${pitchScale()}.` },
+    { key: "loc_plus", label: "Loc+", heat: "plus", fmt: v => f.num(v, 0), title: `Location+ of this pitch. ${pitchScale()}.` },
+    { key: "pitching_plus", label: "Pitching+", heat: "plus", fmt: v => f.num(v, 0), title: `Pitching+ of this pitch. ${pitchScale()}.` },
+    { key: "delta", label: `Δ ${gl()}`, fmt: v => f.signed(v, 1), title: "Change since the date in 'Change since', in points of the MLB scale" },
   ];
   const table = { pitchers: null, pitches: null };
   // PERF-1: the table draws first; the scatter and the season chart wait a task each, so the first paint and
@@ -157,8 +163,9 @@ Model versions: [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman
     const fac = S.prorate(meta, st.level, i, st.window);
     const pf = await pfile(st.level), wf = st.view === "pitchers" ? await pfile(st.level, st.window) : pf;
     const atI = new Map(S.snapRows(pf, "std", i, "pitches").map(r => [r.id, r]));  // role and team as of the date
-    let base;
+    let base, every;   // every: all rows at this date, before filters (for the scale key's league mean)
     if (st.view === "pitchers") {
+      every = S.snapRows(wf, win, i, "pitches");
       const then = new Map(S.snapRows(wf, st.window, j, "pitches").map(r => [r.id, r[g]]));
       base = S.snapRows(wf, win, i, "pitches")
         .map(r => ({ ...r, role: atI.get(r.id)?.role ?? r.role, team: atI.get(r.id)?.team ?? r.team,
@@ -167,6 +174,7 @@ Model versions: [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman
         .filter(d => (!st.team || d.team === st.team) && d[g] != null && S.qualifies(Q, st.level, st.min, d.pitches, d.role, fac));
     } else {
       const ptf = await ptfile(st.level);
+      every = S.snapRows(ptf, null, i, "pitches");
       const then = new Map(S.snapRows(ptf, null, j, "pitches").map(r => [r.id + r.pt, r[g]]));
       base = S.snapRows(ptf, null, i, "pitches")
         .map(r => ({ ...r, role: atI.get(r.id)?.role, team: atI.get(r.id)?.team,
@@ -181,6 +189,17 @@ Model versions: [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman
                                        : (table.pitches ||= S.table(document.getElementById("t"), pitchCols(), { sortKey: g }));
     if (st.view === "pitchers") table.pitches = null; else table.pitchers = null;
     tbl.update(shown);
+    // Scale key: what 100 means for each "+" column at this level, with this level's own pitch-weighted mean on that
+    // scale (every pitcher on the selected date and window, no minimum), so a Triple-A 91 reads as league average.
+    {
+      const lvl = st.level === "AAA" ? "Triple-A" : "MLB";
+      const m = k => { const v = S.leagueMean(every, k); return v == null ? "—" : f.num(v, 0); };
+      document.getElementById("scalekey").textContent = `Scale. Stuff+, Loc+, and Pitching+: MLB scale${st.level === "AAA" ? " (Triple-A pitchers too)" : ""}; 100 is the average qualified MLB pitcher of ${REF}, 10 points one standard deviation`
+        + (st.view === "pitches" ? ", set within each pitch group" : "")
+        + `. On it, ${lvl} as a whole averages ${m("stuff_plus")}, ${m("loc_plus")}, and ${m("pitching_plus")} through this date (pitch-weighted, every ${st.view === "pitchers" ? "pitcher" : "pitch type"}, ${S.WINDOWS[st.view === "pitchers" ? st.window : "std"].toLowerCase()}).`
+        + (st.level === "AAA" ? " Pitching+ comes from its own model, and a shortfall in stuff and one in location add up while the spread they are measured against does not, so its Triple-A average sits below both." : "")
+        + (st.view === "pitchers" ? ` RV+: the same MLB ruler, applied to results against ${lvl} hitters (${lvl} average ${m("rv_plus")})${st.level === "AAA" ? ", so it is not comparable with an MLB RV+ or with the Triple-A grades beside it" : ""}.` : "");
+    }
     const final = i === dates().length - 1;
     U.set({ view: st.view, level: st.level, team: st.team, role: st.role, group: st.view === "pitches" ? st.group : "",
             min: st.min, window: st.window, since: st.since, asof: final ? null : dates()[i], grade: st.grade,
@@ -238,5 +257,5 @@ Model versions: [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman
 ```
 
 ::: {.note}
-{{< meta baseball.season >}} regular season, weekly snapshots (the last game on or before each Sunday, plus the final day). Triple-A pitchers are graded on the same MLB-trained model, so their numbers are directly comparable with big leaguers'. Triple-A RV+ is measured against weaker hitters, so expect it to run high. Location+ and Pitching+ are frozen to the same {{< meta baseball.scale_ref_season >}} pitchers. Roles (SP, RP, Swing) are as of the selected date and use the role-based pitch minimums in the [glossary](/glossary.html#roles); earlier in the season the minimums are prorated to games played. [How Stuff+ is built](/baseball/stuff-plus/#method); [how Location+ and Pitching+ are built](/baseball/stuff-or-command/#method).
+{{< meta baseball.season >}} regular season, weekly snapshots (the last game on or before each Sunday, plus the final day). **Scales.** Stuff+, Location+, and Pitching+ are on the MLB scale at both levels: Triple-A pitchers are graded by the same MLB-trained models and scaled to the same {{< meta baseball.scale_ref_season >}} qualified MLB pitchers, so a Triple-A grade is directly comparable with a big leaguer's and the Triple-A league average is below 100 (about {{< meta baseball.stuff_aaa_mean >}} Stuff+, {{< meta baseball.loc_mean_aaa_cur >}} Location+, {{< meta baseball.pitching_mean_aaa_cur >}} Pitching+ for qualified pitchers). Pitching+ is its own model, not an average of the other two: Triple-A's shortfall in stuff and its shortfall in location add up in runs, while the MLB spread they are divided by grows by less (MLB pitchers with better stuff tend to locate a little worse), so the Triple-A Pitching+ average is lower than both. RV+ uses the same MLB ruler (100 and 10 points come from {{< meta baseball.scale_ref_season >}} MLB pitchers' run value), but the runs were allowed to hitters at the pitcher's own level: Triple-A RV+ averages close to 100 because Triple-A pitchers face Triple-A hitters, so don't compare it with MLB RV+, and expect it to sit above a Triple-A pitcher's grades. No column on this page is on a Triple-A scale. Roles (SP, RP, Swing) are as of the selected date and use the role-based pitch minimums in the [glossary](/glossary.html#roles); earlier in the season the minimums are prorated to games played. [How Stuff+ is built](/baseball/stuff-plus/#method); [how Location+ and Pitching+ are built](/baseball/stuff-or-command/#method).
 :::
