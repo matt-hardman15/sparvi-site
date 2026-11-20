@@ -181,7 +181,7 @@
         { key: "pitch_type", label: "Pitch", align: "l" }, { key: "pitches", label: "Thrown", fmt: f.int }, { key: "usage_pct", label: "Usage", fmt: v => f.pct(v, 0) },
         { key: "velo", label: "Velo", fmt: v => f.num(v) }, { key: "ivb", label: "IVB", fmt: v => f.num(v) }, { key: "hb", label: "HB", fmt: v => f.num(v) },
         { key: "whiff_pct", label: "Whiff%", fmt: v => f.pct(v, 0) }, { key: "stuff_plus", label: "Stuff+", heat: "plus", fmt: v => f.num(v, 0) },
-        { key: "loc_plus", label: "Loc+", heat: "plus", fmt: v => f.num(v, 0), title: "Location+: where this pitch crossed the plate, in the count" },
+        { key: "loc_plus", label: "Loc+", heat: "plus", fmt: v => f.num(v, 0), title: "Location+: what this pitch's location added, given the pitch and the count" },
         { key: "pitching_plus", label: "Pitching+", heat: "plus", fmt: v => f.num(v, 0) },
         ...(lvl === "AAA" ? [{ key: "velo_delta", label: "Velo Δ14", fmt: (v, r) => (r.recent_pitches >= 15 ? f.signed(v) : "—") },
                              { key: "ivb_delta", label: "IVB Δ14", fmt: (v, r) => (r.recent_pitches >= 15 ? f.signed(v) : "—") }] : []),

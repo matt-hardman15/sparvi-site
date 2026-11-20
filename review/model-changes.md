@@ -36,6 +36,22 @@ locked. (3) The 1.1.0 record carries 1.0.0's metrics, and so does this one: the 
 refresh's (Nov 15), and this machine's raw data is older than that, so nothing rebuilt here is committed. The first
 refresh on main writes the outputs these versions describe.
 
+## 2026-11-20 · Location+ 3.0.0: location value given the pitch (LOC-TYPE); Stuff+ and Pitching+ 2.0.1
+**Why.** Location+ 2.0.0 was a model on where the pitch crossed the plate and the count, with no knowledge of the pitch. It was steady (split-half 0.70) but did not predict next-season run value (frozen set r 0.008).
+
+**What changed.** Location+ is now what the location adds to the pitch: the Pitching+ model's prediction minus the prediction of the same model without its two location inputs, averaged over a pitcher's pitches. `train.py` fits Stuff+, Pitching+ and the no-location model (`no_loc`) and derives the location value in `predict_all`; the location-only feature set stays in `features.py` because the backtest's baseline refits it. Stuff+ and Pitching+ are byte-identical to 2.0.0 (same model files and pitch-level predictions) and get patch versions only because `train.py` and `features.py` changed.
+
+**How it was chosen and tested.** Four variants were compared on development folds that never read 2026 (`development_location.json`, outcomes 2024 and 2025): only this one predicted (r +0.147 with next-season RV/100, 90% interval +0.077 to +0.210; location alone +0.030, with pitch type -0.006, command spread +0.000). The backtest was then pre-registered as candidate 3.0.0 (gate, Matt: beat the 2.0.0 features on the same fold, strict). Official full run on main, Nov 20: r 0.157 against 0.014, edge +0.143 (+0.076 to +0.203), all leakage tests pass; partial r given Stuff+ +0.129 (+0.040 to +0.223; reported, not gated). The local dry run gave 0.169, which is 0.012 from CI and just outside the ±0.01 cross-machine standard; Matt accepted CI's number (Nov 20). The seed sensitivity below is the likely cause.
+
+**Results.** Frozen eval set (fit on 2024, grade 2025, predict 2026; 324 pitchers): r with next-season run value 0.008 → 0.193 (90% interval 0.091 to 0.285); Stuff+ 0.305 and Pitching+ 0.318 unchanged; last season's results 0.193. Location+ minus Stuff+ -0.112 (-0.228 to -0.001). Year to year 0.68, split-half 0.71, Triple-A to MLB 0.04. Among qualified 2026 MLB pitchers the new grade correlates 0.81 with the old one (mean change 5.4 points, largest 30), 0.09 with Stuff+ (was -0.23) and 0.27 with results (was 0.09).
+
+**Known weakness.** Seed sensitivity (562 MLB pitchers with 300+ pitches, seeds 7 vs 8): mean 0.74 points, max 6.0, 26% of pitchers move more than 1 point and 5% more than 2 (2.0.0: 0.12 / 0.6; Stuff+ 0.35, Pitching+ 0.38). The grade is a difference of two models on a narrower scale, and the no-location models stop after 15 to 190 trees. Matt chose to ship the tested spec (Nov 20) and stabilize it as a follow-up (row LOC-STABLE): any change to how the two models are trained has to be checked on the development folds and retested.
+
+**Pages.** The stuff-or-command article's finding changed with the grade (it had reported that location did not carry forward) and was rewritten from the new intervals; the glossary and the Location+ descriptions on the tools follow.
+
+## 2026-11-20 · Location+ 2.0.0 → 3.0.0 (promoted)
+Frozen eval set: Out-of-sample year over year: models refit on the earliest season only, grade the next season, and correlate with the season after's run value (MLB pitchers with enough pitches both years). Same split as the published Stuff+ validation.. r_next_rv: 0.007667 → 0.193. Live: not yet available (no ledger forecasts).
+
 ## 2026-11-20 · NFL opponent adjustment 1.0.1 → 2.0.0 (major: the schedule correction gets its own penalty, NFL-SCHED)
 **Why.** The "opponent-adjusted" numbers barely differed from raw: across the 32 teams in 2026 (week 10) the largest
 |adjusted − raw| was 0.008 EPA/play on offense (sd 0.002) and 0.011 on defense (sd 0.003), against a spread between

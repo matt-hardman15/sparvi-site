@@ -1,6 +1,6 @@
 """Train the pitch-quality models and score MLB and Triple-A pitchers.
 
-Three model families, each one LightGBM regressor per pitch group (fastball / breaking / offspeed),
+Three model families (MODELS), each one LightGBM regressor per pitch group (fastball / breaking / offspeed),
 all with the same target (pitcher run value of the pitch, denoised on balls in play), the same
 training seasons (every configured MLB season except the current one) and the same holdout (the
 current season, out of time). Each regressor is a bag of N_BAGS models (v2.0.0): pitchers are split
@@ -9,14 +9,17 @@ prediction is the bag average. One model early-stopped on one validation slice w
 tree count swung with which pitchers landed in the slice, and per-pitcher grades moved by up to 64
 points between seeds (review/model-changes.md, 2026-11-14). stability.py measures what remains. Seasons come from sparvi.toml; feature sets from features.py:
     stuff     Stuff+     what the ball does (velocity, movement, spin, release)
-    loc       Location+  where it crossed the plate, in the count
-    pitching  Pitching+  both
+    pitching  Pitching+  that plus where it crossed the plate, the count and the batter's side
+    no_loc    (no grade) the Pitching+ inputs without the location
+Location+ (3.0.0, LOC-TYPE) is the location's value given the pitch: a pitch's Pitching+ prediction minus
+its no_loc prediction, averaged over a pitcher's pitches. It passed its pre-registered backtest
+(models/baseball/location_plus/card.yml); the model on location alone that it replaces did not predict.
 
 Outputs (pitch_quality/output/):
     metrics.json                       holdout fit + stability/predictiveness checks
     pitcher_season_{level}_{year}.csv  pitcher-season Stuff+, Location+, Pitching+, RV+
     pitch_type_{level}_{year}.csv      pitcher x pitch type grades
-    importance.csv, importance_{loc,pitching}.csv   gain importance by group
+    importance.csv, importance_{no_loc,pitching}.csv   gain importance by group
     scale_reference.json/.csv          the frozen prior-season scale for every grade
     pitch_predictions_*.parquet        pitch-level predictions (gitignored; snapshot marts only)
     models/{kind}_{group}_{f}.txt      the bagged boosters (gitignored, large; the registry keeps their hashes)
@@ -41,10 +44,13 @@ GROUPS = ["fastball", "breaking", "offspeed"]
 N_BAGS = 10
 # Stuff+ models early-stop after very few trees at 0.03 (12-100), so where they stop moves the grades;
 # a smaller step spreads the same fit over ~10x the trees and makes the stopping point matter less.
-LEARNING_RATE = {"stuff": 0.005, "loc": 0.03, "pitching": 0.03}
-KINDS = list(FEATURE_SETS)  # stuff, loc, pitching
+# "loc" is the retired location-only model (2.0.0): not fitted here, kept for the Location+ backtest's baseline.
+LEARNING_RATE = {"stuff": 0.005, "loc": 0.03, "no_loc": 0.03, "pitching": 0.03}
+MODELS = ["stuff", "no_loc", "pitching"]  # the model families fitted
+KINDS = ["stuff", "loc", "pitching"]      # the grades
 GRADE = {"stuff": "stuff_plus", "loc": "loc_plus", "pitching": "pitching_plus"}
-XRV = {"stuff": "xrv", "loc": "xrv_loc", "pitching": "xrv_pitching"}  # pitch-level prediction columns
+# Pitch-level prediction columns. xrv_loc is the published Location+ value: xrv_pitching - xrv_no_loc (predict_all).
+XRV = {"stuff": "xrv", "loc": "xrv_loc", "no_loc": "xrv_no_loc", "pitching": "xrv_pitching"}
 
 PARAMS = dict(
     objective="regression",
@@ -91,8 +97,8 @@ def bag_folds(pitchers: pd.Series, seed: int = SEED, n_bags: int = N_BAGS) -> pd
     return pitchers.map(fold_of)
 
 
-def fit_kinds(tr: pd.DataFrame, kinds=KINDS, seed: int = SEED, n_bags: int = N_BAGS) -> dict:
-    """{kind: {group: [n_bags boosters]}}. Model f of each bag trains on every fold but f and early-stops on f;
+def fit_kinds(tr: pd.DataFrame, kinds=MODELS, seed: int = SEED, n_bags: int = N_BAGS) -> dict:
+    """{kind: {group: [n_bags boosters]}} for the model families in `kinds`. Model f of each bag trains on every fold but f and early-stops on f;
     its LightGBM seed is seed * 100 + f. Same seed, same data: same bags."""
     fold = bag_folds(tr["pitcher"], seed, n_bags)
     return {k: {g: [fit_group(tr[tr["group"].eq(g) & fold.ne(f)], tr[tr["group"].eq(g) & fold.eq(f)], FEATURE_SETS[k],
@@ -111,8 +117,12 @@ def predict(models: dict, df: pd.DataFrame, features: list[str] = FEATURES) -> p
 
 
 def predict_all(all_models: dict, df: pd.DataFrame) -> None:
+    """Add each fitted family's prediction column and, when both of its parts were fitted, the Location+ value:
+    what the location adds to the pitch (full model minus the same model without location)."""
     for k, models in all_models.items():
         df[XRV[k]] = predict(models, df, FEATURE_SETS[k])
+    if "pitching" in all_models and "no_loc" in all_models:
+        df[XRV["loc"]] = df[XRV["pitching"]] - df[XRV["no_loc"]]
 
 
 def pitcher_season(df: pd.DataFrame) -> pd.DataFrame:

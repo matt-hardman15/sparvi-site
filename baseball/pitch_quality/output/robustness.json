@@ -3,11 +3,11 @@
   "predictor_season": 2025,
   "outcome_season": 2026,
   "n": 324,
-  "r_stuff_prev_to_rv_cur": 0.3068834680844296,
+  "r_stuff_prev_to_rv_cur": 0.3045580100995997,
   "r_rv_prev_to_rv_cur": 0.19259585980517263,
   "gap_ci90": [
-    0.010181795449927235,
-    0.2158979066253775
+    0.007720251172284422,
+    0.21324094461992013
   ],
   "bootstrap_samples": 2000,
   "provenance": {
@@ -31,7 +31,7 @@
     "libraries": {
       "python": "3.12",
       "pandas": "3.1.1",
-      "numpy": "2.5.4",
+      "numpy": "2.5.5",
       "duckdb": "1.5.6",
       "lightgbm": "4.7.0",
       "scikit-learn": "1.9.1",

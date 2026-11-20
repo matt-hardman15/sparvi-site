@@ -3,7 +3,7 @@ name: stuff_plus
 title: Stuff+
 sport: baseball
 status: champion
-version: 2.0.0
+version: 2.0.1
 owner: Matt
 spec: 'What the ball does: velocity, movement, spin, release, and arm angle, relative to the pitcher''s primary
   fastball. No location, no count.'
@@ -53,11 +53,11 @@ backtest:
   preregistered_at: '2026-11-13'
   amended:
   - date: '2026-11-19'
-    change: 'train_window 1 -> 2 (Matt): the test trains on two seasons, as the published model does. Made after the
-      one-season result on 2026 was seen (run 063ae43be446, 2026-11-18: r 0.307 vs. 0.193 for last season''s results,
-      passed). The choice of two seasons comes from development folds that never read 2026
-      (baseball/pitch_quality/output/development_windows.json: outcomes 2024 and 2025, two seasons +0.040 in r over
-      one, 90% interval +0.020 to +0.063). Target, baseline, metric, gate, seed and test season are unchanged.'
+    change: 'train_window 1 -> 2 (Matt): the test trains on two seasons, as the published model does. Made after
+      the one-season result on 2026 was seen (run 063ae43be446, 2026-11-18: r 0.307 vs. 0.193 for last season''s
+      results, passed). The choice of two seasons comes from development folds that never read 2026 (baseball/pitch_quality/output/development_windows.json:
+      outcomes 2024 and 2025, two seasons +0.040 in r over one, 90% interval +0.020 to +0.063). Target, baseline,
+      metric, gate, seed and test season are unchanged.'
   module: models/baseball/stuff_plus/backtest.py
   target: Next-season run value per 100 pitches (RV/100), MLB pitchers with 500+ pitches in both seasons
   decision_dates: season start (March 1 of the outcome season)
@@ -89,9 +89,11 @@ backtest:
     note: 'No sealed season yet: with MLB 2024-2026 the only test season is 2026. The 2027 season becomes the vault
       when it completes.'
     accesses: 0
-experimental: 'its latest backtest run didn''t clear the strict gate. Shown only in that case: the gate asks that the
-  90% interval of the edge over last season''s results exclude zero, and with about 320 pitchers that interval is
-  wide enough for a rerun on revised data to fall back under it'
+experimental: 'this version has no passing backtest on record. Shown in two cases. Right after a new version: the
+  backtest workflow reruns the test on main and the label goes away when its report lands (2.0.1 changed shared
+  training code only; its Stuff+ models are identical to 2.0.0''s, which passed). Or the latest run didn''t clear
+  the strict gate: the gate asks that the 90% interval of the edge over last season''s results exclude zero, and
+  with about 320 pitchers that interval is wide enough for a rerun on revised data to fall back under it'
 challengers: []
 history:
 - version: 1.0.1
