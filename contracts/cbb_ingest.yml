@@ -1,0 +1,366 @@
+# Ingest contract for cbb (PLAN-scout A0; CBB-0a): the raw files of the current college basketball season, their columns
+# and types, and the rules ingest/cbb/checks.py enforces. ingest/cbb/pull.py casts every table to these columns and types:
+# a column the source adds is not kept until it is listed here, and one it stops sending fails the checks. First written
+# from the pull of Nov 20, 2026 (seed columns were empty then: typed BIGINT by their meaning).
+# max_null: largest allowed share of missing values. Row counts may not drop more than 1% below the last accepted pull.
+tables:
+  teams:
+    description: "Division I teams and conferences for the season"
+    files: "cbb/teams_{season}.parquet"
+    key: [id]
+    max_null:
+      id: 0
+      school: 0
+      conference: 0.02
+    columns:
+      id: BIGINT
+      sourceId: VARCHAR
+      school: VARCHAR
+      mascot: VARCHAR
+      abbreviation: VARCHAR
+      displayName: VARCHAR
+      shortDisplayName: VARCHAR
+      primaryColor: VARCHAR
+      secondaryColor: VARCHAR
+      currentVenueId: BIGINT
+      currentVenue: VARCHAR
+      currentCity: VARCHAR
+      currentState: VARCHAR
+      conferenceId: BIGINT
+      conference: VARCHAR
+  games:
+    description: "Every game involving a Division I team: status, score, pre- and post-game Elo"
+    files: "cbb/games_{season}.parquet"
+    key: [id]
+    max_null:
+      id: 0
+      startDate: 0
+      status: 0
+      homeTeamId: 0
+      awayTeamId: 0
+    columns:
+      id: BIGINT
+      sourceId: VARCHAR
+      seasonLabel: VARCHAR
+      season: BIGINT
+      seasonType: VARCHAR
+      tournament: VARCHAR
+      startDate: VARCHAR
+      startTimeTbd: BOOLEAN
+      neutralSite: BOOLEAN
+      conferenceGame: BOOLEAN
+      gameType: VARCHAR
+      status: VARCHAR
+      gameNotes: VARCHAR
+      attendance: DOUBLE
+      homeTeamId: BIGINT
+      homeTeam: VARCHAR
+      homeConferenceId: BIGINT
+      homeConference: VARCHAR
+      homeSeed: BIGINT
+      homePoints: DOUBLE
+      homePeriodPoints: VARCHAR
+      homeWinner: BOOLEAN
+      homeTeamEloStart: DOUBLE
+      homeTeamEloEnd: DOUBLE
+      awayTeamId: BIGINT
+      awayTeam: VARCHAR
+      awayConferenceId: BIGINT
+      awayConference: VARCHAR
+      awaySeed: BIGINT
+      awayPoints: DOUBLE
+      awayPeriodPoints: VARCHAR
+      awayWinner: BOOLEAN
+      awayTeamEloStart: DOUBLE
+      awayTeamEloEnd: DOUBLE
+      excitement: DOUBLE
+      venueId: BIGINT
+      venue: VARCHAR
+      city: VARCHAR
+      state: VARCHAR
+  team_games:
+    description: "Team box score and advanced metrics, one row per game x team"
+    files: "cbb/team_games_{season}.parquet"
+    key: [gameId, teamId]
+    max_null:
+      gameId: 0
+      teamId: 0
+      teamStats_points_total: 0.02
+      teamStats_possessions: 0.02
+    columns:
+      gameId: BIGINT
+      season: BIGINT
+      seasonLabel: VARCHAR
+      seasonType: VARCHAR
+      tournament: VARCHAR
+      startDate: VARCHAR
+      startTimeTbd: BOOLEAN
+      teamId: BIGINT
+      team: VARCHAR
+      conference: VARCHAR
+      teamSeed: BIGINT
+      opponentId: BIGINT
+      opponent: VARCHAR
+      opponentConference: VARCHAR
+      opponentSeed: BIGINT
+      neutralSite: BOOLEAN
+      isHome: BOOLEAN
+      conferenceGame: BOOLEAN
+      gameType: VARCHAR
+      notes: VARCHAR
+      gameMinutes: DOUBLE
+      pace: DOUBLE
+      teamStats_possessions: DOUBLE
+      teamStats_assists: DOUBLE
+      teamStats_steals: DOUBLE
+      teamStats_blocks: DOUBLE
+      teamStats_trueShooting: DOUBLE
+      teamStats_rating: DOUBLE
+      teamStats_gameScore: DOUBLE
+      teamStats_points_total: DOUBLE
+      teamStats_points_byPeriod: VARCHAR
+      teamStats_points_largestLead: DOUBLE
+      teamStats_points_fastBreak: DOUBLE
+      teamStats_points_inPaint: DOUBLE
+      teamStats_points_offTurnovers: DOUBLE
+      teamStats_twoPointFieldGoals_made: DOUBLE
+      teamStats_twoPointFieldGoals_attempted: DOUBLE
+      teamStats_twoPointFieldGoals_pct: DOUBLE
+      teamStats_threePointFieldGoals_made: DOUBLE
+      teamStats_threePointFieldGoals_attempted: DOUBLE
+      teamStats_threePointFieldGoals_pct: DOUBLE
+      teamStats_freeThrows_made: DOUBLE
+      teamStats_freeThrows_attempted: DOUBLE
+      teamStats_freeThrows_pct: DOUBLE
+      teamStats_fieldGoals_made: DOUBLE
+      teamStats_fieldGoals_attempted: DOUBLE
+      teamStats_fieldGoals_pct: DOUBLE
+      teamStats_turnovers_total: DOUBLE
+      teamStats_turnovers_teamTotal: DOUBLE
+      teamStats_rebounds_offensive: DOUBLE
+      teamStats_rebounds_defensive: DOUBLE
+      teamStats_rebounds_total: DOUBLE
+      teamStats_fouls_total: DOUBLE
+      teamStats_fouls_technical: DOUBLE
+      teamStats_fouls_flagrant: DOUBLE
+      teamStats_fourFactors_effectiveFieldGoalPct: DOUBLE
+      teamStats_fourFactors_freeThrowRate: DOUBLE
+      teamStats_fourFactors_turnoverRatio: DOUBLE
+      teamStats_fourFactors_offensiveReboundPct: DOUBLE
+      opponentStats_possessions: DOUBLE
+      opponentStats_assists: DOUBLE
+      opponentStats_steals: DOUBLE
+      opponentStats_blocks: DOUBLE
+      opponentStats_trueShooting: DOUBLE
+      opponentStats_rating: DOUBLE
+      opponentStats_gameScore: DOUBLE
+      opponentStats_points_total: DOUBLE
+      opponentStats_points_byPeriod: VARCHAR
+      opponentStats_points_largestLead: DOUBLE
+      opponentStats_points_fastBreak: DOUBLE
+      opponentStats_points_inPaint: DOUBLE
+      opponentStats_points_offTurnovers: DOUBLE
+      opponentStats_twoPointFieldGoals_made: DOUBLE
+      opponentStats_twoPointFieldGoals_attempted: DOUBLE
+      opponentStats_twoPointFieldGoals_pct: DOUBLE
+      opponentStats_threePointFieldGoals_made: DOUBLE
+      opponentStats_threePointFieldGoals_attempted: DOUBLE
+      opponentStats_threePointFieldGoals_pct: DOUBLE
+      opponentStats_freeThrows_made: DOUBLE
+      opponentStats_freeThrows_attempted: DOUBLE
+      opponentStats_freeThrows_pct: DOUBLE
+      opponentStats_fieldGoals_made: DOUBLE
+      opponentStats_fieldGoals_attempted: DOUBLE
+      opponentStats_fieldGoals_pct: DOUBLE
+      opponentStats_turnovers_total: DOUBLE
+      opponentStats_turnovers_teamTotal: DOUBLE
+      opponentStats_rebounds_offensive: DOUBLE
+      opponentStats_rebounds_defensive: DOUBLE
+      opponentStats_rebounds_total: DOUBLE
+      opponentStats_fouls_total: DOUBLE
+      opponentStats_fouls_technical: DOUBLE
+      opponentStats_fouls_flagrant: DOUBLE
+      opponentStats_fourFactors_effectiveFieldGoalPct: DOUBLE
+      opponentStats_fourFactors_freeThrowRate: DOUBLE
+      opponentStats_fourFactors_turnoverRatio: DOUBLE
+      opponentStats_fourFactors_offensiveReboundPct: DOUBLE
+  player_games:
+    description: "Player box score, one row per game x team x player"
+    files: "cbb/player_games_{season}.parquet"
+    key: [gameId, teamId, player_athleteId]
+    max_null:
+      gameId: 0
+      teamId: 0
+      player_athleteId: 0
+      player_minutes: 0.05
+    columns:
+      player_athleteId: BIGINT
+      player_athleteSourceId: VARCHAR
+      player_name: VARCHAR
+      player_position: VARCHAR
+      player_starter: BOOLEAN
+      player_ejected: BOOLEAN
+      player_minutes: DOUBLE
+      player_points: DOUBLE
+      player_turnovers: DOUBLE
+      player_fouls: DOUBLE
+      player_assists: DOUBLE
+      player_steals: DOUBLE
+      player_blocks: DOUBLE
+      player_gameScore: DOUBLE
+      player_offensiveRating: DOUBLE
+      player_defensiveRating: DOUBLE
+      player_netRating: DOUBLE
+      player_usage: DOUBLE
+      player_effectiveFieldGoalPct: DOUBLE
+      player_trueShootingPct: DOUBLE
+      player_assistsTurnoverRatio: DOUBLE
+      player_freeThrowRate: DOUBLE
+      player_offensiveReboundPct: DOUBLE
+      player_fieldGoals_made: DOUBLE
+      player_fieldGoals_attempted: DOUBLE
+      player_fieldGoals_pct: DOUBLE
+      player_twoPointFieldGoals_made: DOUBLE
+      player_twoPointFieldGoals_attempted: DOUBLE
+      player_twoPointFieldGoals_pct: DOUBLE
+      player_threePointFieldGoals_made: DOUBLE
+      player_threePointFieldGoals_attempted: DOUBLE
+      player_threePointFieldGoals_pct: DOUBLE
+      player_freeThrows_made: DOUBLE
+      player_freeThrows_attempted: DOUBLE
+      player_freeThrows_pct: DOUBLE
+      player_rebounds_offensive: DOUBLE
+      player_rebounds_defensive: DOUBLE
+      player_rebounds_total: DOUBLE
+      gameId: BIGINT
+      season: BIGINT
+      seasonType: VARCHAR
+      startDate: VARCHAR
+      teamId: BIGINT
+      team: VARCHAR
+      conference: VARCHAR
+      opponentId: BIGINT
+      opponent: VARCHAR
+      isHome: BOOLEAN
+      gameMinutes: DOUBLE
+      gamePace: DOUBLE
+  lines:
+    description: "One row per game x sportsbook; lines move until tip-off (benchmark only)"
+    files: "cbb/lines_{season}.parquet"
+    key: [gameId, provider]
+    max_null:
+      gameId: 0
+      provider: 0
+    columns:
+      provider: VARCHAR
+      spread: DOUBLE
+      overUnder: DOUBLE
+      homeMoneyline: DOUBLE
+      awayMoneyline: DOUBLE
+      spreadOpen: DOUBLE
+      overUnderOpen: DOUBLE
+      gameId: BIGINT
+      season: BIGINT
+      seasonType: VARCHAR
+      startDate: VARCHAR
+      homeTeamId: BIGINT
+      homeTeam: VARCHAR
+      awayTeamId: BIGINT
+      awayTeam: VARCHAR
+      homeScore: DOUBLE
+      awayScore: DOUBLE
+  rankings:
+    description: "AP and Coaches polls by week, one row per poll x week x team receiving votes"
+    files: "cbb/rankings_{season}.parquet"
+    key: [season, seasonType, week, pollType, teamId]
+    max_null:
+      teamId: 0
+      pollType: 0
+      week: 0
+    columns:
+      season: BIGINT
+      seasonType: VARCHAR
+      week: BIGINT
+      pollDate: VARCHAR
+      pollType: VARCHAR
+      teamId: BIGINT
+      team: VARCHAR
+      conference: VARCHAR
+      ranking: DOUBLE
+      points: DOUBLE
+      firstPlaceVotes: DOUBLE
+  ratings_adjusted:
+    description: "The source's adjusted efficiency ratings as of the pull (overwritten at the source)"
+    files: "cbb/ratings_adjusted_{season}.parquet"
+    key: [teamId]
+    max_null:
+      teamId: 0
+      netRating: 0.02
+    columns:
+      season: BIGINT
+      teamId: BIGINT
+      team: VARCHAR
+      conference: VARCHAR
+      offensiveRating: DOUBLE
+      defensiveRating: DOUBLE
+      netRating: DOUBLE
+      rankings_offense: DOUBLE
+      rankings_defense: DOUBLE
+      rankings_net: DOUBLE
+  ratings_srs:
+    description: "The source's SRS ratings as of the pull"
+    files: "cbb/ratings_srs_{season}.parquet"
+    key: [teamId]
+    max_null:
+      teamId: 0
+      rating: 0.02
+    columns:
+      season: BIGINT
+      teamId: BIGINT
+      team: VARCHAR
+      conference: VARCHAR
+      rating: DOUBLE
+  ratings_elo:
+    description: "The source's Elo ratings as of the pull"
+    files: "cbb/ratings_elo_{season}.parquet"
+    key: [teamId]
+    max_null:
+      teamId: 0
+      elo: 0.02
+    columns:
+      season: BIGINT
+      teamId: BIGINT
+      team: VARCHAR
+      conference: VARCHAR
+      elo: DOUBLE
+  roster:
+    description: "One row per Division I team x player"
+    files: "cbb/roster_{season}.parquet"
+    key: [teamId, player_id]
+    max_null:
+      teamId: 0
+      player_id: 0
+      player_name: 0
+    columns:
+      player_id: BIGINT
+      player_sourceId: VARCHAR
+      player_name: VARCHAR
+      player_firstName: VARCHAR
+      player_lastName: VARCHAR
+      player_jersey: VARCHAR
+      player_position: VARCHAR
+      player_height: DOUBLE
+      player_weight: DOUBLE
+      player_dateOfBirth: VARCHAR
+      player_startSeason: BIGINT
+      player_endSeason: BIGINT
+      player_hometown_city: VARCHAR
+      player_hometown_state: VARCHAR
+      player_hometown_country: VARCHAR
+      player_hometown_latitude: DOUBLE
+      player_hometown_longitude: DOUBLE
+      player_hometown_countyFips: VARCHAR
+      teamId: BIGINT
+      team: VARCHAR
+      conference: VARCHAR
+      season: BIGINT

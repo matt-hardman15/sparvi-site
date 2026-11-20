@@ -54,3 +54,16 @@ first_season = 2014
 # and a run that needs more than `approve_over` uncached calls asks before starting (--yes).
 call_reserve = 100
 approve_over = 300
+
+[cbb]
+# College basketball (CBB-0a, Nov 20 2026): ingest, checks and private snapshots only; no pages yet. From
+# CollegeBasketballData.com, the same service, key (CFBD_API_KEY) and monthly quota as college football.
+# The season is the year it ends: 2027 = 2026-27.
+season = 2027
+# First and last day a game of this season can fall on; pulls are windowed between them.
+start = "2026-11-01"
+end = "2027-04-10"
+# Basketball stops when the shared quota left falls to this, so football's refresh and the January portal
+# window always have calls. A run needing more than `approve_over` uncached calls asks first (--yes).
+call_reserve = 1000
+approve_over = 300
