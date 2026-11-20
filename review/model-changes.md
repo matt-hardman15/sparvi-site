@@ -21,11 +21,23 @@ the export: 200 of the 945 cells publish call "none" and no numbers). Teams almo
 after the fix above the chart still had 4th-and-1 inside the own 10 as a clear go. Of the 745 cells left: 67 clear go,
 142 clear kick, 536 toss-up. Real plays from there are still valued and judged.
 
-Open, to be handled in a separate pull request (Matt, Nov 20): on 2020-2025 seasons it hadn't seen, win probability 1.0.1 rates a team with
+Known and left as it is (Matt, Nov 20): on 2020-2025 seasons it hadn't seen, win probability 1.0.1 rates a team with
 the ball inside its own 6 about 4 points too high (2,200 plays: won 46.6%, rated 51.0%; 90% interval of the gap 2.4 to
-6.4 points, resampling games). Field position barely moves
-it there. That leaves the chart a point or so more go-friendly than nfl4th inside the own 10 (toss-ups where nfl4th
-says punt), and touches the 1% of clear-go cost that comes from real plays there. Options are in pull request #104.
+6.4 points, resampling games). Field position barely moves it there. The chart no longer makes calls there; on real
+plays it touches about 1% of clear-go cost.
+
+A fix was built and not adopted: win probability 2.0.0, the same trees boosted from a logistic baseline with a cubic
+in field position (branch `claude/nfl-wp-field-position`, no pull request; 1.0.1 stays champion). It scored better on
+the development seasons (Brier 0.1470 vs. 0.1491) and passed the full backtest (0.15838 vs. 0.15843), and roughly
+halved the bias (own 1-3: -5.5 → -4.0 points). But 4th-and-1 and 4th-and-2 inside the own 10 stayed a clear go;
+calibration error over the judged part of the game rose from 0.016 to 0.019; and the published numbers moved far more
+than the bias explains (2020-2025: toss-up share 65% → 51%, clear go calls 3,772 → 4,995, go rate on them 44.9% →
+50.5%; 2026 cost ranks: IND 7th → 1st, CIN 3rd → 13th).
+
+Worth remembering from that: the two versions, nearly equal in accuracy, agree on the sign of go-minus-kick for only
+79% of judged decisions (34 of 21,081 flip between clear go and clear kick). The 90% interval behind a "clear" call
+measures how much one model moves when refit, not how much the answer depends on which model was chosen. Counting a
+call as clear only when both agree would give, for 2020-2025, 2,706 clear go calls, a 55.0% go rate and 73% toss-ups.
 
 ## 2026-11-19 · Stuff+ 2.0.0: the backtest trains on two seasons (PQ-TEST-2; no model change)
 The pre-registered test trained on one season (2024) while the published model trains on two. Development folds that
