@@ -1,14 +1,20 @@
 {
-  "run_id": "08834a74744c",
+  "run_id": "66fc13d2a36a",
   "model": "stuff_plus",
   "version": "2.0.0",
   "kind": "full",
-  "ran_at": "2026-11-19T23:04:29Z",
-  "code_sha": "8252eccb4384f20537b0e721bcd3a45ef275f20c",
+  "ran_at": "2026-11-20T01:33:28Z",
+  "code_sha": "1fcc266fb33c697de3f3f76aad3fbebe8c93816d",
   "lockfile": "39654de38b4c91ec",
   "preregistered_at": "2026-11-13",
   "spec": {
     "preregistered_at": "2026-11-13",
+    "amended": [
+      {
+        "date": "2026-11-19",
+        "change": "train_window 1 -> 2 (Matt): the test trains on two seasons, as the published model does. Made after the one-season result on 2026 was seen (run 063ae43be446, 2026-11-18: r 0.307 vs. 0.193 for last season's results, passed). The choice of two seasons comes from development folds that never read 2026 (baseball/pitch_quality/output/development_windows.json: outcomes 2024 and 2025, two seasons +0.040 in r over one, 90% interval +0.020 to +0.063). Target, baseline, metric, gate, seed and test season are unchanged."
+      }
+    ],
     "module": "models/baseball/stuff_plus/backtest.py",
     "target": "Next-season run value per 100 pitches (RV/100), MLB pitchers with 500+ pitches in both seasons",
     "decision_dates": "season start (March 1 of the outcome season)",
@@ -16,7 +22,7 @@
       "type": "walk_forward",
       "first_test": 2026,
       "last_test": 2026,
-      "train_window": 1,
+      "train_window": 2,
       "predictor_lag": 1,
       "decision": "03-01",
       "fast_folds": 1
@@ -48,15 +54,15 @@
   "evaluation": {
     "metric": "pearson_r",
     "n": 324,
-    "point": 0.30868169026660636,
+    "point": 0.31757520495148467,
     "baselines": {
       "last_season": {
-        "value": 0.19259585980517258,
+        "value": 0.19259585980517263,
         "paired": {
-          "est": 0.11608583046143378,
+          "est": 0.12497934514631204,
           "ci90": [
-            0.009406738975133265,
-            0.21627906572237943
+            0.019520258916590826,
+            0.22659884481347436
           ],
           "n": 324,
           "blocks": 324,
@@ -66,7 +72,7 @@
       }
     },
     "by_fold": {
-      "2026": 0.30868169026660636
+      "2026": 0.31757520495148467
     }
   },
   "gate": {
@@ -76,11 +82,11 @@
       "ci_excludes_zero": true
     },
     "passed": true,
-    "gap": 0.11608583046143378,
+    "gap": 0.12497934514631204,
     "per_baseline": {
       "last_season": {
-        "gap": 0.11608583046143378,
-        "ci90_low": 0.009406738975133265
+        "gap": 0.12497934514631204,
+        "ci90_low": 0.019520258916590826
       }
     }
   },
@@ -105,16 +111,16 @@
     },
     "label_permutation": {
       "passed": true,
-      "r": -0.0691605767367279,
+      "r": 0.04286722894631704,
       "ci90": [
-        -0.16887409115285015,
-        0.0306197447078037
+        -0.03839982399110231,
+        0.12067404071575231
       ],
       "n": 324
     },
     "too_good": {
       "passed": true,
-      "r": 0.30868169026660636,
+      "r": 0.31757520495148467,
       "ceiling": 0.9
     },
     "entity_overlap": {
@@ -132,8 +138,8 @@
   "passed": true,
   "primary": {
     "metric": "pearson_r",
-    "point": 0.30868169026660636,
-    "last_season": 0.19259585980517258
+    "point": 0.31757520495148467,
+    "last_season": 0.19259585980517263
   },
   "revision_safe": false,
   "approximate_tables": [
