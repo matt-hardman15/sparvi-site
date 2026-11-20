@@ -65,11 +65,12 @@ jobs:
           if [ ! -d data/raw/cfb ]; then echo "::error::No CFB raw data (cache and R2 seed both missing)"; exit 1; fi
 
       # The data checks, the rebuild, and the plausibility tests each report into the summary; a failure in one is
-      # part of the report, so later steps still run.
+      # part of the report, so later steps still run. This job pulls nothing, so a "results are current" check can
+      # fail on games played since the refresh that saved the cache: the report lists what failed.
       - name: Data checks
         id: checks
         continue-on-error: true
-        run: uv run python -m ingest.cfb.checks
+        run: set -o pipefail; uv run python -m ingest.cfb.checks 2>&1 | tee checks.log
 
       - name: Rebuild CFB models, ratings, power rating, export
         id: build
@@ -92,6 +93,10 @@ jobs:
               uv run python -m cfb.qa.rebuild_report "origin/$BASE"
             else
               echo "## College football rebuild: the build failed"; echo; echo '```'; tail -40 build.log; echo '```'
+            fi
+            if grep -q "^FAILED" checks.log 2>/dev/null; then
+              echo; echo "Data checks that failed (no data is pulled here, so a freshness check fails if games were played since the cached pull):"
+              grep "^FAILED" checks.log | sed 's/^FAILED */- /'
             fi
             echo; echo "Data checks: ${{ steps.checks.outcome }}. Build: ${{ steps.build.outcome }}. Plausibility tests: ${{ steps.plausibility.outcome }}."
             echo "Commit ${{ github.event.pull_request.head.sha || github.sha }}; raw data from ${{ steps.raw_cache.outputs.cache-matched-key || 'the R2 seed' }}."

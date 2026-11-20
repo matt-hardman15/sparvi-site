@@ -69,10 +69,23 @@ or neutral-site games, where a flipped home/away designation would exchange the 
 right. The rule reads it from each game's scoring plays instead of assuming. Whether to exclude the worst games
 outright is left off.
 
-**Before/after.** Not available at the time of writing: the raw CFBD data isn't on the machine that made the change.
-Before (1.0.0, 2,917 games): power 12.548, Elo 12.682, efficiency alone 13.015, lambda 50; weights 19.74 points per
-1.00 net EPA/play and 0.0290 per Elo point. After: filled in by the first `cfb/build.sh` on this code, with the count
-of games per decision (`site/data/status/cfb_pbp_integrity.json`) and of dropped plays.
+**Before/after.** From the pull request's rebuild job (`cfb-rebuild-report`, commit 44b8971, the refresh's cached raw
+data, no new pull; 2,917 backtest games both times). The committed outputs are still 1.0.0's until the next refresh on
+main, and the 1.1.0 registry record carries 1.0.0's metrics.
+- Backtest: power 12.548 → 12.547, Elo 12.682 (unchanged), efficiency alone 13.015 → 13.014, schedule-adjusted EPA
+  13.041 → 13.039, raw EPA 13.349 → 13.348; power minus Elo −0.134 → −0.135 (90% interval −0.197 to −0.070). Lambda 50.
+  Weights 19.74 → 19.77 points per 1.00 net EPA/play; 0.0290 per Elo point and home 2.62 unchanged.
+- Games: 11,074 checked; 10,757 match, 207 over, 102 under, 8 swapped (the five listed plus three under 9 points:
+  2021 Navy at Army, 2022 LSU at Florida State, 2024 Texas A&M at USC). **None of the eight has exchanged team labels.**
+  In seven the scoring plays fit the official result as labeled, so the two score fields are exchanged
+  (`repair_scores`); LSU at Florida State (24-23) can't be told and its running score is ignored. Swapping offense and
+  defense in these games would have been wrong. 881 plays are in repaired games. No play names a team outside its game
+  (1,508,002 plays), so nothing was dropped.
+- Ratings: the change is in which plays count as garbage time. 2026 week 11: power moves for 10 of 138 teams (largest
+  0.7 points: Oklahoma +8.7 → +9.4, Ole Miss +14.4 → +13.7), rank for 6 teams, by one place each. Across seasons the
+  largest power change in any team-week is 1.5 points (2025) and the largest adjusted EPA/play change 0.149 (2025);
+  2014–2020 move by at most 0.2 points.
+- Plausibility tests on the rebuilt data: 19 of 19 pass, including the one that needs the plays.
 
 ## 2026-11-19 · Stuff+ 2.0.0: the backtest trains on two seasons (PQ-TEST-2; no model change)
 The pre-registered test trained on one season (2024) while the published model trains on two. Development folds that
