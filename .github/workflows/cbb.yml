@@ -1,0 +1,66 @@
+name: cbb
+
+# College basketball (CBB-0a): ingest, checks and private snapshots only. There are no basketball pages yet, so this
+# workflow builds nothing, commits nothing and deploys nothing. It exists because snapshots can't be made after the
+# fact: the source overwrites its ratings, lines and rosters, and this records each version as it was first seen.
+# About a dozen API calls a run, from the quota shared with college football; the pull stops at the reserve in
+# sparvi.toml [cbb]. Raw data stays private (the Actions cache and the R2 bucket), per the source's terms.
+
+on:
+  schedule:
+    - cron: "40 11 * 1-4,11-12 *"   # daily Nov-Apr, after the night's games and the source's overnight updates
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cbb
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        with:
+          enable-cache: true
+
+      - run: uv sync --frozen
+
+      # The response cache (finished windows are never requested twice) and the last accepted row counts.
+      - name: Restore raw basketball data
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: data/raw/cbb
+          key: cbb-raw-${{ github.run_id }}
+          restore-keys: cbb-raw-
+
+      # The key never appears in logs. A run that would need more than the approval line in sparvi.toml stops and
+      # asks for a person (it never should: a whole season to date is under 40 calls).
+      - name: Pull CollegeBasketballData.com
+        env:
+          CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
+        run: uv run python ingest/cbb/pull.py
+
+      - name: Save raw basketball data
+        if: ${{ !cancelled() }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: data/raw/cbb
+          key: cbb-raw-${{ github.run_id }}
+
+      # A failed check means no snapshot: nothing unverified goes into the append-only record.
+      - name: Data checks
+        run: uv run python -m ingest.cbb.checks
+
+      - name: Snapshot raw data
+        env:
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: uv run python -m ingest.snapshot cbb --require

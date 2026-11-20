@@ -30,6 +30,7 @@ behind them in explorers readers can filter and check. Live at **https://sparvi.
 | `nfl/team_efficiency/` | Opponent adjustment as of every week, with two ridge penalties: one for forecasting (chosen by next-week margin prediction) and a lighter one for the schedule correction the site shows (chosen by held-out-game EPA/play) |
 | `nfl/export_site_data.py`, `nfl/team_pages.py` | NFL site data and prose numbers; the 32 static team pages and their preview images |
 | `ingest/cfb/` | College football from CollegeFootballData.com (`pull.py`: cached responses, a call log, a monthly-quota reserve; `checks.py`: contract, coverage, and the score check). Needs `CFBD_API_KEY` (`.env` locally, an Actions secret) |
+| `ingest/cbb/` | College basketball from CollegeBasketballData.com, current season only: ingest, checks, and private snapshots; no pages yet (`pull.py` uses the same client, key, and shared monthly quota as college football, and stops at its own reserve) |
 | `cfb/` | `adjusted_ratings/adjusted.py`: opponent-adjusted ratings, the backtest against Elo, WEPA, SP+, and betting lines, and the power rating (efficiency + Elo); `polls.py`: AP poll vs. power rating; `export_site_data.py`; `build.sh` |
 | `site/` | Quarto site. Player pages are static, one per player (`/baseball/players/<slug>-<id>/`, written by `site/build/player_pages.py` after render with the player's data embedded); the tools load columnar weekly snapshot files. Interactive charts use Observable Plot and d3, self-hosted in `site/assets/js/`. Article numbers come from `site/_generated/<sport>.yml` |
 | `site/build/` | `seo.py` runs after every render: canonical URLs, sitemap `lastmod` from each page's last commit, `sitemap-index.xml`, `robots.txt`, and a check that fails the build on missing or duplicate titles/descriptions; `og_default.py` draws the default social image |
@@ -85,6 +86,8 @@ GitHub Actions deploys to GitHub Pages:
 - **`cfb`**: Sundays and Mondays, August through January, pulls the current college football season
   (finished weeks and past seasons come from the raw-data cache: ~20 API calls a run), rebuilds the
   `cfb_*` models, ratings, power rating, and export, commits the CFB data, and deploys.
+- **`cbb`**: daily, November through April, pulls the current college basketball season (about a dozen API calls),
+  checks it, and records what changed in the private snapshot bucket. It builds and publishes nothing yet.
 - **`backtest`**: on pull requests touching models or the harness, a fast backtest with a comment (fails on a
   leak, a regression, or an unflagged gate failure); on pushes to `main` and every Monday, full backtests whose
   reports and run log are committed. Raw Statcast comes from `refresh-baseball`'s caches; batter heights from its own.

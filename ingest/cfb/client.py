@@ -45,14 +45,17 @@ def _key() -> str:
     return k
 
 
-def cache_path(endpoint: str, params: dict) -> Path:
+def cache_path(endpoint: str, params: dict, cache: Path | None = None) -> Path:
     name = endpoint.strip("/").replace("/", "_") + ("__" + urlencode(sorted(params.items())).replace("&", "_").replace("=", "-") if params else "")
-    return CACHE / f"{name}.json.gz"
+    return (cache or CACHE) / f"{name}.json.gz"
 
 
 class Client:
-    def __init__(self, reserve: int | None = None):
+    def __init__(self, reserve: int | None = None, base: str = BASE, cache: Path | None = None, log: Path | None = None):
+        """`base`, `cache` and `log` default to football's. CollegeBasketballData.com is the same service with the same
+        key and one shared monthly quota (ingest/cbb/pull.py passes its own)."""
         self.reserve = cfb().call_reserve if reserve is None else reserve
+        self.base, self.cache, self.log = base, cache or CACHE, log or LOG
         self.session = requests.Session()
         self.session.headers["Authorization"] = f"Bearer {_key()}"
         self.session.headers["Accept"] = "application/json"
@@ -64,11 +67,11 @@ class Client:
         return self._call("/info", {})
 
     def cached(self, endpoint: str, params: dict) -> bool:
-        return cache_path(endpoint, params).exists()
+        return cache_path(endpoint, params, self.cache).exists()
 
     def get(self, endpoint: str, params: dict, completed: bool):
         """The response for endpoint+params: from the cache if it's there and the period is over."""
-        p = cache_path(endpoint, params)
+        p = cache_path(endpoint, params, self.cache)
         if completed and p.exists():
             return json.loads(gzip.decompress(p.read_bytes()))
         data = self._call(endpoint, params)
@@ -80,7 +83,7 @@ class Client:
         if self.remaining is not None and self.remaining <= self.reserve:
             raise BudgetExhausted(f"CFBD calls left this month: {self.remaining} (reserve {self.reserve}); stopping")
         for attempt in range(4):
-            r = self.session.get(BASE + endpoint, params=params, timeout=120)
+            r = self.session.get(self.base + endpoint, params=params, timeout=120)
             if r.status_code in (429, 500, 502, 503, 504) and attempt < 3:
                 time.sleep(5 * (attempt + 1))
                 continue
@@ -96,9 +99,9 @@ class Client:
         return r.json()
 
     def _log(self, endpoint: str, params: dict, status: int) -> None:
-        LOG.parent.mkdir(parents=True, exist_ok=True)
-        new = not LOG.exists()
-        with LOG.open("a", newline="", encoding="utf-8") as f:
+        self.log.parent.mkdir(parents=True, exist_ok=True)
+        new = not self.log.exists()
+        with self.log.open("a", newline="", encoding="utf-8") as f:
             w = csv.writer(f)
             if new:
                 w.writerow(["time_utc", "endpoint", "params", "status", "calls_left"])

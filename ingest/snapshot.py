@@ -15,7 +15,7 @@ import sys
 import pandas as pd
 
 from ingest.common.snapshots import LocalStore, Table, day_after, now_utc, snapshot, store_from_env
-from sparvi.config import RAW, baseball, cfb, nfl
+from sparvi.config import RAW, baseball, cbb, cfb, nfl
 
 
 def baseball_tables() -> list[Table]:
@@ -165,7 +165,41 @@ def cfb_tables() -> list[Table]:
     return t
 
 
-TABLES = {"baseball": baseball_tables, "nfl": nfl_tables, "cfb": cfb_tables}
+def _tipoff_next_day(df: pd.DataFrame, ingested: pd.Timestamp) -> pd.Series:
+    """A box score is known the day after the game."""
+    return pd.to_datetime(df["startDate"], utc=True).dt.tz_localize(None).dt.normalize() + pd.Timedelta(days=1)
+
+
+def _cbb_game_available(df: pd.DataFrame, ingested: pd.Timestamp) -> pd.Series:
+    """A final game's result is known the day after; any other row (scheduled, postponed) when first seen."""
+    first_seen = pd.Series(ingested.tz_localize(None).normalize(), index=df.index)
+    return _tipoff_next_day(df, ingested).where(df["status"].eq("final"), first_seen)
+
+
+def _poll_available(df: pd.DataFrame, ingested: pd.Timestamp) -> pd.Series:
+    d = pd.to_datetime(df["pollDate"], utc=True, errors="coerce").dt.tz_localize(None).dt.normalize() + pd.Timedelta(days=1)
+    return d.fillna(ingested.tz_localize(None).normalize())
+
+
+def cbb_tables() -> list[Table]:
+    """College basketball (CBB-0a): the current season only. Ratings, lines and rosters are overwritten at the source,
+    so each version is recorded when first seen; that record is why the pull started before there were any pages
+    (The three ratings tables change wholesale every night; at 365 rows they are under the mass-update guard's floor.)"""
+    s, d = cbb().season, RAW / "cbb"
+    f = lambda name: d / f"{name}_{s}.parquet"  # noqa: E731
+    return [Table(f"cbb_teams_{s}", f("teams"), ("id",)),
+            Table(f"cbb_games_{s}", f("games"), ("id",), _cbb_game_available),
+            Table(f"cbb_team_games_{s}", f("team_games"), ("gameId", "teamId"), _tipoff_next_day),
+            Table(f"cbb_player_games_{s}", f("player_games"), ("gameId", "teamId", "player_athleteId"), _tipoff_next_day),
+            Table(f"cbb_lines_{s}", f("lines"), ("gameId", "provider")),
+            Table(f"cbb_rankings_{s}", f("rankings"), ("season", "seasonType", "week", "pollType", "teamId"), _poll_available),
+            Table(f"cbb_ratings_adjusted_{s}", f("ratings_adjusted"), ("teamId",)),
+            Table(f"cbb_ratings_srs_{s}", f("ratings_srs"), ("teamId",)),
+            Table(f"cbb_ratings_elo_{s}", f("ratings_elo"), ("teamId",)),
+            Table(f"cbb_roster_{s}", f("roster"), ("teamId", "player_id"))]
+
+
+TABLES = {"baseball": baseball_tables, "nfl": nfl_tables, "cfb": cfb_tables, "cbb": cbb_tables}
 
 
 def main() -> int:

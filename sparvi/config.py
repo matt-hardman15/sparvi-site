@@ -138,6 +138,27 @@ def cfb() -> CFB:
     return x
 
 
+@dataclass(frozen=True)
+class CBB:
+    """College basketball (CBB-0a: ingest and snapshots only). `season` is the year the season ends (2027 = 2026-27),
+    as CollegeBasketballData.com numbers it."""
+    season: int
+    start: str               # first and last day games can fall on (ISO dates); pulls are windowed between them
+    end: str
+    call_reserve: int        # stop basketball pulls when the shared CFBD quota left falls to this (football needs the rest)
+    approve_over: int
+
+
+@cache
+def cbb() -> CBB:
+    c = _load()["cbb"]
+    x = CBB(season=int(c["season"]), start=str(c["start"]), end=str(c["end"]),
+            call_reserve=int(c.get("call_reserve", 1000)), approve_over=int(c.get("approve_over", 300)))
+    if not (x.start < x.end and x.end.startswith(str(x.season))):
+        raise ValueError("sparvi.toml: [cbb] the season window must end in the season's year")
+    return x
+
+
 def section(*keys: str) -> dict:
     """A raw table from sparvi.toml, e.g. section("baseball", "rule5")."""
     d = _load()
@@ -148,7 +169,7 @@ def section(*keys: str) -> dict:
 
 def _cli(key: str) -> str:
     sport, _, attr = key.partition(".")
-    obj = {"baseball": baseball, "nfl": nfl, "cfb": cfb}[sport]()
+    obj = {"baseball": baseball, "nfl": nfl, "cfb": cfb, "cbb": cbb}[sport]()
     val = getattr(obj, attr)
     return " ".join(map(str, val)) if isinstance(val, (list, tuple)) else str(val)
 
