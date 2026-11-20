@@ -42,7 +42,8 @@ def selected(changed: list[str], models=None) -> list | None:
 
 
 def last_report(m) -> dict | None:
-    p = m.dir / "backtest" / f"{m.version}.json"
+    from backtest.runner import tested_version
+    p = m.dir / "backtest" / f"{tested_version(m)}.json"
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
 
 
