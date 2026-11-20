@@ -36,6 +36,16 @@ DEBUT_COLS = ["game_pk", "game_date", "game_year", "game_type", "pitcher", "batt
               "description"]                      # all predict() may read from the outcome season's MLB pitches
 NO_AGES = pd.Series({-1: pd.Timestamp("2000-01-01")})   # pairs() wants birth dates; the candidate has no age term
 _fits: dict = {}                                 # (loader, test season) -> the unpermuted fit, for outcome()'s units
+_built: dict = {}                                # (what, loader, test season) -> lines already built from that loader
+
+
+def _once(what: str, loader, fold, build):
+    """Lines are the same for every call with one loader and fold (the label-permutation test refits many times);
+    build them once. The loader is kept in the entry so a reused id can't return another loader's lines."""
+    key = (what, id(loader), fold.test_season)
+    if key not in _built or _built[key][0] is not loader:
+        _built[key] = (loader, build())
+    return _built[key][1]
 
 
 def _load(loader, level: str, season: int, as_of, columns: list[str] = COLS) -> pd.DataFrame:
@@ -48,8 +58,10 @@ def _load(loader, level: str, season: int, as_of, columns: list[str] = COLS) -> 
 
 
 def _train_lines(loader, fold) -> pd.DataFrame:
-    raw = pd.concat([_load(loader, lvl, s, fold.train_until) for lvl in ("aaa", "mlb") for s in fold.train_seasons], ignore_index=True)
-    return lines_from(raw, loader.load("batter_heights", fold.train_until))
+    def build():
+        raw = pd.concat([_load(loader, lvl, s, fold.train_until) for lvl in ("aaa", "mlb") for s in fold.train_seasons], ignore_index=True)
+        return lines_from(raw, loader.load("batter_heights", fold.train_until))
+    return _once("train", loader, fold, build)
 
 
 def _fit(lines: pd.DataFrame, before: int, permute_seed: int | None = None) -> dict:
@@ -100,7 +112,7 @@ def _candidates(loader, fold) -> pd.DataFrame:
 
 
 def predict(fitted, loader, fold) -> pd.DataFrame:
-    C = _candidates(loader, fold)
+    C = _once("candidates", loader, fold, lambda: _candidates(loader, fold))
     rows = []
     for side, ms in METRICS.items():
         c = C[C["side"].eq(side)]
@@ -123,7 +135,8 @@ def outcome(loader, fold) -> pd.DataFrame:
     key = (id(loader), fold.test_season)
     fitted = _fits[key][1] if key in _fits and _fits[key][0] is loader else fit(loader, fold)
     t = fold.test_season
-    L = lines_from(_load(loader, "mlb", t, fold.resolve_after), loader.load("batter_heights", fold.resolve_after))
+    L = _once("outcome", loader, fold, lambda: lines_from(_load(loader, "mlb", t, fold.resolve_after),
+                                                          loader.load("batter_heights", fold.resolve_after)))
     L = L[L["level"].eq("MLB") & L["segment"].eq("full") & L["pa"].ge(MIN_MLB)]
     rows = []
     for side, ms in METRICS.items():
