@@ -35,6 +35,10 @@ Every quarterback, running back, wide receiver and tight end in the transfer por
   const team = name => teams.has(name) ? S.cfbTeamLink(teams.get(name), esc(name)) : esc(name);
   const htwt = r => `${r.ht ? `${Math.floor(r.ht / 12)}'${r.ht % 12}"` : "—"} / ${r.wt ?? "—"}`;
   let board, programs;
+  // A window with no entrants yet hasn't opened: say when it does instead of showing a build date next to an empty list.
+  const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const opensIn = w => (w.opens ? MONTHS[+w.opens.slice(5, 7) - 1] : null);
+  const winNote = w => (w.players === 0 ? (opensIn(w) ? `opens in ${opensIn(w)}` : "not open yet") : w.as_of);
 
   async function load() {
     [board, programs] = await Promise.all([S.load(`/data/cfb/portal/board_${st.win}.json`), S.load(`/data/cfb/portal/programs_${st.win}.json`)]);
@@ -43,7 +47,7 @@ Every quarterback, running back, wide receiver and tight end in the transfer por
 
   function controls() {
     c.replaceChildren(
-      S.select("Window", WINDOWS.map(w => [w, `${w} season (${index.windows.find(x => String(x.window) === w).as_of})`]), st.win, async v => { st.win = v; await load(); controls(); draw(); }),
+      S.select("Window", WINDOWS.map(w => [w, `${w} season (${winNote(index.windows.find(x => String(x.window) === w))})`]), st.win, async v => { st.win = v; await load(); controls(); draw(); }),
       S.el("label", {}, "Position", S.seg(Object.keys(POS).map(k => [k, k]), st.pos, v => { st.pos = v; draw(); })),
       S.select("Program", [["", "All entrants"], ...programs.programs.map(p => [p.team, p.team])], st.prog, v => { st.prog = v; draw(); }),
       S.el("label", {}, "Program list", S.seg([["proj", "Projected yards"], ["fit", "System fit"]], st.list, v => { st.list = v; draw(); })));
@@ -143,7 +147,7 @@ Every quarterback, running back, wide receiver and tight end in the transfer por
     const bm = programs.numbers.backup_min[st.pos];
     const w = index.windows.find(x => String(x.window) === st.win);
     const none = board.players.length === 0
-      ? `No entrants yet: the ${st.win} portal window hasn't opened. Pick a program to see its openings, style, and coaching; entrants appear here as they enter`
+      ? `No entrants yet: the ${st.win} portal window ${opensIn(w) ? `opens in ${opensIn(w)} ${w.opens.slice(0, 4)}` : "hasn't opened"}. Pick a program to see its openings, style, and coaching; entrants appear here as they enter`
         + (board.membership_from ? ` (conferences are as of ${board.membership_from} until the ${st.win} lists are out)` : "") + ". "
       : "";
     document.getElementById("tcap").textContent = none + (P

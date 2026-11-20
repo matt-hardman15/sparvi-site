@@ -140,10 +140,13 @@ figure h2, .plot-host h2 { font-family: var(--sans); font-size: .95rem; font-wei
 /* Data status page */
 .status-card { margin: 1.5rem 0 2rem; }
 .status-line { margin: .25rem 0 .5rem; }
+.status-block { margin: 1rem 0 .5rem; }
+.status-block h3 { margin: 0 0 .25rem; font-size: 1.05rem; }
 .status-badge { display: inline-block; padding: .1rem .55rem; border-radius: 999px; font-size: .85rem; font-weight: 600; }
 .status-badge.ok { background: var(--accent-soft); color: var(--accent); }
 .status-badge.fail { background: #fde8e7; color: #b42318; }
 .status-failures { color: #b42318; }
+.status-table td, .status-table th { text-align: left; white-space: normal; vertical-align: top; }
 .status-table td:first-child { width: 1.5rem; text-align: center; }
 .status-table tr.status-fail td { color: #b42318; font-weight: 600; }
 

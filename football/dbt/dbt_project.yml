@@ -10,7 +10,7 @@ target-path: "target"
 clean-targets: ["target", "dbt_packages"]
 
 # One project for both football sports: NFL models are prefixed nfl_, college models (F2) cfb_.
-# Build one sport with `--select stg_nfl_plays+` or `--select stg_cfb_plays+` (nfl/build.sh, cfb/build.sh).
+# Build one sport with `--select stg_nfl_plays+` or `--select int_cfb_game_integrity+` (nfl/build.sh, cfb/build.sh).
 # The season vars have no defaults on purpose; both builds pass all four from sparvi.toml.
 vars:
   # Garbage time (NFL): a 4th-quarter play with the offense's win probability below/above these.
@@ -33,6 +33,18 @@ vars:
   cfb_garbage_q3: 28
   cfb_garbage_q4: 22
   cfb_trailing_weeks: 4
+  # Play-by-play integrity (int_cfb_game_integrity; the rule is documented there and on /status/).
+  # A game whose play-by-play final is the official result with home and away exactly swapped is repaired only when
+  # its scoring plays say which field is wrong by at least this many points (otherwise its running score is ignored).
+  cfb_pbp_swap_evidence_points: 7
+  # Games whose play-by-play final is off by this many points or more are listed on /status/ (ingest/cfb/checks.py: BIG_GAP).
+  cfb_pbp_big_gap: 9
+  # Games off by at least this many points are excluded from the ratings. 1000 = never: the plays' teams, yards and
+  # EPA don't depend on the score fields, so the default keeps them (options: review/model-changes.md, 2026-11-20).
+  cfb_pbp_exclude_gap: 1000
+  # The build fails if more than this share of efficiency plays name a team that isn't one of the game's two teams
+  # (those plays are dropped: they can't be credited to anyone).
+  cfb_pbp_max_unattributable: 0.005
 
 models:
   football:

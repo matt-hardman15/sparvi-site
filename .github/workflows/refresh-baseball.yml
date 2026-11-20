@@ -170,15 +170,28 @@ jobs:
           uv run python baseball/pitch_quality/robustness.py > /dev/null
           sha256sum -c /tmp/first.sha
 
-      # Commits the data-check status every run, and the rebuilt data only when a build ran and
-      # passed (never a half-built tree: a failed build or repeatability check skips this step).
+      # Plausibility tests (plausibility/baseball.py) on what the build produced: can the numbers each tool shows be
+      # true? Like a failed data check, a failure publishes nothing: the rebuilt data is not committed, the site keeps
+      # the last data that passed, the failure is committed to site/data/status/baseball_plausibility.json (shown on
+      # /status/), and the run ends red.
+      - name: Plausibility tests
+        id: plausibility
+        if: steps.build.outcome == 'success' && steps.repeat.outcome == 'success'
+        run: |
+          if uv run python -m plausibility baseball; then echo "ok=true" >> "$GITHUB_OUTPUT"
+          else echo "ok=false" >> "$GITHUB_OUTPUT"; fi
+
+      # Commits the data-check and plausibility status every run, and the rebuilt data only when a build ran,
+      # passed, and its numbers passed the plausibility tests (never a half-built tree: a failed build or
+      # repeatability check skips this step).
       - name: Commit refreshed data
         if: ${{ !cancelled() && steps.checks.outcome == 'success' && steps.build.outcome != 'failure' && steps.repeat.outcome != 'failure' }}
         run: |
           git config user.name "sparvi-bot"
           git config user.email "sparvi-bot@users.noreply.github.com"
           git add site/data/status/baseball.json
-          if [ "${{ steps.inputs.outputs.changed }}" = "true" ]; then
+          if [ "${{ steps.plausibility.outcome }}" = "success" ]; then git add site/data/status/baseball_plausibility.json; fi
+          if [ "${{ steps.inputs.outputs.changed }}" = "true" ] && [ "${{ steps.plausibility.outputs.ok }}" = "true" ]; then
             uv run python scripts/build_fingerprint.py --write   # what this build was made from
             # Everything the build regenerates: data, prose numbers, model outputs, listing thumbnails.
             git add site/data/baseball site/_generated/baseball.yml baseball/*/output site/baseball/*/thumb.png \
@@ -194,6 +207,12 @@ jobs:
         if: steps.checks.outputs.ok == 'false'
         run: |
           echo "::error::Baseball data checks failed; the site still serves the last good data. See /status/."
+          exit 1
+
+      - name: Fail the run if a plausibility test failed
+        if: steps.plausibility.outputs.ok == 'false'
+        run: |
+          echo "::error::Baseball plausibility tests failed; the rebuilt data was not published. See /status/."
           exit 1
 
       - name: Fail the run if the snapshot failed

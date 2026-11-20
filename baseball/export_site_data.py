@@ -22,7 +22,7 @@ import yaml
 
 from backtest.gate import require_passing
 from sparvi.config import ROOT, baseball, section
-from sparvi.io import write_json, write_numbers, write_records
+from sparvi.io import tail_dates, write_json, write_numbers, write_records
 from sparvi.player_archive import archive, path_for
 from sparvi.urls import update_registry
 
@@ -250,14 +250,20 @@ group_of = {k: _clean(g) for k, g in zip(zip(snap_pt["pitcher_id"], snap_pt["pit
 # snapshots_X_last30.json (fetched only when someone switches to the trailing window). Fields that
 # don't change by date (handedness, age, final-14-day changes) ride along as `static`, so the tools
 # don't need to download the season-level tables as well.
-def write_league(stem: str, level: str, dates: list, fields: dict, ser: dict, statics: dict, keep: list) -> list[dict]:
-    """Write the league file(s) with only the `keep` fields the tools show; return full series for player files."""
+def write_league(stem: str, level: str, dates: list, fields: dict, ser: dict, statics: dict, keep: list,
+                 latest: bool = False) -> list[dict]:
+    """Write the league file(s) with only the `keep` fields the tools show; return full series for player files.
+    `latest` also writes <stem>_latest.json, the season-to-date file cut to its last two dates: what the default
+    view's table needs, so it can paint before the full season arrives (PERF-2)."""
     players = [{"id": int(k[0]), "name": names.get(k[0], str(k[0])), "static": statics.get(int(k[0]), {}), "series": v}
                for k, v in sorted(ser.items())]
     for win, suffix in [("std", ""), ("last30", "_last30")]:
-        write_json(OUT / f"{stem}{suffix}.json", {"level": level, "window": win, "dates": dates, "fields": keep,
-                   "players": [{**pl, "series": {win: {f: pl["series"][win][f] for f in keep}}}
-                               for pl in players if win in pl["series"]]})
+        league = {"level": level, "window": win, "dates": dates, "fields": keep,
+                  "players": [{**pl, "series": {win: {f: pl["series"][win][f] for f in keep}}}
+                              for pl in players if win in pl["series"]]}
+        write_json(OUT / f"{stem}{suffix}.json", league)
+        if latest and win == "std":
+            write_json(OUT / f"{stem}_latest.json", tail_dates(league))
     print(f"{stem}.json(+_last30) {len(players):>7,} players x {len(dates)} dates")
     return players
 
@@ -276,7 +282,8 @@ for lvl in ["MLB", "AAA"]:
     # The leaderboard reads the grades file (both levels); the Triple-A explorer reads the pitchers file,
     # which leaves the grades out to stay small (it is the largest page; see tests/test_perf.py).
     base = ["team", "role", "games", "starts", "pitches", "bf", "qualified"]
-    players = write_league(f"snapshots_grades_{lvl.lower()}", lvl, dates, fields, ser, static_p[lvl], base + GRADES + ["rv_plus"])
+    players = write_league(f"snapshots_grades_{lvl.lower()}", lvl, dates, fields, ser, static_p[lvl], base + GRADES + ["rv_plus"],
+                           latest=True)
     if lvl == "AAA":
         write_league("snapshots_pitchers_aaa", lvl, dates, fields, ser, static_p[lvl], base + [
             "k_pct", "bb_pct", "csw_pct", "whiff_pct", "hard_hit_pct", "xwoba", "fb_velo",

@@ -21,6 +21,7 @@ import sys
 from datetime import date, timedelta
 
 import ingest.common.checks as common
+from ingest.cfb.integrity import classify
 from ingest.common.checks import Checks
 from sparvi.config import RAW, cfb
 from sparvi.io import write_json
@@ -140,7 +141,10 @@ def run(today: date | None = None) -> bool:
             through = {"season": s, "week": wk, "last_game": str(last) if last else None}
     player_checks(c, d / "players", cfg)
     ok = c.finish(through)
-    # Listed for /status/: games whose play-by-play is far from the official score (kept in the ratings).
+    # Listed for /status/: games whose play-by-play is far from the official score, with the class the ratings'
+    # integrity rule gives them (int_cfb_game_integrity.sql; the decisions are in cfb_pbp_integrity.json after the build).
+    for x in big_gaps:
+        x["class"] = classify(*map(float, x["result"].split("-")), *map(float, x["pbp"].split("-")))
     st = json.loads((common.STATUS / "cfb.json").read_text(encoding="utf-8"))
     st["score_gaps"] = big_gaps
     write_json(common.STATUS / "cfb.json", st, indent=1)

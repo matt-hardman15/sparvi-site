@@ -129,7 +129,14 @@ meta = {
     "defs": {"explosive_pass_yds": DBT_VARS["explosive_pass_yds"], "explosive_run_yds": DBT_VARS["explosive_run_yds"],
              "neutral_wp": [DBT_VARS["nfl_neutral_wp_lo"], DBT_VARS["nfl_neutral_wp_hi"]],
              "garbage_wp": [NFL_GARBAGE_WP_LO, NFL_GARBAGE_WP_HI]},
-    "adjustment": {k: search[k] for k in ("lambda", "n_games", "mae_adjusted", "mae_raw", "mae_ridge", "mae_home_only", "seasons")},
+    "adjustment": {**{k: search[k] for k in ("lambda", "n_games", "mae_adjusted", "mae_raw", "mae_ridge", "mae_home_only", "seasons")},
+                   # The schedule correction's own penalty, how far it moves teams this week, and how much of a known
+                   # schedule effect it recovers in simulation (NFL-SCHED); plausibility/nfl.py bounds these.
+                   "lambda_schedule": search["lambda_schedule"], "schedule_skill": round(search["schedule_search"]["skill"], 4),
+                   "correction": {k: (round(v, 4) if isinstance(v, float) else v) for k, v in search["correction"].items()
+                                  if k not in ("at_forecast_lambda", "ranks")},
+                   "simulation_recovered": {"full_season": round(search["simulation"]["full_season"]["recovered"], 3),
+                                            "through_week": round(search["simulation"]["through_week"]["recovered"], 3)}},
 }
 write_json(OUT / "meta.json", meta, indent=1)
 con.close()
@@ -158,12 +165,36 @@ N = {
     "adj_last_season": str(max(search["seasons"])),
     "adj_min_week": str(search["min_week"]),
     "adj_mae_ridge": f"{search['mae_ridge']:.2f}",
+    "adj_lambda_sched_off": f"{search['lambda_schedule'][0]:,}",
+    "adj_lambda_sched_def": f"{search['lambda_schedule'][1]:,}",
+    "adj_sched_skill": pct(search["schedule_search"]["skill"]),
+    "adj_sched_skill_forecast": pct(search["schedule_search"]["skill_at_forecast_lambda"]),
+    "adj_sim_recovered": pct(search["simulation"]["full_season"]["recovered"]),
+    "adj_sim_recovered_week": pct(search["simulation"]["through_week"]["recovered"]),
+    "adj_sim_recovered_forecast": pct(search["simulation"]["full_season_at_forecast_lambda"]["recovered"]),
+    "adj_corr_week": str(search["correction"]["week"]),
+    "adj_corr_season": str(search["correction"]["season"]),
+    "adj_corr_off_max": f"{search['correction']['off_max']:.3f}",
+    "adj_corr_def_max": f"{search['correction']['def_max']:.3f}",
+    "adj_corr_off_sd": f"{search['correction']['off_raw_sd']:.3f}",
+    "adj_corr_def_sd": f"{search['correction']['def_raw_sd']:.3f}",
 }
 # The tool's method note says: schedule-adjusted EPA predicted next week's margins about as well as raw
 # (within 0.05 points of MAE), shrunk strength ratings predicted better than either, and every rating
 # beat home field alone.
 if not abs(search["mae_adjusted"] - search["mae_raw"]) < 0.05:
     raise StaleProse("NFL method note says schedule adjustment predicts about as well as raw EPA; it no longer does.")
+# ...and that the correction's own penalty beats the forecast penalty at predicting a held-out game's EPA/play, recovers
+# most of a known schedule effect over a full season, and that both penalties differ (the reason there are two).
+SS, SIM = search["schedule_search"], search["simulation"]
+if not (SS["skill"] > SS["skill_at_forecast_lambda"] and max(search["lambda_schedule"]) < search["lambda"]):
+    raise StaleProse("NFL method note: the schedule penalty no longer beats (or differs from) the forecast penalty.")
+if not (SIM["full_season"]["recovered"] > 0.5 > SIM["full_season_at_forecast_lambda"]["recovered"]
+        and SIM["through_week"]["recovered"] < SIM["full_season"]["recovered"]):
+    raise StaleProse("NFL method note: 'recovers most of a known schedule effect over a full season, less earlier' no longer holds.")
+# ...and that defenses get the heavier penalty of the two (they differ less than offenses).
+if not search["lambda_schedule"][0] < search["lambda_schedule"][1]:
+    raise StaleProse("NFL method note: 'a heavier penalty for defenses than for offenses' no longer holds.")
 if not search["mae_ridge"] < min(search["mae_adjusted"], search["mae_raw"]) < max(search["mae_adjusted"], search["mae_raw"]) < search["mae_home_only"]:
     raise StaleProse("NFL method note: shrunk ratings < adjusted/raw < home-field-only MAE no longer holds.")
 def ordinal(n: int) -> str:

@@ -495,11 +495,18 @@ def act_nfl_index(p):
 
 
 def act_status(p):
-    for sport in ("baseball", "nfl"):
+    for sport in ("baseball", "nfl", "cfb"):
         card = p.locator(f"#status-{sport}")
-        assert card.count() == 1 and "checks" in card.text_content()
-        card.locator("summary").click(); wait(p, 200)
-        assert card.locator("tbody tr").count() >= 10
+        text = card.text_content()
+        assert card.count() == 1 and "Data checks" in text and "Plausibility tests" in text
+        # Both kinds of test passed on the committed data, and every result is listed behind its disclosure.
+        assert card.locator(".status-block").count() == 2 and card.locator(".status-badge.ok").count() == 2
+        for i in range(card.locator("summary").count()):
+            card.locator("summary").nth(i).click(); wait(p, 200)
+        assert card.locator(".status-block").nth(0).locator("tbody tr").count() >= 10
+        assert card.locator(".status-block").nth(1).locator("tbody tr").count() >= 10
+    # College football lists each game whose play-by-play score is off, with what is done about it.
+    assert "Decision" in p.locator("#status-cfb").text_content()
 
 
 def act_cfb_ratings(p):
@@ -915,3 +922,31 @@ def test_build_has_no_broken_internal_links():
     import subprocess
     r = subprocess.run([sys.executable, str(ROOT / "site" / "build" / "linkcheck.py")], capture_output=True, text=True)
     assert r.returncode == 0, r.stderr[-2000:]
+
+
+def test_leaderboard_first_paint_from_the_small_file(browser, base_url):
+    """PERF-2: the default view's table paints from snapshots_grades_mlb_latest.json while the full season file is
+    still on its way, and shows the same rows once it arrives."""
+    ctx = browser.new_context(viewport={"width": 1280, "height": 900})
+    p = ctx.new_page()
+    held = []
+    p.route("**/data/baseball/snapshots_grades_mlb.json", lambda route: held.append(route))
+    try:
+        p.goto(base_url + "/baseball/tools/stuff-leaderboard.html", wait_until="commit")
+        p.wait_for_selector("#t table.s-table tbody tr", timeout=15000)
+        first = p.locator("#t table.s-table tbody").inner_text()
+        assert rows(p, "#t") == 25 and held, "the table should paint while the full file is held"
+        assert p.locator("#scatter svg").count() == 0                     # the charts need the full season
+        for route in held:
+            route.continue_()
+        p.wait_for_selector("#scatter svg", timeout=15000)
+        wait(p, 600)
+        assert p.locator("#t table.s-table tbody").inner_text() == first
+        # A view the small file can't serve (an earlier date) goes straight to the full file.
+        seen = []
+        p2 = ctx.new_page()
+        p2.on("request", lambda r: "/data/baseball/" in r.url and seen.append(r.url.rsplit("/", 1)[1]))
+        p2.goto(base_url + "/baseball/tools/stuff-leaderboard.html?asof=2026-06-07", wait_until="networkidle")
+        assert "snapshots_grades_mlb_latest.json" not in seen and "snapshots_grades_mlb.json" in seen
+    finally:
+        ctx.close()

@@ -107,6 +107,27 @@
     return Math.min(1, g / c.full_season_games);
   };
 
+  // ---- scales ------------------------------------------------------------------
+  // What 100 (or a percentile) is measured against, in one place so every table says it the same way.
+  // Every "+" grade (Stuff+, Location+, Pitching+, RV+) is on the MLB scale at every level: 100 and the
+  // 10-point SD come from qualified MLB pitchers of the season before (meta.scale_reference). There is no
+  // Triple-A "+" scale. RV+ uses that MLB ruler on results against the pitcher's own level's hitters.
+  S.SCALES = {
+    mlb: (ref) => `MLB scale: 100 = the average qualified MLB pitcher of ${ref}, 10 points = 1 standard deviation` ,
+    mlbAaa: (ref) => `MLB scale, also for Triple-A pitchers: 100 = the average qualified MLB pitcher of ${ref} (not the Triple-A average), 10 points = 1 standard deviation`,
+    rv: (ref, level) => `MLB scale for the size of a point (100 and the 10-point SD are ${ref} qualified MLB pitchers' run value per 100 pitches), but the results came against ${level === "AAA" ? "Triple-A" : "MLB"} hitters` +
+      (level === "AAA" ? ", so a Triple-A RV+ can't be compared with an MLB RV+ or with the grades beside it" : ""),
+    aaaPct: (pool) => `Triple-A scale: shaded by percentile among qualified Triple-A ${pool} on the selected date (higher is better)`,
+    translated: "MLB scale (translated): the typical major-league value for a Triple-A line like this one",
+    raw: "Raw value, no scale",
+  };
+  // Pitch-weighted league mean of a field over rows (for "the Triple-A average on this scale is 91").
+  S.leagueMean = (rows, key, weight = "pitches") => {
+    let s = 0, w = 0;
+    for (const r of rows) if (r[key] != null && r[weight] > 0) { s += r[key] * r[weight]; w += r[weight]; }
+    return w ? s / w : null;
+  };
+
   // ---- snapshots + date slider --------------------------------------------------
   // Snapshot files are columnar: {dates, fields, players: [{id, name, series: {std|last30: {field: [..]}}}]}.
   S.WINDOWS = { std: "Season to date", last30: "Last 30 days" };

@@ -43,6 +43,12 @@ jobs:
 
       - run: uv sync --frozen
 
+      # Backstop for anything that reaches main outside a refresh (a pull request, a hand edit): the plausibility
+      # tests that need only the committed site data run again here, and a failure stops the deploy, so the live site
+      # stays on the last version that passed. Nothing is written.
+      - name: Plausibility tests on the committed site data
+        run: uv run python -m plausibility all --check
+
       - name: Render
         run: |
           # Generated from the model registry at render time, never committed (a committed copy conflicted with every

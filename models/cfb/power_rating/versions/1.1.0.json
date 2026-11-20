@@ -1,0 +1,52 @@
+{
+  "model": "cfb_power_rating",
+  "version": "1.1.0",
+  "status": "champion",
+  "registered": "2026-11-20",
+  "note": "AUDIT-CFB (minor): play-by-play integrity rule (int_cfb_game_integrity; swapped games repaired from their scoring plays, impossible running scores ignored for garbage time, stray-team plays dropped), the blend's two parts published, and Elo-by-week ordered by kickoff time (it was left to an unstable sort within a week, so bowl-week ratings differed by CPU). football/common/adjust.py gained an optional schedule penalty that college football does not use (bit-identical results without it). The blend is unchanged. Raw CFBD data was not on the machine that registered this: the metrics recorded here are 1.0.0's (metrics.json as committed); the pull request's rebuild job measured power MAE 12.547 (12.548 before) on the same 2,917 games.",
+  "code_hash": "eab44c2226cca01c50de07d00ee4378bc3a1eeaca34d9abdd064aad4f08c1727",
+  "code_files": {
+    "cfb/adjusted_ratings/adjusted.py": "7b767baee3aecab030a8cf5162671863d8f88b43f6b66985df15fd305c761b00",
+    "football/common/adjust.py": "51195656b6b4b76d2811b393a0c7b87ab513283b56f9f9fde5d0a792e50db204",
+    "football/dbt/models/staging/stg_cfb_plays.sql": "b33974afbb225eadbf49d2fbb5947a98d79b1e6dfd3c7c74ccf61220c1d99244",
+    "football/dbt/models/intermediate/int_cfb_game_integrity.sql": "8a006ee037d1736e691e3226b69c3faa8089b750656091eb8c26721aefd52770"
+  },
+  "training_data": "not hashed (raw data not present)",
+  "artifacts": {
+    "cfb/adjusted_ratings/output/metrics.json": "a870ce8fb055cb55d36b08b9b04e49292504852fcdd24e94fa61435b14d133f9"
+  },
+  "eval": {
+    "set": "FBS vs. FBS games from week 5 through the bowls, complete seasons, with Elo and both lines available, predicted from ratings through the prior week (leave-one-season-out).",
+    "set_keys": {
+      "seasons": [
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "min_week": 4,
+      "n_games": 2917
+    },
+    "primary": "mae_power",
+    "higher_is_better": false
+  },
+  "metrics": {
+    "mae_power": 12.547612901854757,
+    "mae_elo": 12.68200242293611,
+    "mae_efficiency": 13.015188213131706,
+    "power_minus_elo": -0.13438952108135271,
+    "mae_line_close": 12.094789166952348,
+    "wepa_test_ours": 14.217538467811702,
+    "wepa_test_wepa": 14.516378777033797,
+    "lambda": 50,
+    "n_games": 2917
+  }
+}

@@ -61,13 +61,17 @@ Model versions: [{{< meta models.aaa_translation >}}](https://github.com/matt-ha
   // Table minimum for hitters: 100 PA over a season, prorated, at least 1. (The percentile pool has its
   // own floor of 25, so early-season percentiles stay blank instead of resting on a few at-bats.)
   const hitMin = (fac) => Math.max(1, Math.round(HIT_MIN * fac));
-  const pc = (key, label, fmt, title) => ({ key, label, fmt: (v, r) => fmt(v), heat: "pct", heatVal: r => r[key + "_pctl"], sortVal: r => r[key + "_pctl"], title });
+  // Scales (S.SCALES): values are raw Triple-A numbers; the shading and sort are percentiles on the Triple-A scale.
+  // This page shows no "+" grade: those are on the MLB scale and live on the pitch-grade leaderboard.
+  const pc = (key, label, fmt, title, pool) => ({ key, label, fmt: (v, r) => fmt(v), heat: "pct", heatVal: r => r[key + "_pctl"], sortVal: r => r[key + "_pctl"],
+    title: (title ? title + ". " : "") + "Raw Triple-A value. " + S.SCALES.aaaPct(pool) + "." });
+  const hc = (key, label, fmt, title) => pc(key, label, fmt, title, "hitters"), ppc = (key, label, fmt, title) => pc(key, label, fmt, title, "pitchers");
   const hCols = [
     { key: "name", label: "Hitter", align: "l", html: r => S.playerLink(r.id, r.name) },
     { key: "team", label: "Team", align: "l" }, { key: "age", label: "Age" }, { key: "pa", label: "PA" },
-    pc("xwoba", "xwOBA", f.woba), pc("ev90", "EV90", v => f.num(v), "90th-percentile exit velocity"),
-    pc("hard_hit_pct", "Hard-hit", f.pct), pc("chase_pct", "Chase", f.pct), pc("zone_contact_pct", "Z-Contact", f.pct),
-    pc("k_pct", "K%", f.pct), pc("bb_pct", "BB%", f.pct),
+    hc("xwoba", "xwOBA", f.woba), hc("ev90", "EV90", v => f.num(v), "90th-percentile exit velocity"),
+    hc("hard_hit_pct", "Hard-hit", f.pct), hc("chase_pct", "Chase", f.pct), hc("zone_contact_pct", "Z-Contact", f.pct),
+    hc("k_pct", "K%", f.pct), hc("bb_pct", "BB%", f.pct),
     { key: "chase_delta", label: "Chase Δ14", fmt: f.pts, title: "Final 14 days vs season, percentage points (shown at the season's final date only)" },
   ];
   const pCols = [
@@ -75,13 +79,13 @@ Model versions: [{{< meta models.aaa_translation >}}](https://github.com/matt-ha
     { key: "team", label: "Team", align: "l" },
     { key: "role", label: "Role", align: "l", title: "SP starter · RP reliever · Swing, as of the selected date (see glossary)" },
     { key: "age", label: "Age" }, { key: "pitches", label: "Pitches", fmt: f.int }, { key: "bf", label: "BF" },
-    pc("k_pct", "K%", f.pct), pc("bb_pct", "BB%", f.pct), pc("csw_pct", "CSW%", f.pct), pc("whiff_pct", "Whiff%", f.pct),
-    pc("hard_hit_pct", "Hard-hit", f.pct), pc("xwoba", "xwOBA", f.woba),
-    { key: "fb_velo", label: "FB velo", fmt: v => f.num(v) },
+    ppc("k_pct", "K%", f.pct), ppc("bb_pct", "BB%", f.pct), ppc("csw_pct", "CSW%", f.pct), ppc("whiff_pct", "Whiff%", f.pct),
+    ppc("hard_hit_pct", "Hard-hit", f.pct), ppc("xwoba", "xwOBA", f.woba),
+    { key: "fb_velo", label: "FB velo", fmt: v => f.num(v), title: "Average fastball velocity, mph. " + S.SCALES.raw + "." },
     { key: "fb_velo_delta", label: "Velo Δ14", fmt: v => f.signed(v), title: "Final 14 days vs season, mph (shown at the season's final date only)" },
   ];
   let tbl, side;
-  const MLB_TIP = "Translated to MLB: the typical major-league value for a Triple-A line like this one (blank under the translation's minimum)";
+  const MLB_TIP = S.SCALES.translated + " (blank under the translation's minimum). Shading stays on the Triple-A scale: his percentile among qualified Triple-A players.";
   const host = document.getElementById("scatter");
   // One axis range per side x window x view, pooled over every snapshot date's qualified players
   // (S.stableDomain), so moving the slider moves the dots, not the axes.
@@ -155,6 +159,8 @@ Model versions: [{{< meta models.aaa_translation >}}](https://github.com/matt-ha
       ? `Gray: every qualified Triple-A ${who === "pitchers" ? "pitcher" : who.replace(/s$/, "")}. Upper left is where you want to be: lots of strikeouts, few walks. Table: ${rows.length} ${who}, ${S.qualifierText(Q, "AAA", st.min, st.role, fac)}.`
       : `Gray: every qualified Triple-A hitter. Lower chase rates go with ${isNaN(r) ? "—" : r < 0 ? "better" : "no better"} xwOBA here (r = ${isNaN(r) ? "—" : r.toFixed(2).replace("-", "−")}), but the spread at any chase rate is wide. Table: ${st.min ?? hitMin(fac)}+ PA.`)
       + (hi.length ? ` Orange: ${st.team || "search matches"}.` : " Pick a team or search a name to highlight players.")
+      + (mlb ? " Scale: ▲ columns are MLB-scale estimates; their shading is still the Triple-A percentile."
+             : ` Scale: every number is a raw Triple-A value and every shade a percentile among qualified Triple-A ${pitch ? "pitchers" : "hitters"} (Triple-A scale).`)
       + (rows.length === 0 && (pitch && st.role) === "SP" ? ` No pitcher has ${meta.role_rules.role_sp_min_starts}+ starts yet, the minimum for the starter role; early-season starters show as Swing.` : "")
       + (isFinal ? "" : " Δ14 columns and change flags describe the season's final two weeks, so they show only at the final date with the season-to-date window.")
       + (mlb ? ` ▲ columns are translated to MLB: the typical major-league value for this Triple-A line, from players who moved up. The table lists only lines with ${F.min_aaa}+ ${pitch ? "batters faced" : "PA"}, the translation's minimum, and each translation carries a wide range (see the article).` : "");
@@ -165,5 +171,7 @@ Model versions: [{{< meta models.aaa_translation >}}](https://github.com/matt-ha
 ```
 
 ::: {.note}
+**Scales.** Every column here is a raw Triple-A number, and its shading and sort order are a percentile among qualified Triple-A players on the selected date: the **Triple-A scale**, where 50 is the Triple-A median. With *Translated to MLB* on, the ▲ columns become **MLB-scale** estimates (the shading stays the Triple-A percentile). This page shows no "+" grade. Stuff+, Location+, Pitching+, and RV+ for Triple-A pitchers are on the [pitch-grade leaderboard](/baseball/tools/stuff-leaderboard.html?level=AAA), on the MLB scale (100 = the average qualified MLB pitcher), where the Triple-A average is well below 100.
+
 {{< meta baseball.season >}} regular season through {{< meta baseball.as_of >}}, in weekly snapshots. "Δ14" compares the final 14 days with the full season. Flags fire on chase rate ±5 pts or hard-hit rate ±10 pts (hitters, 30+ recent PA), fastball velocity ±1 mph (pitchers, 10+ recent BF), and walk rate +5 or whiff rate +7 pts (25+ recent BF). Definitions are in the [glossary](/glossary.html).
 :::
