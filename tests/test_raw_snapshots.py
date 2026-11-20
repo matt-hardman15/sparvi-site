@@ -127,3 +127,26 @@ def test_grow_only_tables_keep_rows_a_pull_did_not_need(tmp_path):
     assert (s2["inserts"], s2["updates"], s2["deletes"]) == (0, 1, 0)
     df, _ = read_asof(store, "baseball", "heights", T1 + pd.Timedelta(days=2))
     assert sorted(df["batter"]) == [1, 2, 3, 4]
+
+
+def test_history_season_is_restored_from_snapshots_in_pull_order(tmp_path, monkeypatch):
+    """PQ-TEST-2: a machine that never pulled a history season gets the file the pull would have written."""
+    from ingest.baseball import history
+    from ingest.baseball.pull import ORDER
+    from sparvi.config import baseball
+
+    season = baseball().history_seasons[-1]
+    rows = pd.DataFrame({"game_date": ["2023-04-02", "2023-04-01", "2023-04-01", "2023-04-01"], "game_pk": [9, 5, 5, 3],
+                         "at_bat_number": [1, 2, 1, 1], "pitch_number": [1, 1, 2, 1], "release_speed": [90.0, 91.0, 92.0, 93.0]})
+    src = tmp_path / "src.parquet"
+    rows.to_parquet(src, index=False)
+    store = LocalStore(tmp_path / "bucket")
+    snapshot(store, "baseball", Table(f"statcast_mlb_{season}", src, ("game_pk", "at_bat_number", "pitch_number"),
+                                      day_after("game_date")), T0)
+    raw = tmp_path / "raw"
+    assert history.restore([season], store=store, raw=raw) == 0
+    got = pd.read_parquet(raw / f"statcast_mlb_{season}.parquet")
+    pd.testing.assert_frame_equal(got, rows.sort_values(ORDER, kind="stable").reset_index(drop=True))
+    # A season already on the machine is left alone (no store needed); a season the site shows is refused.
+    assert history.restore([season], store=None, raw=raw) == 0
+    assert history.restore([baseball().season], store=store, raw=raw) == 2

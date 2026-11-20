@@ -2,6 +2,8 @@
 what runs with write access to the repo. Dependabot (github-actions) keeps the pins current."""
 import re
 
+import yaml
+
 from sparvi.config import ROOT
 
 USES = re.compile(r"^\s*(?:-\s*)?uses:\s*(\S+)", re.M)
@@ -41,3 +43,17 @@ def test_site_check_runs_for_everything_the_site_reads():
 def test_site_check_never_skips_when_change_detection_fails():
     wf = (ROOT / ".github" / "workflows" / "check.yml").read_text(encoding="utf-8")
     assert "always() && (needs.changes.result != 'success' || needs.changes.outputs.site == 'true')" in wf
+
+
+def test_backtest_gets_the_history_season_from_cache_before_r2():
+    """PQ-TEST-2: the Stuff+ backtest trains on a season the refresh never pulls. Pull requests without secrets
+    (Dependabot) must find it in the cache; R2 is read only when the cache misses."""
+    steps = {s.get("name"): s for s in yaml.safe_load((ROOT / ".github/workflows/backtest.yml").read_text(encoding="utf-8"))
+             ["jobs"]["backtest"]["steps"]}
+    cache, r2, save = (steps[n] for n in ("Restore the history season (cache)", "Restore the history season (R2 snapshots)",
+                                           "Save the history season"))
+    assert cache["with"]["key"] == save["with"]["key"] and cache["with"]["path"] == save["with"]["path"]
+    assert "steps.hist.outputs.cache-hit != 'true'" in r2["if"] and "steps.hist.outputs.cache-hit != 'true'" in save["if"]
+    assert "ingest.baseball.history restore" in r2["run"]
+    names = list(steps)
+    assert names.index("Restore the history season (R2 snapshots)") < names.index("Pull missing batter heights (MLB Stats API)")
