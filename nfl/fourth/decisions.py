@@ -10,8 +10,8 @@ choice cost.
                 (a toss-up costs nothing by definition)
 
 The newest engine also fills a chart of standard situations (GRID: a tie game with 10:00 left in the 2nd quarter,
-outdoors, even teams, all timeouts, averaged over home and away) for every field position and distance, with the
-same intervals: the "when should you go" map.
+outdoors, even teams, all timeouts, averaged over home and away and over which team receives the 2nd-half kickoff)
+for every field position and distance, with the same intervals: the "when should you go" map.
 
 Writes output/decisions_{season}.parquet (play-level, private: gitignored), output/grid_{season}.json, and
 output/decisions.json (the engine's tables and run settings per season). nfl/export_site_data.py turns the rows into the site's aggregates.
@@ -58,17 +58,28 @@ GRID_YARDLINES = list(range(1, 100))
 GRID_YTG = list(range(1, 16))
 
 
+GRID_CLOCK = 600.0             # seconds left in the 2nd quarter: the "10:00 left" the page states
+
+
 def grid(season: int) -> pd.DataFrame:
-    """Standard situations: every yards-from-goal x yards-to-go pair, as the home and as the away team."""
-    g = pd.DataFrame([(y, t, h) for y in GRID_YARDLINES for t in GRID_YTG if t <= y for h in (1.0, 0.0)],
-                     columns=["yardline_100", "ydstogo", "home"]).astype(float)
-    return g.assign(season=season, score_differential=0.0, game_seconds_remaining=2700.0, half_seconds_remaining=900.0,
-                    half2=0.0, ot=0.0, down=4.0, posteam_timeouts_remaining=3.0, defteam_timeouts_remaining=3.0,
-                    recv_2h=0.5, strength=0.0, indoors=0.0, wind=5.0)
+    """Standard situations: every yards-from-goal x yards-to-go pair, as the home and as the away team, receiving the
+    2nd-half kickoff and not (four rows a cell, averaged by _grid_table).
+
+    Both flags must be 0 or 1 on every row. The win-probability model is trees, so an in-between value is not an
+    average: recv_2h = 0.5 fell on the "receives" side of every split, and because the flag flips with the ball
+    (1 - 0.5 = 0.5) whichever team had the ball next was treated as the one receiving the kickoff. That credited a
+    conversion with a kickoff the offense may not get and added about 2 x P(convert) x (the kickoff's worth) to every
+    go-minus-kick margin (found Nov 20, 2026; tests/test_fourth_grid.py)."""
+    g = pd.DataFrame([(y, t, h, r) for y in GRID_YARDLINES for t in GRID_YTG if t <= y for h in (1.0, 0.0) for r in (1.0, 0.0)],
+                     columns=["yardline_100", "ydstogo", "home", "recv_2h"]).astype(float)
+    return g.assign(season=season, score_differential=0.0, game_seconds_remaining=1800.0 + GRID_CLOCK,
+                    half_seconds_remaining=GRID_CLOCK, half2=0.0, ot=0.0, down=4.0, posteam_timeouts_remaining=3.0,
+                    defteam_timeouts_remaining=3.0, strength=0.0, indoors=0.0, wind=5.0)
 
 
 def _grid_table(g: pd.DataFrame, r: pd.DataFrame, b: np.ndarray) -> list[dict]:
-    """Home and away rows averaged (within each refit, so the interval is of the average)."""
+    """A cell's rows (home/away x receiving the 2nd-half kickoff or not) averaged, within each refit, so the
+    interval is of the average."""
     key = [g["yardline_100"].astype(int), g["ydstogo"].astype(int)]
     cols = ["wp_go", "wp_fg", "wp_punt", "p_convert", "p_fg", "punt_net", "margin"]
     t = r[cols].groupby(key).mean()
