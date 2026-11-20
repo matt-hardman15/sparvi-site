@@ -84,7 +84,14 @@ backtest:
   - train_mean
   primary_metric: rmse
   null_baseline: train_mean
-  permutation_seeds: 5
+  permutation_seeds: 20
+  amended: '2026-11-20 (Matt): permutation_seeds 5 -> 20, after a local dry run of this block and before the official
+    run. With 5 shuffles the label-permutation test failed (shuffled-label model minus the constant, mean squared
+    error: -0.002, interval -0.004 to -0.000); with 20 it passes (+0.002). Per-shuffle values swing by about 0.011,
+    and the interval of their mean across shuffles includes zero either way (-0.010 to +0.005 with 5; -0.002 to
+    +0.006 with 20): a shuffled fit applies one random slope to every test player, an error the harness''s bootstrap
+    over players cannot see. Twelve shuffles on the 2025 development fold show the same. The gate, metric, pool
+    and baselines are as pre-registered.'
   too_good: 0.3
   bootstrap: 2000
   seed: 7
