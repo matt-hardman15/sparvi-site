@@ -75,6 +75,25 @@ def higher_is_better(metric: str) -> bool:
     return METRICS[metric][1]
 
 
+def partial_r(x, y, z) -> float:
+    """Correlation of x with y once z is taken out of both."""
+    rxy, rxz, ryz = pearson(x, y), pearson(x, z), pearson(y, z)
+    return float((rxy - rxz * ryz) / np.sqrt((1 - rxz ** 2) * (1 - ryz ** 2)))
+
+
+def partial_bootstrap(df: pd.DataFrame, a: str, given: str, y: str, block: str | None, n: int = 2000, seed: int = 7) -> dict:
+    """partial_r(a, y | given) with a 90% interval from resampling blocks (rows if None). Reported, never gated."""
+    rng = np.random.default_rng(seed)
+    groups = [df.index[df[block] == g].to_numpy() for g in df[block].unique()] if block else [np.array([i]) for i in df.index]
+    draws = np.empty(n)
+    for i in range(n):
+        s = df.loc[np.concatenate([groups[j] for j in rng.integers(0, len(groups), len(groups))])]
+        draws[i] = partial_r(s[a], s[y], s[given])
+    return {"given": given, "est": partial_r(df[a], df[y], df[given]),
+            "ci90": [float(np.percentile(draws, 5)), float(np.percentile(draws, 95))], "n": int(len(df)),
+            "blocks": len(groups), "bootstrap": n, "seed": seed}
+
+
 def paired_bootstrap(df: pd.DataFrame, metric: str, a: str, b: str, y: str, block: str | None,
                      n: int = 2000, seed: int = 7) -> dict:
     """metric(a) - metric(b) on the same rows, with a 90% interval from resampling blocks (rows if None).

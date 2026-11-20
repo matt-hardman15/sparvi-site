@@ -27,6 +27,12 @@ import pandas as pd
 OUT = Path(__file__).resolve().parent / "output"
 TOP = 15                    # costliest calls listed per season
 LATE_SECONDS = 120          # the last two minutes of each half are not judged (see above)
+CHART_NO_CALL_FROM = 80     # the chart makes no call this many yards from the goal line or more (the own 20 and in):
+                            # teams almost never go for it there (2016-2025: 167 of 7,046 tries, averaging 11 yards
+                            # to go; 29 from the own 10 and in, averaging 16), so the conversion rate and the value of a
+                            # first down there are extrapolated, and win probability 1.0.1 overrates the ball inside
+                            # the own 6. The same kind of rule as decide.FG_SUPPORT and PUNT_MIN_YARDLINE. Real
+                            # plays from there are still valued and judged (Matt, Nov 20, 2026).
 
 
 def _all(seasons) -> pd.DataFrame:

@@ -2,6 +2,43 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-20 · Fourth-down chart: standard situations fixed (no model change)
+The chart on `/nfl/fourth-downs/` called 4th-and-3 through 4th-and-7 from inside the offense's own 10 a clear go.
+Cause: `nfl/fourth/decisions.grid` set `recv_2h = 0.5` ("unknown"). The win-probability model is trees, so 0.5 fell on
+the "receives the 2nd-half kickoff" side of every split, and since the flag flips with the ball (1 - 0.5 = 0.5) the
+team with the ball next always "received". That added about 2 x P(convert) x (the kickoff's worth) to every
+go-minus-kick margin: +1.2 points on average, 290 of 1,380 cells changed sign. The grid's clock was also 15:00 left in
+the 2nd quarter, not the 10:00 the page states. Fix: four rows a cell (home/away x receives or not), averaged; clock
+at 10:00. Chart, 945 published cells: clear go 199 → 85, clear kick 20 → 194, toss-up 726 → 666; inside the own 10,
+clear go 40 → 13 (none on 4th-and-3 or longer). Real plays always had 0/1 flags: all seven seasons were recomputed and
+`teams`, `league` and `costly` in `fourth_downs.json` are identical. The possession-change transforms and the punt
+model were checked and are right (tests/test_fourth_transforms.py; punts from the own 10 and in, 2016-2025: net 44.0
+actual vs. 43.8 modeled, punting team won 44.0% vs. 43.8% modeled, in sample).
+
+Also (Matt, Nov 20): the chart makes no call from the offense's own 20 back (`summary.CHART_NO_CALL_FROM`, applied in
+the export: 200 of the 945 cells publish call "none" and no numbers). Teams almost never go for it there (2016-2025:
+167 of 7,046 tries, averaging 11 yards to go), so the conversion rate and the value of a first down are extrapolated;
+after the fix above the chart still had 4th-and-1 inside the own 10 as a clear go. Of the 745 cells left: 67 clear go,
+142 clear kick, 536 toss-up. Real plays from there are still valued and judged.
+
+Known and left as it is (Matt, Nov 20): on 2020-2025 seasons it hadn't seen, win probability 1.0.1 rates a team with
+the ball inside its own 6 about 4 points too high (2,200 plays: won 46.6%, rated 51.0%; 90% interval of the gap 2.4 to
+6.4 points, resampling games). Field position barely moves it there. The chart no longer makes calls there; on real
+plays it touches about 1% of clear-go cost.
+
+A fix was built and not adopted: win probability 2.0.0, the same trees boosted from a logistic baseline with a cubic
+in field position (branch `claude/nfl-wp-field-position`, no pull request; 1.0.1 stays champion). It scored better on
+the development seasons (Brier 0.1470 vs. 0.1491) and passed the full backtest (0.15838 vs. 0.15843), and roughly
+halved the bias (own 1-3: -5.5 → -4.0 points). But 4th-and-1 and 4th-and-2 inside the own 10 stayed a clear go;
+calibration error over the judged part of the game rose from 0.016 to 0.019; and the published numbers moved far more
+than the bias explains (2020-2025: toss-up share 65% → 51%, clear go calls 3,772 → 4,995, go rate on them 44.9% →
+50.5%; 2026 cost ranks: IND 7th → 1st, CIN 3rd → 13th).
+
+Worth remembering from that: the two versions, nearly equal in accuracy, agree on the sign of go-minus-kick for only
+79% of judged decisions (34 of 21,081 flip between clear go and clear kick). The 90% interval behind a "clear" call
+measures how much one model moves when refit, not how much the answer depends on which model was chosen. Counting a
+call as clear only when both agree would give, for 2020-2025, 2,706 clear go calls, a 55.0% go rate and 73% toss-ups.
+
 ## 2026-11-19 · Stuff+ 2.0.0: the backtest trains on two seasons (PQ-TEST-2; no model change)
 The pre-registered test trained on one season (2024) while the published model trains on two. Development folds that
 never read 2026 (outcomes 2024 and 2025, `baseball/pitch_quality/output/development_windows.json`) put a two-season

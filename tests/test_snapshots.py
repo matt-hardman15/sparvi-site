@@ -92,3 +92,15 @@ def test_player_files_hold_every_metric_at_the_final_date():
         s = json.loads((DATA / "players" / f"{r['player_id']}.json").read_text(encoding="utf-8"))["timeline"]["AAA"]["hitter"]["std"]
         for m in ["zone_swing_pct", "whiff_pct"]:
             assert close(s[m][-1], r[m], 0.0005) and s[m + "_pctl"][-1] == r[m + "_pctl"], (r["player_id"], m)
+
+
+@pytest.mark.parametrize("level", ["mlb", "aaa"])
+def test_first_paint_file_is_the_last_two_dates_of_the_full_file(level):
+    """PERF-2: the leaderboard's table paints from snapshots_grades_<level>_latest.json, so it must hold exactly
+    what the full season file holds on its last two dates."""
+    from sparvi.io import tail_dates
+    full, latest = load(f"snapshots_grades_{level}"), load(f"snapshots_grades_{level}_latest")
+    assert latest == tail_dates(full)
+    assert latest["dates"] == full["dates"][-2:] and latest["n_dates"] == len(full["dates"])
+    ids = {p["id"] for p in latest["players"]}
+    assert ids == {p["id"] for p in full["players"] if any(v is not None for v in p["series"]["std"]["pitches"][-2:])}

@@ -224,7 +224,9 @@ def site_numbers(root: Path = ROOT) -> dict[str, str]:
             out[m.name] = f"{m.card['title']} v{m.version}"
             out[f"{m.name}_version"] = m.version
             st = status(m.name, root if root != ROOT else None)
-            bt = m.dir / "backtest" / f"{m.version}.json"
+            cand = str(m.card.get("backtest", {}).get("candidate", m.version))
+            lead = "Backtest" if cand == m.version else f"Backtest of the proposed v{cand} (not the published version)"
+            bt = m.dir / "backtest" / f"{cand}.json"
             if bt.exists():
                 r = json.loads(bt.read_text(encoding="utf-8"))
                 ev = r["evaluation"]
@@ -238,14 +240,14 @@ def site_numbers(root: Path = ROOT) -> dict[str, str]:
                     vs = (f"calibration error (ECE) {ev['point']:.3f} vs. {nb.get('bar', float('nan')):.3f}, the "
                           f"{nb.get('q', 0.9):.0%} level for perfectly calibrated predictions on the same plays; ")
                 out[f"{m.name}_backtest"] = (
-                    f"Backtest ({r['ran_at'][:10]}, folds {', '.join(map(str, r['folds']))}, n {ev['n']}): " + vs +
+                    f"{lead} ({r['ran_at'][:10]}, folds {', '.join(map(str, r['folds']))}, n {ev['n']}): " + vs +
                     f"gate {'passed' if r['gate']['passed'] else 'not passed'}; leakage tests "
                     f"{'all passed' if all(x['passed'] for x in r['leakage'].values()) else 'FAILED'}; "
                     f"revision-safe: {'yes' if r['revision_safe'] else 'no (data from before snapshots began)'}; "
                     f"vault: {'none yet' if not vault.get('seasons') else ', '.join(map(str, vault['seasons']))} "
                     f"({vault.get('accesses', 0)} accesses)")
             if not bt.exists() and m.card.get("backtest"):
-                out[f"{m.name}_backtest"] = (f"Backtest: not yet run for v{m.version} (the backtest workflow runs it on main); "
+                out[f"{m.name}_backtest"] = (f"{lead}: not yet run for v{cand} (the backtest workflow runs it on main); "
                                              "earlier versions' reports are in the model's backtest folder")
             out[f"{m.name}_status"] = ("validated in the backtest harness" if st["state"] == "validated"
                                        else f"experimental: {st['reason']}" if st["state"] == "experimental"

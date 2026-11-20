@@ -62,25 +62,32 @@ From {{< meta nfl.fd_first_season >}} through {{< meta nfl.fd_last_complete >}},
   const save = () => U.set({ view: st.view, season: st.season }, DEF);
   const spot = (y) => (y === 50 ? "midfield" : y > 50 ? `own ${100 - y}` : `opp. ${y}`);
   const wp = (v) => (v == null ? "not offered" : f.pct(v, 1));
-  const CALL = { go: "Go for it", kick: "Kick", "toss-up": "Toss-up" };
-  const COLOR = { go: "#eb6834", kick: "#2a78d6", "toss-up": "#d9d8d3" };
+  const CALL = { go: "Go for it", kick: "Kick", "toss-up": "Toss-up", none: "Not judged" };
+  const COLOR = { go: "#eb6834", kick: "#2a78d6", "toss-up": "#d9d8d3", none: "#f6f5f1" };
   const kickName = (g) => (g.kick === "fg" ? "field goal" : "punt");
 
-  // ---- the chart of standard situations: yards from the goal line x yards to go -------------------------
+  // ---- the chart of standard situations: field position x yards to go ------------------------------------
+  // The offense moves left to right: its own 1 (99 yards from the goal line) is at the left edge, the opponent's 1
+  // at the right.
   function drawMap() {
-    const lim = d3.max(D.grid, g => Math.abs(g.m));
-    const xs = d3.range(1, 100), ys = d3.range(1, d3.max(D.grid, g => g.t) + 1);
+    // From the own 20 back (call "none") the chart makes no call and the data carry no numbers.
+    const judged = D.grid.filter(g => g.call !== "none"), blank = D.grid.filter(g => g.call === "none");
+    const lim = d3.max(judged, g => Math.abs(g.m));
+    const xs = d3.range(99, 0, -1), ys = d3.range(1, d3.max(D.grid, g => g.t) + 1);
     S.plot(document.getElementById("map"), w => Plot.plot({ ...S.plotDefaults(w), height: 330, marginLeft: 46, marginBottom: 40, padding: 0,
-      x: { domain: xs, label: "Yards from the opponent's goal line →", ticks: [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 99], tickFormat: y => spot(y) },
+      x: { domain: xs, label: "Field position", ticks: [99, 90, 80, 70, 60, 50, 40, 30, 20, 10, 1], tickFormat: y => spot(y) },
       y: { domain: ys.slice().reverse(), label: "↑ Yards to go", tickFormat: t => String(t) },
       color: st.view === "call"
-        ? { type: "ordinal", domain: ["go", "toss-up", "kick"], range: [COLOR.go, COLOR["toss-up"], COLOR.kick], legend: true, tickFormat: c => CALL[c] }
+        ? { type: "ordinal", domain: ["go", "toss-up", "kick", "none"], range: [COLOR.go, COLOR["toss-up"], COLOR.kick, COLOR.none], legend: true, tickFormat: c => CALL[c] }
         : { type: "diverging", domain: [-lim, lim], pivot: 0, range: ["#2a78d6", "#efeee9", "#eb6834"], legend: true,
             label: "Win probability of going minus the best kick", tickFormat: v => f.signed(100 * v, 0) + " pts" },
       marks: [
-        Plot.cell(D.grid, { x: "y", y: "t", fill: st.view === "call" ? "call" : "m", inset: 0 }),
-        Plot.tip(D.grid, Plot.pointer({ x: "y", y: "t", title: g =>
-          `4th & ${g.t} at the ${spot(g.y)}: ${CALL[g.call]}\n`
+        Plot.cell(judged, { x: "y", y: "t", fill: st.view === "call" ? "call" : "m", inset: 0 }),
+        Plot.cell(blank, { x: "y", y: "t", fill: st.view === "call" ? "call" : COLOR.none, inset: 0 }),
+        Plot.text(blank.length ? [{ y: Math.round((D.no_call_from + 99) / 2), t: 5 }] : [], { x: "y", y: "t", text: () => "Not judged:\nteams almost\nnever go here", fill: "#77756d", fontSize: 11, lineHeight: 1.25 }),
+        Plot.tip(D.grid, Plot.pointer({ x: "y", y: "t", title: g => g.call === "none"
+          ? `4th & ${g.t} at the ${spot(g.y)}: not judged\nTeams almost never go for it from their own ${100 - D.no_call_from} or deeper,\nso there is nothing to check the model against.`
+          : `4th & ${g.t} at the ${spot(g.y)}: ${CALL[g.call]}\n`
           + `Go ${wp(g.go)} · field goal ${wp(g.fg)} · punt ${wp(g.punt)}\n`
           + `Going vs. the ${kickName(g)}: ${f.signed(100 * g.m, 1)} pts (90% interval ${f.signed(100 * g.lo, 1)} to ${f.signed(100 * g.hi, 1)})\n`
           + `Chance to convert ${f.pct(g.pc, 0)}` + (g.fg == null ? "" : ` · field goal good ${f.pct(g.pf, 0)}`) })),
@@ -88,9 +95,10 @@ From {{< meta nfl.fd_first_season >}} through {{< meta nfl.fd_last_complete >}},
     const n = d3.rollup(D.grid, v => v.length, g => g.call);
     document.getElementById("mapcap").textContent = (st.view === "call"
       ? `Orange: going for it is clearly better (the whole 90% interval favors it). Blue: kicking is clearly better. Gray: too close to call. `
-        + `Of ${D.grid.length} situations, ${n.get("go") ?? 0} are a clear go, ${n.get("kick") ?? 0} a clear kick and ${n.get("toss-up") ?? 0} toss-ups. `
+        + `Of ${judged.length} situations, ${n.get("go") ?? 0} are a clear go, ${n.get("kick") ?? 0} a clear kick and ${n.get("toss-up") ?? 0} toss-ups. `
       : `Win probability of going for it minus the better of a field goal or punt, in percentage points. Orange favors going, blue favors kicking. `)
-      + `A standard situation: tie game, 10:00 left in the second quarter, outdoors, evenly matched teams, all timeouts. Real games move the answer: `
+      + `The offense moves left to right, from its own goal line to the opponent's. From its own ${100 - D.no_call_from} back the chart makes no call: `
+      + `teams almost never go for it there, so the model has nothing to learn from. A standard situation: tie game, 10:00 left in the second quarter, outdoors, evenly matched teams, all timeouts. Real games move the answer: `
       + `trailing late favors going, protecting a lead favors kicking. Model fit on ${D.engine.train_seasons[0]}–${D.engine.train_seasons.at(-1)}. Hover for the numbers.`;
   }
 
@@ -193,7 +201,7 @@ In {{< meta nfl.fd_first_season >}} the league went for it on {{< meta nfl.fd_go
 - *Net punt*: gradient-boosted trees on field position, roof, wind and season. Off by {{< meta nfl.fd_punt_mae >}} yards on average against {{< meta nfl.fd_punt_base >}} for a field-position table. [{{< meta models.nfl_punt_net >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/nfl/punt_net/card.yml) ({{< meta models.nfl_punt_net_status >}}).
 - *Field goals*: kick distance and its square, fit on the last three seasons. Calibration error {{< meta nfl.fd_fg_ece >}} against a chance level of {{< meta nfl.fd_fg_bar >}}: it did not pass, and it still predicts slightly fewer makes than happen. It replaced a first version that missed by more. [{{< meta models.nfl_fg_make >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/nfl/fg_make/card.yml) ({{< meta models.nfl_fg_make_status >}}).
 
-**Putting them together.** Yards gained on a converted or failed try come from past fourth-down plays with a similar distance to go; punt outcomes are the model's prediction plus the spread of past punts from that part of the field, with touchbacks and blocked punts ({{< meta nfl.fd_p_block >}} of punts). After a change of possession the opponent's win probability comes from the same model with the situation flipped. A kick is offered only up to {{< meta nfl.fd_fg_max >}} yards, the longest distance teams try with any regularity; a punt only from {{< meta nfl.fd_punt_min >}} or more yards out.
+**Putting them together.** Yards gained on a converted or failed try come from past fourth-down plays with a similar distance to go; punt outcomes are the model's prediction plus the spread of past punts from that part of the field, with touchbacks and blocked punts ({{< meta nfl.fd_p_block >}} of punts). After a change of possession the opponent's win probability comes from the same model with the situation flipped. A kick is offered only up to {{< meta nfl.fd_fg_max >}} yards, the longest distance teams try with any regularity; a punt only from {{< meta nfl.fd_punt_min >}} or more yards out. The chart makes no call from the offense's own {{< meta nfl.fd_no_call_own >}} back: teams almost never go for it there, so the conversion rate and the value of a first down would be extrapolated. Real plays from there are still valued.
 
 **Intervals.** Every model and table is refit {{< meta nfl.fd_boot >}} times on games drawn with replacement, and each decision's go-minus-kick gap is recomputed each time. The interval is the middle 90% of those. It covers how uncertain the models are; it does not cover what they leave out.
 
@@ -202,3 +210,7 @@ In {{< meta nfl.fd_first_season >}} the league went for it on {{< meta nfl.fd_go
 Code: [`nfl/fourth/`](https://github.com/matt-hardman15/sparvi-site/tree/main/nfl/fourth) · Data: [nflverse](https://github.com/nflverse) play-by-play (CC-BY 4.0). Team numbers: [team efficiency](/nfl/tools/team-efficiency.html) · [all teams](/nfl/teams/) · [offense vs. defense](/nfl/offense-or-defense/). Sparvi is not affiliated with the NFL or any club.
 
 </details>
+
+::: {.correction}
+*Corrected Nov. 20, 2026:* The chart under "When should a team go?" overstated going for it. Its standard situation was valued as if whichever team had the ball next would also receive the second-half kickoff, which credited a conversion with a possession the offense might not get, and it was set at 15:00 left in the second quarter, not the 10:00 stated. With both fixed, clear go calls on the chart fell from 199 to 85 of 945 situations and clear kicks rose from 20 to 194. The chart had also called 40 of the 100 situations inside the offense's own 10 a clear go, including fourth-and-3 through fourth-and-7. It now makes no call from the offense's own 20 back (200 situations): teams almost never go for it there, so the model has nothing to learn from. Of the 745 situations left, 67 are a clear go and 142 a clear kick. The chart also now reads left to right from the offense's own goal line to the opponent's. The team and league numbers, the trend and the costliest calls are unchanged: decisions on real plays did not have the error.
+:::

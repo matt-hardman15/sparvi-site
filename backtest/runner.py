@@ -66,6 +66,9 @@ def evaluate(df: pd.DataFrame, spec: dict, segments: bool = True) -> dict:
         out["baselines"][b] = {"value": metrics.score(metric, df[b], df["y"]),
                                "paired": metrics.paired_bootstrap(df.reset_index(drop=True), metric, "point", b, "y", block,
                                                                   n=spec.get("bootstrap", 2000), seed=spec.get("seed", 7))}
+    if spec.get("report_partial_given"):   # pre-registered and reported, not part of the gate (Location+: given Stuff+)
+        out["partial_r"] = metrics.partial_bootstrap(df.reset_index(drop=True), "point", spec["report_partial_given"], "y", block,
+                                                     n=spec.get("bootstrap", 2000), seed=spec.get("seed", 7))
     noise = (spec.get("pass_gate") or {}).get("calibration_noise")
     if noise:   # F4's calibration gate: the ECE must sit below what perfect calibration shows on these rows by chance
         out["ece_noise"] = metrics.ece_noise(df["point"], q=noise.get("quantile", 0.9), draws=noise.get("draws", 2000),
@@ -117,6 +120,12 @@ def gate_all(ev: dict, g: dict) -> dict:
             "gap": per[worst]["gap"], "per_segment": per}
 
 
+def tested_version(m) -> str:
+    """The version a card's backtest block tests: the champion's, unless the block names a `candidate` (a proposed
+    version tested before it replaces anything; its report never validates the published version)."""
+    return str(m.card.get("backtest", {}).get("candidate", m.version))
+
+
 def run(name: str, fast: bool = False, loader: Loader | None = None, write: bool = True, leakage: bool = True) -> dict:
     m = registry.get(name)
     spec = m.card["backtest"]
@@ -136,7 +145,7 @@ def run(name: str, fast: bool = False, loader: Loader | None = None, write: bool
         leak.update(lk.run_all(name, mod, spec, folds_for(spec, True)[-1], df))
     passed = g["passed"] and all(v["passed"] for v in leak.values())
     rep = {
-        "run_id": uuid.uuid4().hex[:12], "model": name, "version": m.version, "kind": "fast" if fast else "full",
+        "run_id": uuid.uuid4().hex[:12], "model": name, "version": tested_version(m), "kind": "fast" if fast else "full",
         "ran_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"), "code_sha": report.code_sha(), "lockfile": report.lock_hash(),
         "preregistered_at": spec["preregistered_at"], "spec": spec, "folds": [a["fold"] for a in audits],
         "evaluation": ev, "gate": g, "leakage": leak, "passed": passed,
@@ -144,7 +153,7 @@ def run(name: str, fast: bool = False, loader: Loader | None = None, write: bool
         "revision_safe": loader.revision_safe(), "approximate_tables": loader.approximate_tables(),
     }
     if write:
-        report.write(m.dir, m.version, rep)
+        report.write(m.dir, tested_version(m), rep)
     return rep
 
 
@@ -159,6 +168,8 @@ def main() -> int:
     show = {k: rep[k] for k in ("model", "version", "kind", "folds", "passed", "revision_safe", "approximate_tables")}
     show["evaluation"] = {k: rep["evaluation"][k] for k in ("metric", "n", "point")}
     show["baselines"] = {b: {"value": v["value"], "gap": v["paired"]["est"], "ci90": v["paired"]["ci90"]} for b, v in rep["evaluation"]["baselines"].items()}
+    if "partial_r" in rep["evaluation"]:
+        show["partial_r"] = rep["evaluation"]["partial_r"]
     show["gate"], show["leakage"] = rep["gate"], {k: v["passed"] for k, v in rep["leakage"].items()}
     print(json.dumps(show, indent=2, default=str))
     return 0 if rep["passed"] else 1
