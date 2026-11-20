@@ -100,11 +100,26 @@ def test_parts_that_do_not_sum_fail(root):
 
 def test_wrong_or_missing_weights_fail(root):
     edit(root, "site/data/cfb/meta.json", lambda d: d["power_model"].update(points_per_elo=0.05))
-    bad = failed(root)
-    assert "published blend weights are the fitted ones" in bad
-    assert "the EPA part of the power rating is the efficiency rating" in bad      # the split no longer reproduces the rating
+    assert "published blend weights are the fitted ones" in failed(root)
     edit(root, "site/data/cfb/meta.json", lambda d: d.pop("power_model"))
     assert "blend weights are published and positive" in failed(root)
+
+
+def test_an_epa_part_that_is_not_the_efficiency_rating_fails(root):
+    """Since the Nov 20 2026 refresh the files carry the two parts themselves (before it the check derived them from
+    the published weights, so wrong weights tripped it). A part that still sums to the rating but runs against the
+    efficiency rating must fail."""
+    def f(d):
+        for t in d["teams"]:
+            for s in t["series"].values():
+                if "pw_epa" in s:
+                    epa = [None if v is None else -v for v in s["pw_epa"]]
+                    s["pw_elo"] = [None if p is None or e is None else round(p - e, 1) for p, e in zip(s["power"], epa, strict=True)]
+                    s["pw_epa"] = epa
+    edit(root, WEEK, f)
+    bad = failed(root)
+    assert "the EPA part of the power rating is the efficiency rating" in bad
+    assert "power rating equals its EPA part plus its Elo part" not in bad
 
 
 def test_trivial_and_oversized_adjustment_fail(root):
