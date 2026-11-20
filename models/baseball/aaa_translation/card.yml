@@ -3,22 +3,31 @@ name: aaa_translation
 title: Triple-A → MLB translation
 sport: baseball
 status: champion
-version: 1.0.0
+version: 2.0.0
 owner: Matt
-spec: Per-metric linear lines from a player's Triple-A line to his MLB line (players observed at both levels, across
-  and within seasons), with bands from out-of-sample error; a cross-validated ridge combination is reported as a
-  check.
+spec: 'Per-metric linear lines from a player''s Triple-A line to his MLB line (players observed at both levels,
+  across and within seasons), with bands from out-of-sample error, for players with 150+ PA or batters faced. Since
+  2.0.0, a second line for 50-149: each Triple-A rate is shrunk toward the Triple-A mean by its reliability, then
+  put through a line fit on every pair down to 50, with a band that widens as the sample shrinks (rate metrics only;
+  the pitch grades and RV+ are not translated below 150). A cross-validated ridge combination is reported as a check.'
 target: 'The same metric in MLB (chase, contact, EV90, K%, BB%, xwOBA; pitchers: Stuff+, K%, BB%, CSW%, ...)'
-method: Weighted least squares per metric; ridge (5-fold x 20 repeats) for the combined model
+method: 'Weighted least squares per metric; ridge (5-fold x 20 repeats) for the combined model. Small-sample line:
+  reliability n / (n + k) with k from odd-game and even-game halves, each metric''s sample taken as PA or BF times
+  its Triple-A-wide count per PA; constants fitted by hand on every pair on file (baseball/aaa_translation/small_sample.py,
+  needs the history seasons) and committed in small_sample.json, which the build reads; refit each offseason as
+  a minor version.'
 code:
 - baseball/aaa_translation/analysis.py
 - baseball/pd_pipeline/models/intermediate/int_mlb_debuts.sql
 - baseball/pd_pipeline/models/marts/fct_translation_lines.sql
+- baseball/aaa_translation/small_sample.py
+- baseball/aaa_translation/develop.py
 training_data:
 - data/raw/statcast_aaa_*.parquet
 - data/raw/statcast_mlb_*.parquet
 artifacts:
 - baseball/aaa_translation/output/results.json
+- baseball/aaa_translation/small_sample.json
 validation:
   file: baseball/aaa_translation/output/results.json
   metrics:
@@ -55,6 +64,8 @@ backtest:
     their published lines. Chosen on development folds that never read 2026 (baseball/aaa_translation/output/development.json,
     outcome seasons 2024 and 2025). analysis.py is unchanged until this test passes; the report is written as 2.0.0
     and does not validate the published version.'
+  covers: the small-sample line (50-149 PA or batters faced) only; the line for 150+ predates the harness and its
+    port is pending
   module: models/baseball/aaa_translation/backtest.py
   code:
   - baseball/aaa_translation/develop.py
@@ -127,5 +138,6 @@ backtest:
     seasons: []
     note: 'No sealed season yet: the only test season is 2026. The 2027 season becomes the vault when it completes.'
     accesses: 0
-experimental: validated before the backtest harness existed; the backtest in this card tests a proposed addition
-  (2.0.0, a line for players with 50-149 PA/BF), not this version
+experimental: the published line (150+ PA/BF) was validated before the backtest harness existed and its harness
+  port is pending (A5-port); the small-sample line (50-149) passed its pre-registered backtest, and this label stays
+  until the run on main records that report for this version

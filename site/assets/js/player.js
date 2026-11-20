@@ -75,15 +75,17 @@
   // held most of the players who moved up. Rows: [label, metric key, formatter].
   const transBox = (host, side, rowsDef, val, n, unit, extra = "") => {
     const F = FITS[side], band = FITS.band_pct[1] - FITS.band_pct[0];
-    if (n == null || n < FITS.min_aaa) {
+    const min = S.translateMin(FITS), small = n != null && n >= min && n < FITS.min_aaa;
+    if (n == null || n < min) {
       host.replaceChildren(S.el("h3", {}, "Translated to MLB"), S.el("p", { class: "note" },
-        `Translations need ${FITS.min_aaa}+ ${unit} in the selected line${n == null ? "" : ` (this one has ${n})`}.`));
+        `Translations need ${min}+ ${unit} in the selected line${n == null ? "" : ` (this one has ${n})`}.`));
       return;
     }
     const rows = rowsDef.filter(([, k]) => F[k] && val(k) != null).map(([m, k, fm]) => {
-      const t = F[k].intercept + F[k].slope * val(k);
-      return { m, aaa: fm(val(k)), t: fm(t), range: `${fm(t + F[k].band[0])} to ${fm(t + F[k].band[1])}` };
-    });
+      const x = S.translate(FITS, side, k, val(k), n);
+      return x && { m, aaa: fm(val(k)), t: fm(x.t), range: `${fm(x.lo)} to ${fm(x.hi)}` };
+    }).filter(Boolean);
+    extra = (small ? `<strong>Small sample (${n} ${unit}).</strong> Under ${FITS.min_aaa} ${unit}, each number is first pulled toward the Triple-A average by how much that many ${unit} can say about it, and the range is wider. ` : "") + extra;
     const t = S.el("div");
     S.table(t, [{ key: "m", label: "", align: "l" }, { key: "aaa", label: "Triple-A" }, { key: "t", label: "MLB translation" },
       { key: "range", label: `${band}% range`, title: `${band}% of players who moved up landed inside this range` }], { sortKey: null, pageSize: 12 }).update(rows);

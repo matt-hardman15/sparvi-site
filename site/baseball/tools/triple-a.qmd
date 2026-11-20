@@ -107,8 +107,8 @@ Model versions: [{{< meta models.aaa_translation >}}](https://github.com/matt-ha
     const atI = pitch ? new Map(S.snapRows(std, "std", i, "pitches").map(r => [r.id, r])) : null;
     const isFinal = final();
     const mlb = st.view === "mlb", F = mlb ? await fits() : null, fit = F ? F[pitch ? "pitcher" : "hitter"] : null;
-    const tr = r => { if (!fit) return r; const big = (pitch ? r.bf : r.pa) >= F.min_aaa, o = { ...r };
-      for (const [k, v] of Object.entries(fit)) if (k in o) o[k] = big && o[k] != null ? v.intercept + v.slope * o[k] : null;
+    const tr = r => { if (!fit) return r; const n = pitch ? r.bf : r.pa, o = { ...r };
+      for (const k of Object.keys(fit)) if (k in o) o[k] = S.translate(F, pitch ? "pitcher" : "hitter", k, o[k], n)?.t ?? null;
       if (pitch) o.hard_hit_pct = null;  // no translation fitted for contact allowed
       return o; };
     const all = S.snapRows(snap, st.window, i, pitch ? "pitches" : "pa").map(r => tr({ ...r,
@@ -117,7 +117,7 @@ Model versions: [{{< meta models.aaa_translation >}}](https://github.com/matt-ha
     const roleOk = d => !pitch || st.role === "all" || d.role === st.role;
     const pre = all.filter(d => (!st.team || d.team === st.team)
       && (pitch ? S.qualifies(Q, "AAA", st.min, d.pitches, d.role, fac) : d.pa >= (st.min ?? hitMin(fac)))
-      && (!mlb || (pitch ? d.bf : d.pa) >= F.min_aaa));  // translated view: only lines the translation covers
+      && (!mlb || (pitch ? d.bf : d.pa) >= S.translateMin(F)));  // translated view: only lines the translation covers
     if (pitch) roleHost.replaceChildren(S.roleFilter(st.role, v => { st.role = v; st.min = null; controls(); draw(); },
       { swing: pre.filter(d => d.role === "Swing").length }));
     const rows = pre.filter(roleOk);
@@ -163,7 +163,7 @@ Model versions: [{{< meta models.aaa_translation >}}](https://github.com/matt-ha
              : ` Scale: every number is a raw Triple-A value and every shade a percentile among qualified Triple-A ${pitch ? "pitchers" : "hitters"} (Triple-A scale).`)
       + (rows.length === 0 && (pitch && st.role) === "SP" ? ` No pitcher has ${meta.role_rules.role_sp_min_starts}+ starts yet, the minimum for the starter role; early-season starters show as Swing.` : "")
       + (isFinal ? "" : " Δ14 columns and change flags describe the season's final two weeks, so they show only at the final date with the season-to-date window.")
-      + (mlb ? ` ▲ columns are translated to MLB: the typical major-league value for this Triple-A line, from players who moved up. The table lists only lines with ${F.min_aaa}+ ${pitch ? "batters faced" : "PA"}, the translation's minimum, and each translation carries a wide range (see the article).` : "");
+      + (mlb ? ` ▲ columns are translated to MLB: the typical major-league value for this Triple-A line, from players who moved up. The table lists only lines with ${S.translateMin(F)}+ ${pitch ? "batters faced" : "PA"}, the translation's minimum, and each translation carries a wide range (see the article). Lines under ${F.min_aaa} use the small-sample translation: each number is first pulled toward the Triple-A average, so they sit closer together${pitch ? ", and the pitch grades are left blank" : ""}.` : "");
   }
   controls(); draw();
 })();

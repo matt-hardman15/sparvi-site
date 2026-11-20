@@ -290,6 +290,12 @@ def test_a_candidate_report_never_validates_the_published_version(tmp_path):
     assert status("toy", tmp_path)["state"] == "experimental"             # the published 1.0.0 has no report of its own
     text = registry.site_numbers(tmp_path)["toy_backtest"]
     assert text.startswith("Backtest of the proposed v2.0.0 (not the published version)")
+    # Once the candidate is the published version, the page says which part of the model the test covers (M5-EB: the
+    # small-sample line passed; the line for 150+ was never in the harness).
+    card["version"], card["backtest"]["covers"] = "2.0.0", "the small part only"
+    (d / "card.yml").write_text(yaml.safe_dump(card), encoding="utf-8")
+    assert status("toy", tmp_path)["state"] == "validated"
+    assert registry.site_numbers(tmp_path)["toy_status"] == "validated in the backtest harness: the small part only"
 
 
 def _toy_pitches(level, season, batters, rng, start="04-01"):
@@ -349,3 +355,29 @@ def test_translation_candidates_read_no_outcome_and_nothing_after_the_call_up():
     pd.testing.assert_frame_equal(hit.reset_index(drop=True), hb.reset_index(drop=True))
     c = mod._candidates(Fake(names | {f"statcast_aaa_{t}": scramble(aaa, ~after)}), fold)         # the test can see a change
     assert not c[c["side"].eq("hitter") & c["cohort"].eq("within")]["k_pct"].equals(hit[hit["cohort"].eq("within")]["k_pct"])
+
+
+def test_small_sample_translation_formula_and_committed_constants():
+    """M5-EB 2.0.0: the constants the site applies. A rate from few plate appearances is pulled most of the way to the
+    Triple-A mean, one from many hardly at all; the range widens as the sample shrinks; and the published file carries
+    exactly the committed constants (the pages apply the same formula: tests/test_site.py compares the two)."""
+    import json
+    import sys
+
+    from sparvi.config import ROOT
+    sys.path.insert(0, str(ROOT / "baseball" / "aaa_translation"))
+    import small_sample
+    P = json.loads(small_sample.PARAMS.read_text(encoding="utf-8"))
+    c = P["hitter"]["k_pct"]
+    x = c["mean"] + 0.10
+    t, half = small_sample.apply(c, [x, x, x], [1, P["min_pa"], 100000])
+    at_mean = c["intercept"] + c["slope"] * c["mean"]
+    assert abs(t[0] - at_mean) < 0.2 * abs(t[2] - at_mean) and at_mean < t[1] < t[2]
+    assert abs(t[2] - (c["intercept"] + c["slope"] * x)) < 1e-3 and half[0] > half[1] > half[2] > 0
+    assert P["max_pa"] == 149 and P["min_pa"] == 50
+    pub = json.loads((ROOT / "site" / "data" / "baseball" / "translation_fits.json").read_text(encoding="utf-8"))
+    assert pub["min_aaa"] == P["max_pa"] + 1
+    for side in ("hitter", "pitcher"):
+        assert set(pub["small"][side]) == set(P[side]) and not {"stuff_plus", "loc_plus", "pitching_plus", "rv_plus"} & set(P[side])
+        for m, k in P[side].items():
+            assert all(abs(pub["small"][side][m][f] - k[f]) < 1e-7 for f in ("mean", "k", "talent", "intercept", "slope", "base"))
