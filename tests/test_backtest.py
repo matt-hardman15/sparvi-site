@@ -245,6 +245,47 @@ def test_ci_runs_only_the_models_a_change_touches():
     assert names(["site/index.qmd", "README.md"]) == []
     assert names(["models/cfb/system_fit/backtest/1.1.8.json", "backtest/runs/runs.jsonl"]) == []
     assert names(["cfb/proj/pit.py"]) == ["cfb_player_projection"]
-    assert names(["baseball/pitch_quality/train.py"]) == ["stuff_plus"]
+    assert names(["baseball/pitch_quality/train.py"]) == ["location_plus", "stuff_plus"]
     assert "cfb_player_profile" in names(["cfb/profile/features.yml"]) and "stuff_plus" not in names(["cfb/profile/features.yml"])
     assert pick(["backtest/leakage.py"]) is None and pick(["uv.lock"]) is None
+
+
+def test_partial_r_is_reported_with_an_interval():
+    """LOC-TYPE: a grade that adds to a baseline has a partial r above zero; a noisy copy of the baseline doesn't."""
+    rng = np.random.default_rng(0)
+    z, extra = rng.normal(size=400), rng.normal(size=400)
+    df = pd.DataFrame({"entity_id": range(400), "stuff": z, "y": z + extra + rng.normal(size=400)})
+    df["adds"], df["copy"] = extra + rng.normal(0, 0.5, 400), z + rng.normal(0, 0.5, 400)
+    a = metrics.partial_bootstrap(df, "adds", "stuff", "y", "entity_id", n=300)
+    b = metrics.partial_bootstrap(df, "copy", "stuff", "y", "entity_id", n=300)
+    assert a == metrics.partial_bootstrap(df, "adds", "stuff", "y", "entity_id", n=300) and a["ci90"][0] > 0
+    assert b["ci90"][0] < 0 < b["ci90"][1] and abs(b["est"]) < 0.1
+    spec = {"primary_metric": "pearson_r", "baselines": ["stuff"], "report_partial_given": "stuff", "bootstrap": 100}
+    ev = runner.evaluate(df.rename(columns={"adds": "point"}).assign(fold=1), spec)
+    assert ev["partial_r"]["given"] == "stuff" and ev["partial_r"]["est"] == a["est"]
+
+
+def test_a_candidate_report_never_validates_the_published_version(tmp_path):
+    """LOC-TYPE: a block with `candidate` writes its report under that version, so the champion stays experimental."""
+    import json
+
+    import yaml
+
+    from backtest.gate import status
+    from sparvi import registry
+    d = tmp_path / "models" / "test" / "toy"
+    (d / "backtest").mkdir(parents=True)
+    card = {"name": "toy", "title": "Toy", "sport": "test", "status": "champion", "version": "1.0.0", "experimental": "old test",
+            "backtest": {"candidate": "2.0.0", "vault": {}}}
+    (d / "card.yml").write_text(yaml.safe_dump(card), encoding="utf-8")
+    m = registry.get("toy", tmp_path)
+    assert runner.tested_version(m) == "2.0.0" and ci.last_report(m) is None
+    rep = {"version": "2.0.0", "passed": True, "ran_at": "2026-11-19T00:00:00Z", "folds": [2026], "revision_safe": False,
+           "gate": {"passed": True}, "leakage": {"timestamp": {"passed": True}},
+           "evaluation": {"metric": "pearson_r", "n": 10, "point": 0.2, "baselines": {
+               "published": {"value": 0.0, "paired": {"est": 0.2, "ci90": [0.1, 0.3]}}}}}
+    (d / "backtest" / "2.0.0.json").write_text(json.dumps(rep), encoding="utf-8")
+    assert ci.last_report(m)["version"] == "2.0.0"
+    assert status("toy", tmp_path)["state"] == "experimental"             # the published 1.0.0 has no report of its own
+    text = registry.site_numbers(tmp_path)["toy_backtest"]
+    assert text.startswith("Backtest of the proposed v2.0.0 (not the published version)")

@@ -922,3 +922,31 @@ def test_build_has_no_broken_internal_links():
     import subprocess
     r = subprocess.run([sys.executable, str(ROOT / "site" / "build" / "linkcheck.py")], capture_output=True, text=True)
     assert r.returncode == 0, r.stderr[-2000:]
+
+
+def test_leaderboard_first_paint_from_the_small_file(browser, base_url):
+    """PERF-2: the default view's table paints from snapshots_grades_mlb_latest.json while the full season file is
+    still on its way, and shows the same rows once it arrives."""
+    ctx = browser.new_context(viewport={"width": 1280, "height": 900})
+    p = ctx.new_page()
+    held = []
+    p.route("**/data/baseball/snapshots_grades_mlb.json", lambda route: held.append(route))
+    try:
+        p.goto(base_url + "/baseball/tools/stuff-leaderboard.html", wait_until="commit")
+        p.wait_for_selector("#t table.s-table tbody tr", timeout=15000)
+        first = p.locator("#t table.s-table tbody").inner_text()
+        assert rows(p, "#t") == 25 and held, "the table should paint while the full file is held"
+        assert p.locator("#scatter svg").count() == 0                     # the charts need the full season
+        for route in held:
+            route.continue_()
+        p.wait_for_selector("#scatter svg", timeout=15000)
+        wait(p, 600)
+        assert p.locator("#t table.s-table tbody").inner_text() == first
+        # A view the small file can't serve (an earlier date) goes straight to the full file.
+        seen = []
+        p2 = ctx.new_page()
+        p2.on("request", lambda r: "/data/baseball/" in r.url and seen.append(r.url.rsplit("/", 1)[1]))
+        p2.goto(base_url + "/baseball/tools/stuff-leaderboard.html?asof=2026-06-07", wait_until="networkidle")
+        assert "snapshots_grades_mlb_latest.json" not in seen and "snapshots_grades_mlb.json" in seen
+    finally:
+        ctx.close()

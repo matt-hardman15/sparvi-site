@@ -39,7 +39,10 @@ $endif$
     var add = function (f) { var l = document.createElement("link"); l.rel = "preload"; l.as = "fetch";
       l.crossOrigin = "anonymous"; l.href = "/data/baseball/" + f; document.head.appendChild(l); };
     if (/\/tools\/triple-a(\.html)?$$/.test(p)) { add("meta.json"); add("snapshots_" + (q.get("side") || "hitters") + "_aaa" + w + ".json"); }
-    else if (/\/tools\/stuff-leaderboard(\.html)?$$/.test(p)) { add("meta.json"); add("snapshots_grades_" + (q.get("level") || "MLB").toLowerCase() + w + ".json"); }
+    else if (/\/tools\/stuff-leaderboard(\.html)?$$/.test(p)) { add("meta.json");
+      // The default view paints from the small file first (PERF-2; the same test as the page's FAST).
+      var fast = (q.get("view") || "pitchers") === "pitchers" && !w && !q.get("asof") && (q.get("since") || "prev") === "prev";
+      add("snapshots_grades_" + (q.get("level") || "MLB").toLowerCase() + (fast ? "_latest" : w) + ".json"); }
     else if (/\/baseball\/players\/[a-z0-9-]+-\d+\/(index\.html)?$$/.test(p)) { add("meta.json"); add("translation_fits.json"); }
     else if (/\/baseball\/farm-systems\/(index\.html)?$$/.test(p)) { ["results", "orgs", "players"].forEach(function (f) { add("farm_" + f + ".json"); });
       // The drill-down's weekly chart is on by default (pitchers, current season); other views don't load it.
