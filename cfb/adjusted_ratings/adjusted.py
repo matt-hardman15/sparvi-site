@@ -132,20 +132,29 @@ def elo_by_week(seasons: list[int]) -> pd.DataFrame:
     """Each team's Elo as of the end of every week: post-game Elo of its latest game, else the
     pre-game Elo of its first game. "Latest" is by kickoff time: every bowl and playoff game shares one week here,
     and a team can play twice in a regular week, so the order within a week must not be left to the sort (an unstable
-    sort gave different ratings on different CPUs: up to 5.7 points for a playoff team, AUDIT-CFB)."""
+    sort gave different ratings on different CPUs: up to 5.7 points for a playoff team, AUDIT-CFB).
+
+    A game against an opponent with no Elo (an FCS team) is not part of the source's Elo chain: the team's rating
+    before and after it are equal, and from 2022 on they are not the rating it carries (the next rated game starts from
+    the previous rated game's post-game value; the unrated game's own value is off by 10 points at the median and by up
+    to 342, e.g. Duke 1250 in 2023 week 2 between 1592 and 1592). Such a game is skipped, so a week in which a team
+    played only an FCS opponent keeps the rating it had (CFB-AUDIT-NEXT)."""
     g = pd.concat([pd.read_parquet(p) for p in sorted((RAW / "cfb").glob("games_*.parquet"))], ignore_index=True)
     last = g[g["seasonType"] == "regular"].groupby("season")["week"].max()
     g["week"] = np.where(g["seasonType"] == "postseason", g["season"].map(last) + 1, g["week"])
-    cols = ["season", "week", "team", "pre", "post", "completed", "start", "id"]
-    long = pd.concat([g[["season", "week", "homeTeam", "homePregameElo", "homePostgameElo", "completed", "startDate", "id"]]
-                      .set_axis(cols, axis=1),
-                      g[["season", "week", "awayTeam", "awayPregameElo", "awayPostgameElo", "completed", "startDate", "id"]]
-                      .set_axis(cols, axis=1)], ignore_index=True)
+    cols = ["season", "week", "team", "pre", "post", "completed", "start", "id", "opp_pre", "opp_post"]
+    long = pd.concat([g[["season", "week", "homeTeam", "homePregameElo", "homePostgameElo", "completed", "startDate", "id",
+                         "awayPregameElo", "awayPostgameElo"]].set_axis(cols, axis=1),
+                      g[["season", "week", "awayTeam", "awayPregameElo", "awayPostgameElo", "completed", "startDate", "id",
+                         "homePregameElo", "homePostgameElo"]].set_axis(cols, axis=1)], ignore_index=True)
+    rated = long[long["opp_pre"].notna() | long["opp_post"].notna()]      # games that are part of the Elo chain
     out = []
     for s in seasons:
-        ls = long[long["season"] == s].sort_values(["week", "start", "id"], kind="stable")
-        first = ls.dropna(subset=["pre"]).groupby("team")["pre"].first()
-        for w in range(1, int(ls["week"].max()) + 1):
+        order = dict(by=["week", "start", "id"], kind="stable")
+        ls, every = rated[rated["season"] == s].sort_values(**order), long[long["season"] == s].sort_values(**order)
+        # Before a team's first rated game: that game's pre-game value; a team with no rated game at all keeps the old rule.
+        first = ls.dropna(subset=["pre"]).groupby("team")["pre"].first().combine_first(every.dropna(subset=["pre"]).groupby("team")["pre"].first())
+        for w in range(1, int(every["week"].max()) + 1):
             done = ls[(ls["week"] <= w) & ls["completed"].fillna(False)].dropna(subset=["post"])
             elo = done.groupby("team")["post"].last().combine_first(first)
             out.append(pd.DataFrame({"season": s, "week": w, "team": elo.index, "elo": elo.to_numpy()}))

@@ -219,3 +219,34 @@ def test_elo_by_week_takes_the_latest_game_by_kickoff(tmp_path, monkeypatch):
         e = adjusted.elo_by_week([2024]).set_index(["week", "team"])["elo"]
         assert e[(14, "A")] == 1650 and e[(15, "A")] == 1730 and e[(13, "A")] == 1600
         assert e[(15, "C")] == 1590 and e[(15, "D")] == 1620
+
+
+def test_elo_by_week_skips_games_against_unrated_opponents(tmp_path, monkeypatch):
+    """CFB-AUDIT-NEXT: a game against a team with no Elo (FCS) is not part of the source's Elo chain, and from 2022 its
+    own value is off the chain (Duke 2023 week 2: 1250 between 1592 and 1592). The week keeps the rating the team had."""
+    import importlib.util
+
+    import pandas as pd
+    spec = importlib.util.spec_from_file_location("cfb_adjusted", ROOT / "cfb" / "adjusted_ratings" / "adjusted.py")
+    adjusted = importlib.util.module_from_spec(spec); spec.loader.exec_module(adjusted)
+    n = float("nan")
+    rows = [  # (id, week, start, home, away, home pre/post, away pre/post)
+        (1, 1, "2023-09-02T17:00:00.000Z", "Duke", "X", 1500, 1592, 1600, 1508),
+        (2, 2, "2023-09-09T17:00:00.000Z", "Duke", "Fcs U", 1250, 1250, n, n),          # the off-chain value
+        (3, 4, "2023-09-23T17:00:00.000Z", "Y", "Duke", 1550, 1520, 1592, 1622),
+        (4, 1, "2023-09-02T17:00:00.000Z", "Z", "Fcs U", 1400, 1400, n, n),             # Z's first game is unrated...
+        (5, 2, "2023-09-09T17:00:00.000Z", "Z", "X", 1410, 1440, 1508, 1478),           # ...its first rated one starts at 1410
+        (6, 3, "2023-09-16T17:00:00.000Z", "W", "Fcs U", 1300, 1300, n, n),             # W never plays a rated team
+    ]
+    g = pd.DataFrame([{"id": i, "season": 2023, "week": w, "seasonType": "regular", "startDate": d, "completed": True,
+                       "homeTeam": h, "awayTeam": a, "homePregameElo": hp, "homePostgameElo": hq,
+                       "awayPregameElo": ap, "awayPostgameElo": aq} for i, w, d, h, a, hp, hq, ap, aq in rows])
+    d = tmp_path / "cfb"
+    d.mkdir(parents=True)
+    g.to_parquet(d / "games_2023.parquet", index=False)
+    monkeypatch.setattr(adjusted, "RAW", tmp_path)
+    e = adjusted.elo_by_week([2023]).set_index(["week", "team"])["elo"]
+    assert [e[(w, "Duke")] for w in (1, 2, 3, 4)] == [1592, 1592, 1592, 1622]
+    assert e[(1, "Z")] == 1410 and e[(2, "Z")] == 1440
+    assert e[(3, "W")] == 1300, "a team with no rated game keeps the only value there is"
+    assert (2, "Fcs U") not in e.index
