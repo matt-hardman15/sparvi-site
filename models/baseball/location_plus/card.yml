@@ -3,14 +3,18 @@ name: location_plus
 title: Location+
 sport: baseball
 status: champion
-version: 2.0.0
+version: 3.0.0
 owner: Matt
-spec: Where the pitch crossed the plate (mirrored for batter handedness, height-based zone) in the count. No velocity
-  or movement.
+spec: 'What the location added to the pitch: the Pitching+ model''s prediction (shape, count, batter side and where
+  the pitch crossed the plate, mirrored for batter handedness, height-based zone) minus the prediction of the same
+  model without the two location inputs, averaged over a pitcher''s pitches.'
 target: Pitcher run value of the pitch (rv, denoised on balls in play), scaled to 100 = prior-season MLB average
-method: 'LightGBM per pitch group (fastball, breaking, offspeed), each a bag of 10 models: pitchers split into 10
-  folds, model f trains on the other nine and early-stops on fold f, predictions averaged. Learning rate 0.03; fold
-  split seed 7, member seeds 700-709; deterministic. Seed sensitivity: baseball/pitch_quality/stability.py'
+method: 'Two LightGBM model families per pitch group (fastball, breaking, offspeed), each a bag of 10 models: pitchers
+  split into 10 folds, model f trains on the other nine and early-stops on fold f, predictions averaged. The full
+  model is the Pitching+ model; the second sees the same inputs without location. Learning rate 0.03 for both; fold
+  split seed 7, member seeds 700-709; deterministic. Seed sensitivity (baseball/pitch_quality/stability.py) is higher
+  than for the other grades because the grade is a difference of two models: mean 0.74 points, 26% of pitchers move
+  more than 1 (row LOC-STABLE).'
 code:
 - baseball/pitch_quality/train.py
 - baseball/pitch_quality/features.py
@@ -18,7 +22,8 @@ training_data:
 - data/raw/statcast_mlb_*.parquet
 - data/raw/batter_heights.parquet
 artifacts:
-- baseball/pitch_quality/output/models/loc_*.txt
+- baseball/pitch_quality/output/models/pitching_*.txt
+- baseball/pitch_quality/output/models/no_loc_*.txt
 - baseball/pitch_quality/output/scale_reference.json
 validation:
   file: baseball/pitch_quality/output/metrics_location.json
@@ -53,11 +58,11 @@ backtest:
   preregistered_at: '2026-11-19'
   candidate: 3.0.0
   candidate_spec: 'Location value given shape: the prediction of a model on shape, count, batter side and location,
-    minus the prediction of the same model without location, averaged over a pitcher''s pitches. Chosen on
-    development folds that never read 2026 (baseball/pitch_quality/output/development_location.json: outcomes 2024
-    and 2025; r with next-season RV/100 +0.147, 90% interval +0.077 to +0.210, against +0.030 for the published
-    features). train.py is unchanged until this test passes; the report is written as 3.0.0 and does not validate
-    the published version.'
+    minus the prediction of the same model without location, averaged over a pitcher''s pitches. Chosen on development
+    folds that never read 2026 (baseball/pitch_quality/output/development_location.json: outcomes 2024 and 2025;
+    r with next-season RV/100 +0.147, 90% interval +0.077 to +0.210, against +0.030 for the published features).
+    train.py is unchanged until this test passes; the report is written as 3.0.0 and does not validate the published
+    version.'
   module: models/baseball/location_plus/backtest.py
   target: Next-season run value per 100 pitches (RV/100), MLB pitchers with 500+ pitches in both seasons
   decision_dates: season start (March 1 of the outcome season)
@@ -86,21 +91,22 @@ backtest:
   gate_decided: 'Matt, 2026-11-19: strict (the 90% interval of the edge must exclude zero), measured against the
     published Location+ features trained on the same fold. The partial correlation with next-season RV/100 given
     Stuff+ is reported with its interval and is not part of the gate. Chosen with the development folds in view
-    (baseball/pitch_quality/output/development_location_gates.json): a gain in r over Stuff+ alone could not pass at
-    this sample size (about +0.015 on a partial r of 0.10). Stuff+ and last season''s results are reported baselines.'
+    (baseball/pitch_quality/output/development_location_gates.json): a gain in r over Stuff+ alone could not pass
+    at this sample size (about +0.015 on a partial r of 0.10). Stuff+ and last season''s results are reported baselines.'
   reproduction: Exact on the same machine; across machines tolerance ±0.01 in r (Matt, 2026-11-13). Official runs
     happen in CI.
   vault:
     seasons: []
     note: 'No sealed season yet: the only test season is 2026. The 2027 season becomes the vault when it completes.'
     accesses: 0
-experimental: validated before the backtest harness existed, where it did not predict next-season results; the
-  backtest in this card tests a proposed replacement (3.0.0), not this version
 challengers: []
 history:
 - version: 1.0.1
   status: retired
   until: '2026-11-14'
+- version: 2.0.0
+  status: retired
+  until: '2026-11-20'
 promotion_exception: '2.0.0 promoted on 2026-11-14 by Matt''s decision although its frozen-set r_next_rv (0.0077)
   is below 1.0.1''s (0.0116): the gap is inside the +-0.01 reproduction tolerance, 1.0.1''s value was itself seed
   noise, and 2.0.0 removes the seed instability shared with Stuff+ (same train.py).'
