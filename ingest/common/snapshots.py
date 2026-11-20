@@ -136,6 +136,9 @@ class Table:
     drop: tuple[str, ...] = ()                    # columns not worth versioning (e.g. the pull date)
     grow_only: bool = False                       # a lookup that only gains rows: a key missing from this pull is
                                                   # kept, not recorded as deleted (the pull just didn't need it)
+    restated: bool = False                        # season-to-date numbers: most rows change after every round of games,
+                                                  # so the mass-update guard doesn't apply (SNAP-GUARD; without this the
+                                                  # table is refused every week of its season and never recorded)
 
 
 def day_after(col: str):
@@ -190,9 +193,15 @@ def snapshot(store, sport: str, t: Table, ingested_at: pd.Timestamp, allow_mass_
             gone = m.loc[m["_merge"] == "right_only", key].assign(_row_hash=m.loc[m["_merge"] == "right_only", "_row_hash_prev"])
             cur = pd.concat([cur, gone], ignore_index=True)
             deleted = deleted.iloc[0:0]
-        if not allow_mass_update and len(upd) > max(MAX_UPDATE_SHARE * len(prev), MIN_MASS_UPDATE):
+        if not (allow_mass_update or t.restated) and len(upd) > max(MAX_UPDATE_SHARE * len(prev), MIN_MASS_UPDATE):
+            was = _last_columns(store, sport, t.name)
+            now = [c for c in df.columns]
+            cols = "" if was is None or was == now else (
+                " The columns changed since the last snapshot (dropped: " + (", ".join(c for c in was if c not in now) or "none")
+                + "; added: " + (", ".join(c for c in now if c not in was) or "none") + "), which changes every row's hash.")
             raise RuntimeError(f"{t.name}: {len(upd):,} of {len(prev):,} rows changed at once. That's more like a "
-                               "format or library change than real revisions; rerun with --allow-mass-update if it's real.")
+                               "format or library change than real revisions." + cols + " Rerun with --allow-mass-update "
+                               f"--only {t.name} if it's real or a schema change you mean to record.")
 
     summary = {"table": t.name, "ingested_at": ingested_at.isoformat(), "baseline": baseline, "rows": len(df),
                "inserts": int(len(ins)), "updates": int(len(upd)), "deletes": int(len(deleted)), "files": []}
@@ -222,9 +231,15 @@ def snapshot(store, sport: str, t: Table, ingested_at: pd.Timestamp, allow_mass_
     store.put(state_key, _parquet(cur))
     man_key = f"snapshots/{sport}/{t.name}/manifest.jsonl"
     old = (store.get(man_key) or b"").decode("utf-8")
-    line = json.dumps(summary | {"key": key, "hash_version": HASH_VERSION}, separators=(",", ":"))
+    line = json.dumps(summary | {"key": key, "hash_version": HASH_VERSION, "columns": list(df.columns)}, separators=(",", ":"))
     store.put(man_key, (old + line + "\n").encode("utf-8"))
     return summary
+
+
+def _last_columns(store, sport: str, table: str) -> list[str] | None:
+    """The columns of the table's last recorded snapshot (None for snapshots written before columns were recorded)."""
+    lines = (store.get(f"snapshots/{sport}/{table}/manifest.jsonl") or b"").decode("utf-8").strip().splitlines()
+    return json.loads(lines[-1]).get("columns") if lines else None
 
 
 def now_utc() -> pd.Timestamp:

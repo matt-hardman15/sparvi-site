@@ -113,10 +113,12 @@ def cfb_player_tables() -> list[Table]:
     for s in ss["season"]:
         end = _by(pd.Timestamp(s + 1, 1, 31))
         t += [Table(f"players_roster_{s}", OUT / f"roster_{s}.parquet", ("id", "team"), _by(pd.Timestamp(s, 9, 1))),
-              Table(f"players_stats_{s}", OUT / f"stats_{s}.parquet", ("playerId", "team", "category", "statType"), end),
-              Table(f"players_usage_{s}", OUT / f"usage_{s}.parquet", ("id", "team"), end),
-              Table(f"players_ppa_{s}", OUT / f"ppa_{s}.parquet", ("id", "team"), end),
-              Table(f"players_wepa_{s}", OUT / f"wepa_{s}.parquet", ("kind", "athleteId", "team"), end)]
+              # Season-to-date numbers: about half the rows change after every Saturday, so the mass-update guard is off
+              # for them (it refused usage, PPA and WEPA every week from Nov 14 to Nov 20 2026; SNAP-GUARD).
+              Table(f"players_stats_{s}", OUT / f"stats_{s}.parquet", ("playerId", "team", "category", "statType"), end, restated=True),
+              Table(f"players_usage_{s}", OUT / f"usage_{s}.parquet", ("id", "team"), end, restated=True),
+              Table(f"players_ppa_{s}", OUT / f"ppa_{s}.parquet", ("id", "team"), end, restated=True),
+              Table(f"players_wepa_{s}", OUT / f"wepa_{s}.parquet", ("kind", "athleteId", "team"), end, restated=True)]
     # Portal entries are public the day after they're filed; each pull records new and changed entries
     # (destination, eligibility), which is the record the January board is graded against.
     t += [Table(f"players_portal_{s}", OUT / f"portal_{s}.parquet", ("firstName", "lastName", "origin", "transferDate"),
@@ -208,6 +210,8 @@ def main() -> int:
     ap.add_argument("--require", action="store_true", help="fail if R2 isn't configured")
     ap.add_argument("--local", help="write to this folder instead of R2")
     ap.add_argument("--allow-mass-update", action="store_true", help="accept >20%% of a table's rows changing at once")
+    ap.add_argument("--only", nargs="+", metavar="TABLE", help="snapshot only these tables (use with --allow-mass-update, so an "
+                    "override meant for one table can't record another's)")
     a = ap.parse_args()
 
     store = LocalStore(a.local) if a.local else store_from_env()
@@ -216,7 +220,17 @@ def main() -> int:
         return 1 if a.require else 0
     ingested = now_utc()
     failed = False
-    for t in TABLES[a.sport]():
+    tables = TABLES[a.sport]()
+    if a.only:
+        unknown = sorted(set(a.only) - {t.name for t in tables})
+        if unknown:
+            print(f"not {a.sport} tables: {', '.join(unknown)}")
+            return 2
+        tables = [t for t in tables if t.name in a.only]
+    elif a.allow_mass_update:
+        print("--allow-mass-update needs --only TABLE [TABLE ...]: an override is for the tables you have looked at.")
+        return 2
+    for t in tables:
         if not t.path.exists():
             print(f"  {t.name:<24} missing ({t.path.name}), skipped")
             continue
