@@ -29,6 +29,11 @@ Model versions: [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman
   const S = Sparvi, f = S.fmt, U = S.urlState;
   const pfile = (lvl, win = "std") => S.loadSnap(`snapshots_grades_${lvl.toLowerCase()}`, win);
   const ptfile = (lvl) => S.load(`/data/baseball/snapshots_pitches_${lvl.toLowerCase()}.json`);
+  // PERF-2: the default view paints its table from a small file (the last two snapshots) while the full season
+  // downloads. Everything that reads other dates (the slider, "change since", both charts) waits for the full file.
+  const tfile = (lvl) => S.load(`/data/baseball/snapshots_grades_${lvl.toLowerCase()}_latest.json`);
+  const FAST = U.get("view", "pitchers") === "pitchers" && U.get("window", "std") === "std" && !U.get("asof") && U.get("since", "prev") === "prev";
+  if (FAST) tfile(U.get("level", "MLB"));
   pfile(U.get("level", "MLB"), "std");  // start the data request now, in parallel with meta
   const meta = await S.load("/data/baseball/meta.json");
   const Q = meta.qualifiers, PITCH_MIN = 100;
@@ -49,11 +54,11 @@ Model versions: [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman
   const gk = () => `${st.grade}_plus`, gl = () => GRADES[st.grade];
   let slider;
   const teamsOf = {};
-  async function loadTeams(lvl) {
-    const pf = await pfile(lvl);
-    teamsOf[lvl] = [...new Set(pf.players.map(p => p.series.std.team.filter(Boolean).slice(-1)[0]).filter(Boolean))].sort();
-  }
-  await loadTeams(st.level);
+  const teamsFrom = (pf) => [...new Set(pf.players.map(p => p.series.std.team.filter(Boolean).slice(-1)[0]).filter(Boolean))].sort();
+  async function loadTeams(lvl) { teamsOf[lvl] = teamsFrom(await pfile(lvl)); }
+  let tail = null;
+  if (FAST) { tail = await tfile(st.level); teamsOf[st.level] = teamsFrom(tail); }
+  else await loadTeams(st.level);
   function controls() {
     const minPh = st.view === "pitches" ? String(PITCH_MIN) : st.role === "all" ? "by role" : String(Q[st.level][st.role]);
     const teams = teamsOf[st.level] || [];
@@ -152,20 +157,34 @@ Model versions: [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman
     return (domCache[key] = [S.stableDomain(xs, { include: [100] }), S.stableDomain(ys, { include: [100] })]);
   }
 
+  // The pitcher table's rows at date index i of a file (pf: season to date, for role and team; wf: the window
+  // shown), with the change since index j.
+  function pitcherRows(pf, wf, win, i, j, g, fac) {
+    const atI = new Map(S.snapRows(pf, "std", i, "pitches").map(r => [r.id, r]));  // role and team as of the date
+    const then = new Map(S.snapRows(wf, win, j, "pitches").map(r => [r.id, r[g]]));
+    return S.snapRows(wf, win, i, "pitches")
+      .map(r => ({ ...r, role: atI.get(r.id)?.role ?? r.role, team: atI.get(r.id)?.team ?? r.team,
+                   gap: r.rv_plus != null && r[g] != null ? r.rv_plus - r[g] : null,
+                   delta: j < i && then.get(r.id) != null && r[g] != null ? r[g] - then.get(r.id) : null }))
+      .filter(d => (!st.team || d.team === st.team) && d[g] != null && S.qualifies(Q, st.level, st.min, d.pitches, d.role, fac));
+  }
+  // PERF-2: the table as draw() will show it, from the small file's two dates.
+  function firstPaint(tf) {
+    const n = tf.dates.length, g = gk();
+    const base = pitcherRows(tf, tf, "std", n - 1, Math.max(0, n - 2), g, S.prorate(meta, st.level, idx(), st.window));
+    table.pitchers = S.table(document.getElementById("t"), pitcherCols(), { sortKey: g });
+    table.pitchers.update(st.role === "all" ? base : base.filter(d => d.role === st.role));
+  }
+
   async function draw() {
     const i = idx(), j = baseIndex(i), win = st.view === "pitches" ? null : st.window, g = gk(), G = gl();
     const fac = S.prorate(meta, st.level, i, st.window);
     const pf = await pfile(st.level), wf = st.view === "pitchers" ? await pfile(st.level, st.window) : pf;
-    const atI = new Map(S.snapRows(pf, "std", i, "pitches").map(r => [r.id, r]));  // role and team as of the date
     let base;
     if (st.view === "pitchers") {
-      const then = new Map(S.snapRows(wf, st.window, j, "pitches").map(r => [r.id, r[g]]));
-      base = S.snapRows(wf, win, i, "pitches")
-        .map(r => ({ ...r, role: atI.get(r.id)?.role ?? r.role, team: atI.get(r.id)?.team ?? r.team,
-                     gap: r.rv_plus != null && r[g] != null ? r.rv_plus - r[g] : null,
-                     delta: j < i && then.get(r.id) != null && r[g] != null ? r[g] - then.get(r.id) : null }))
-        .filter(d => (!st.team || d.team === st.team) && d[g] != null && S.qualifies(Q, st.level, st.min, d.pitches, d.role, fac));
+      base = pitcherRows(pf, wf, st.window, i, j, g, fac);
     } else {
+      const atI = new Map(S.snapRows(pf, "std", i, "pitches").map(r => [r.id, r]));  // role and team as of the date
       const ptf = await ptfile(st.level);
       const then = new Map(S.snapRows(ptf, null, j, "pitches").map(r => [r.id + r.pt, r[g]]));
       base = S.snapRows(ptf, null, i, "pitches")
@@ -232,7 +251,14 @@ Model versions: [{{< meta models.stuff_plus >}}](https://github.com/matt-hardman
         Plot.tip(ss, Plot.pointer({ x: "date", y: "med", title: d => `${d.role === "SP" ? "Starters" : "Relievers"}, through ${S.dateLabel(d.date.toISOString().slice(0, 10))}\nMedian ${f.num(d.med)} · middle 50% ${f.num(d.q1)}–${f.num(d.q3)}\n${d.n} qualified` }))] }));
     document.getElementById("seasoncap").textContent = `${G} of qualified ${st.level === "AAA" ? "Triple-A" : "MLB"} starters and relievers at each weekly snapshot (${S.WINDOWS[st.window].toLowerCase()}): the line is the median, the band the middle 50%. The dashed line marks the slider's date. Compare where starters and relievers sit, and look for drift as velocity builds through spring.`;
   }
-  controls(); draw();
+  controls();
+  if (tail) {
+    firstPaint(tail);
+    const before = teamsOf[st.level].join();
+    await loadTeams(st.level);          // the full file: a team whose pitchers all left before the last two dates
+    if (teamsOf[st.level].join() !== before) controls();
+  }
+  draw();
 })();
 </script>
 ```
