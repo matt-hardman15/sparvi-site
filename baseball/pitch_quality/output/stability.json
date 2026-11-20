@@ -14,11 +14,11 @@
   "share_over_2": 0.0053
  },
  "loc_plus": {
-  "mean_abs": 0.116,
-  "p95": 0.309,
-  "max": 0.611,
-  "share_over_1": 0.0,
-  "share_over_2": 0.0
+  "mean_abs": 0.742,
+  "p95": 1.968,
+  "max": 6.002,
+  "share_over_1": 0.2562,
+  "share_over_2": 0.0498
  },
  "pitching_plus": {
   "mean_abs": 0.378,

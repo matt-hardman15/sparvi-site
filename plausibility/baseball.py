@@ -161,10 +161,11 @@ def leaderboard(suite: Suite, meta: dict, ref: dict) -> None:
                 f"reference {ref['reference_season']}, applied to {ref['applies_to_season']}, site season {meta['season']}")
 
     # Qualified pitchers' grades are in a believable range (unqualified ones can be anything: a few pitches). The
-    # Triple-A floor is lower: its wildest qualified pitchers really are 7 MLB SDs short on Location+ (2026 lowest:
-    # 25, a reliever who walked a fifth of his batters), which no one would be allowed to do for 150 MLB pitches.
+    # Triple-A floor is lower: its wildest qualified pitchers really are 9 MLB SDs short on Location+ (2026 lowest:
+    # 10 and 12, two pitchers who walked 27% and 23% of their batters; under Location+ 2.0.0 the same two were lowest,
+    # at 25 and 29), which no one would be allowed to do for 150 MLB pitches.
     for lvl, rows in final.items():
-        lo = 40 if lvl == "mlb" else 15
+        lo = 40 if lvl == "mlb" else 5
         vals = [(r[k], r["name"], k) for r in rows if r["qualified"] for k in PLUS if r[k] is not None]
         bad = [v for v in vals if not lo <= v[0] <= 160]
         suite.check(LB, f"Qualified {lvl.upper()} pitchers' + grades are between {lo} and 160", bool(vals) and not bad,

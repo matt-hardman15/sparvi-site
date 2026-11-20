@@ -57,7 +57,7 @@ Every {{< meta baseball.season >}} Triple-A player who is likely eligible for th
     { key: "role", label: "Role", align: "l", title: "SP starter · RP reliever · Swing (see glossary)" },
     { key: "bf", label: "BF" },
     { key: "stuff_plus", label: "Stuff+", heat: "plus", fmt: v => f.num(v, 0), title: `What the ball does: velocity, movement, spin, release. ${MLB_SCALE}. Qualified Triple-A pitchers average ${aaaAvg("stuff")}.` },
-    { key: "loc_plus", label: "Loc+", heat: "plus", fmt: v => f.num(v, 0), title: `Location+: where his pitches crossed the plate. Steady for a pitcher, but it hasn't carried from Triple-A to MLB results (see the stuff-or-command article). ${MLB_SCALE}. Qualified Triple-A pitchers average ${aaaAvg("loc")}.` },
+    { key: "loc_plus", label: "Loc+", heat: "plus", fmt: v => f.num(v, 0), title: `Location+: what his locations added, given the pitch. Steady for a pitcher, but it hasn't carried from Triple-A to MLB results (see the stuff-or-command article). ${MLB_SCALE}. Qualified Triple-A pitchers average ${aaaAvg("loc")}.` },
     { key: "pitching_plus", label: "Pitching+", heat: "plus", fmt: v => f.num(v, 0), title: `Stuff and location together, from its own model (not an average of the other two). ${MLB_SCALE}. Qualified Triple-A pitchers average ${aaaAvg("pitching")}.` },
     { key: "k_pct", label: "K%", fmt: v => f.pct(v) }, { key: "bb_pct", label: "BB%", fmt: v => f.pct(v) },
     { key: "k_bb_pct", label: "K−BB%", fmt: v => f.pct(v), title: "Strikeout rate minus walk rate" },

@@ -1,14 +1,20 @@
 """Feature engineering shared by training and scoring.
 
-Three feature sets, one model family each (all graded on the same target):
+Feature sets (every model has the same target):
   FEATURES          Stuff+: only what the pitcher controls physically (velocity, movement, spin,
                     release, extension, arm angle, and gaps from his primary fastball). No location,
                     count, or outcome, so it grades the pitch itself rather than how it was used.
-  LOC_FEATURES      Location+: only where the pitch crossed the plate, in the count it was thrown.
-                    Horizontal location is mirrored by batter side (positive = inside); height is
-                    scaled to the rulebook zone from the batter's listed height (0 = bottom at 27%,
-                    1 = top at 53.5%). No velocity or movement.
+  LOC_FEATURES      Where the pitch crossed the plate, in the count it was thrown, and whether the
+                    batter stands on the pitcher's throwing side. Horizontal location is mirrored by batter side (positive = inside); height
+                    is scaled to the rulebook zone from the batter's listed height (0 = bottom at 27%,
+                    1 = top at 53.5%).
   PITCHING_FEATURES Pitching+: both, so the model can value a pitch's shape where it was thrown.
+  NO_LOC_FEATURES   Pitching+'s inputs without the two location columns.
+
+Location+ (3.0.0) is the location's value given the pitch: the Pitching+ model's prediction minus the
+prediction of the same model without location (train.predict_all). Until 2.0.0 it was a model on
+LOC_FEATURES alone, which did not predict next-season results; that set stays as FEATURE_SETS["loc"]
+because the Location+ backtest's baseline refits it (models/baseball/location_plus/backtest.py).
 """
 from functools import cache
 
@@ -43,7 +49,8 @@ FEATURES = [
 ]
 LOC_FEATURES = ["loc_x", "loc_z", "balls", "strikes", "same_hand"]
 PITCHING_FEATURES = FEATURES + LOC_FEATURES
-FEATURE_SETS = {"stuff": FEATURES, "loc": LOC_FEATURES, "pitching": PITCHING_FEATURES}
+NO_LOC_FEATURES = FEATURES + ["balls", "strikes", "same_hand"]
+FEATURE_SETS = {"stuff": FEATURES, "loc": LOC_FEATURES, "no_loc": NO_LOC_FEATURES, "pitching": PITCHING_FEATURES}
 
 
 def pitch_group(pt: pd.Series) -> pd.Series:
