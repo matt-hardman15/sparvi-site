@@ -13,7 +13,7 @@ from sparvi import plotstyle as ps  # noqa: E402
 from sparvi.config import ROOT  # noqa: E402
 
 D = json.loads((ROOT / "site" / "data" / "nfl" / "fourth_downs.json").read_text(encoding="utf-8"))
-CODE = {"kick": 0, "toss-up": 1, "go": 2}
+CODE = {"kick": 0, "toss-up": 1, "go": 2, "none": np.nan}    # "none": the own 20 and in, where the chart makes no call
 ys = sorted({g["y"] for g in D["grid"]}, reverse=True)      # own goal line at the left: the offense moves left to right
 ts = sorted({g["t"] for g in D["grid"]})
 m = np.full((len(ts), len(ys)), np.nan)

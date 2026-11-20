@@ -15,11 +15,17 @@ clear go 40 → 13 (none on 4th-and-3 or longer). Real plays always had 0/1 flag
 model were checked and are right (tests/test_fourth_transforms.py; punts from the own 10 and in, 2016-2025: net 44.0
 actual vs. 43.8 modeled, punting team won 44.0% vs. 43.8% modeled, in sample).
 
-Open, not changed here (Matt to decide): on 2020-2025 seasons it hadn't seen, win probability 1.0.1 rates a team with
+Also (Matt, Nov 20): the chart makes no call from the offense's own 20 back (`summary.CHART_NO_CALL_FROM`, applied in
+the export: 200 of the 945 cells publish call "none" and no numbers). Teams almost never go for it there (2016-2025:
+167 of 7,046 tries, averaging 11 yards to go), so the conversion rate and the value of a first down are extrapolated;
+after the fix above the chart still had 4th-and-1 inside the own 10 as a clear go. Of the 745 cells left: 67 clear go,
+142 clear kick, 536 toss-up. Real plays from there are still valued and judged.
+
+Open, to be handled in a separate pull request (Matt, Nov 20): on 2020-2025 seasons it hadn't seen, win probability 1.0.1 rates a team with
 the ball inside its own 6 about 4 points too high (2,200 plays: won 46.6%, rated 51.0%; 90% interval of the gap 2.4 to
 6.4 points, resampling games). Field position barely moves
 it there. That leaves the chart a point or so more go-friendly than nfl4th inside the own 10 (toss-ups where nfl4th
-says punt), and touches the 1% of clear-go cost that comes from real plays there. Options are in the pull request.
+says punt), and touches the 1% of clear-go cost that comes from real plays there. Options are in pull request #104.
 
 ## 2026-11-19 · Stuff+ 2.0.0: the backtest trains on two seasons (PQ-TEST-2; no model change)
 The pre-registered test trained on one season (2024) while the published model trains on two. Development folds that
