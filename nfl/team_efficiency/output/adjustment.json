@@ -80,12 +80,15 @@
   ],
   "lambda": 3200,
   "n_games": 2160,
-  "mae_adjusted": 10.483161560887325,
+  "mae_adjusted": 10.478181422139954,
   "mae_raw": 10.47155015597792,
   "mae_home_only": 11.104256894732336,
   "mae_ridge": 10.378931726105161,
-  "home_epa_per_play": -0.002226967287079449,
-  "lambda_schedule": 400,
+  "home_epa_per_play": -0.002261173459436207,
+  "lambda_schedule": [
+    300,
+    800
+  ],
   "schedule_search": {
     "objective": "Held-out game EPA/play for each side, predicted as mean + offense + defense + home from the season's other games; skill = 1 - squared error / squared error of the league mean",
     "grid": [
@@ -162,21 +165,200 @@
         "skill_forward": 0.023666729558688093
       }
     ],
-    "lambda": 400,
-    "skill": 0.11800226353049492,
+    "pairs": [
+      {
+        "lambda_off": 150,
+        "lambda_def": 300,
+        "skill": 0.11288828085379043
+      },
+      {
+        "lambda_off": 150,
+        "lambda_def": 400,
+        "skill": 0.11557271069917308
+      },
+      {
+        "lambda_off": 150,
+        "lambda_def": 600,
+        "skill": 0.11812635083817968
+      },
+      {
+        "lambda_off": 150,
+        "lambda_def": 800,
+        "skill": 0.11869353880905587
+      },
+      {
+        "lambda_off": 150,
+        "lambda_def": 1200,
+        "skill": 0.11751736167938687
+      },
+      {
+        "lambda_off": 150,
+        "lambda_def": 1600,
+        "skill": 0.11543568295048934
+      },
+      {
+        "lambda_off": 150,
+        "lambda_def": 3200,
+        "skill": 0.10808455940497286
+      },
+      {
+        "lambda_off": 200,
+        "lambda_def": 300,
+        "skill": 0.11457781060909056
+      },
+      {
+        "lambda_off": 200,
+        "lambda_def": 400,
+        "skill": 0.11723645633014523
+      },
+      {
+        "lambda_off": 200,
+        "lambda_def": 600,
+        "skill": 0.11976469130699596
+      },
+      {
+        "lambda_off": 200,
+        "lambda_def": 800,
+        "skill": 0.12032420261078147
+      },
+      {
+        "lambda_off": 200,
+        "lambda_def": 1200,
+        "skill": 0.11915239060033145
+      },
+      {
+        "lambda_off": 200,
+        "lambda_def": 1600,
+        "skill": 0.11708270465798853
+      },
+      {
+        "lambda_off": 200,
+        "lambda_def": 3200,
+        "skill": 0.10977533817020002
+      },
+      {
+        "lambda_off": 300,
+        "lambda_def": 300,
+        "skill": 0.11587024341803642
+      },
+      {
+        "lambda_off": 300,
+        "lambda_def": 400,
+        "skill": 0.11850202501607798
+      },
+      {
+        "lambda_off": 300,
+        "lambda_def": 600,
+        "skill": 0.1210127246313013
+      },
+      {
+        "lambda_off": 300,
+        "lambda_def": 800,
+        "skill": 0.12157755623867805
+      },
+      {
+        "lambda_off": 300,
+        "lambda_def": 1200,
+        "skill": 0.12043765479587598
+      },
+      {
+        "lambda_off": 300,
+        "lambda_def": 1600,
+        "skill": 0.11840392156628432
+      },
+      {
+        "lambda_off": 300,
+        "lambda_def": 3200,
+        "skill": 0.11120035557360386
+      },
+      {
+        "lambda_off": 400,
+        "lambda_def": 300,
+        "skill": 0.1153543185363397
+      },
+      {
+        "lambda_off": 400,
+        "lambda_def": 400,
+        "skill": 0.11800226353049492
+      },
+      {
+        "lambda_off": 400,
+        "lambda_def": 600,
+        "skill": 0.12052146747831438
+      },
+      {
+        "lambda_off": 400,
+        "lambda_def": 800,
+        "skill": 0.12110696680771271
+      },
+      {
+        "lambda_off": 400,
+        "lambda_def": 1200,
+        "skill": 0.12001485693675307
+      },
+      {
+        "lambda_off": 400,
+        "lambda_def": 1600,
+        "skill": 0.11802427333401466
+      },
+      {
+        "lambda_off": 400,
+        "lambda_def": 3200,
+        "skill": 0.11093145342910193
+      },
+      {
+        "lambda_off": 600,
+        "lambda_def": 300,
+        "skill": 0.11165047285371155
+      },
+      {
+        "lambda_off": 600,
+        "lambda_def": 400,
+        "skill": 0.11431503299051105
+      },
+      {
+        "lambda_off": 600,
+        "lambda_def": 600,
+        "skill": 0.11692240442946078
+      },
+      {
+        "lambda_off": 600,
+        "lambda_def": 800,
+        "skill": 0.11756683404087875
+      },
+      {
+        "lambda_off": 600,
+        "lambda_def": 1200,
+        "skill": 0.1165841298952971
+      },
+      {
+        "lambda_off": 600,
+        "lambda_def": 1600,
+        "skill": 0.11468250097910015
+      },
+      {
+        "lambda_off": 600,
+        "lambda_def": 3200,
+        "skill": 0.10780201371040699
+      }
+    ],
+    "lambda": [
+      300,
+      800
+    ],
+    "skill": 0.12157755623867805,
     "n_plays": 294040,
-    "lambda_forward": 400,
-    "skill_at_forecast_lambda": 0.06275188399452747,
-    "pair_not_used": {
-      "lambda_off": 300,
-      "lambda_def": 800,
-      "skill": 0.12157755623867805
-    }
+    "single": {
+      "lambda": 400,
+      "skill": 0.11800226353049492,
+      "lambda_forward": 400
+    },
+    "skill_at_forecast_lambda": 0.06275188399452747
   },
   "mae_adjusted_minus_raw": {
-    "diff": 0.011611404909405876,
-    "lo": -0.013847974477123121,
-    "hi": 0.03539689230356801,
+    "diff": 0.006631266162035146,
+    "lo": -0.018772597128383018,
+    "hi": 0.03129326838832868,
     "draws": 2000,
     "seed": 7
   },
@@ -184,10 +366,10 @@
   "correction": {
     "season": 2026,
     "week": 10,
-    "off_max": 0.02349153660790152,
-    "off_sd": 0.009240043549963382,
-    "def_max": 0.03512272909591718,
-    "def_sd": 0.011831462937285344,
+    "off_max": 0.018628587511169123,
+    "off_sd": 0.006239628559011276,
+    "def_max": 0.03800985608817936,
+    "def_sd": 0.013473394407430736,
     "off_raw_sd": 0.08689637472236393,
     "def_raw_sd": 0.06888394255754317,
     "at_forecast_lambda": {
@@ -200,15 +382,10 @@
     },
     "ranks": {
       "off": {
-        "moved": 19,
-        "max_move": 3,
-        "mean_abs_move": 0.8125,
+        "moved": 18,
+        "max_move": 2,
+        "mean_abs_move": 0.6875,
         "largest": [
-          {
-            "team": "NYG",
-            "raw_rank": 13,
-            "adj_rank": 16
-          },
           {
             "team": "ARI",
             "raw_rank": 26,
@@ -220,19 +397,24 @@
             "adj_rank": 12
           },
           {
-            "team": "LA",
-            "raw_rank": 8,
-            "adj_rank": 10
+            "team": "NYG",
+            "raw_rank": 13,
+            "adj_rank": 15
           },
           {
-            "team": "LV",
-            "raw_rank": 17,
-            "adj_rank": 15
+            "team": "PIT",
+            "raw_rank": 21,
+            "adj_rank": 19
+          },
+          {
+            "team": "BAL",
+            "raw_rank": 16,
+            "adj_rank": 17
           }
         ]
       },
       "def": {
-        "moved": 22,
+        "moved": 21,
         "max_move": 6,
         "mean_abs_move": 1.8125,
         "largest": [
@@ -267,24 +449,24 @@
   },
   "simulation": {
     "full_season": {
-      "recovered": 0.7057558090702208,
-      "slope": 0.6985887622092865,
-      "corr": 0.840136953292283,
+      "recovered": 0.7273624642238408,
+      "slope": 0.7059772259840994,
+      "corr": 0.8532470303789449,
       "sd_true": 0.015340248908636831,
-      "sd_estimated": 0.012755688766065606,
+      "sd_estimated": 0.012692533328378849,
       "rmse_raw": 0.03995687460488712,
-      "rmse_adjusted": 0.03698316678424017,
+      "rmse_adjusted": 0.036885552629542524,
       "seasons": 40
     },
     "through_week": {
       "week": 10,
-      "recovered": 0.572056667459075,
-      "slope": 0.565011354505256,
-      "corr": 0.7564030850392071,
+      "recovered": 0.595835500057216,
+      "slope": 0.5822954337920014,
+      "corr": 0.7721125834002314,
       "sd_true": 0.02168642231776339,
-      "sd_estimated": 0.01619913388837829,
+      "sd_estimated": 0.016355004389784423,
       "rmse_raw": 0.05253776551746169,
-      "rmse_adjusted": 0.04779559623225088,
+      "rmse_adjusted": 0.04766016221132641,
       "seasons": 40
     },
     "full_season_at_forecast_lambda": {

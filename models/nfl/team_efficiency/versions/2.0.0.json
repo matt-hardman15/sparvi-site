@@ -3,10 +3,10 @@
   "version": "2.0.0",
   "status": "champion",
   "registered": "2026-11-20",
-  "note": "NFL-SCHED (major): the schedule correction uses its own penalty (400 plays, chosen by held-out-game EPA/play) instead of the forecast penalty (3200, unchanged, chosen on next-week margins). Adjusted numbers change (largest correction 2026 week 10: 0.023 offense, 0.035 defense; before 0.008, 0.011); shrunk ratings and their margin MAE do not. Champion by this change, not by promote: the frozen evaluation (margin MAE of the shrunk ratings) is untouched by it.",
-  "code_hash": "ffe221e369d6f32a11c05b259ca78876caf3d1851c9e84943c05706a63be62df",
+  "note": "NFL-SCHED (major): the schedule correction uses its own penalties (300 plays for offense strengths, 800 for defense strengths, chosen by held-out-game EPA/play) instead of the forecast penalty (3200, unchanged, chosen on next-week margins). Adjusted numbers change (largest correction 2026 week 10: 0.019 offense, 0.038 defense; before 0.008, 0.011); shrunk ratings and their margin MAE do not. Champion by this change, not by promote: the frozen evaluation (margin MAE of the shrunk ratings) is untouched by it.",
+  "code_hash": "b5b53ca3ecacd4e1e77adb2e334ec766a94d1d67c75f41f275b4f7ceb6df83d6",
   "code_files": {
-    "nfl/team_efficiency/adjusted.py": "f73f05322fba2649485f436d85aeaef575d6af009208f7494928563c2c6ea6c8",
+    "nfl/team_efficiency/adjusted.py": "a35aced9f2c52c69b23005bb10493a9d23ea35d85ba3287e67aef535a840b3a6",
     "football/common/adjust.py": "51195656b6b4b76d2811b393a0c7b87ab513283b56f9f9fde5d0a792e50db204",
     "football/common/simulate.py": "332d3cfbecd1bd68b0517eb108e493ef1d8ba8ebb312487c0797ce124e9054e6",
     "football/dbt/models/staging/stg_nfl_plays.sql": "c60831f4df6ca09e3ee594fecada871f564d2f0945c19fe003cede3a9730292a"
@@ -26,7 +26,7 @@
     "data/raw/nfl/schedules.parquet": "d6e373d47223ca654c480e7bd11a06006a924f741124a843c601b84632312bdd"
   },
   "artifacts": {
-    "nfl/team_efficiency/output/adjustment.json": "284693355d0bb01f886a91ca43e7fccd5f9c6be07cc72c9b91185d7f4de789f7"
+    "nfl/team_efficiency/output/adjustment.json": "72f637d3a7c7823aa92bfdf7634782bf167657ec16886f65dc0902d0fde645bc"
   },
   "eval": {
     "set": "Every regular-season game from week 3 on, complete seasons in the window, predicted from ratings through the prior week (leave-one-season-out).",
@@ -50,17 +50,20 @@
   },
   "metrics": {
     "mae_ridge": 10.378931726105161,
-    "mae_adjusted": 10.483161560887325,
+    "mae_adjusted": 10.478181422139954,
     "mae_raw": 10.47155015597792,
     "mae_home_only": 11.104256894732336,
     "lambda": 3200,
     "n_games": 2160,
-    "lambda_schedule": 400,
-    "schedule_skill": 0.11800226353049492,
+    "lambda_schedule": [
+      300,
+      800
+    ],
+    "schedule_skill": 0.12157755623867805,
     "schedule_skill_at_forecast_lambda": 0.06275188399452747,
-    "sim_recovered_full_season": 0.7057558090702208,
+    "sim_recovered_full_season": 0.7273624642238408,
     "sim_recovered_at_forecast_lambda": 0.3919187862131588,
-    "correction_off_max": 0.02349153660790152,
-    "correction_def_max": 0.03512272909591718
+    "correction_off_max": 0.018628587511169123,
+    "correction_def_max": 0.03800985608817936
   }
 }

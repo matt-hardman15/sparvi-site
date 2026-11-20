@@ -19,28 +19,33 @@ penalty by leave-one-game-out within each complete season (2016–2025, 294,000 
 the held-out game as mean + offense + defense + home. Forecast λ stays 3,200. New file `football/common/simulate.py`
 (added to the card's code): seasons with known strengths and unequal schedules.
 
-**Results.** Held-out-game skill (1 − squared error / squared error of the league mean) by λ: 100 9.9%, 200 11.0%,
-300 11.6%, **400 11.8%**, 600 11.7%, 800 11.3%, 1,600 9.1%, 3,200 6.3%, 6,400 3.8%. The forward version (fit on
-earlier weeks only, weeks 4 on) also peaks at 400 (8.9%; 3,200: 4.1%), and so does the same test through week 9.
-A moments estimate agrees (play EPA variance 1.3 over true team variance: about 240 plays for offenses, 400–1,300 for
-defenses). Chosen: λ = 400.
-- Size, 2026 week 10: largest correction 0.023 EPA/play on offense (sd 0.009), 0.035 on defense (sd 0.012); before,
-  0.008 (0.002) and 0.011 (0.003). That is 11% and 17% of the spread between teams, up from 3% and 4%.
+**Results.** Held-out-game skill (1 − squared error / squared error of the league mean) with one penalty for every
+strength, by λ: 100 9.9%, 200 11.0%, 300 11.6%, 400 11.8%, 600 11.7%, 800 11.3%, 1,600 9.1%, 3,200 6.3%, 6,400 3.8%.
+The forward version (fit on earlier weeks only, weeks 4 on) also peaks at 400 (8.9%; 3,200: 4.1%). With separate
+penalties for offense and defense strengths (35 pairs), the best is **300 for offenses and 800 for defenses, 12.2%**
+(400/800 12.1%, 300/600 12.1%); an earlier forward-only run of the pairs picked the same one. A moments estimate
+agrees: play EPA variance 1.3 over true team variance is about 240 plays for offenses and 400–1,300 for defenses,
+because defenses differ less from one another. Chosen: the pair (Matt asked for the recommended option on each open
+question in the pull request, Nov 20; this was the recommendation). The build uses the pair whenever it beats the
+best single value.
+- Size, 2026 week 10: largest correction 0.019 EPA/play on offense (sd 0.006), 0.038 on defense (sd 0.014); before,
+  0.008 (0.002) and 0.011 (0.003). That is 7% and 20% of the spread between teams, up from 3% and 4%. An offense's
+  correction comes from the defenses it faced, which are the more heavily shrunk, so offenses move less.
 - Simulation (40 NFL-sized seasons, division rivals twice): share of each team's true schedule effect recovered, full
-  season 71% (slope of estimate on truth 0.70), through week 10 57%; at λ = 3,200, 39% (slope 0.24). Error against a
-  team's true strength: raw 0.0400, adjusted 0.0370 (at 3,200: 0.0382).
-- Rankings, 2026 week 10, new adjusted vs. old adjusted: offense 15 teams move (largest 2 places), defense 17 (largest
-  6: New England 26th → 20th; Atlanta 16th → 12th, Philadelphia 24th → 19th; Carolina 20th → 24th, New Orleans 21st →
-  25th), net 15 (largest 3: Denver 12th → 9th, Detroit 9th → 12th). The top eight in net EPA/play are unchanged.
-- Next-week margins (2,160 games): adjusted 10.483 vs. raw 10.472 (difference +0.012, 90% interval −0.014 to +0.035;
+  season 73% (slope of estimate on truth 0.71), through week 10 60%; at λ = 3,200, 39% (slope 0.24). Error against a
+  team's true strength: raw 0.0400, adjusted 0.0369 (at 3,200: 0.0382).
+- Rankings, 2026 week 10, new adjusted vs. old adjusted: offense 12 teams move, none by more than one place; defense
+  17 (largest 6: New England 26th → 20th; Philadelphia 24th → 19th, Atlanta 16th → 12th; Carolina 20th → 24th, New
+  Orleans 21st → 25th); net 18 (largest 4: Denver 12th → 8th; Detroit 9th → 12th). The top five in net EPA/play are
+  unchanged.
+- Next-week margins (2,160 games): adjusted 10.478 vs. raw 10.472 (difference +0.007, 90% interval −0.019 to +0.031;
   with the old correction 10.469). No measurable difference from raw either way: the published note already said so,
   and still does. Shrunk ratings 10.379, unchanged.
 
-**Not decided here (options in the pull request).** (1) Separate penalties for offense and defense strengths (300 and
-800) score 12.2% against 11.8% for one penalty; `lam_schedule` accepts a pair, but one penalty is shipped because it
-changes only what was asked. (2) Whether the default view should be raw: the correction is supported by held-out EPA
-and by simulation, not by next-week margins. (3) The two NFL articles (`nfl/jacksonville`, `nfl/offense_defense`) are
-frozen analyses that read `adjusted_team_week.csv`; they were not re-run.
+**Decided with it (Matt, Nov 20: the recommended option on each).** The default view stays opponent-adjusted: the
+correction is supported by held-out EPA and by simulation, though not by next-week margins. The two NFL articles
+(`nfl/jacksonville`, `nfl/offense_defense`) are frozen analyses that read `adjusted_team_week.csv`; they were not
+re-run, and each now cites version 1.0.1 and says the tool has since changed.
 
 Registered as champion by this change rather than by `registry promote`: the card's frozen evaluation (next-week margin
 MAE of the shrunk ratings, 10.379) is untouched by it and can't show what the change is for.

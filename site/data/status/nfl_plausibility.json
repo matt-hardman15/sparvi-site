@@ -9,7 +9,7 @@
    "tool": "Team efficiency",
    "name": "opponent adjustment has a non-trivial, bounded size",
    "ok": true,
-   "detail": "sd(adjusted - raw) is 0.08 to 0.24 of sd(raw) at each season's last week (allowed 0.06 to 0.45)"
+   "detail": "sd(adjusted - raw) is 0.06 to 0.28 of sd(raw) at each season's last week (allowed 0.05 to 0.45)"
   },
   {
    "tool": "Team efficiency",
@@ -39,13 +39,13 @@
    "tool": "Team efficiency",
    "name": "the schedule correction has its own penalty, lighter than the forecast penalty",
    "ok": true,
-   "detail": "schedule 400, forecast 3200"
+   "detail": "schedule 300 (offenses) and 800 (defenses), forecast 3200"
   },
   {
    "tool": "Team efficiency",
    "name": "in simulation the correction recovers most of a known schedule effect",
    "ok": true,
-   "detail": "71% over a full season, 57% through this week (needs 50%)"
+   "detail": "73% over a full season, 60% through this week (needs 50%)"
   },
   {
    "tool": "Team efficiency",

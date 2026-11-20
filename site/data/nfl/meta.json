@@ -239,7 +239,7 @@
  "adjustment": {
   "lambda": 3200,
   "n_games": 2160,
-  "mae_adjusted": 10.483161560887325,
+  "mae_adjusted": 10.478181422139954,
   "mae_raw": 10.47155015597792,
   "mae_ridge": 10.378931726105161,
   "mae_home_only": 11.104256894732336,
@@ -255,21 +255,24 @@
    2024,
    2025
   ],
-  "lambda_schedule": 400,
-  "schedule_skill": 0.118,
+  "lambda_schedule": [
+   300,
+   800
+  ],
+  "schedule_skill": 0.1216,
   "correction": {
    "season": 2026,
    "week": 10,
-   "off_max": 0.0235,
-   "off_sd": 0.0092,
-   "def_max": 0.0351,
-   "def_sd": 0.0118,
+   "off_max": 0.0186,
+   "off_sd": 0.0062,
+   "def_max": 0.038,
+   "def_sd": 0.0135,
    "off_raw_sd": 0.0869,
    "def_raw_sd": 0.0689
   },
   "simulation_recovered": {
-   "full_season": 0.706,
-   "through_week": 0.572
+   "full_season": 0.727,
+   "through_week": 0.596
   }
  }
 }

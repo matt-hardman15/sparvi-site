@@ -275,7 +275,7 @@ def test_the_schedule_correction_recovers_most_of_a_known_schedule_effect():
     teams never). At the published penalty the correction must recover most of each team's true schedule effect over
     a full season; at the forecast penalty it replaced (3,200) it does not, which is the defect this guards."""
     published = json.loads((ROOT / "nfl/team_efficiency/output/adjustment.json").read_text(encoding="utf-8"))
-    lam, lam_s = published["lambda"], published["lambda_schedule"]
+    lam, lam_s = published["lambda"], tuple(published["lambda_schedule"])
     new = recovery(lam, lam_s, seasons=12, seed=3)
     old = recovery(lam, None, seasons=12, seed=3)
     assert new["recovered"] > 0.6 and 0.5 < new["slope"] < 1.1, new

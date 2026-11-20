@@ -6,8 +6,9 @@ status: champion
 version: 2.0.0
 owner: Matt
 spec: Ridge regression of play EPA on offense, defense, and home field, fit with two penalties. A team's adjusted
-  EPA/play is its own minus the strength of the opponents it faced, with those strengths fit at a penalty chosen
-  by held-out-game EPA/play (leave-one-game-out within each complete season). The shrunk ratings used for forecasting
+  EPA/play is its own minus the strength of the opponents it faced, with those strengths fit at penalties chosen
+  by held-out-game EPA/play (leave-one-game-out within each complete season), one for offense strengths and a heavier
+  one for defense strengths, which differ less. The shrunk ratings used for forecasting
   keep the heavier penalty chosen on next-week margin MAE.
 target: Next week's home margin (forecast penalty and validation); a held-out game's EPA/play for each side (schedule
   penalty)

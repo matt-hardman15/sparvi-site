@@ -13,7 +13,8 @@
    the rating gap, which absorbs uniform shrinkage, so it says little about how large the opponent
    strengths should be, and its heavy penalty (3,200) left a correction of at most 0.008 EPA/play.
    The correction's penalty is chosen on its own question: how well do the coefficients predict a
-   held-out game's EPA/play (leave-one-game-out within each complete season)? The same test run
+   held-out game's EPA/play (leave-one-game-out within each complete season)? Offense and defense
+   strengths get their own values when that predicts better than one value for both. The same test run
    forward (fit on earlier weeks only) and a simulation with known strengths are reported with it.
 3. Ratings for every season x week x garbage-time variant x split (all plays, passes, runs) on
    season-to-date plays: off_ridge/def_ridge at the forecast lambda, off_adj/def_adj corrected with
@@ -43,10 +44,11 @@ CFG = nfl()
 OUT = Path(__file__).parent / "output"
 DB = Path(os.environ.get("FOOTBALL_DB_PATH", ROOT / "football" / "dbt" / "football.duckdb"))
 GRID = [25, 50, 100, 200, 400, 800, 1600, 3200, 6400, 12800]   # past the minimum on both sides (NFL-LAMBDA)
-# Penalties tried for the schedule correction (held-out-game EPA/play), and the (offense, defense) pairs reported as
-# an alternative that is not used: defenses differ less than offenses, so a pair fits slightly better (NFL-SCHED).
+# Penalties tried for the schedule correction (held-out-game EPA/play): one value for every team strength, and
+# (offense, defense) pairs. Defenses differ less from one another than offenses do, so their strengths want a heavier
+# penalty; the pair is used when it predicts held-out games better than the best single value (NFL-SCHED).
 SCHEDULE_GRID = [50, 100, 150, 200, 300, 400, 600, 800, 1200, 1600, 3200, 6400]
-PAIR_GRID = [(o, d) for o in (200, 300, 400, 600) for d in (400, 600, 800, 1200, 1600)]
+PAIR_GRID = [(o, d) for o in (150, 200, 300, 400, 600) for d in (300, 400, 600, 800, 1200, 1600, 3200)]
 SIM_SEASONS = 40      # simulated seasons with known strengths (football/common/simulate.py)
 MIN_WEEK = 3          # first week whose ratings predict the next week in the search
 SEARCH_GT = "no_gt"   # the tool's default view: garbage time removed, all plays
@@ -134,17 +136,23 @@ def schedule_search(base: pd.DataFrame, seasons: list[int], lam_forecast: float)
             for a, b in zip(logo, fwd, strict=True)]
     for r in grid:
         print(f"schedule lambda {r['lambda']:>5}: held-out game skill {r['skill']:.4f}, forward {r['skill_forward']:.4f}")
-    best = max(grid, key=lambda r: (round(r["skill"], 6), -r["lambda"]))
-    pairs = pool_cv([cell_cv(ps, PAIR_GRID) for ps in by_season])
-    pair = max(pairs, key=lambda r: r["skill"])
+    single = max(grid, key=lambda r: (round(r["skill"], 6), -r["lambda"]))
+    pairs = [{"lambda_off": r["lambda"][0], "lambda_def": r["lambda"][1], "skill": r["skill"]}
+             for r in pool_cv([cell_cv(ps, PAIR_GRID) for ps in by_season])]
+    pair = max(pairs, key=lambda r: round(r["skill"], 6))
+    use_pair = pair["skill"] > single["skill"]
+    chosen = [pair["lambda_off"], pair["lambda_def"]] if use_pair else [single["lambda"], single["lambda"]]
+    print(f"schedule penalty: offense {chosen[0]}, defense {chosen[1]} (pair {pair['skill']:.4f}, single"
+          f" {single['lambda']} {single['skill']:.4f})")
     at = {r["lambda"]: r for r in grid}
     return {
         "objective": "Held-out game EPA/play for each side, predicted as mean + offense + defense + home from the"
                      " season's other games; skill = 1 - squared error / squared error of the league mean",
-        "grid": grid, "lambda": best["lambda"], "skill": best["skill"], "n_plays": logo[0]["plays"],
-        "lambda_forward": max(grid, key=lambda r: r["skill_forward"])["lambda"],
+        "grid": grid, "pairs": pairs, "lambda": chosen, "skill": pair["skill"] if use_pair else single["skill"],
+        "n_plays": logo[0]["plays"],
+        "single": {"lambda": single["lambda"], "skill": single["skill"],
+                   "lambda_forward": max(grid, key=lambda r: r["skill_forward"])["lambda"]},
         "skill_at_forecast_lambda": at[lam_forecast]["skill"] if lam_forecast in at else None,
-        "pair_not_used": {"lambda_off": pair["lambda"][0], "lambda_def": pair["lambda"][1], "skill": pair["skill"]},
     }
 
 
@@ -186,7 +194,7 @@ def main() -> None:
     best = min(grid, key=lambda r: (round(r["mae"], 6), r["lambda"]))
     lam = best["lambda"]
     sched = schedule_search(base, search_seasons, lam)
-    lam_s = sched["lambda"]
+    lam_s = tuple(sched["lambda"])      # (offense strengths, defense strengths)
     p = predictions(base, g, lam, search_seasons, lam_s)
     res = {
         "seasons": search_seasons, "min_week": MIN_WEEK, "variant": {"gt": SEARCH_GT, "split": "all"},
@@ -214,7 +222,7 @@ def main() -> None:
     if cur.empty:        # before week 1: the last complete season
         cur = variant(plays[plays["season"] == search_seasons[-1]], SEARCH_GT, "all")
     now = ridge_ratings(cur, lam, lam_schedule=lam_s)
-    res["lambda_schedule"] = lam_s
+    res["lambda_schedule"] = list(lam_s)
     res["schedule_search"] = sched
     res["mae_adjusted_minus_raw"] = mae_gap(p, "d_adj", "d_raw")
     res["mae_adjusted_forecast_lambda"] = loso_mae(predictions(base, g, lam, search_seasons), ["d_adj"])

@@ -165,7 +165,8 @@ N = {
     "adj_last_season": str(max(search["seasons"])),
     "adj_min_week": str(search["min_week"]),
     "adj_mae_ridge": f"{search['mae_ridge']:.2f}",
-    "adj_lambda_schedule": f"{search['lambda_schedule']:,}",
+    "adj_lambda_sched_off": f"{search['lambda_schedule'][0]:,}",
+    "adj_lambda_sched_def": f"{search['lambda_schedule'][1]:,}",
     "adj_sched_skill": pct(search["schedule_search"]["skill"]),
     "adj_sched_skill_forecast": pct(search["schedule_search"]["skill_at_forecast_lambda"]),
     "adj_sim_recovered": pct(search["simulation"]["full_season"]["recovered"]),
@@ -186,11 +187,14 @@ if not abs(search["mae_adjusted"] - search["mae_raw"]) < 0.05:
 # ...and that the correction's own penalty beats the forecast penalty at predicting a held-out game's EPA/play, recovers
 # most of a known schedule effect over a full season, and that both penalties differ (the reason there are two).
 SS, SIM = search["schedule_search"], search["simulation"]
-if not (SS["skill"] > SS["skill_at_forecast_lambda"] and search["lambda_schedule"] < search["lambda"]):
+if not (SS["skill"] > SS["skill_at_forecast_lambda"] and max(search["lambda_schedule"]) < search["lambda"]):
     raise StaleProse("NFL method note: the schedule penalty no longer beats (or differs from) the forecast penalty.")
 if not (SIM["full_season"]["recovered"] > 0.5 > SIM["full_season_at_forecast_lambda"]["recovered"]
         and SIM["through_week"]["recovered"] < SIM["full_season"]["recovered"]):
     raise StaleProse("NFL method note: 'recovers most of a known schedule effect over a full season, less earlier' no longer holds.")
+# ...and that defenses get the heavier penalty of the two (they differ less than offenses).
+if not search["lambda_schedule"][0] < search["lambda_schedule"][1]:
+    raise StaleProse("NFL method note: 'a heavier penalty for defenses than for offenses' no longer holds.")
 if not search["mae_ridge"] < min(search["mae_adjusted"], search["mae_raw"]) < max(search["mae_adjusted"], search["mae_raw"]) < search["mae_home_only"]:
     raise StaleProse("NFL method note: shrunk ratings < adjusted/raw < home-field-only MAE no longer holds.")
 def ordinal(n: int) -> str:

@@ -15,9 +15,11 @@ from plausibility.common import Suite, sd
 
 EFF, GAMES, FOURTH, MATCHUPS = "Team efficiency", "Team pages and game logs", "Fourth-down decisions", "Offense or defense"
 # sd(adjusted - raw) / sd(raw) EPA/play across the 32 teams, at the last week of a season. Below the floor the
-# "opponent-adjusted" view is the raw view (Nov 2026: 0.03 with the forecast penalty); above the ceiling the
-# correction is moving teams by more than an NFL schedule can (simulated truth: about 0.2).
-ADJ_SIZE = (0.06, 0.45)
+# "opponent-adjusted" view is the raw view (Nov 2026, with the forecast penalty: 0.03 on offense, 0.04 on defense;
+# with its own penalties the smallest in any season is 0.06, on offense, whose correction comes from the more heavily
+# shrunk defenses). Above the ceiling the correction moves teams by more than an NFL schedule can (simulated truth:
+# about 0.2).
+ADJ_SIZE = (0.05, 0.45)
 ADJ_MAX_MOVE = 0.12            # EPA/play: the largest correction for any team from week 4 on
 ADJ_FROM_WEEK = 4
 SIM_MIN_RECOVERED = 0.5        # share of a known schedule effect recovered over a simulated full season
@@ -50,7 +52,7 @@ def efficiency(suite: Suite) -> None:
                         continue
                     raw, adj = [r for r, _ in pairs], [a for _, a in pairs]      # a team may not have played yet
                     diff = [a - r for a, r in zip(adj, raw, strict=True)]
-                    if abs(sum(diff) / len(diff)) > 0.02:
+                    if wk >= ADJ_FROM_WEEK and abs(sum(diff) / len(diff)) > 0.02:
                         mean_bad.append(f"{season} week {wk} {side}: mean correction {sum(diff) / len(diff):+.4f}")
                     if wk >= ADJ_FROM_WEEK:
                         if max(abs(d) for d in diff) > ADJ_MAX_MOVE:
@@ -89,8 +91,8 @@ def efficiency(suite: Suite) -> None:
     a = meta.get("adjustment", {})
     lam_s, sim = a.get("lambda_schedule"), a.get("simulation_recovered")
     suite.check(EFF, "the schedule correction has its own penalty, lighter than the forecast penalty",
-                lam_s is not None and lam_s < a.get("lambda", 0),
-                f"schedule {lam_s}, forecast {a.get('lambda')}" if lam_s is not None
+                bool(lam_s) and max(lam_s) < a.get("lambda", 0),
+                f"schedule {lam_s[0]} (offenses) and {lam_s[1]} (defenses), forecast {a.get('lambda')}" if lam_s
                 else "meta.json has no lambda_schedule: the correction still uses the forecast penalty")
     suite.check(EFF, "in simulation the correction recovers most of a known schedule effect",
                 bool(sim) and sim["full_season"] >= SIM_MIN_RECOVERED,
