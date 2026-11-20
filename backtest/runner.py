@@ -168,6 +168,8 @@ def main() -> int:
     show = {k: rep[k] for k in ("model", "version", "kind", "folds", "passed", "revision_safe", "approximate_tables")}
     show["evaluation"] = {k: rep["evaluation"][k] for k in ("metric", "n", "point")}
     show["baselines"] = {b: {"value": v["value"], "gap": v["paired"]["est"], "ci90": v["paired"]["ci90"]} for b, v in rep["evaluation"]["baselines"].items()}
+    if "partial_r" in rep["evaluation"]:
+        show["partial_r"] = rep["evaluation"]["partial_r"]
     show["gate"], show["leakage"] = rep["gate"], {k: v["passed"] for k, v in rep["leakage"].items()}
     print(json.dumps(show, indent=2, default=str))
     return 0 if rep["passed"] else 1
