@@ -81,17 +81,21 @@ def seasons() -> dict[str, list[int]]:
 
 def build_lines(loader: Loader) -> pd.DataFrame:
     """One row per side x player x season x level x segment ('full'; Triple-A also 'pre_debut', 'half0', 'half1')."""
-    v = yaml.safe_load((HERE.parent / "pd_pipeline" / "dbt_project.yml").read_text(encoding="utf-8"))["vars"]
     S = seasons()
-    con = duckdb.connect(config={"threads": 1})
     frames = []
     for lvl, ss in S.items():
         for s in ss:
             d = loader.load(f"statcast_{lvl}_{s}", f"{s + 1}-03-01", COLS)
             frames.append(d.assign(level=lvl.upper(), game_date=pd.to_datetime(d["game_date"]).dt.date))
-    raw = pd.concat(frames, ignore_index=True)  # noqa: F841  (read by DuckDB)
-    h = loader.load("batter_heights", f"{CFG.season}-03-01")
-    heights = h.assign(height_ft=h["height_in"] / 12.0)[["batter", "height_ft"]]  # noqa: F841
+    return lines_from(pd.concat(frames, ignore_index=True), loader.load("batter_heights", f"{CFG.season}-03-01"))
+
+
+def lines_from(raw: pd.DataFrame, h: pd.DataFrame) -> pd.DataFrame:
+    """The lines of build_lines from pitches already loaded (COLS plus `level`, game_date as a date) and the batter
+    heights table. The backtest module (models/baseball/aaa_translation/backtest.py) calls this with its own dates."""
+    v = yaml.safe_load((HERE.parent / "pd_pipeline" / "dbt_project.yml").read_text(encoding="utf-8"))["vars"]
+    con = duckdb.connect(config={"threads": 1})
+    heights = h.assign(height_ft=h["height_in"] / 12.0)[["batter", "height_ft"]]  # noqa: F841  (read by DuckDB, as is raw)
     lines = con.sql(f"""
         with p as (
             select level, game_pk, cast(game_date as date) as game_date, game_year as season, pitcher, batter,

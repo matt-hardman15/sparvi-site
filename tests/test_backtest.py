@@ -246,6 +246,7 @@ def test_ci_runs_only_the_models_a_change_touches():
     assert names(["models/cfb/system_fit/backtest/1.1.8.json", "backtest/runs/runs.jsonl"]) == []
     assert names(["cfb/proj/pit.py"]) == ["cfb_player_projection"]
     assert names(["baseball/pitch_quality/train.py"]) == ["location_plus", "stuff_plus"]
+    assert names(["baseball/aaa_translation/develop.py"]) == ["aaa_translation"]      # the candidate's code (M5-EB)
     assert "cfb_player_profile" in names(["cfb/profile/features.yml"]) and "stuff_plus" not in names(["cfb/profile/features.yml"])
     assert pick(["backtest/leakage.py"]) is None and pick(["uv.lock"]) is None
 
@@ -289,3 +290,62 @@ def test_a_candidate_report_never_validates_the_published_version(tmp_path):
     assert status("toy", tmp_path)["state"] == "experimental"             # the published 1.0.0 has no report of its own
     text = registry.site_numbers(tmp_path)["toy_backtest"]
     assert text.startswith("Backtest of the proposed v2.0.0 (not the published version)")
+
+
+def _toy_pitches(level, season, batters, rng, start="04-01"):
+    """One-pitch plate appearances: each batter bats once a day for 80 days."""
+    days = pd.date_range(f"{season}-{start}", periods=80)
+    n = len(batters) * len(days)
+    k = rng.random(n) < 0.25
+    return pd.DataFrame({
+        "game_pk": np.arange(n) + season * 1_000_000 + (0 if level == "aaa" else 500_000), "game_date": np.repeat(days, len(batters)),
+        "game_year": season, "game_type": "R", "pitcher": 900_000 + rng.integers(0, 40, n) + (0 if level == "aaa" else 100),
+        "batter": np.tile(batters, len(days)), "at_bat_number": 1, "pitch_number": 1, "zone": rng.integers(1, 15, n).astype(float),
+        "description": np.where(k, "swinging_strike", "hit_into_play"), "events": np.where(k, "strikeout", "field_out"),
+        "launch_speed": np.where(k, np.nan, rng.normal(90, 8, n)), "estimated_woba_using_speedangle": np.where(k, np.nan, rng.random(n)),
+        "woba_value": np.where(k, 0.0, rng.random(n)), "woba_denom": 1.0, "plate_x": rng.normal(0, 0.8, n), "plate_z": rng.normal(2.5, 0.8, n)})
+
+
+def test_translation_candidates_read_no_outcome_and_nothing_after_the_call_up():
+    """M5-EB: a within-season prediction is made on the day of the call-up, a date the harness's one-date-per-fold
+    checks can't see. The module's own rule: from the outcome season's MLB pitches only what defines a first game, and
+    no Triple-A pitch on or after it."""
+    mod = runner.load_module("models/baseball/aaa_translation/backtest.py")
+    t, rng = SEASON, np.random.default_rng(3)
+    batters = np.arange(1, 9)
+    aaa, prev = _toy_pitches("aaa", t, batters, rng), _toy_pitches("aaa", t - 1, batters, rng)
+    mlb = _toy_pitches("mlb", t, batters, rng, start="06-10")            # everyone's first MLB game: June 10
+    debut = pd.Timestamp(f"{t}-06-10")
+    heights = pd.DataFrame({"batter": batters, "height_in": 72.0})
+
+    class Fake:
+        def __init__(self, tables):
+            self.tables, self.asked = tables, {}
+
+        def load(self, table, as_of, columns=None):
+            self.asked[table] = columns
+            d = self.tables[table]
+            return d[columns].reset_index(drop=True) if columns else d.reset_index(drop=True)
+
+    fold = SimpleNamespace(test_season=t, decision_date=pd.Timestamp(f"{t}-12-31"))
+    names = {f"statcast_aaa_{t}": aaa, f"statcast_aaa_{t - 1}": prev, f"statcast_mlb_{t}": mlb, "batter_heights": heights}
+    clean = Fake(names)
+    a = mod._candidates(clean, fold)
+    hit = a[a["side"].eq("hitter")]
+    assert set(hit["cohort"]) == {"across", "within"} and (hit[hit["cohort"].eq("within")]["pa"] == 70).all()   # Apr 1 - Jun 9
+    assert clean.asked[f"statcast_mlb_{t}"] == mod.DEBUT_COLS
+    assert not {"events", "launch_speed", "woba_value", "estimated_woba_using_speedangle", "plate_x", "plate_z", "zone"} & set(mod.DEBUT_COLS)
+
+    def scramble(d, late):
+        d = d.copy()
+        d.loc[late, "description"] = "hit_into_play"
+        d.loc[late, "events"] = "home_run"
+        d.loc[late, ["launch_speed", "woba_value", "estimated_woba_using_speedangle", "plate_x", "plate_z"]] = 1e6
+        return d
+
+    after = pd.to_datetime(aaa["game_date"]) >= debut
+    b = mod._candidates(Fake(names | {f"statcast_aaa_{t}": scramble(aaa, after), f"statcast_mlb_{t}": scramble(mlb, mlb.index >= 0)}), fold)
+    hb = b[b["side"].eq("hitter")]
+    pd.testing.assert_frame_equal(hit.reset_index(drop=True), hb.reset_index(drop=True))
+    c = mod._candidates(Fake(names | {f"statcast_aaa_{t}": scramble(aaa, ~after)}), fold)         # the test can see a change
+    assert not c[c["side"].eq("hitter") & c["cohort"].eq("within")]["k_pct"].equals(hit[hit["cohort"].eq("within")]["k_pct"])

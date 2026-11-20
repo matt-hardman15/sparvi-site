@@ -43,4 +43,71 @@ published_in:
 - baseball/aaa-translation
 - baseball/tools/triple-a
 - baseball/player
-experimental: validated before the backtest harness existed; its harness port is pending
+backtest:
+  preregistered_at: '2026-11-20'
+  candidate: 2.0.0
+  candidate_spec: 'A translation for the players the published model does not cover (50-149 PA/BF in Triple-A):
+    each Triple-A rate is shrunk toward the Triple-A mean by its reliability (n / (n + k), k from split halves of
+    earlier Triple-A seasons), and one line per metric is fit on every pair down to 50 PA/BF, weighted by the MLB
+    sample. No age term, no combined model. For players with 150+ the published line stays (on the development folds
+    the candidate was no better there: hitters -1.0%, pitchers +0.2% in the fold with a realistic number of training
+    pairs). The four pitch-quality lines (Stuff+, Location+, Pitching+, RV+) are not part of this test and keep
+    their published lines. Chosen on development folds that never read 2026 (baseball/aaa_translation/output/development.json,
+    outcome seasons 2024 and 2025). analysis.py is unchanged until this test passes; the report is written as 2.0.0
+    and does not validate the published version.'
+  module: models/baseball/aaa_translation/backtest.py
+  code:
+  - baseball/aaa_translation/develop.py
+  target: 'The same metric in MLB in the outcome season, players with 50-149 PA/BF in Triple-A and 100+ in MLB.
+    Hitters: chase, zone swing, zone contact, whiff, K%, BB%, hard-hit rate, EV90, xwOBA, wOBA. Pitchers: K%, BB%,
+    CSW, whiff, chase, xwOBA allowed. One row per player x pair type x metric, in units of the metric''s MLB spread
+    (its SD in the training pairs)'
+  decision_dates: 'Across pairs (Triple-A season t-1 to MLB season t): March 1 of t. Within pairs (Triple-A before
+    the first MLB game of season t to MLB season t): the day of the call-up. The fold''s date is the end of season
+    t because the harness has one date per fold; the module itself reads no MLB outcome of season t and no Triple-A
+    pitch on or after a player''s first MLB game (tests/test_backtest.py checks both on corrupted data). The harness''s
+    timestamp and future-poisoning tests therefore cover the training data and the across pairs'' season, not the
+    call-up dates.'
+  splits:
+    type: walk_forward
+    first_test: 2026
+    last_test: 2026
+    first_train: 2023
+    predictor_lag: 0
+    decision: 12-31
+    fast_folds: 1
+  group_by: 'none: lines are fit across players; a player with pairs in several seasons is in training and test'
+  block: player
+  segment: side
+  baselines:
+  - published_line
+  - train_mean
+  primary_metric: rmse
+  null_baseline: train_mean
+  permutation_seeds: 5
+  too_good: 0.3
+  bootstrap: 2000
+  seed: 7
+  pass_gate:
+    beats_baseline: published_line
+    min_skill: 0.0
+    ci_excludes_zero: true
+    each_segment: true
+  gate_decided: 'Matt, 2026-11-20: strict (the 90% interval of the candidate''s edge in RMSE over the published
+    line stretched down to these players must exclude zero), for hitters and for pitchers separately; both must
+    pass. Chosen with the development folds in view (development.json, gate_candidates): on the 2025 fold the 50-149
+    pool gave hitters +3.7% (90% interval +0.010 to +0.059 in scaled RMSE, 79 players) and pitchers +2.9% (+0.011
+    to +0.039, 121 players); a gate on everyone with 50+ would mostly measure the 150+ players, where there is nothing
+    to gain. Reported after the official run and not gated: the same comparison for 150+ PA/BF, 80% band coverage
+    by sample size (the published band against one sized by the Triple-A sample), each pair type on its own, and
+    the size of the step at 150 between the two lines.'
+  also_reported: 'train_mean is the MLB average of the training pairs for every player: the reference the label-permutation
+    test uses, not part of the gate.'
+  reproduction: Exact on the same machine; across machines tolerance ±0.01 in scaled RMSE. Official runs happen
+    in CI.
+  vault:
+    seasons: []
+    note: 'No sealed season yet: the only test season is 2026. The 2027 season becomes the vault when it completes.'
+    accesses: 0
+experimental: validated before the backtest harness existed; the backtest in this card tests a proposed addition
+  (2.0.0, a line for players with 50-149 PA/BF), not this version
