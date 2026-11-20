@@ -36,6 +36,18 @@ def write_json(path: Path, obj, indent: int | None = None) -> None:
     _write(path, json.dumps(obj, indent=indent, separators=sep, ensure_ascii=False, allow_nan=False))
 
 
+def tail_dates(league: dict, n: int = 2) -> dict:
+    """A league snapshot file cut to its last `n` dates, for a page's first paint (PERF-2): the same shape, the
+    players with a pitch count on any of those dates, and `n_dates` (how many the full file has)."""
+    win = league["window"]
+    players = []
+    for p in league["players"]:
+        s = {f: v[-n:] for f, v in p["series"][win].items()}
+        if any(x is not None for x in s["pitches"]):
+            players.append({**p, "series": {win: s}})
+    return {**league, "dates": league["dates"][-n:], "n_dates": len(league["dates"]), "players": players}
+
+
 def write_records(
     path: Path | None,
     df: pd.DataFrame,
