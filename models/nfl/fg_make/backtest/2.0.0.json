@@ -1,10 +1,10 @@
 {
-  "run_id": "76ec92b49f68",
+  "run_id": "dad3f8509aad",
   "model": "nfl_fg_make",
   "version": "2.0.0",
   "kind": "full",
-  "ran_at": "2026-11-19T23:22:40Z",
-  "code_sha": "8252eccb4384f20537b0e721bcd3a45ef275f20c",
+  "ran_at": "2026-11-20T01:45:10Z",
+  "code_sha": "1fcc266fb33c697de3f3f76aad3fbebe8c93816d",
   "lockfile": "39654de38b4c91ec",
   "preregistered_at": "2026-11-18",
   "spec": {
