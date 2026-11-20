@@ -23,7 +23,7 @@
         "kick": 415,
         "toss-up": 2411
       },
-      "inputs": "ba7369a3eef62617d1adcca98df005557acd6ae068ff85c98802f8a2e6854757"
+      "inputs": "63eaacf0b3d98a2525762008f1f8f87d33596f78ec863d6b5a7cea22442ce475"
     },
     "2021": {
       "train_seasons": [
@@ -49,7 +49,7 @@
         "kick": 464,
         "toss-up": 2622
       },
-      "inputs": "7675ec1f07fabcda72f00decc088c29352e6b8f663e7843328ffba5832a30613"
+      "inputs": "7994ed47f44afbddba1ec883607cfbb6b5855700d206f4a55e54d28a9416cbe9"
     },
     "2022": {
       "train_seasons": [
@@ -76,7 +76,7 @@
         "kick": 595,
         "toss-up": 2469
       },
-      "inputs": "db8e580a8ae5bd01ce38bb2f59abfa2b5062c608606bac55b1ae6ecaef795f3c"
+      "inputs": "ce1f24422928fb67b3cd2ac17bda26ce96e478c38ef09218a050da972e15fac3"
     },
     "2023": {
       "train_seasons": [
@@ -104,7 +104,7 @@
         "kick": 748,
         "toss-up": 2536
       },
-      "inputs": "1bceb39672f588fb6408bedc3a303571352d84b3944c448a650e89f72b88f2dc"
+      "inputs": "a8e78c86a1dc976c00793769330f10c9a8456c0ec5983af35f0054da70e2874d"
     },
     "2024": {
       "train_seasons": [
@@ -133,7 +133,7 @@
         "kick": 780,
         "toss-up": 2299
       },
-      "inputs": "e616edd07795d85eb8bac88edcbe37388202ff9a30658c3fbc5ee758332ffa4a"
+      "inputs": "b47a860bf902e80e4fca6dd192da064bdc2874ea5d93f019f7d4a153dc0f33b6"
     },
     "2025": {
       "train_seasons": [
@@ -163,7 +163,7 @@
         "kick": 732,
         "toss-up": 2239
       },
-      "inputs": "b5c0cde86663210c2bab6be6114fc8bdcc3192d7cf5414feb1a7ca937b6c6a91"
+      "inputs": "bc064b52b4c0c23ea600e11b202d0462aa648f77221f6a597eaddb5484396861"
     },
     "2026": {
       "train_seasons": [
@@ -194,7 +194,7 @@
         "kick": 432,
         "toss-up": 1178
       },
-      "inputs": "d1366522eff9e72dca795aa30e43f827a85640e79005adfd2d0f102e8ac136aa"
+      "inputs": "a055839b7ae7a71c07ac23fe05c2ee4e4572dc048b2895439a12594a91a92a6e"
     }
   }
 }

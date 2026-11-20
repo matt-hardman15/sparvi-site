@@ -2,6 +2,25 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-20 · Fourth-down chart: standard situations fixed (no model change)
+The chart on `/nfl/fourth-downs/` called 4th-and-3 through 4th-and-7 from inside the offense's own 10 a clear go.
+Cause: `nfl/fourth/decisions.grid` set `recv_2h = 0.5` ("unknown"). The win-probability model is trees, so 0.5 fell on
+the "receives the 2nd-half kickoff" side of every split, and since the flag flips with the ball (1 - 0.5 = 0.5) the
+team with the ball next always "received". That added about 2 x P(convert) x (the kickoff's worth) to every
+go-minus-kick margin: +1.2 points on average, 290 of 1,380 cells changed sign. The grid's clock was also 15:00 left in
+the 2nd quarter, not the 10:00 the page states. Fix: four rows a cell (home/away x receives or not), averaged; clock
+at 10:00. Chart, 945 published cells: clear go 199 → 85, clear kick 20 → 194, toss-up 726 → 666; inside the own 10,
+clear go 40 → 13 (none on 4th-and-3 or longer). Real plays always had 0/1 flags: all seven seasons were recomputed and
+`teams`, `league` and `costly` in `fourth_downs.json` are identical. The possession-change transforms and the punt
+model were checked and are right (tests/test_fourth_transforms.py; punts from the own 10 and in, 2016-2025: net 44.0
+actual vs. 43.8 modeled, punting team won 44.0% vs. 43.8% modeled, in sample).
+
+Open, not changed here (Matt to decide): on 2020-2025 seasons it hadn't seen, win probability 1.0.1 rates a team with
+the ball inside its own 6 about 4 points too high (2,200 plays: won 46.6%, rated 51.0%; 90% interval of the gap 2.4 to
+6.4 points, resampling games). Field position barely moves
+it there. That leaves the chart a point or so more go-friendly than nfl4th inside the own 10 (toss-ups where nfl4th
+says punt), and touches the 1% of clear-go cost that comes from real plays there. Options are in the pull request.
+
 ## 2026-11-19 · Stuff+ 2.0.0: the backtest trains on two seasons (PQ-TEST-2; no model change)
 The pre-registered test trained on one season (2024) while the published model trains on two. Development folds that
 never read 2026 (outcomes 2024 and 2025, `baseball/pitch_quality/output/development_windows.json`) put a two-season
