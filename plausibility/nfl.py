@@ -139,9 +139,25 @@ def fourth_downs(suite: Suite) -> None:
     fg_max = eng["fg_max_yardline"]
     from nfl.fourth.decide import PUNT_MIN_YARDLINE
     bad = []
+    none_ys = [g["y"] for g in grid if g["call"] == "none"]
+    called_ys = [g["y"] for g in grid if g["call"] != "none"]
+    # "No call" is a stretch of field at the offense's own end, not scattered cells.
+    no_call_from = min(none_ys) if none_ys else None
+    if none_ys and called_ys and max(called_ys) >= no_call_from:
+        bad.append(f"calls and no-calls overlap: a call at the {max(called_ys)}, no call at the {no_call_from}")
+    if f.get("no_call_from") is not None and no_call_from != f["no_call_from"]:
+        bad.append(f"the file says no call from the {f['no_call_from']} back, the grid stops calling at the {no_call_from}")
+    if len(none_ys) > len(grid) / 2:
+        bad.append(f"{len(none_ys)} of {len(grid)} situations have no call")
     for g in grid:
         y, t = g["y"], g["t"]
         where = f"4th and {t} at the {y}"
+        if g["call"] == "none":      # deep in its own end the chart makes no call: then it must show no numbers either
+            if any(g.get(k) is not None for k in ("go", "fg", "punt", "m", "lo", "hi", "kick", "pc", "pf")) or not t <= y <= 99:
+                bad.append(f"{where}: no call, but numbers are shown")
+            elif no_call_from is not None and y < no_call_from:
+                bad.append(f"{where}: no call made closer than the offense's own {100 - no_call_from}")
+            continue
         probs = [g[k] for k in ("go", "fg", "punt", "pc", "pf") if g.get(k) is not None]
         kicks = {k: g[k] for k in ("fg", "punt") if g.get(k) is not None}
         if t > y or t < 1 or not 1 <= y <= 99:
@@ -162,7 +178,8 @@ def fourth_downs(suite: Suite) -> None:
     cells = {(g["y"], g["t"]) for g in grid}
     suite.check(FOURTH, "no impossible decision in the grid (distance, options offered, probabilities, call vs. interval)",
                 not bad and len(cells) == len(grid) and len(grid) > 0,
-                f"{len(bad)} of {len(grid)} situations, e.g. {bad[0]}" if bad else f"{len(grid)} situations")
+                f"{len(bad)} of {len(grid)} situations, e.g. {bad[0]}" if bad
+                else f"{len(grid)} situations" + (f", no call from the offense's own {100 - no_call_from} back" if none_ys else ""))
     # A longer kick (among those offered) is never likelier to be good, and more yards to go is not likelier to be
     # converted beyond the noise in the observed rates.
     mono = []
@@ -170,7 +187,7 @@ def fourth_downs(suite: Suite) -> None:
     mono += [f"field goal from the {b[0]} ({b[1]}) likelier than from the {a[0]} ({a[1]})"
              for a, b in zip(by_y, by_y[1:], strict=False) if b[1] > a[1] + P_TOL]
     for y in sorted({g["y"] for g in grid}):
-        col = sorted((g["t"], g["pc"]) for g in grid if g["y"] == y)
+        col = sorted((g["t"], g["pc"]) for g in grid if g["y"] == y and g["pc"] is not None)
         mono += [f"at the {y}: 4th and {b[0]} converts more often ({b[1]}) than 4th and {a[0]} ({a[1]})"
                  for a, b in zip(col, col[1:], strict=False) if b[1] > a[1] + CONVERT_NOISE]
     suite.check(FOURTH, "longer kicks and longer conversions are never likelier", not mono,

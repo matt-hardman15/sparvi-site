@@ -1,6 +1,7 @@
 """The fourth-down chart's standard situations (nfl/fourth/decisions.grid) and the published grid they produce
 (site/data/nfl/fourth_downs.json): checks a reader would make by eye. Added with the Nov. 2026 audit, after the chart
-called 4th-and-3 through 4th-and-7 from inside the offense's own 10 a clear go.
+called 4th-and-3 through 4th-and-7 from inside the offense's own 10 a clear go. Two things came of it: the standard
+situations were wrong (fixed), and the chart no longer makes a call from the own 20 back, where teams never go.
 
 The published-grid checks run on the committed JSON, so a rebuild that breaks one fails CI before it deploys.
 """
@@ -18,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 BINARY = ["home", "recv_2h", "half2", "ot", "indoors"]          # 0/1 inputs of the tree models
 GO_SLACK = 0.0          # the published go curve has never stepped down; keep it that way
 PUNT_SLACK = 0.0025     # the win-probability model is trees fit to noisy outcomes: steps this small aren't a slope
+NUMBERS = ["go", "fg", "punt", "m", "lo", "hi", "pc", "pf"]
 PUNT_STEADY_FROM = 55   # closer than this, more punts reach the end zone and a touchback can cost field position
 
 
@@ -68,23 +70,40 @@ def test_grid_table_averages_a_cells_rows_within_each_refit():
 
 # ---- the published grid -----------------------------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def grid() -> pd.DataFrame:
-    return pd.DataFrame(json.loads((ROOT / "site" / "data" / "nfl" / "fourth_downs.json").read_text(encoding="utf-8"))["grid"])
+def published() -> dict:
+    return json.loads((ROOT / "site" / "data" / "nfl" / "fourth_downs.json").read_text(encoding="utf-8"))
 
 
-def test_published_grid_is_complete(grid):
-    assert len(grid) == sum(1 for y in range(1, 100) for t in range(1, 11) if t <= y)
+@pytest.fixture(scope="module")
+def grid(published) -> pd.DataFrame:
+    """The cells the chart makes a call on."""
+    g = pd.DataFrame(published["grid"])
+    return g[g["call"] != "none"].astype({c: float for c in NUMBERS}).reset_index(drop=True)
+
+
+def test_published_grid_is_complete(published, grid):
+    assert len(published["grid"]) == sum(1 for y in range(1, 100) for t in range(1, 11) if t <= y)
     assert set(grid["call"]) <= {"go", "kick", "toss-up"}
     assert np.allclose(grid["m"], grid["go"] - grid[["fg", "punt"]].max(axis=1), atol=2e-4)
     assert ((grid["lo"] <= grid["hi"]).all() and (grid.loc[grid["call"] == "go", "lo"] >= 0).all()
             and (grid.loc[grid["call"] == "kick", "hi"] <= 0).all())    # rounded to 4 places
 
 
-def test_no_clear_go_on_fourth_and_five_or_more_inside_the_own_10(grid):
-    """Failing there hands the opponent the ball in scoring range; teams have tried it a handful of times in ten
-    seasons, almost all in desperation."""
-    deep = grid[(grid["y"] >= 90) & (grid["t"] >= 5)]
-    assert len(deep) == 60 and not (deep["call"] == "go").any(), deep[deep["call"] == "go"][["y", "t", "m", "lo"]]
+def test_no_call_and_no_numbers_from_the_own_20_back(published):
+    """Teams almost never go for it there (2016-2025: 167 of 7,046 tries, averaging 11 yards to go), so the chart
+    has nothing to check a call against. It had shown 4th-and-short inside the own 10 as a clear go."""
+    from nfl.fourth.summary import CHART_NO_CALL_FROM
+
+    assert published["no_call_from"] == CHART_NO_CALL_FROM == 80
+    g = pd.DataFrame(published["grid"])
+    deep, rest = g[g["y"] >= 80], g[g["y"] < 80]
+    assert len(deep) == 200 and (deep["call"] == "none").all() and deep[NUMBERS + ["kick"]].isna().all().all()
+    assert not (rest["call"] == "none").any() and rest[["go", "m", "lo", "hi", "pc"]].notna().all().all()
+
+
+def test_page_draws_the_cells_without_a_call_apart(published):
+    page = (ROOT / "site" / "nfl" / "fourth-downs" / "index.qmd").read_text(encoding="utf-8")
+    assert 'g.call !== "none"' in page and "D.no_call_from" in page and 'none: "Not judged"' in page
 
 
 def test_go_gets_better_toward_the_opponents_goal(grid):
@@ -99,11 +118,10 @@ def test_punt_gets_better_with_field_position(grid):
     """Field position is yards from the goal, so the same holds for every distance to go: one check a column."""
     p = grid[grid["punt"].notna()].groupby("y")["punt"].agg(["min", "max"])
     assert (p["max"] - p["min"] < 1e-9).all()                       # a punt doesn't depend on the distance to go
-    wp = p["max"].sort_index(ascending=False)                       # own 1 first
+    wp = p["max"].sort_index(ascending=False)                       # deepest first
     far = wp[wp.index >= PUNT_STEADY_FROM].to_numpy()
     assert (np.diff(far) >= -PUNT_SLACK).all(), wp[wp.index >= PUNT_STEADY_FROM][np.r_[False, np.diff(far) < -PUNT_SLACK]]
-    assert wp.loc[60] > wp.loc[99] + 0.03
-
+    assert wp.loc[55] > wp.loc[79] + 0.02
 
 
 # ---- the fitted engine (needs the raw play-by-play: skipped where data/raw/nfl isn't populated, as in check.yml) ----

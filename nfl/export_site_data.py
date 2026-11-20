@@ -320,7 +320,11 @@ write_json(OUT / "fourth_downs.json", {
     "engine": {k: fd_meta[str(CFG.season)][k] for k in ("train_seasons", "p_block", "fg_snap", "fg_max_yardline", "kick_start", "runoff")},
     # Standard situation (tie game, 10:00 left in the 2nd quarter, outdoors, even teams): y = yards from the goal
     # line, t = yards to go; win probability of each choice, go minus the best kick (m) with its 90% interval.
-    "grid": [{"y": g["yardline_100"], "t": g["ydstogo"], "go": r4(g["wp_go"]), "fg": r4(g["wp_fg"]), "punt": r4(g["wp_punt"]),
+    # From `no_call_from` yards out (the own 20 and in) the chart makes no call and publishes no numbers: call "none".
+    "no_call_from": FS.CHART_NO_CALL_FROM,
+    "grid": [{"y": g["yardline_100"], "t": g["ydstogo"], "go": None, "fg": None, "punt": None, "m": None, "lo": None, "hi": None,
+              "call": "none", "kick": None, "pc": None, "pf": None} if g["yardline_100"] >= FS.CHART_NO_CALL_FROM else
+             {"y": g["yardline_100"], "t": g["ydstogo"], "go": r4(g["wp_go"]), "fg": r4(g["wp_fg"]), "punt": r4(g["wp_punt"]),
               "m": r4(g["margin"]), "lo": r4(g["margin_lo"]), "hi": r4(g["margin_hi"]), "call": g["call"], "kick": g["kick"],
               "pc": r4(g["p_convert"]), "pf": r4(g["p_fg"])} for g in fd_grid if g["ydstogo"] <= GRID_MAX_YTG],
     "teams": [{"season": int(r.season), "team": r.team, "n": int(r.decisions), "went": int(r.went), "clear_go": int(r.clear_go),
@@ -374,7 +378,7 @@ N |= {
     "fd_ece_ot": f"{lc_b['overtime']['ece']:.3f}", "fd_sure_n": f"{LC['leading_late']['plays']:,}",
     "fd_sure_pred": f"{100 * LC['leading_late']['predicted']:.1f}%", "fd_sure_won": f"{100 * LC['leading_late']['won']:.1f}%",
     "fd_boot": str(eng_now["bootstrap"]), "fd_p_block": f"{100 * eng_now['p_block']:.1f}%",
-    "fd_fg_max": str(int(eng_now["fg_max_yardline"] + eng_now["fg_snap"])), "fd_punt_min": str(PUNT_MIN_YARDLINE),
+    "fd_fg_max": str(int(eng_now["fg_max_yardline"] + eng_now["fg_snap"])), "fd_punt_min": str(PUNT_MIN_YARDLINE), "fd_no_call_own": str(100 - FS.CHART_NO_CALL_FROM),
     "fd_wp_brier": f"{bt_wp['evaluation']['point']:.3f}", "fd_wp_base": f"{bt_wp['evaluation']['baselines']['baseline']['value']:.3f}",
     "fd_punt_mae": f"{bt_pt['evaluation']['point']:.2f}", "fd_punt_base": f"{bt_pt['evaluation']['baselines']['baseline']['value']:.2f}",
     "fd_conv_ece": f"{bt_cv['evaluation']['point']:.3f}", "fd_conv_bar": f"{bt_cv['gate']['noise_bar']:.3f}",

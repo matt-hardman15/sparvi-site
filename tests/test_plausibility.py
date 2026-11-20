@@ -214,6 +214,25 @@ def test_a_field_goal_from_midfield_or_a_punt_at_the_goal_line_fails(root):
     assert name in failed(root)
 
 
+def test_a_no_call_cell_with_numbers_or_out_of_place_fails(root):
+    """Deep in its own end the chart makes no call (main, Nov 2026): such a cell shows nothing, and they sit together."""
+    name = "no impossible decision in the grid (distance, options offered, probabilities, call vs. interval)"
+    if not any(g["call"] == "none" for g in json.loads((ROOT / "site/data/nfl/fourth_downs.json").read_text())["grid"]):
+        pytest.skip("this grid has no no-call cells")
+    edit(root, "site/data/nfl/fourth_downs.json", lambda d: next(g for g in d["grid"] if g["call"] == "none").update(go=0.4))
+    assert name in failed(root)
+
+
+def test_a_no_call_cell_in_the_middle_of_the_field_fails(root):
+    name = "no impossible decision in the grid (distance, options offered, probabilities, call vs. interval)"
+
+    def blank(d):
+        g = next(g for g in d["grid"] if g["y"] == 40)
+        g.update({k: None for k in ("go", "fg", "punt", "m", "lo", "hi", "kick", "pc", "pf")}, call="none")
+    edit(root, "site/data/nfl/fourth_downs.json", blank)
+    assert name in failed(root)
+
+
 def test_a_longer_kick_that_is_likelier_fails(root):
     def bend(d):
         for g in d["grid"]:

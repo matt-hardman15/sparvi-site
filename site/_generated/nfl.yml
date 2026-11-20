@@ -46,6 +46,7 @@ nfl:
   fd_late_n: "3,327"
   fd_late_share: "15%"
   fd_n: "19,358"
+  fd_no_call_own: "20"
   fd_p_block: "0.5%"
   fd_passive_share: "98%"
   fd_punt_base: "6.60"

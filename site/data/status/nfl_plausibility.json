@@ -75,7 +75,7 @@
    "tool": "Fourth-down decisions",
    "name": "no impossible decision in the grid (distance, options offered, probabilities, call vs. interval)",
    "ok": true,
-   "detail": "945 situations"
+   "detail": "945 situations, no call from the offense's own 20 back"
   },
   {
    "tool": "Fourth-down decisions",
