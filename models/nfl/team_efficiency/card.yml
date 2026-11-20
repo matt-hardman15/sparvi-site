@@ -3,15 +3,20 @@ name: nfl_team_efficiency
 title: NFL opponent adjustment
 sport: nfl
 status: champion
-version: 1.0.1
+version: 2.0.0
 owner: Matt
-spec: Ridge regression of play EPA on offense, defense, and home field; a team's adjusted EPA/play is its own minus
-  the ridge strength of the opponents it faced. Lambda chosen on next-week margin MAE.
-target: Next week's home margin (for choosing lambda and validating)
-method: Ridge on (offense, defense, home) cells; leave-one-season-out linear fit for margins
+spec: Ridge regression of play EPA on offense, defense, and home field, fit with two penalties. A team's adjusted
+  EPA/play is its own minus the strength of the opponents it faced, with those strengths fit at a penalty chosen
+  by held-out-game EPA/play (leave-one-game-out within each complete season). The shrunk ratings used for forecasting
+  keep the heavier penalty chosen on next-week margin MAE.
+target: Next week's home margin (forecast penalty and validation); a held-out game's EPA/play for each side (schedule
+  penalty)
+method: Ridge on (offense, defense, home) cells; leave-one-season-out linear fit for margins; leave-one-game-out
+  for the schedule penalty; a simulation with known team strengths and unequal schedules as the sanity test
 code:
 - nfl/team_efficiency/adjusted.py
 - football/common/adjust.py
+- football/common/simulate.py
 - football/dbt/models/staging/stg_nfl_plays.sql
 training_data:
 - data/raw/nfl/pbp_*.parquet
@@ -27,6 +32,13 @@ validation:
     mae_home_only: mae_home_only
     lambda: lambda
     n_games: n_games
+    lambda_schedule: lambda_schedule
+    schedule_skill: schedule_search.skill
+    schedule_skill_at_forecast_lambda: schedule_search.skill_at_forecast_lambda
+    sim_recovered_full_season: simulation.full_season.recovered
+    sim_recovered_at_forecast_lambda: simulation.full_season_at_forecast_lambda.recovered
+    correction_off_max: correction.off_max
+    correction_def_max: correction.def_max
 eval:
   set: Every regular-season game from week 3 on, complete seasons in the window, predicted from ratings through
     the prior week (leave-one-season-out).

@@ -25,14 +25,14 @@
     },
     {
       "lambda": 50,
-      "mae": 10.512153167061232,
+      "mae": 10.512153167061234,
       "mae_adjusted": 10.540628212296903,
       "n_games": 2160
     },
     {
       "lambda": 100,
       "mae": 10.475158404179593,
-      "mae_adjusted": 10.519605865916638,
+      "mae_adjusted": 10.51960586591664,
       "n_games": 2160
     },
     {
@@ -43,13 +43,13 @@
     },
     {
       "lambda": 400,
-      "mae": 10.40607404528683,
+      "mae": 10.406074045286832,
       "mae_adjusted": 10.483161560887325,
       "n_games": 2160
     },
     {
       "lambda": 800,
-      "mae": 10.387024402212102,
+      "mae": 10.3870244022121,
       "mae_adjusted": 10.472567123173832,
       "n_games": 2160
     },
@@ -61,7 +61,7 @@
     },
     {
       "lambda": 3200,
-      "mae": 10.37893172610516,
+      "mae": 10.378931726105161,
       "mae_adjusted": 10.469283925924286,
       "n_games": 2160
     },
@@ -80,11 +80,224 @@
   ],
   "lambda": 3200,
   "n_games": 2160,
-  "mae_adjusted": 10.469283925924286,
+  "mae_adjusted": 10.483161560887325,
   "mae_raw": 10.47155015597792,
   "mae_home_only": 11.104256894732336,
-  "mae_ridge": 10.37893172610516,
-  "home_epa_per_play": -0.0018411021510769225,
+  "mae_ridge": 10.378931726105161,
+  "home_epa_per_play": -0.002226967287079449,
+  "lambda_schedule": 400,
+  "schedule_search": {
+    "objective": "Held-out game EPA/play for each side, predicted as mean + offense + defense + home from the season's other games; skill = 1 - squared error / squared error of the league mean",
+    "grid": [
+      {
+        "lambda": 50,
+        "skill": 0.08962691225825226,
+        "mse": 0.02979784178622798,
+        "skill_forward": 0.007733079528255082
+      },
+      {
+        "lambda": 100,
+        "skill": 0.0988809983600365,
+        "mse": 0.02949494202210916,
+        "skill_forward": 0.045085557020358324
+      },
+      {
+        "lambda": 150,
+        "skill": 0.1055545188272583,
+        "mse": 0.02927650794302988,
+        "skill_forward": 0.06419745726298276
+      },
+      {
+        "lambda": 200,
+        "skill": 0.11031618463136805,
+        "mse": 0.02912065166148962,
+        "skill_forward": 0.07513021555486998
+      },
+      {
+        "lambda": 300,
+        "skill": 0.11587024341803642,
+        "mse": 0.028938859199448493,
+        "skill_forward": 0.08544035643519998
+      },
+      {
+        "lambda": 400,
+        "skill": 0.11800226353049492,
+        "mse": 0.02886907506495295,
+        "skill_forward": 0.08857262913188635
+      },
+      {
+        "lambda": 600,
+        "skill": 0.11692240442946078,
+        "mse": 0.028904420431679304,
+        "skill_forward": 0.08698926647289151
+      },
+      {
+        "lambda": 800,
+        "skill": 0.11264328837969584,
+        "mse": 0.029044482154452874,
+        "skill_forward": 0.08210906364725457
+      },
+      {
+        "lambda": 1200,
+        "skill": 0.10173812439872754,
+        "mse": 0.029401424110814776,
+        "skill_forward": 0.07145012658869876
+      },
+      {
+        "lambda": 1600,
+        "skill": 0.09129766482953006,
+        "mse": 0.029743155612555642,
+        "skill_forward": 0.062389173048989166
+      },
+      {
+        "lambda": 3200,
+        "skill": 0.06275188399452747,
+        "mse": 0.030677500742523987,
+        "skill_forward": 0.04055541612494229
+      },
+      {
+        "lambda": 6400,
+        "skill": 0.03793341467429867,
+        "mse": 0.03148984551868055,
+        "skill_forward": 0.023666729558688093
+      }
+    ],
+    "lambda": 400,
+    "skill": 0.11800226353049492,
+    "n_plays": 294040,
+    "lambda_forward": 400,
+    "skill_at_forecast_lambda": 0.06275188399452747,
+    "pair_not_used": {
+      "lambda_off": 300,
+      "lambda_def": 800,
+      "skill": 0.12157755623867805
+    }
+  },
+  "mae_adjusted_minus_raw": {
+    "diff": 0.011611404909405876,
+    "lo": -0.013847974477123121,
+    "hi": 0.03539689230356801,
+    "draws": 2000,
+    "seed": 7
+  },
+  "mae_adjusted_forecast_lambda": 10.469283925924286,
+  "correction": {
+    "season": 2026,
+    "week": 10,
+    "off_max": 0.02349153660790152,
+    "off_sd": 0.009240043549963382,
+    "def_max": 0.03512272909591718,
+    "def_sd": 0.011831462937285344,
+    "off_raw_sd": 0.08689637472236393,
+    "def_raw_sd": 0.06888394255754317,
+    "at_forecast_lambda": {
+      "off_max": 0.00773170360193479,
+      "off_sd": 0.0023582711268359544,
+      "def_max": 0.010766404183809412,
+      "def_sd": 0.0029818432227950013,
+      "off_raw_sd": 0.08689637472236393,
+      "def_raw_sd": 0.06888394255754317
+    },
+    "ranks": {
+      "off": {
+        "moved": 19,
+        "max_move": 3,
+        "mean_abs_move": 0.8125,
+        "largest": [
+          {
+            "team": "NYG",
+            "raw_rank": 13,
+            "adj_rank": 16
+          },
+          {
+            "team": "ARI",
+            "raw_rank": 26,
+            "adj_rank": 24
+          },
+          {
+            "team": "DEN",
+            "raw_rank": 14,
+            "adj_rank": 12
+          },
+          {
+            "team": "LA",
+            "raw_rank": 8,
+            "adj_rank": 10
+          },
+          {
+            "team": "LV",
+            "raw_rank": 17,
+            "adj_rank": 15
+          }
+        ]
+      },
+      "def": {
+        "moved": 22,
+        "max_move": 6,
+        "mean_abs_move": 1.8125,
+        "largest": [
+          {
+            "team": "ATL",
+            "raw_rank": 18,
+            "adj_rank": 12
+          },
+          {
+            "team": "NE",
+            "raw_rank": 26,
+            "adj_rank": 20
+          },
+          {
+            "team": "PHI",
+            "raw_rank": 25,
+            "adj_rank": 19
+          },
+          {
+            "team": "CAR",
+            "raw_rank": 19,
+            "adj_rank": 24
+          },
+          {
+            "team": "NO",
+            "raw_rank": 20,
+            "adj_rank": 25
+          }
+        ]
+      }
+    }
+  },
+  "simulation": {
+    "full_season": {
+      "recovered": 0.7057558090702208,
+      "slope": 0.6985887622092865,
+      "corr": 0.840136953292283,
+      "sd_true": 0.015340248908636831,
+      "sd_estimated": 0.012755688766065606,
+      "rmse_raw": 0.03995687460488712,
+      "rmse_adjusted": 0.03698316678424017,
+      "seasons": 40
+    },
+    "through_week": {
+      "week": 10,
+      "recovered": 0.572056667459075,
+      "slope": 0.565011354505256,
+      "corr": 0.7564030850392071,
+      "sd_true": 0.02168642231776339,
+      "sd_estimated": 0.01619913388837829,
+      "rmse_raw": 0.05253776551746169,
+      "rmse_adjusted": 0.04779559623225088,
+      "seasons": 40
+    },
+    "full_season_at_forecast_lambda": {
+      "recovered": 0.3919187862131588,
+      "slope": 0.23816328625189961,
+      "corr": 0.8197540273562588,
+      "sd_true": 0.015340248908636831,
+      "sd_estimated": 0.004456805297786344,
+      "rmse_raw": 0.03995687460488712,
+      "rmse_adjusted": 0.03824796615363394,
+      "seasons": 40
+    }
+  },
   "provenance": {
     "data": {
       "pbp_2016.parquet": {
@@ -146,7 +359,7 @@
     "libraries": {
       "python": "3.12",
       "pandas": "3.1.1",
-      "numpy": "2.5.4",
+      "numpy": "2.5.5",
       "duckdb": "1.5.6",
       "lightgbm": "4.7.0",
       "scikit-learn": "1.9.1",
