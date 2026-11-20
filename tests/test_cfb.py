@@ -193,3 +193,29 @@ def test_integrity_thresholds_match_dbt():
     from ingest.cfb import integrity
     v = yaml.safe_load((PROJECT / "dbt_project.yml").read_text(encoding="utf-8"))["vars"]
     assert v["cfb_pbp_swap_evidence_points"] == integrity.SWAP_EVIDENCE_POINTS and v["cfb_pbp_big_gap"] == cchecks.BIG_GAP
+
+
+def test_elo_by_week_takes_the_latest_game_by_kickoff(tmp_path, monkeypatch):
+    """Bowls and playoff games share one week: a team's Elo after it must be from its last game by kickoff time,
+    whatever order the rows arrive in (the order within a week used to be left to an unstable sort)."""
+    import importlib.util
+
+    import pandas as pd
+    spec = importlib.util.spec_from_file_location("cfb_adjusted", ROOT / "cfb" / "adjusted_ratings" / "adjusted.py")
+    adjusted = importlib.util.module_from_spec(spec); spec.loader.exec_module(adjusted)
+    rows = [  # (id, week, type, start, home, away, home pre/post, away pre/post)
+        (3, 1, "postseason", "2025-01-20T00:30:00.000Z", "A", "D", 1700, 1730, 1650, 1620),     # the final
+        (1, 14, "regular", "2024-11-30T17:00:00.000Z", "A", "B", 1600, 1650, 1500, 1450),
+        (2, 1, "postseason", "2025-01-01T22:00:00.000Z", "C", "A", 1640, 1590, 1650, 1700),     # the semifinal
+    ]
+    g = pd.DataFrame([{"id": i, "season": 2024, "week": w, "seasonType": t, "startDate": d, "completed": True,
+                       "homeTeam": h, "awayTeam": a, "homePregameElo": hp, "homePostgameElo": hq,
+                       "awayPregameElo": ap, "awayPostgameElo": aq} for i, w, t, d, h, a, hp, hq, ap, aq in rows])
+    for k, order in enumerate(([0, 1, 2], [2, 1, 0], [1, 2, 0])):
+        d = tmp_path / str(k) / "cfb"
+        d.mkdir(parents=True)
+        g.iloc[order].to_parquet(d / "games_2024.parquet", index=False)
+        monkeypatch.setattr(adjusted, "RAW", tmp_path / str(k))
+        e = adjusted.elo_by_week([2024]).set_index(["week", "team"])["elo"]
+        assert e[(14, "A")] == 1650 and e[(15, "A")] == 1730 and e[(13, "A")] == 1600
+        assert e[(15, "C")] == 1590 and e[(15, "D")] == 1620

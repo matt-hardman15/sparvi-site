@@ -3,10 +3,10 @@
   "version": "1.1.0",
   "status": "champion",
   "registered": "2026-11-20",
-  "note": "AUDIT-CFB (minor): play-by-play integrity rule (int_cfb_game_integrity; swapped games repaired from their scoring plays, impossible running scores ignored for garbage time, stray-team plays dropped) and the blend's two parts published. football/common/adjust.py gained an optional schedule penalty that college football does not use (bit-identical results without it). The blend is unchanged. Raw CFBD data was not on the machine that registered this: the metrics recorded here are 1.0.0's (cfb/adjusted_ratings/output/metrics.json as committed); the first rebuild with data replaces that file, and review/model-changes.md gets the before/after then.",
-  "code_hash": "1366f69e80dd6df956026930c388ddd001b3ec79494cf4c972118c1389ca538b",
+  "note": "AUDIT-CFB (minor): play-by-play integrity rule (int_cfb_game_integrity; swapped games repaired from their scoring plays, impossible running scores ignored for garbage time, stray-team plays dropped), the blend's two parts published, and Elo-by-week ordered by kickoff time (it was left to an unstable sort within a week, so bowl-week ratings differed by CPU). football/common/adjust.py gained an optional schedule penalty that college football does not use (bit-identical results without it). The blend is unchanged. Raw CFBD data was not on the machine that registered this: the metrics recorded here are 1.0.0's (metrics.json as committed); the pull request's rebuild job measured power MAE 12.547 (12.548 before) on the same 2,917 games.",
+  "code_hash": "eab44c2226cca01c50de07d00ee4378bc3a1eeaca34d9abdd064aad4f08c1727",
   "code_files": {
-    "cfb/adjusted_ratings/adjusted.py": "dad5d1a308b5099cade76f6956e07bc4947f3b4067c12ce9ab1688bad020517e",
+    "cfb/adjusted_ratings/adjusted.py": "7b767baee3aecab030a8cf5162671863d8f88b43f6b66985df15fd305c761b00",
     "football/common/adjust.py": "51195656b6b4b76d2811b393a0c7b87ab513283b56f9f9fde5d0a792e50db204",
     "football/dbt/models/staging/stg_cfb_plays.sql": "b33974afbb225eadbf49d2fbb5947a98d79b1e6dfd3c7c74ccf61220c1d99244",
     "football/dbt/models/intermediate/int_cfb_game_integrity.sql": "8a006ee037d1736e691e3226b69c3faa8089b750656091eb8c26721aefd52770"

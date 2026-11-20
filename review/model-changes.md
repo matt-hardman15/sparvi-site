@@ -86,6 +86,14 @@ main, and the 1.1.0 registry record carries 1.0.0's metrics.
   largest power change in any team-week is 1.5 points (2025) and the largest adjusted EPA/play change 0.149 (2025);
   2014–2020 move by at most 0.2 points.
 - Plausibility tests on the rebuilt data: 19 of 19 pass, including the one that needs the plays.
+
+**Also fixed: the power rating depended on the CPU it was built on.** Two runs of the rebuild job on the same code and
+data disagreed in past seasons (2023: 353 vs. 235 team-weeks changed against main, largest 5.7 vs. 0.4 points; seasons
+with no change in adjusted EPA moved by up to 2.4). `elo_by_week` takes each team's Elo after its latest game, but
+ordered games by week with an unstable sort, and every bowl and playoff game shares one week: which game came "last"
+for a team that played two was left to the sort, whose order differs between CPUs. It now orders by week, kickoff
+time and game id (`tests/test_cfb.py`). The backtest is untouched (it reads each game's own pre-game Elo); published
+ratings for bowl weeks, and any week a team played twice, can change at the next rebuild and are then stable.
 ## 2026-11-20 · Fourth-down chart: standard situations fixed (no model change)
 The chart on `/nfl/fourth-downs/` called 4th-and-3 through 4th-and-7 from inside the offense's own 10 a clear go.
 Cause: `nfl/fourth/decisions.grid` set `recv_2h = 0.5` ("unknown"). The win-probability model is trees, so 0.5 fell on

@@ -130,17 +130,20 @@ def paired_ci(y, a, b, seasons, n=2000) -> tuple[float, list[float]]:
 
 def elo_by_week(seasons: list[int]) -> pd.DataFrame:
     """Each team's Elo as of the end of every week: post-game Elo of its latest game, else the
-    pre-game Elo of its first game."""
+    pre-game Elo of its first game. "Latest" is by kickoff time: every bowl and playoff game shares one week here,
+    and a team can play twice in a regular week, so the order within a week must not be left to the sort (an unstable
+    sort gave different ratings on different CPUs: up to 5.7 points for a playoff team, AUDIT-CFB)."""
     g = pd.concat([pd.read_parquet(p) for p in sorted((RAW / "cfb").glob("games_*.parquet"))], ignore_index=True)
     last = g[g["seasonType"] == "regular"].groupby("season")["week"].max()
     g["week"] = np.where(g["seasonType"] == "postseason", g["season"].map(last) + 1, g["week"])
-    long = pd.concat([g[["season", "week", "homeTeam", "homePregameElo", "homePostgameElo", "completed"]].set_axis(
-                          ["season", "week", "team", "pre", "post", "completed"], axis=1),
-                      g[["season", "week", "awayTeam", "awayPregameElo", "awayPostgameElo", "completed"]].set_axis(
-                          ["season", "week", "team", "pre", "post", "completed"], axis=1)], ignore_index=True)
+    cols = ["season", "week", "team", "pre", "post", "completed", "start", "id"]
+    long = pd.concat([g[["season", "week", "homeTeam", "homePregameElo", "homePostgameElo", "completed", "startDate", "id"]]
+                      .set_axis(cols, axis=1),
+                      g[["season", "week", "awayTeam", "awayPregameElo", "awayPostgameElo", "completed", "startDate", "id"]]
+                      .set_axis(cols, axis=1)], ignore_index=True)
     out = []
     for s in seasons:
-        ls = long[long["season"] == s].sort_values("week")
+        ls = long[long["season"] == s].sort_values(["week", "start", "id"], kind="stable")
         first = ls.dropna(subset=["pre"]).groupby("team")["pre"].first()
         for w in range(1, int(ls["week"].max()) + 1):
             done = ls[(ls["week"] <= w) & ls["completed"].fillna(False)].dropna(subset=["post"])
