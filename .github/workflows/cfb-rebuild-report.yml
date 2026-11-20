@@ -1,0 +1,109 @@
+name: cfb-rebuild-report
+
+# On a pull request that changes the college football pipeline: rebuild the CFB models, ratings, backtest and export
+# on the branch, from the raw data the `cfb` refresh keeps in the Actions cache (or the private R2 seed), and post a
+# before/after report on the pull request (cfb/qa/rebuild_report.py). Nothing is pulled from CFBD (no API calls),
+# nothing is committed or pushed, and raw data never leaves the runner: the report holds aggregates and game results
+# only. Can also be run by hand on any branch.
+
+on:
+  pull_request:
+    paths:
+      - cfb/adjusted_ratings/**
+      - cfb/export_site_data.py
+      - cfb/build.sh
+      - cfb/qa/**
+      - ingest/cfb/**
+      - football/common/**
+      - football/dbt/**
+      - .github/workflows/cfb-rebuild-report.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: cfb-rebuild-report-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          fetch-depth: 0    # the report reads the base branch's committed outputs
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        with:
+          enable-cache: true
+
+      - run: uv sync --frozen
+
+      # Read-only: the newest raw-data cache the `cfb` refresh saved. This job never saves one.
+      - name: Restore raw CFB data
+        id: raw_cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: data/raw/cfb
+          key: cfb-raw-none
+          restore-keys: cfb-raw-
+
+      - name: Restore raw CFB data from the R2 seed
+        if: steps.raw_cache.outputs.cache-matched-key == ''
+        env:
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: uv run python -m ingest.cfb.seed restore
+
+      - name: Stop if there is no raw data
+        run: |
+          if [ ! -d data/raw/cfb ]; then echo "::error::No CFB raw data (cache and R2 seed both missing)"; exit 1; fi
+
+      # The data checks, the rebuild, and the plausibility tests each report into the summary; a failure in one is
+      # part of the report, so later steps still run.
+      - name: Data checks
+        id: checks
+        continue-on-error: true
+        run: uv run python -m ingest.cfb.checks
+
+      - name: Rebuild CFB models, ratings, power rating, export
+        id: build
+        continue-on-error: true
+        run: uv run cfb/build.sh 2>&1 | tee build.log
+
+      - name: Plausibility tests
+        id: plausibility
+        if: steps.build.outcome == 'success'
+        continue-on-error: true
+        run: uv run python -m plausibility cfb
+
+      - name: Before/after report
+        if: ${{ !cancelled() }}
+        env:
+          BASE: ${{ github.event.pull_request.base.ref || github.event.repository.default_branch }}
+        run: |
+          {
+            if [ "${{ steps.build.outcome }}" = "success" ]; then
+              uv run python -m cfb.qa.rebuild_report "origin/$BASE"
+            else
+              echo "## College football rebuild: the build failed"; echo; echo '```'; tail -40 build.log; echo '```'
+            fi
+            echo; echo "Data checks: ${{ steps.checks.outcome }}. Build: ${{ steps.build.outcome }}. Plausibility tests: ${{ steps.plausibility.outcome }}."
+            echo "Commit ${{ github.event.pull_request.head.sha || github.sha }}; raw data from ${{ steps.raw_cache.outputs.cache-matched-key || 'the R2 seed' }}."
+          } > cfb-rebuild-report.md
+          cat cfb-rebuild-report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment on the pull request
+        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr comment ${{ github.event.pull_request.number }} --body-file cfb-rebuild-report.md
+
+      - name: Fail the run if the build or a test failed
+        if: steps.build.outcome != 'success' || steps.plausibility.outcome != 'success'
+        run: exit 1
