@@ -259,6 +259,30 @@ def _rmse_edges(p: pd.DataFrame, rng) -> dict:
     return out
 
 
+def _gate_candidates(long: pd.DataFrame, rng) -> dict:
+    """Candidate gate statistics for the pre-registered test, on development folds: one number per side, the RMSE
+    over every player x metric of the error in units of that metric's MLB spread (its SD in the fold's training
+    pairs), for the published line against eb_wide. Gain = published minus candidate (positive = smaller error),
+    bootstrap over players, for each pool the gate could be measured on."""
+    out = {}
+    pools = {"50+": long["pa_aaa"] >= MIN_AAA_WIDE, "150+": long["pa_aaa"] >= MIN_AAA, "50-149": long["pa_aaa"] < MIN_AAA}
+    for scope, sel in [("pooled", slice(None))] + [(str(int(t)), long["fold"].eq(t)) for t in sorted(long["fold"].unique())]:
+        d = long[sel]
+        out[scope] = {}
+        for pool, mask in pools.items():
+            q = d[mask.reindex(d.index)]
+            se = np.column_stack([((q[v] - q["y"]) / q["scale"]) ** 2 for v in ("raw", "eb_wide")])
+            groups = list(q.groupby("player_id").indices.values())
+            draws = np.array([np.sqrt(se[np.concatenate([groups[i] for i in rng.integers(0, len(groups), len(groups))])].mean(axis=0))
+                              for _ in range(BOOT)])
+            r = np.sqrt(se.mean(axis=0))
+            g = draws[:, 0] - draws[:, 1]
+            out[scope][pool] = {"players": len(groups), "rows": int(len(q)), "published": float(r[0]), "candidate": float(r[1]),
+                                "gain": float(r[0] - r[1]), "gain_pct": float(100 * (r[0] - r[1]) / r[0]),
+                                "ci90": [float(np.percentile(g, 5)), float(np.percentile(g, 95))]}
+    return out
+
+
 def _coverage(p: pd.DataFrame) -> dict:
     out = {}
     for name, sub in (("all", p), ("50-149", p[p["pa_aaa"] < MIN_AAA]), ("150-299", p[p["pa_aaa"].between(MIN_AAA, 299)]),
@@ -338,7 +362,7 @@ def main() -> None:
             F = {"n_train": int(len(tr)), "n_test": int(len(te)), "reliability": rel, "metrics": {},
                  "combined": combined(tr, te, side, rel)}
             for m, ncol in METRICS[side].items():
-                p = predict_metric(tr, te, m, ncol, rel[m]).assign(fold=t)
+                p = predict_metric(tr, te, m, ncol, rel[m]).assign(fold=t, metric=m, scale=float(tr[f"{m}_mlb"].std()))
                 preds[m].append(p)
                 F["metrics"][m] = {"published_pool": _rmse_edges(p[p["pa_aaa"] >= MIN_AAA], rng),
                                    "small_sample_pool": _rmse_edges(p[p["pa_aaa"] < MIN_AAA], rng), "bands": _coverage(p)}
@@ -347,6 +371,8 @@ def main() -> None:
             p = pd.concat(preds[m], ignore_index=True)
             R["pooled"][m] = {"published_pool": _rmse_edges(p[p["pa_aaa"] >= MIN_AAA], rng),
                               "small_sample_pool": _rmse_edges(p[p["pa_aaa"] < MIN_AAA], rng), "bands": _coverage(p)}
+        R["gate_candidates"] = _gate_candidates(pd.concat([p for ps in preds.values() for p in ps], ignore_index=True),
+                                                np.random.default_rng(SEED + 1))
         res[side] = R
         print(f"\n== {side}: folds {folds}, pairs {R['pairs_by_outcome_season']}")
         for m, v in R["pooled"].items():
@@ -358,6 +384,9 @@ def main() -> None:
             print(line)
             print("    80% bands " + "; ".join(f"{k} n {b['n']}: same {b['raw']['coverage']:.2f}, sized {b['sized']['coverage']:.2f}"
                                            for k, b in v["bands"].items()))
+        for scope, pools in R["gate_candidates"].items():
+            print(f"  gate candidates ({scope}): " + "; ".join(
+                f"{k} n {g['players']}: {g['gain_pct']:+.1f}% [{g['ci90'][0]:+.4f},{g['ci90'][1]:+.4f}]" for k, g in pools.items()))
         for t, F in R["folds"].items():
             c = F["combined"]
             print(f"  MLB xwOBA, outcome {t} (n {c['n']}, fit on {c['n_train']}): all metrics rmse {c['rmse_all_metrics']:.4f} "
