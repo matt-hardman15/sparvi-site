@@ -20,7 +20,8 @@ def run(today: date | None = None, n_orgs: int = 30) -> bool:
     c = Checks("baseball")
     through = {}
     history = [s for s in cfg.history_seasons if (RAW / f"statcast_mlb_{s}.parquet").exists()]   # optional (PQ-WINDOW)
-    for level, seasons in (("aaa", cfg.aaa_seasons), ("mlb", history + cfg.mlb_seasons)):
+    aaa_history = [s for s in cfg.aaa_history_seasons if (RAW / f"statcast_aaa_{s}.parquet").exists()]   # optional (M5-EB)
+    for level, seasons in (("aaa", aaa_history + cfg.aaa_seasons), ("mlb", history + cfg.mlb_seasons)):
         for s in seasons:
             name = f"statcast_{level}_{s}"
             path = RAW / f"{name}.parquet"

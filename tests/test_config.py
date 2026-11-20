@@ -51,4 +51,8 @@ def test_history_seasons_are_optional_everywhere():
     for s in b.history_seasons:
         assert (f"statcast_mlb_{s}" in names) == (RAW / f"statcast_mlb_{s}.parquet").exists()
         assert s not in b.mlb_seasons and s not in b.train_seasons and s not in b.aaa_seasons
+    for s in b.aaa_history_seasons:      # M5-EB: the same rule for the Triple-A history seasons
+        assert (f"statcast_aaa_{s}" in names) == (RAW / f"statcast_aaa_{s}.parquet").exists()
+        assert s not in b.aaa_seasons and s in b.season_windows
     assert _cli("baseball.mlb_seasons") == " ".join(map(str, b.mlb_seasons))     # what build.sh and the workflows read
+    assert _cli("baseball.aaa_seasons") == " ".join(map(str, b.aaa_seasons))

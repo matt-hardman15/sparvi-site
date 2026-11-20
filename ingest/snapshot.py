@@ -27,6 +27,8 @@ def baseball_tables() -> list[Table]:
     # and the refresh, which never pull them, are unaffected.
     t += [Table(f"statcast_mlb_{s}", RAW / f"statcast_mlb_{s}.parquet", ("game_pk", "at_bat_number", "pitch_number"),
                 day_after("game_date")) for s in cfg.history_seasons if (RAW / f"statcast_mlb_{s}.parquet").exists()]
+    t += [Table(f"statcast_aaa_{s}", RAW / f"statcast_aaa_{s}.parquet", ("game_pk", "at_bat_number", "pitch_number"),
+                day_after("game_date")) for s in cfg.aaa_history_seasons if (RAW / f"statcast_aaa_{s}.parquet").exists()]
     # Heights are looked up for the batters in whatever seasons are on the machine; one without the history seasons
     # has fewer, which is not a deletion.
     t.append(Table("batter_heights", RAW / "batter_heights.parquet", ("batter",), grow_only=True))
