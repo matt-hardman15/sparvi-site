@@ -60,3 +60,20 @@ def test_same_data_same_bag():
         assert [m.model_to_string() for m in a["stuff"][g]] == [m.model_to_string() for m in b["stuff"][g]]
     pa, pb = train.predict(a["stuff"], df, train.FEATURE_SETS["stuff"]), train.predict(b["stuff"], df, train.FEATURE_SETS["stuff"])
     assert pa.notna().all() and pa.equals(pb)
+
+
+def test_location_value_is_the_full_model_minus_the_model_without_location():
+    """Location+ 3.0.0: predict_all derives xrv_loc from the two fitted parts, and only when both are there."""
+    rng = np.random.default_rng(5)
+    df = _rows(30_000, 5)
+    for c in set(train.FEATURE_SETS["pitching"]) - set(train.FEATURES):
+        df[c] = rng.normal(size=len(df))
+    df[train.TARGET] += 0.05 * df["loc_x"]
+    assert set(train.FEATURE_SETS["pitching"]) - set(train.FEATURE_SETS["no_loc"]) == {"loc_x", "loc_z"}
+    assert "loc" not in train.MODELS and "loc" in train.KINDS
+    train.predict_all(train.fit_kinds(df, kinds=["no_loc", "pitching"], n_bags=3), df)
+    assert df["xrv_loc"].equals(df["xrv_pitching"] - df["xrv_no_loc"])
+    assert df["xrv_loc"].corr(df["loc_x"]) > 0.5, "the location's value should follow the location"
+    only = _rows(5_000, 6)
+    train.predict_all(train.fit_kinds(only, kinds=["stuff"], n_bags=3), only)
+    assert "xrv_loc" not in only
