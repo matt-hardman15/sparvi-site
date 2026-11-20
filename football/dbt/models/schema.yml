@@ -101,11 +101,26 @@ models:
       - unique_combination:
           arguments:
             columns: [game_id, play_id]
+      - cfb_teams_played_the_game
+      - cfb_unattributable_plays_bounded:
+          arguments:
+            max_share: "{{ var('cfb_pbp_max_unattributable') }}"
     columns:
       - name: epa
         tests: [not_null]
       - name: offense
         tests: [not_null]
+
+  - name: int_cfb_game_integrity
+    description: >
+      One row per completed game with plays: the play-by-play final vs. the official result (match, swapped, over,
+      under) and what the ratings do about it (keep, repair_teams, repair_scores, keep_no_score, exclude). The rule
+      is in the model's header; cfb/qa/pbp_integrity.py publishes the table of non-matching games for /status/.
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [game_id]
+      - cfb_every_gap_game_decided
 
   - name: int_cfb_team_games
     tests:

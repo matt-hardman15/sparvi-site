@@ -19,11 +19,12 @@ against public benchmarks, and the ratings as of every week.
    bootstrap interval). The power rating is that combination, in points against an average FBS team
    on a neutral field: b_net * net_ridge + b_elo * Elo, centered on the FBS average each week, with
    b fit on every complete season's backtest games. Elo as of a week is the team's post-game Elo
-   after its latest game (pre-game Elo before its first).
+   after its latest game (pre-game Elo before its first). The fitted weights (metrics.json power_model) and
+   each part's contribution in points (power_epa, power_elo) are published with the rating.
 
 Reads the football dbt database (stg_cfb_plays) and data/raw/cfb; writes
     output/adjusted_team_week.csv   season, week, team, gt, split, off/def adjusted and raw, plays
-    output/power_team_week.csv      season, week, team, net (efficiency), elo, power, FBS rank
+    output/power_team_week.csv      season, week, team, net (efficiency), elo, power and its two parts, FBS rank
     output/metrics.json             lambda grid, the weekly backtest table, the WEPA test, the power model
 """
 from __future__ import annotations
@@ -148,6 +149,26 @@ def elo_by_week(seasons: list[int]) -> pd.DataFrame:
     return pd.concat(out, ignore_index=True)
 
 
+def power_components(pw: pd.DataFrame, season: int) -> dict:
+    """How much of the power rating each part carries, latest week of `season` (the latest season with ratings if it
+    hasn't started): the spread of each part in points, its share of the rating's variance (cov(part, power) /
+    var(power); the two shares sum to 1), and the correlations the methods text quotes."""
+    d = pw.dropna(subset=["power"])
+    if d.empty:
+        return {}
+    s = season if (d["season"] == season).any() else int(d["season"].max())
+    d = d[d["season"] == s]
+    d = d[d["week"] == d["week"].max()]
+    r = lambda a, b: float(np.corrcoef(d[a], d[b])[0, 1])  # noqa: E731
+    var = float(d["power"].var(ddof=0))
+    return {"season": int(s), "week": int(d["week"].max()), "n_teams": int(len(d)),
+            "sd_power": float(d["power"].std(ddof=0)), "sd_epa": float(d["power_epa"].std(ddof=0)),
+            "sd_elo": float(d["power_elo"].std(ddof=0)),
+            "share_epa": float(np.cov(d["power_epa"], d["power"], ddof=0)[0, 1] / var),
+            "share_elo": float(np.cov(d["power_elo"], d["power"], ddof=0)[0, 1] / var),
+            "r_power_elo": r("power", "elo"), "r_power_epa": r("power", "net"), "r_epa_elo": r("net", "elo")}
+
+
 def backtest(p: pd.DataFrame) -> dict:
     """Every method on the same games: those with Elo and both lines available."""
     c = p.dropna(subset=["d_elo", "line_close", "line_open"]).copy()
@@ -244,8 +265,18 @@ def main() -> None:
     pw = base_rows[["season", "week", "team", "net"]].merge(fbs, on=["season", "team"]).merge(
         elo_by_week(CFG.seasons), on=["season", "week", "team"], how="left")
     raw_power = b_net * pw["net"] + b_elo * pw["elo"]
-    pw["power"] = raw_power - raw_power.groupby([pw["season"], pw["week"]]).transform("mean")
+    by_week = [pw["season"], pw["week"]]
+    pw["power"] = raw_power - raw_power.groupby(by_week).transform("mean")
+    # The two parts of the blend, in the same points (power = power_epa + power_elo). Each is centered on the teams
+    # that have a power rating that week, so a part is how many points it adds relative to the average FBS team.
+    rated = raw_power.notna()
+    for part, b, col in (("power_epa", b_net, "net"), ("power_elo", b_elo, "elo")):
+        x = (b * pw[col]).where(rated)
+        pw[part] = x - x.groupby(by_week).transform("mean")
+    # Ranked on the unrounded rating (the site rounds to a tenth of a point afterwards); teams with exactly equal
+    # ratings share the better rank and the next rank is skipped (1, 2, 2, 4).
     pw["rank"] = pw.groupby(["season", "week"])["power"].rank(ascending=False, method="min")
+    res["power_model"]["components"] = power_components(pw, CFG.season)
     pw.sort_values(["season", "week", "rank", "team"]).to_csv(OUT / "power_team_week.csv", index=False, float_format="%.6f")
     cols = ["season", "week", "team", "gt", "split", "off_plays", "def_plays", "off_raw", "def_raw", "off_adj", "def_adj"]
     adj[cols].sort_values(["season", "week", "gt", "split", "team"]).to_csv(OUT / "adjusted_team_week.csv", index=False, float_format="%.6f")

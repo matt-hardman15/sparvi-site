@@ -12,8 +12,9 @@ NFL_SEASON=$(python -m sparvi.config nfl.season)
 NFL_FIRST=$(python -m sparvi.config nfl.first_season)
 echo "cfb seasons $FIRST-$SEASON"
 # One dbt project for both football sports: only the CFB models (and the score check, which reads raw sources).
-(cd football/dbt && DBT_PROFILES_DIR=. dbt build --select stg_cfb_plays+ cfb_reconcile_scores \
+(cd football/dbt && DBT_PROFILES_DIR=. dbt build --select int_cfb_game_integrity+ cfb_reconcile_scores \
   --vars "{nfl_season: $NFL_SEASON, nfl_first_season: $NFL_FIRST, cfb_season: $SEASON, cfb_first_season: $FIRST}")
+python -m cfb.qa.pbp_integrity          # the per-game play-by-play decisions, for /status/
 python cfb/adjusted_ratings/adjusted.py
 python cfb/adjusted_ratings/polls.py
 python cfb/carousel/analysis.py

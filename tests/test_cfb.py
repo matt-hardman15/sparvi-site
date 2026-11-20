@@ -29,7 +29,7 @@ def raw(tmp_path_factory):
 def dbt_build(raw, db):
     env = os.environ | {"DBT_PROFILES_DIR": ".", "SPARVI_RAW_DIR": raw.as_posix(), "FOOTBALL_DB_PATH": db.as_posix()}
     return subprocess.run(
-        [DBT, "build", "--select", "stg_cfb_plays+", "cfb_reconcile_scores", "--vars",
+        [DBT, "build", "--select", "int_cfb_game_integrity+", "cfb_reconcile_scores", "--vars",
          f"{{nfl_season: {nfl().season}, nfl_first_season: {nfl().season}, cfb_season: {SEASON}, cfb_first_season: {SEASON - 1}}}",
          "--target-path", (raw / "target").as_posix(), "--log-path", (raw / "logs").as_posix()],
         cwd=PROJECT, env=env, capture_output=True, text=True)
@@ -114,3 +114,82 @@ def test_player_checks_catch_unlinked_stats(raw, monkeypatch, tmp_path):
     st = __import__("json").loads((tmp_path / "status" / "cfb.json").read_text(encoding="utf-8"))
     bad = [c["name"] for c in st["checks"] if not c["ok"]]
     assert f"player_stats_{SEASON}: players on the roster" in bad
+
+
+# ---- Play-by-play integrity (int_cfb_game_integrity): swapped, over, and unattributable plays ------------------
+
+def _doctor(raw, tmp_path):
+    """Five kinds of bad play-by-play in season SEASON's first games with unequal finals: team labels exchanged, score
+    fields exchanged, exchanged with no scoring plays to say which, a running score above the final, a stray team."""
+    import pandas as pd
+    bad = tmp_path / "raw"
+    shutil.copytree(raw / "cfb", bad / "cfb")
+    f = bad / "cfb" / f"plays_{SEASON}.parquet"
+    p, g = pd.read_parquet(f), pd.read_parquet(bad / "cfb" / f"games_{SEASON}.parquet")
+    pick = g[(g["homePoints"] != g["awayPoints"]) & (g["homePoints"] + g["awayPoints"] >= 21)]["id"].tolist()[:5]
+    teams, scores, both, over, stray = pick
+    tds, nid = [], int(p["id"].astype("int64").max())
+    for gid in (teams, scores):                        # touchdowns by the true offense, one per 7 points
+        r = g[g["id"] == gid].iloc[0]
+        base = p[(p["gameId"] == gid) & (p["playType"] == "Rush")].iloc[0]
+        for off, dff, pts in ((r["homeTeam"], r["awayTeam"], r["homePoints"]), (r["awayTeam"], r["homeTeam"], r["awayPoints"])):
+            for _ in range(int(pts // 7)):
+                nid += 1
+                tds.append({**base, "id": str(nid), "playType": "Rushing Touchdown",
+                            "offense": off, "defense": dff, "offenseScore": 0.0, "defenseScore": 0.0, "period": 1})
+    p = pd.concat([p, pd.DataFrame(tds)], ignore_index=True)
+    m = p["gameId"].isin([teams, both])                # labels exchanged; the scores stay with the true offense
+    p.loc[m, ["offense", "defense"]] = p.loc[m, ["defense", "offense"]].to_numpy()
+    m = p["gameId"] == scores                          # score fields exchanged; labels right
+    p.loc[m, ["offenseScore", "defenseScore"]] = p.loc[m, ["defenseScore", "offenseScore"]].to_numpy()
+    i = p.index[(p["gameId"] == over) & (p["period"] == 4) & p["ppa"].notna()][0]
+    p.loc[i, "offenseScore"] = 150.0
+    j = p.index[(p["gameId"] == stray) & p["ppa"].notna() & (p["playType"] == "Rush")][0]
+    p.loc[j, "offense"] = "Zulu"
+    p.to_parquet(f, index=False)
+    return bad, dict(teams=teams, scores=scores, both=both, over=over, stray=stray), (p.loc[i, "id"], p.loc[j, "id"])
+
+
+@pytest.mark.skipif(DBT is None, reason="dbt not installed")
+def test_pbp_integrity_rule_repairs_and_keeps(raw, built, tmp_path):
+    bad, G, (over_play, stray_play) = _doctor(raw, tmp_path)
+    r = dbt_build(bad, tmp_path / "f.duckdb")
+    # Four bad games in a 29-game season fall under the 90% score-agreement bar; nothing else may fail.
+    assert "Completed with 1 error" in r.stdout and "min_share_true_cfb_reconcile_scores" in r.stdout, r.stdout[-4000:]
+    con = duckdb.connect(str(tmp_path / "f.duckdb"), read_only=True)
+    dec = dict(con.sql("select game_id, pbp_class || ':' || decision from int_cfb_game_integrity").fetchall())
+    assert dec[G["teams"]] == "swapped:repair_teams" and dec[G["scores"]] == "swapped:repair_scores"
+    assert dec[G["both"]] == "swapped:keep_no_score" and dec[G["over"]] == "over:keep"
+    cols = "game_id, play_id, offense, defense, is_home, is_garbage"
+    good = built.sql(f"select {cols} from stg_cfb_plays where season = {SEASON}").df().set_index("play_id")
+    new = con.sql(f"select {cols} from stg_cfb_plays where season = {SEASON}").df().set_index("play_id")
+    both = good.merge(new, left_index=True, right_index=True, suffixes=("", "_n"))
+    for k in ("teams", "scores"):                       # repaired games: exactly the plays of the clean build
+        x = both[both["game_id"] == G[k]]
+        assert len(x) and (x["offense"] == x["offense_n"]).all() and (x["is_home"] == x["is_home_n"]).all()
+        assert (x["is_garbage"] == x["is_garbage_n"]).all()
+    x = both[both["game_id"] == G["both"]]              # undetermined: labels as the feed has them, never garbage time
+    assert (x["offense"] == x["defense_n"]).all() and not x["is_garbage_n"].any()
+    assert not new.loc[over_play, "is_garbage"]         # impossible running score: no margin
+    assert stray_play not in new.index and len(new) > len(good) - 2      # the stray play is dropped, nothing else
+    assert con.sql("select count(*) from stg_cfb_plays where offense = 'Zulu' or defense = 'Zulu'").fetchone()[0] == 0
+    # the SQL classes are the Python classes
+    from ingest.cfb.integrity import classify, swap_decision
+    for row in con.sql("""select home_points, away_points, pbp_home, pbp_away, pbp_class, est_home, est_away, decision
+                          from int_cfb_game_integrity""").fetchall():
+        assert classify(*row[:4]) == row[4]
+        if row[4] == "swapped":
+            assert swap_decision(row[0], row[1], row[5], row[6]) == row[7]
+    con.close()
+    # the /status/ table lists each of them with its decision
+    from cfb.qa import pbp_integrity as PI
+    t = {g["id"]: g for g in PI.from_db(tmp_path / "f.duckdb")["games"]}
+    assert t[G["teams"]]["decision"] == "repair_teams" and t[G["over"]]["class"] == "over"
+
+
+def test_integrity_thresholds_match_dbt():
+    import yaml
+
+    from ingest.cfb import integrity
+    v = yaml.safe_load((PROJECT / "dbt_project.yml").read_text(encoding="utf-8"))["vars"]
+    assert v["cfb_pbp_swap_evidence_points"] == integrity.SWAP_EVIDENCE_POINTS and v["cfb_pbp_big_gap"] == cchecks.BIG_GAP
