@@ -2,6 +2,78 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-20 · NFL opponent adjustment 1.0.1 → 2.0.0 (major: the schedule correction gets its own penalty, NFL-SCHED)
+**Why.** The "opponent-adjusted" numbers barely differed from raw: across the 32 teams in 2026 (week 10) the largest
+|adjusted − raw| was 0.008 EPA/play on offense (sd 0.002) and 0.011 on defense (sd 0.003), against a spread between
+teams of 0.087 and 0.069. Cause: one penalty (λ = 3,200 plays) served two uses. It is chosen by next-week margin MAE,
+where a free slope on the rating gap absorbs any uniform shrinkage, so that search says little about how large the
+strength coefficients should be (MAE 10.380 at 1,600, 10.379 at 3,200, 10.381 at 6,400). The same heavily shrunk
+strengths were then subtracted as the schedule correction: with about 520 plays a team by week 10, a coefficient keeps
+roughly 520 / (520 + 3,200) = 14% of its size.
+
+**What changed.** `football/common/adjust.py`: `ridge_ratings(..., lam_schedule=)` fits the opponent strengths the
+correction subtracts with their own penalty; `off_ridge`/`def_ridge` (forecasting) still use `lam`; `cell_cv` scores a
+penalty by held-out-game EPA/play. With `lam_schedule=None` the function is unchanged (college football calls it that
+way: `cfb/` outputs are byte-identical on the same data). `nfl/team_efficiency/adjusted.py` chooses the schedule
+penalty by leave-one-game-out within each complete season (2016–2025, 294,000 plays): predict each side's EPA/play in
+the held-out game as mean + offense + defense + home. Forecast λ stays 3,200. New file `football/common/simulate.py`
+(added to the card's code): seasons with known strengths and unequal schedules.
+
+**Results.** Held-out-game skill (1 − squared error / squared error of the league mean) by λ: 100 9.9%, 200 11.0%,
+300 11.6%, **400 11.8%**, 600 11.7%, 800 11.3%, 1,600 9.1%, 3,200 6.3%, 6,400 3.8%. The forward version (fit on
+earlier weeks only, weeks 4 on) also peaks at 400 (8.9%; 3,200: 4.1%), and so does the same test through week 9.
+A moments estimate agrees (play EPA variance 1.3 over true team variance: about 240 plays for offenses, 400–1,300 for
+defenses). Chosen: λ = 400.
+- Size, 2026 week 10: largest correction 0.023 EPA/play on offense (sd 0.009), 0.035 on defense (sd 0.012); before,
+  0.008 (0.002) and 0.011 (0.003). That is 11% and 17% of the spread between teams, up from 3% and 4%.
+- Simulation (40 NFL-sized seasons, division rivals twice): share of each team's true schedule effect recovered, full
+  season 71% (slope of estimate on truth 0.70), through week 10 57%; at λ = 3,200, 39% (slope 0.24). Error against a
+  team's true strength: raw 0.0400, adjusted 0.0370 (at 3,200: 0.0382).
+- Rankings, 2026 week 10, new adjusted vs. old adjusted: offense 15 teams move (largest 2 places), defense 17 (largest
+  6: New England 26th → 20th; Atlanta 16th → 12th, Philadelphia 24th → 19th; Carolina 20th → 24th, New Orleans 21st →
+  25th), net 15 (largest 3: Denver 12th → 9th, Detroit 9th → 12th). The top eight in net EPA/play are unchanged.
+- Next-week margins (2,160 games): adjusted 10.483 vs. raw 10.472 (difference +0.012, 90% interval −0.014 to +0.035;
+  with the old correction 10.469). No measurable difference from raw either way: the published note already said so,
+  and still does. Shrunk ratings 10.379, unchanged.
+
+**Not decided here (options in the pull request).** (1) Separate penalties for offense and defense strengths (300 and
+800) score 12.2% against 11.8% for one penalty; `lam_schedule` accepts a pair, but one penalty is shipped because it
+changes only what was asked. (2) Whether the default view should be raw: the correction is supported by held-out EPA
+and by simulation, not by next-week margins. (3) The two NFL articles (`nfl/jacksonville`, `nfl/offense_defense`) are
+frozen analyses that read `adjusted_team_week.csv`; they were not re-run.
+
+Registered as champion by this change rather than by `registry promote`: the card's frozen evaluation (next-week margin
+MAE of the shrunk ratings, 10.379) is untouched by it and can't show what the change is for.
+
+## 2026-11-20 · CFB power rating 1.0.0 → 1.1.0 (minor: play-by-play integrity rule, blend parts published; AUDIT-CFB)
+**Why.** /status/ listed 58 games whose play-by-play final is 9+ points from the official result, "kept in the ratings"
+with no rule. Five reach the official score with home and away exactly exchanged (2020 San José State at New Mexico,
+2020 Hawai'i at San José State, 2023 South Carolina at North Carolina, 2023 South Alabama at Eastern Michigan, 2024
+Coastal Carolina at UTSA); 36 have a running score above a team's final (e.g. 100-80 for a 41-38 game); 17 stop short.
+
+**What changed.** `football/dbt/models/intermediate/int_cfb_game_integrity.sql` (new, added to the card's code) gives
+every completed game a class (match, swapped, over, under) and a decision, with CFBD's games table as the authority;
+`stg_cfb_plays.sql` applies it. Swapped: the game's offensive touchdowns and made field goals say whether the team
+labels or the two score fields are exchanged (the two readings must differ by 7+ points), and that one is put right:
+`repair_teams` exchanges offense and defense, `repair_scores` exchanges the score fields (which only feed the
+garbage-time flag); if the scoring plays can't tell, teams stay as labeled and the running score is ignored. Over and
+under: kept, because teams, yards and EPA don't depend on the score fields; a play whose running score is above a
+team's official final gets no margin and is never garbage time. A play naming a team that isn't one of its game's two
+teams is dropped (the build fails above 0.5% of a season's plays). No game is excluded (`cfb_pbp_exclude_gap` is off).
+`adjusted.py`: no change to the fit; `power_team_week.csv` gains the rating's two parts in points (`power_epa`,
+`power_elo`; they sum to `power`) and `metrics.json` their spread and correlations. The blend is unchanged.
+
+**Not decided here (options in the pull request).** Whether the five swapped games have exchanged team labels (the
+audit's reading) or exchanged score fields can't be told from the finals alone; three of the five involve relocated
+or neutral-site games, where a flipped home/away designation would exchange the score fields and leave the teams
+right. The rule reads it from each game's scoring plays instead of assuming. Whether to exclude the worst games
+outright is left off.
+
+**Before/after.** Not available at the time of writing: the raw CFBD data isn't on the machine that made the change.
+Before (1.0.0, 2,917 games): power 12.548, Elo 12.682, efficiency alone 13.015, lambda 50; weights 19.74 points per
+1.00 net EPA/play and 0.0290 per Elo point. After: filled in by the first `cfb/build.sh` on this code, with the count
+of games per decision (`site/data/status/cfb_pbp_integrity.json`) and of dropped plays.
+
 ## 2026-11-19 · Stuff+ 2.0.0: the backtest trains on two seasons (PQ-TEST-2; no model change)
 The pre-registered test trained on one season (2024) while the published model trains on two. Development folds that
 never read 2026 (outcomes 2024 and 2025, `baseball/pitch_quality/output/development_windows.json`) put a two-season

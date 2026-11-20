@@ -1,0 +1,513 @@
+{
+ "sport": "baseball",
+ "ok": true,
+ "n_checks": 84,
+ "n_failed": 0,
+ "n_not_run": 0,
+ "checks": [
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "MLB league mean of Stuff+ is 100 on the MLB scale (final date, pitch-weighted)",
+   "ok": true,
+   "detail": "mean 99.13 (expected 100 ± 2)"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "MLB league mean of Location+ is 100 on the MLB scale (final date, pitch-weighted)",
+   "ok": true,
+   "detail": "mean 99.17 (expected 100 ± 2)"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "MLB league mean of Pitching+ is 100 on the MLB scale (final date, pitch-weighted)",
+   "ok": true,
+   "detail": "mean 99.30 (expected 100 ± 2)"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "MLB league mean of RV+ is 100 on the MLB scale (final date, pitch-weighted)",
+   "ok": true,
+   "detail": "mean 99.19 (expected 100 ± 2)"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "Qualified MLB pitchers' Stuff+ has an SD near 10 (10 points = 1 SD)",
+   "ok": true,
+   "detail": "SD 9.8 (allowed 7.5 to 12.5)"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "Qualified MLB pitchers' Location+ has an SD near 10 (10 points = 1 SD)",
+   "ok": true,
+   "detail": "SD 10.6 (allowed 7.5 to 12.5)"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "Qualified MLB pitchers' Pitching+ has an SD near 10 (10 points = 1 SD)",
+   "ok": true,
+   "detail": "SD 10.2 (allowed 7.5 to 12.5)"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "Qualified MLB pitchers' RV+ has an SD near 10 (10 points = 1 SD)",
+   "ok": true,
+   "detail": "SD 9.1 (allowed 7.5 to 12.5)"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "MLB league mean of every + metric within 4 of 100 at every weekly snapshot",
+   "ok": true,
+   "detail": "largest gap: Location+ 96.6 on 2026-04-05 (std); 52 snapshots x windows"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "Triple-A league mean of Stuff+ is below MLB's and inside 75-98 (MLB scale)",
+   "ok": true,
+   "detail": "Triple-A 91.2, MLB 99.1 (final date, pitch-weighted)"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "Triple-A league mean of Location+ is below MLB's and inside 75-98 (MLB scale)",
+   "ok": true,
+   "detail": "Triple-A 88.6, MLB 99.2 (final date, pitch-weighted)"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "Triple-A league mean of Pitching+ is below MLB's and inside 75-98 (MLB scale)",
+   "ok": true,
+   "detail": "Triple-A 84.6, MLB 99.3 (final date, pitch-weighted)"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "Triple-A league mean of RV+ is near 100 (MLB ruler, results against Triple-A hitters)",
+   "ok": true,
+   "detail": "mean 98.6 (allowed 94 to 106)"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "Triple-A league means stay inside their bands at every weekly snapshot",
+   "ok": true,
+   "detail": "50 snapshots x windows"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "Triple-A Pitching+ shortfall equals the Stuff+ and Location+ shortfalls combined, in runs",
+   "ok": true,
+   "detail": "Pitching+ 0.562 vs Stuff+ 0.203 + Location+ 0.288 = 0.491 runs per 100 pitches (ratio 1.14, allowed 0.75 to 1.5); in MLB SDs: 1.54 vs 0.88 and 1.14"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "The Pitching+ reference SD is larger than either component's and smaller than their sum",
+   "ok": true,
+   "detail": "Stuff+ 0.230, Location+ 0.253, Pitching+ 0.364 runs per 100 pitches"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "The frozen scale is the season before the one shown",
+   "ok": true,
+   "detail": "reference 2025, applied to 2026, site season 2026"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "Qualified MLB pitchers' + grades are between 40 and 160",
+   "ok": true,
+   "detail": "1,728 grades"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "Qualified AAA pitchers' + grades are between 15 and 160",
+   "ok": true,
+   "detail": "1,896 grades"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "MLB fastball pitch grades average 100 within their group (±3)",
+   "ok": true,
+   "detail": "Stuff+ 101.0, Location+ 101.4, Pitching+ 101.7"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "MLB breaking pitch grades average 100 within their group (±3)",
+   "ok": true,
+   "detail": "Stuff+ 100.8, Location+ 98.1, Pitching+ 99.5"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "MLB offspeed pitch grades average 100 within their group (±3)",
+   "ok": true,
+   "detail": "Stuff+ 100.4, Location+ 99.2, Pitching+ 99.8"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "Triple-A fastball pitch grades average below 100 and above 80 (MLB scale)",
+   "ok": true,
+   "detail": "Stuff+ 94.6, Location+ 94.6, Pitching+ 91.4"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "Triple-A breaking pitch grades average below 100 and above 80 (MLB scale)",
+   "ok": true,
+   "detail": "Stuff+ 95.6, Location+ 93.7, Pitching+ 91.5"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "Triple-A offspeed pitch grades average below 100 and above 80 (MLB scale)",
+   "ok": true,
+   "detail": "Stuff+ 95.3, Location+ 92.6, Pitching+ 90.9"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "MLB season-to-date pitches, games, and batters faced never decrease from week to week",
+   "ok": true,
+   "detail": "868 pitchers"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "AAA season-to-date pitches, games, and batters faced never decrease from week to week",
+   "ok": true,
+   "detail": "1,268 pitchers"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "One row per pitcher and level in the season table",
+   "ok": true,
+   "detail": "2,076 rows"
+  },
+  {
+   "tool": "Stuff+ leaderboard",
+   "name": "Season-table grades equal the final snapshot's (one scale in both files)",
+   "ok": true,
+   "detail": "2,076 of 2,076 pitchers matched"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Pitchers: percentiles are between 0 and 100 (season to date)",
+   "ok": true,
+   "detail": "6 percentile columns"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Pitchers: qualified Triple-A pitchers average the 50th percentile (Triple-A scale, season to date)",
+   "ok": true,
+   "detail": "25 snapshots, 6 columns"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Pitchers: percentiles follow the sorted values among qualified pitchers (season to date)",
+   "ok": true,
+   "detail": "25 snapshots, 6 columns"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Pitchers: rates are between 0 and 1 (season to date)",
+   "ok": true,
+   "detail": "5 rate columns"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Pitchers: no more than 30 Triple-A clubs",
+   "ok": true,
+   "detail": "30 clubs"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Pitchers: one row per player",
+   "ok": true,
+   "detail": "1,268 players"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Pitchers: percentiles are between 0 and 100 (last 30 days)",
+   "ok": true,
+   "detail": "6 percentile columns"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Pitchers: qualified Triple-A pitchers average the 50th percentile (Triple-A scale, last 30 days)",
+   "ok": true,
+   "detail": "25 snapshots, 6 columns"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Pitchers: percentiles follow the sorted values among qualified pitchers (last 30 days)",
+   "ok": true,
+   "detail": "25 snapshots, 6 columns"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Pitchers: rates are between 0 and 1 (last 30 days)",
+   "ok": true,
+   "detail": "5 rate columns"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Hitters: percentiles are between 0 and 100 (season to date)",
+   "ok": true,
+   "detail": "7 percentile columns"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Hitters: qualified Triple-A hitters average the 50th percentile (Triple-A scale, season to date)",
+   "ok": true,
+   "detail": "25 snapshots, 7 columns"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Hitters: percentiles follow the sorted values among qualified hitters (season to date)",
+   "ok": true,
+   "detail": "25 snapshots, 7 columns"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Hitters: rates are between 0 and 1 (season to date)",
+   "ok": true,
+   "detail": "5 rate columns"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Hitters: no more than 30 Triple-A clubs",
+   "ok": true,
+   "detail": "30 clubs"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Hitters: one row per player",
+   "ok": true,
+   "detail": "909 players"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Hitters: percentiles are between 0 and 100 (last 30 days)",
+   "ok": true,
+   "detail": "7 percentile columns"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Hitters: qualified Triple-A hitters average the 50th percentile (Triple-A scale, last 30 days)",
+   "ok": true,
+   "detail": "25 snapshots, 7 columns"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Hitters: percentiles follow the sorted values among qualified hitters (last 30 days)",
+   "ok": true,
+   "detail": "25 snapshots, 7 columns"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Hitters: rates are between 0 and 1 (last 30 days)",
+   "ok": true,
+   "detail": "5 rate columns"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Percentiles point the right way: higher is better for every column",
+   "ok": true,
+   "detail": "6 pitcher and 7 hitter columns"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Qualified Triple-A pitchers' average fastball velocity is believable (mph)",
+   "ok": true,
+   "detail": "mean 93.3 (allowed 88 to 97)"
+  },
+  {
+   "tool": "Triple-A explorer",
+   "name": "Qualified Triple-A hitters' average xwOBA is believable",
+   "ok": true,
+   "detail": "mean 0.313 (allowed 0.28 to 0.38)"
+  },
+  {
+   "tool": "Rule 5 board",
+   "name": "Pitchers' Stuff+, Location+, Pitching+ equal their Triple-A leaderboard grades (MLB scale)",
+   "ok": true,
+   "detail": "280 of 285 pitchers matched"
+  },
+  {
+   "tool": "Rule 5 board",
+   "name": "Eligible pitchers (300+ pitches) average below 100 Stuff+: unprotected Triple-A arms, MLB scale",
+   "ok": true,
+   "detail": "mean 90.0 (allowed 80 to 100)"
+  },
+  {
+   "tool": "Rule 5 board",
+   "name": "One row per player (pitchers)",
+   "ok": true,
+   "detail": "285 players"
+  },
+  {
+   "tool": "Rule 5 board",
+   "name": "Every player belongs to one of 30 organizations (pitchers)",
+   "ok": true,
+   "detail": "30 organizations"
+  },
+  {
+   "tool": "Rule 5 board",
+   "name": "Every eligibility status is one the page explains (pitchers)",
+   "ok": true,
+   "detail": "Eligible, Likely eligible, Unknown"
+  },
+  {
+   "tool": "Rule 5 board",
+   "name": "Ages are between 18 and 45 (pitchers)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "tool": "Rule 5 board",
+   "name": "One row per player (hitters)",
+   "ok": true,
+   "detail": "196 players"
+  },
+  {
+   "tool": "Rule 5 board",
+   "name": "Every player belongs to one of 30 organizations (hitters)",
+   "ok": true,
+   "detail": "30 organizations"
+  },
+  {
+   "tool": "Rule 5 board",
+   "name": "Every eligibility status is one the page explains (hitters)",
+   "ok": true,
+   "detail": "Eligible, Likely eligible, Unknown"
+  },
+  {
+   "tool": "Rule 5 board",
+   "name": "Ages are between 18 and 45 (hitters)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "tool": "Rule 5 board",
+   "name": "A player on both lists is in the same organization on each",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "tool": "Rule 5 board",
+   "name": "K-BB% is strikeout rate minus walk rate",
+   "ok": true,
+   "detail": "285 pitchers"
+  },
+  {
+   "tool": "Rule 5 board",
+   "name": "Hitters' percentiles are between 0 and 100 (Triple-A scale)",
+   "ok": true,
+   "detail": "4 columns"
+  },
+  {
+   "tool": "Rule 5 board",
+   "name": "Hitters' percentiles equal the Triple-A explorer's at the final date",
+   "ok": true,
+   "detail": "196 of 196 hitters matched"
+  },
+  {
+   "tool": "Player pages",
+   "name": "One entry per player in the index",
+   "ok": true,
+   "detail": "2,315 players"
+  },
+  {
+   "tool": "Player pages",
+   "name": "Every player listed in a tool has a player page",
+   "ok": true,
+   "detail": "2,315 players"
+  },
+  {
+   "tool": "Player pages",
+   "name": "No two players share a page address",
+   "ok": true,
+   "detail": "2,315 addresses"
+  },
+  {
+   "tool": "Farm systems",
+   "name": "Every organization's score is inside its own interval",
+   "ok": true,
+   "detail": "360 scores"
+  },
+  {
+   "tool": "Farm systems",
+   "name": "30 organizations, once each, for every metric and season",
+   "ok": true,
+   "detail": "12 metric-seasons"
+  },
+  {
+   "tool": "Farm systems",
+   "name": "Shrinking never makes a score larger than the raw improvement",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "tool": "Farm systems",
+   "name": "League-average improvement is about zero for every metric and season",
+   "ok": true,
+   "detail": "12 metric-seasons"
+  },
+  {
+   "tool": "Triple-A translation",
+   "name": "Every translation line has a slope between 0 and 1.5 and a band around it",
+   "ok": true,
+   "detail": "19 lines"
+  },
+  {
+   "tool": "Triple-A translation",
+   "name": "The average Triple-A Stuff+ translates to a below-average MLB grade (MLB scale)",
+   "ok": true,
+   "detail": "translated 95.9 (allowed 75 to 100)"
+  },
+  {
+   "tool": "Triple-A translation",
+   "name": "The average Triple-A Pitching+ translates to a below-average MLB grade (MLB scale)",
+   "ok": true,
+   "detail": "translated 93.4 (allowed 75 to 100)"
+  },
+  {
+   "tool": "Triple-A translation",
+   "name": "Pitcher pairs' grades are between 20 and 180 at both levels",
+   "ok": true,
+   "detail": "864 grades"
+  },
+  {
+   "tool": "Triple-A translation",
+   "name": "The same pitcher's Stuff+ is about the same at both levels (one MLB scale, no level adjustment)",
+   "ok": true,
+   "detail": "mean MLB minus Triple-A +3.9 (allowed -6 to 6)"
+  },
+  {
+   "tool": "Free-agent pitchers",
+   "name": "Every grade is inside its own interval",
+   "ok": true,
+   "detail": "100 pitchers"
+  },
+  {
+   "tool": "Free-agent pitchers",
+   "name": "The results gap is RV+ minus Pitching+",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "tool": "Free-agent pitchers",
+   "name": "One row per pitcher",
+   "ok": true,
+   "detail": "100 pitchers"
+  },
+  {
+   "tool": "Free-agent pitchers",
+   "name": "Free agents' average Stuff+ is near the MLB average (they are MLB pitchers, MLB scale)",
+   "ok": true,
+   "detail": "mean 95.8 (allowed 92 to 108)"
+  },
+  {
+   "tool": "Two-week signal",
+   "name": "Block-to-block correlations are between -0.2 and 1",
+   "ok": true,
+   "detail": "17 metrics"
+  },
+  {
+   "tool": "Two-week signal",
+   "name": "Fastball velocity repeats more than any other pitcher number",
+   "ok": true,
+   "detail": "velocity r 0.961, next 0.284"
+  }
+ ]
+}

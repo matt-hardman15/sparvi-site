@@ -495,11 +495,18 @@ def act_nfl_index(p):
 
 
 def act_status(p):
-    for sport in ("baseball", "nfl"):
+    for sport in ("baseball", "nfl", "cfb"):
         card = p.locator(f"#status-{sport}")
-        assert card.count() == 1 and "checks" in card.text_content()
-        card.locator("summary").click(); wait(p, 200)
-        assert card.locator("tbody tr").count() >= 10
+        text = card.text_content()
+        assert card.count() == 1 and "Data checks" in text and "Plausibility tests" in text
+        # Both kinds of test passed on the committed data, and every result is listed behind its disclosure.
+        assert card.locator(".status-block").count() == 2 and card.locator(".status-badge.ok").count() == 2
+        for i in range(card.locator("summary").count()):
+            card.locator("summary").nth(i).click(); wait(p, 200)
+        assert card.locator(".status-block").nth(0).locator("tbody tr").count() >= 10
+        assert card.locator(".status-block").nth(1).locator("tbody tr").count() >= 10
+    # College football lists each game whose play-by-play score is off, with what is done about it.
+    assert "Decision" in p.locator("#status-cfb").text_content()
 
 
 def act_cfb_ratings(p):

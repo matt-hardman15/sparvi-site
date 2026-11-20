@@ -1,0 +1,105 @@
+{
+ "sport": "nfl",
+ "ok": true,
+ "n_checks": 16,
+ "n_failed": 0,
+ "n_not_run": 0,
+ "checks": [
+  {
+   "tool": "Team efficiency",
+   "name": "opponent adjustment has a non-trivial, bounded size",
+   "ok": true,
+   "detail": "sd(adjusted - raw) is 0.08 to 0.24 of sd(raw) at each season's last week (allowed 0.06 to 0.45)"
+  },
+  {
+   "tool": "Team efficiency",
+   "name": "no team's correction exceeds 0.12 EPA/play from week 4 on",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "tool": "Team efficiency",
+   "name": "the correction averages zero across teams",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "tool": "Team efficiency",
+   "name": "EPA/play and success rate are in a possible range",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "tool": "Team efficiency",
+   "name": "league offense and defense totals agree (each play counted once on each side)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "tool": "Team efficiency",
+   "name": "the schedule correction has its own penalty, lighter than the forecast penalty",
+   "ok": true,
+   "detail": "schedule 400, forecast 3200"
+  },
+  {
+   "tool": "Team efficiency",
+   "name": "in simulation the correction recovers most of a known schedule effect",
+   "ok": true,
+   "detail": "71% over a full season, 57% through this week (needs 50%)"
+  },
+  {
+   "tool": "Team efficiency",
+   "name": "margin forecasts: shrunk ratings beat adjusted and raw, and all beat home field alone",
+   "ok": true,
+   "detail": "MAE 10.38 / 10.48 / 10.47 / 11.10"
+  },
+  {
+   "tool": "Team pages and game logs",
+   "name": "every game is in both teams' logs, mirrored (scores, home team, offense = opponent's defense)",
+   "ok": true,
+   "detail": "5,578 team-games"
+  },
+  {
+   "tool": "Team pages and game logs",
+   "name": "no team has two games in one week",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "tool": "Team pages and game logs",
+   "name": "no team's offense or defense is credited in a game it didn't play",
+   "ok": true,
+   "detail": "362,347 plays, each between its game's two teams"
+  },
+  {
+   "tool": "Fourth-down decisions",
+   "name": "no impossible decision in the grid (distance, options offered, probabilities, call vs. interval)",
+   "ok": true,
+   "detail": "945 situations"
+  },
+  {
+   "tool": "Fourth-down decisions",
+   "name": "longer kicks and longer conversions are never likelier",
+   "ok": true,
+   "detail": "kicks offered inside the 43; conversions within 0.03"
+  },
+  {
+   "tool": "Fourth-down decisions",
+   "name": "team totals are coherent and add up to the league's",
+   "ok": true,
+   "detail": "224 team-seasons"
+  },
+  {
+   "tool": "Fourth-down decisions",
+   "name": "each costly call lost win probability against a choice that was available",
+   "ok": true,
+   "detail": "105 calls"
+  },
+  {
+   "tool": "Offense or defense",
+   "name": "unit ranks follow the adjusted EPA/play shown",
+   "ok": true,
+   "detail": "156 rows in 6 groups"
+  }
+ ]
+}
