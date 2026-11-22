@@ -8,7 +8,8 @@
   averages several shuffles, for models whose single shuffle is noisy). The model
   must then have no skill: the 90% interval of its correlation with the outcome includes zero. For metrics
   other than correlation (board recall), the 90% interval of its edge over the spec's `null_baseline` (random)
-  includes zero.
+  includes zero. Error metrics over several shuffles are one-sided, and their interval counts two sources of
+  chance: which rows are in the test fold and which shuffles were drawn (A5-PERM).
 - too_good: the prediction's correlation with the outcome stays under a ceiling (default 0.9) that no
   honest model of a noisy sports outcome reaches; for other metrics, the metric itself stays under the
   spec's `too_good` ceiling.
@@ -84,11 +85,19 @@ ROW_LOSS = {"brier": lambda p, y: (p - y) ** 2, "mae": lambda p, y: np.abs(p - y
 
 def _permutation_mean_loss(mod, fold, loader, first: pd.DataFrame, metric: str, spec: dict, seed: int, n_boot: int) -> dict:
     """Shuffled-label test over `permutation_seeds` seeds for loss metrics (F4, Matt 2026-11-18): each row's loss minus
-    the null's, averaged over the seeds, then a block bootstrap of that mean. One seed's noise function can line up with
-    a strong real predictor by chance in either direction; a leak lines up in every seed. One-sided (Matt, 2026-11-18):
-    a model fit to noise is worse than a constant on average (its predictions add variance), so the test fails only when
-    the shuffled-label model is significantly *better* than the null (the 90% interval of the loss difference entirely
-    below zero)."""
+    the null's, averaged over the seeds. One seed's noise function can line up with a strong real predictor by chance in
+    either direction; a leak lines up in every seed. One-sided (Matt, 2026-11-18): a model fit to noise is worse than a
+    constant on average (its predictions add variance), so the test fails only when the shuffled-label model is
+    significantly *better* than the null (the 90% interval of the loss difference entirely below zero).
+
+    The interval has two parts, added in quadrature (A5-PERM, 2026-11-22). A block bootstrap of the seed-averaged
+    difference measures the chance in which rows are in the fold. It cannot see the chance in which shuffles were drawn:
+    a shuffled fit makes an error every test row shares (one random slope for everyone), so that error does not average
+    out across rows, only across shuffles. That part is a t interval on the per-shuffle means (seeds - 1 df), as
+    `_permutation_mean` uses for correlations. With the bootstrap alone, the translation's 2026 fold failed on 5
+    shuffles and passed on 20 with nothing wrong either way: per-shuffle values swung by 0.011 inside an interval 0.004
+    wide."""
+    from scipy import stats
     null, block, seeds = spec["null_baseline"], spec.get("block"), int(spec["permutation_seeds"])
     loss = ROW_LOSS[metric]
     key = first[["entity_id"]].copy()
@@ -107,9 +116,14 @@ def _permutation_mean_loss(mod, fold, loader, first: pd.DataFrame, metric: str, 
     rng = np.random.default_rng(seed)
     idx = rng.integers(0, len(sums), size=(n_boot, len(sums)))
     boot = sums[idx].sum(axis=1) / counts[idx].sum(axis=1)
-    lo, hi = float(np.quantile(boot, 0.05)), float(np.quantile(boot, 0.95))
+    est = float(np.nanmean(mean_d))
+    rows_lo, rows_hi = float(np.quantile(boot, 0.05)), float(np.quantile(boot, 0.95))
+    shuffles = float(stats.t.ppf(0.95, seeds - 1) * np.std(per_seed, ddof=1) / np.sqrt(seeds))
+    lo, hi = est - float(np.hypot(est - rows_lo, shuffles)), est + float(np.hypot(rows_hi - est, shuffles))
     return {"passed": hi >= 0, "rule": "one-sided: fail if the shuffled-label model beats the null",
-            "edge_over": null, "est": float(np.nanmean(mean_d)), "ci90": [lo, hi],
+            "edge_over": null, "est": est, "ci90": [lo, hi],
+            "interval": "rows (block bootstrap) and shuffles (t across per-shuffle means), in quadrature",
+            "ci90_rows_only": [rows_lo, rows_hi], "half_width_shuffles": shuffles,
             "seeds": seeds, "per_seed": per_seed, "n": int(len(first))}
 
 
