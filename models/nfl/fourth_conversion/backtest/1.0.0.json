@@ -1,10 +1,10 @@
 {
-  "run_id": "6460b9022df6",
+  "run_id": "e220dc758167",
   "model": "nfl_fourth_conversion",
   "version": "1.0.0",
   "kind": "full",
-  "ran_at": "2026-11-20T21:09:09Z",
-  "code_sha": "78703e06e4353111e93a69d87a81b1fc46bc8704",
+  "ran_at": "2026-11-22T18:31:08Z",
+  "code_sha": "39feb48947b2b240853f5016d28c2b62a0600afb",
   "lockfile": "39654de38b4c91ec",
   "preregistered_at": "2026-11-18",
   "spec": {
