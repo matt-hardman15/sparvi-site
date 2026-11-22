@@ -150,3 +150,44 @@ def test_history_season_is_restored_from_snapshots_in_pull_order(tmp_path, monke
     # A season already on the machine is left alone (no store needed); a season the site shows is refused.
     assert history.restore([season], store=None, raw=raw) == 0
     assert history.restore([baseball().season], store=store, raw=raw) == 2
+
+
+def test_season_to_date_tables_are_not_refused(tmp_path):
+    """SNAP-GUARD: a season-to-date table changes in most rows after every round of games. The guard refused three
+    college football player tables every week from Nov 14 to Nov 20 2026, so nothing was recorded for them."""
+    path, store = tmp_path / "r.parquet", LocalStore(tmp_path / "b")
+    t = Table("usage", path, ("game_pk", "pitch"), restated=True)
+    games([(g, 1, "2026-04-01", 90.0) for g in range(2000)]).to_parquet(path, index=False)
+    snapshot(store, "cfb", t, T0)
+    games([(g, 1, "2026-04-01", 91.0 if g < 1200 else 90.0) for g in range(2000)]).to_parquet(path, index=False)
+    assert snapshot(store, "cfb", t, T1)["updates"] == 1200
+    from ingest.snapshot import cfb_player_tables
+    kinds = {t.name.rsplit("_", 1)[0]: t.restated for t in cfb_player_tables()}
+    assert all(kinds[k] for k in ("players_stats", "players_usage", "players_ppa", "players_wepa"))
+    assert not kinds["players_roster"] and not kinds["players_recruits"], "tables that should hold still keep the guard"
+
+
+def test_a_dropped_column_is_named_when_every_row_changes(tmp_path):
+    """SNAP-GUARD: the pull stopped keeping a column, every row hashed differently, and the refusal read like 888
+    revisions (games_2026, Nov 15-20 2026). The message now says which columns changed."""
+    path, store = tmp_path / "r.parquet", LocalStore(tmp_path / "b")
+    t = Table("games", path, ("game_pk", "pitch"))
+    g = games([(g, 1, "2026-04-01", 90.0) for g in range(2000)])
+    g.assign(notes="x").to_parquet(path, index=False)
+    snapshot(store, "cfb", t, T0)
+    g.to_parquet(path, index=False)
+    with pytest.raises(RuntimeError, match=r"dropped: notes; added: none.*--only games"):
+        snapshot(store, "cfb", t, T1)
+    assert snapshot(store, "cfb", t, T1, allow_mass_update=True)["updates"] == 2000
+
+
+def test_an_override_names_its_tables(monkeypatch, capsys):
+    """--allow-mass-update turns the guard off for everything it touches, so it must be told which tables."""
+    import sys
+
+    import ingest.snapshot as cli
+    monkeypatch.setattr(cli, "store_from_env", lambda: object())
+    monkeypatch.setattr(sys, "argv", ["snapshot", "cfb", "--allow-mass-update"])
+    assert cli.main() == 2 and "--only" in capsys.readouterr().out
+    monkeypatch.setattr(sys, "argv", ["snapshot", "cfb", "--allow-mass-update", "--only", "no_such_table"])
+    assert cli.main() == 2 and "no_such_table" in capsys.readouterr().out
