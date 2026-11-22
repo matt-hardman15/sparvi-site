@@ -770,6 +770,13 @@ N |= {"tr_min_aaa": TR["min_aaa"], "tr_min_mlb": TR["min_mlb"], "tr_boot": f"{TR
 for side, C in (("h", TH), ("p", TP)):
     for co in ("pooled", "across", "within"):
         N[f"tr_{side}_n_{co}"] = f"{C[co]['n']:,}"
+    N[f"tr_{side}_players"] = f"{C['pooled']['players']:,}"
+    for m, v in C["pooled"]["metrics"].items():
+        N[f"tr_{side}_r_{m}"] = r2(v["carryover_r"])
+        N[f"tr_{side}_r_{m}_ci"] = ci_words(*v["carryover_ci90"])
+        N[f"tr_{side}_adj_{m}"] = TR_FMT.get(m, pts1)(v["adjustment"])
+        N[f"tr_{side}_adj_{m}_ci"] = " to ".join(TR_FMT.get(m, pts1)(x) for x in v["adjustment_ci90"])
+        N[f"tr_{side}_out_{m}"] = r2(v["r_with_mlb_outcome"])
 
 
 # The small-sample line (50-149 PA/BF): what the method note says about it, from the committed constants.
@@ -789,13 +796,6 @@ if not SH_C["k"] < SH_X["k"]:
     raise StaleProse("Translation method note: chase rate settles in fewer plate appearances than xwOBA.")
 if not _half(SH_K, SMALL["min_pa"]) > _half(SH_K, SMALL["max_pa"]):
     raise StaleProse("Translation method note: the small-sample range is wider at 50 PA than at 149.")
-    N[f"tr_{side}_players"] = f"{C['pooled']['players']:,}"
-    for m, v in C["pooled"]["metrics"].items():
-        N[f"tr_{side}_r_{m}"] = r2(v["carryover_r"])
-        N[f"tr_{side}_r_{m}_ci"] = ci_words(*v["carryover_ci90"])
-        N[f"tr_{side}_adj_{m}"] = TR_FMT.get(m, pts1)(v["adjustment"])
-        N[f"tr_{side}_adj_{m}_ci"] = " to ".join(TR_FMT.get(m, pts1)(x) for x in v["adjustment_ci90"])
-        N[f"tr_{side}_out_{m}"] = r2(v["r_with_mlb_outcome"])
 for r in ("SP", "RP"):
     N[f"tr_p_n_{r.lower()}"] = f"{TR['pitcher']['roles'][r]['n']:,}"
 N["tr_p_n_swing"] = f"{TR['pitcher']['roles']['Swing_n']:,}"
