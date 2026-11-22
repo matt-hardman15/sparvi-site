@@ -4,13 +4,13 @@
   "status": "champion",
   "registered": "2026-11-20",
   "note": "MAJOR (M5-EB): adds a translation for players with 50-149 PA/BF in Triple-A (rate shrunk by reliability, line fit down to 50, band sized by sample; no age term). The published line for 150+ and the four pitch-quality lines are unchanged. Pre-registered backtest on 2026 pairs with 50-149 PA/BF, as amended (counts from PA/BF): scaled RMSE 0.872 vs 0.900 for the published line stretched down, edge 0.029 (90% interval 0.017 to 0.041); hitters 0.034 (low end 0.016), pitchers 0.025 (0.010); leakage tests pass (local run of the amended block; CI's is the run of record). Registered as champion directly: the card's frozen evaluation (the combined model's cross-validated R2 on 150+ pairs) is untouched by the addition and cannot show what it is for. Constants: 735 hitter and 954 pitcher pairs, 2023-2026.",
-  "code_hash": "f37d34619acf742873db4309fb9829a52a8371cf85ab077551c32f6e4dcc595c",
+  "code_hash": "b10b6badab150601f1aba5cf7092bc53b69bf0b11f45972d6ffb18ff4fef278b",
   "code_files": {
     "baseball/aaa_translation/analysis.py": "f583f9b9a855b0d192f617117e3db544dfe1e11d868038b32c6400e17a866b6e",
     "baseball/pd_pipeline/models/intermediate/int_mlb_debuts.sql": "7c9b4080d011355932e739d45e184a871494fd381e6f7ad80060492d1b7584b8",
     "baseball/pd_pipeline/models/marts/fct_translation_lines.sql": "2e25007616d87b5201e78f214f92705b05bdf95d06a3e5456fd8409808d035a5",
     "baseball/aaa_translation/small_sample.py": "e76871ea20c0614bae99d960e91f4d91cc066a67a9d87e3a5b6ca9e9c2372966",
-    "baseball/aaa_translation/develop.py": "272469180745077be86996e1d894f654d65cb6298d05d6cab079418702f8dcbe"
+    "baseball/aaa_translation/develop.py": "ccdc41f6baba8e573db6cac08e546651e9fed516b85d3388ff171118642b2409"
   },
   "training_data": {
     "data/raw/statcast_aaa_2023.parquet": "4bc41e971979f0d8cb2726f014ae4a7294153d0facc4ce23001c573668cf7db8",
