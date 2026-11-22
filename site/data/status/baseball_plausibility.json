@@ -1,7 +1,7 @@
 {
  "sport": "baseball",
  "ok": true,
- "n_checks": 84,
+ "n_checks": 86,
  "n_failed": 0,
  "n_not_run": 0,
  "checks": [
@@ -448,6 +448,18 @@
    "name": "Every translation line has a slope between 0 and 1.5 and a band around it",
    "ok": true,
    "detail": "19 lines"
+  },
+  {
+   "tool": "Triple-A translation",
+   "name": "The small-sample translation covers the plate appearances just under the main line's minimum",
+   "ok": true,
+   "detail": "50 to 149, main line from 150"
+  },
+  {
+   "tool": "Triple-A translation",
+   "name": "Every small-sample line has a positive slope, a believable reliability, a range that widens as the sample shrinks, and agrees with the main line for an average player",
+   "ok": true,
+   "detail": "16 lines"
   },
   {
    "tool": "Triple-A translation",

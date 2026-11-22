@@ -249,7 +249,10 @@ def site_numbers(root: Path = ROOT) -> dict[str, str]:
             if not bt.exists() and m.card.get("backtest"):
                 out[f"{m.name}_backtest"] = (f"{lead}: not yet run for v{cand} (the backtest workflow runs it on main); "
                                              "earlier versions' reports are in the model's backtest folder")
-            out[f"{m.name}_status"] = ("validated in the backtest harness" if st["state"] == "validated"
+            # A block that tests only part of a model says which part (`covers`), so "validated" isn't read as the whole.
+            covers = m.card.get("backtest", {}).get("covers")
+            out[f"{m.name}_status"] = ("validated in the backtest harness" + (f": {covers}" if covers else "")
+                                       if st["state"] == "validated"
                                        else f"experimental: {st['reason']}" if st["state"] == "experimental"
                                        else "not yet backtested")
     return out

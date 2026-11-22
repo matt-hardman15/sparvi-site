@@ -102,6 +102,26 @@
     return `${qmin(q.SP, factor)}+ pitches for starters, ${qmin(q.RP, factor)}+ for relievers and swingmen${pro}`;
   };
   // Share of the full schedule played in a window as of snapshot i (1 at season's end).
+  // A Triple-A number translated to MLB (translation_fits.json), or null when the line is too small or the metric has
+  // no translation at that size. `n` is the line's PA (batters faced for pitchers).
+  //   150+        the published line: intercept + slope * value, with one band for everyone
+  //   50 to 149   the small-sample line (aaa_translation 2.0.0): the value is first pulled toward the Triple-A average
+  //               by its reliability n / (n + k), and the band widens as n shrinks
+  S.translate = (F, side, key, value, n) => {
+    if (value == null || n == null) return null;
+    const big = F[side]?.[key], sm = F.small?.[side]?.[key];
+    if (n >= F.min_aaa) {
+      if (!big) return null;
+      const t = big.intercept + big.slope * value;
+      return { t, lo: t + big.band[0], hi: t + big.band[1], small: false };
+    }
+    if (!sm || n < F.small.min_pa) return null;
+    const r = n / (n + sm.k), t = sm.intercept + sm.slope * (sm.mean + r * (value - sm.mean));
+    const half = F.small.z80 * Math.sqrt(sm.base + sm.slope * sm.slope * sm.talent * (1 - r));
+    return { t, lo: t - half, hi: t + half, small: true };
+  };
+  S.translateMin = (F) => F.small ? F.small.min_pa : F.min_aaa;
+
   S.prorate = (meta, level, i, win = "std") => {
     const c = meta.snapshots[level], g = (win === "std" ? c.team_games : c.team_games_last)[i];
     return Math.min(1, g / c.full_season_games);

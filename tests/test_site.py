@@ -950,3 +950,33 @@ def test_leaderboard_first_paint_from_the_small_file(browser, base_url):
         assert "snapshots_grades_mlb_latest.json" not in seen and "snapshots_grades_mlb.json" in seen
     finally:
         ctx.close()
+
+
+def test_small_sample_translation_matches_the_model_and_shows_on_the_tools(browser, base_url):
+    """M5-EB 2.0.0: Sparvi.translate applies the committed constants as small_sample.apply does; the Triple-A explorer's
+    translated view lists lines with 50-149 PA; the main line is untouched at 150+."""
+    import json
+    import sys
+    sys.path.insert(0, str(ROOT / "baseball" / "aaa_translation"))
+    import small_sample
+    P = json.loads(small_sample.PARAMS.read_text(encoding="utf-8"))
+    ctx = browser.new_context(viewport={"width": 1280, "height": 900})
+    p = ctx.new_page()
+    try:
+        p.goto(base_url + "/baseball/tools/triple-a.html?view=mlb", wait_until="networkidle")
+        p.wait_for_selector("#t table tbody tr", timeout=15000)
+        js = """async ([side, key, x, n]) => { const F = await Sparvi.load('/data/baseball/translation_fits.json');
+                 return [Sparvi.translate(F, side, key, x, n), Sparvi.translateMin(F), F.min_aaa]; }"""
+        for side, key, x in (("hitter", "k_pct", 0.31), ("hitter", "ev90", 106.0), ("pitcher", "whiff_pct", 0.20)):
+            for n in (50, 97, 149):
+                got, mn, big = p.evaluate(js, [side, key, x, n])
+                t, half = small_sample.apply(P[side][key], x, n)
+                assert got["small"] and abs(got["t"] - float(t)) < 1e-5 and abs((got["hi"] - got["lo"]) / 2 - float(half)) < 1e-5
+            got, mn, big = p.evaluate(js, [side, key, x, 150])
+            assert mn == 50 and big == 150 and got["small"] is False
+            assert p.evaluate(js, [side, key, x, 49])[0] is None
+        assert p.evaluate(js, ["pitcher", "stuff_plus", 95, 100])[0] is None, "the pitch grades are not translated below 150"
+        cap = p.locator(".caption").last.inner_text()
+        assert "50+" in cap and "small-sample" in cap
+    finally:
+        ctx.close()
