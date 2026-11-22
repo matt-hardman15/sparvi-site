@@ -1,19 +1,21 @@
 {
-  "run_id": "5aa625fa4af6",
+  "run_id": "5e567cd3c07b",
   "model": "aaa_translation",
   "version": "2.0.0",
   "kind": "full",
-  "ran_at": "2026-11-22T17:16:55Z",
-  "code_sha": "39feb48947b2b240853f5016d28c2b62a0600afb",
+  "ran_at": "2026-11-22T21:28:52Z",
+  "code_sha": "3c70ca6df3bc9870223529dfd26897139868ca18",
   "lockfile": "39654de38b4c91ec",
   "preregistered_at": "2026-11-20",
   "spec": {
     "preregistered_at": "2026-11-20",
     "candidate": "2.0.0",
     "candidate_spec": "A translation for the players the published model does not cover (50-149 PA/BF in Triple-A): each Triple-A rate is shrunk toward the Triple-A mean by its reliability (n / (n + k), k from split halves of earlier Triple-A seasons), and one line per metric is fit on every pair down to 50 PA/BF, weighted by the MLB sample. No age term, no combined model. For players with 150+ the published line stays (on the development folds the candidate was no better there: hitters -1.0%, pitchers +0.2% in the fold with a realistic number of training pairs). The four pitch-quality lines (Stuff+, Location+, Pitching+, RV+) are not part of this test and keep their published lines. Chosen on development folds that never read 2026 (baseball/aaa_translation/output/development.json, outcome seasons 2024 and 2025). analysis.py is unchanged until this test passes; the report is written as 2.0.0 and does not validate the published version.",
+    "covers": "the small-sample line (50-149 PA or batters faced) only; the line for 150+ predates the harness and its port is pending",
     "module": "models/baseball/aaa_translation/backtest.py",
     "code": [
-      "baseball/aaa_translation/develop.py"
+      "baseball/aaa_translation/develop.py",
+      "baseball/aaa_translation/small_sample.py"
     ],
     "target": "The same metric in MLB in the outcome season, players with 50-149 PA/BF in Triple-A and 100+ in MLB. Hitters: chase, zone swing, zone contact, whiff, K%, BB%, hard-hit rate, EV90, xwOBA, wOBA. Pitchers: K%, BB%, CSW, whiff, chase, xwOBA allowed. One row per player x pair type x metric, in units of the metric's MLB spread (its SD in the training pairs)",
     "decision_dates": "Across pairs (Triple-A season t-1 to MLB season t): March 1 of t. Within pairs (Triple-A before the first MLB game of season t to MLB season t): the day of the call-up. The fold's date is the end of season t because the harness has one date per fold; the module itself reads no MLB outcome of season t and no Triple-A pitch on or after a player's first MLB game (tests/test_backtest.py checks both on corrupted data). The harness's timestamp and future-poisoning tests therefore cover the training data and the across pairs' season, not the call-up dates.",
@@ -36,7 +38,7 @@
     "primary_metric": "rmse",
     "null_baseline": "train_mean",
     "permutation_seeds": 20,
-    "amended": "2026-11-20 (Matt): permutation_seeds 5 -> 20, after a local dry run of this block and before the official run. With 5 shuffles the label-permutation test failed (shuffled-label model minus the constant, mean squared error: -0.002, interval -0.004 to -0.000); with 20 it passes (+0.002). Per-shuffle values swing by about 0.011, and the interval of their mean across shuffles includes zero either way (-0.010 to +0.005 with 5; -0.002 to +0.006 with 20): a shuffled fit applies one random slope to every test player, an error the harness's bootstrap over players cannot see. Twelve shuffles on the 2025 development fold show the same. The gate, metric, pool and baselines are as pre-registered.",
+    "amended": "2026-11-20 (Matt): permutation_seeds 5 -> 20, after a local dry run of this block and before the official run. With 5 shuffles the label-permutation test failed (shuffled-label model minus the constant, mean squared error: -0.002, interval -0.004 to -0.000); with 20 it passes (+0.002). Per-shuffle values swing by about 0.011, and the interval of their mean across shuffles includes zero either way (-0.010 to +0.005 with 5; -0.002 to +0.006 with 20): a shuffled fit applies one random slope to every test player, an error the harness's bootstrap over players cannot see. Twelve shuffles on the 2025 development fold show the same. The gate, metric, pool and baselines are as pre-registered. Second amendment, 2026-11-20 (Matt), after the official run of the block as first amended (passed: scaled RMSE 0.872 vs 0.900): each metric's own sample count is taken as PA or BF times that metric's Triple-A-wide count per PA, instead of the exact count, because the site applies the translation from files that carry PA and BF only. Chosen on the development folds, where the two are the same (50-149 pool, both folds: hitters 0.8629 and 0.8629, pitchers 0.9596 and 0.9598; individual predictions differ by 0.006 to 0.009 MLB SDs on average, 0.2 at most). The candidate is now fit by baseball/aaa_translation/small_sample.py, the code the site's constants come from. Also decided with it and not part of the test: a hard switch to the published line at 150 (a blend across 150 was no more accurate on the development folds: 0.8338 vs 0.8337 for hitters, 0.9499 vs 0.9507 for pitchers), and the site's constants are fit by hand on every pair on file and committed, because the refresh has no history seasons. The gate, metric, pool and baselines are unchanged; the block is rerun as amended and that run is the one of record.",
     "too_good": 0.3,
     "bootstrap": 2000,
     "seed": 7,
@@ -61,15 +63,15 @@
   "evaluation": {
     "metric": "rmse",
     "n": 1800,
-    "point": 0.8718421058188559,
+    "point": 0.871828384341761,
     "baselines": {
       "published_line": {
         "value": 0.900462278141475,
         "paired": {
-          "est": -0.028620172322619042,
+          "est": -0.028633893799713928,
           "ci90": [
-            -0.04106724615117034,
-            -0.01685464254843716
+            -0.04118501455758835,
+            -0.016708385804406645
           ],
           "n": 1800,
           "blocks": 230,
@@ -80,10 +82,10 @@
       "train_mean": {
         "value": 0.9721898709221927,
         "paired": {
-          "est": -0.10034776510333676,
+          "est": -0.10036148658043165,
           "ci90": [
-            -0.12426811114981845,
-            -0.07837457257034552
+            -0.12428191687434402,
+            -0.07823620273593947
           ],
           "n": 1800,
           "blocks": 230,
@@ -93,21 +95,21 @@
       }
     },
     "by_fold": {
-      "2026": 0.8718421058188559
+      "2026": 0.871828384341761
     },
     "segments": {
       "hitter": {
         "metric": "rmse",
         "n": 780,
-        "point": 0.8054007641072236,
+        "point": 0.8046650027000349,
         "baselines": {
           "published_line": {
             "value": 0.838905853780351,
             "paired": {
-              "est": -0.033505089673127375,
+              "est": -0.03424085108031605,
               "ci90": [
-                -0.05270786512918499,
-                -0.015356266705632898
+                -0.053278563817787415,
+                -0.01598254414326865
               ],
               "n": 780,
               "blocks": 74,
@@ -118,10 +120,10 @@
           "train_mean": {
             "value": 0.9644351336418863,
             "paired": {
-              "est": -0.15903436953466266,
+              "est": -0.15977013094185133,
               "ci90": [
-                -0.20136789033628613,
-                -0.11934861546535738
+                -0.20233575623616068,
+                -0.11989958875638039
               ],
               "n": 780,
               "blocks": 74,
@@ -131,21 +133,21 @@
           }
         },
         "by_fold": {
-          "2026": 0.8054007641072236
+          "2026": 0.8046650027000349
         }
       },
       "pitcher": {
         "metric": "rmse",
         "n": 1020,
-        "point": 0.9194162036359306,
+        "point": 0.9198857661466241,
         "baselines": {
           "published_line": {
             "value": 0.9448326967085336,
             "paired": {
-              "est": -0.025416493072603075,
+              "est": -0.024946930561909553,
               "ci90": [
-                -0.040725011316173114,
-                -0.010685853940575819
+                -0.040524033439463494,
+                -0.010249100859996897
               ],
               "n": 1020,
               "blocks": 156,
@@ -156,10 +158,10 @@
           "train_mean": {
             "value": 0.9780784794289361,
             "paired": {
-              "est": -0.058662275793005536,
+              "est": -0.058192713282312014,
               "ci90": [
-                -0.08225039269576093,
-                -0.0333219955750674
+                -0.08195266558065324,
+                -0.032937218797903095
               ],
               "n": 1020,
               "blocks": 156,
@@ -169,7 +171,7 @@
           }
         },
         "by_fold": {
-          "2026": 0.9194162036359306
+          "2026": 0.9198857661466241
         }
       }
     }
@@ -180,7 +182,7 @@
       "pitcher": true
     },
     "passed": true,
-    "gap": 0.025416493072603075,
+    "gap": 0.024946930561909553,
     "per_segment": {
       "hitter": {
         "checks": {
@@ -189,11 +191,11 @@
           "ci_excludes_zero": true
         },
         "passed": true,
-        "gap": 0.033505089673127375,
+        "gap": 0.03424085108031605,
         "per_baseline": {
           "published_line": {
-            "gap": 0.033505089673127375,
-            "ci90_low": 0.015356266705632898
+            "gap": 0.03424085108031605,
+            "ci90_low": 0.01598254414326865
           }
         }
       },
@@ -204,11 +206,11 @@
           "ci_excludes_zero": true
         },
         "passed": true,
-        "gap": 0.025416493072603075,
+        "gap": 0.024946930561909553,
         "per_baseline": {
           "published_line": {
-            "gap": 0.025416493072603075,
-            "ci90_low": 0.010685853940575819
+            "gap": 0.024946930561909553,
+            "ci90_low": 0.010249100859996897
           }
         }
       }
@@ -237,39 +239,39 @@
       "passed": true,
       "rule": "one-sided: fail if the shuffled-label model beats the null",
       "edge_over": "train_mean",
-      "est": 0.0020349111274126815,
+      "est": 0.002021790601336914,
       "ci90": [
-        0.0012925421206327985,
-        0.0027246718132849846
+        0.0012988022808408902,
+        0.0027039280365973315
       ],
       "seeds": 20,
       "per_seed": [
-        -0.01905165759704897,
-        0.0018555853148767485,
-        0.0037636614681641526,
-        0.0037056875585947525,
-        -0.0013394347603187555,
-        0.00029085789178581105,
-        0.017234364506750015,
-        -0.002038332327156309,
-        0.022640252542637167,
-        0.015201822388364417,
-        -0.0014099526434351761,
-        -0.010227509994616765,
-        0.0008437921773992728,
-        0.0006759236897183775,
-        0.003865794808460513,
-        -0.005639801044797256,
-        -0.016278909332847556,
-        0.007735551221898548,
-        -0.005434330102055149,
-        0.024304856781879793
+        -0.019595215749368608,
+        0.0019327807915162267,
+        0.004195441294934788,
+        0.0036659453755597854,
+        -0.0010033558521944294,
+        0.00028213543064889,
+        0.016527052893265764,
+        -0.002430744682214241,
+        0.022415372440609684,
+        0.015386809902219894,
+        -0.0008494673520574548,
+        -0.01009958971391134,
+        0.0014027431429428417,
+        0.0004123627903164621,
+        0.003610776219366263,
+        -0.005352421951394862,
+        -0.0162422226725847,
+        0.007878006510158199,
+        -0.005834154308923362,
+        0.02413355751784848
       ],
       "n": 1800
     },
     "too_good": {
       "passed": true,
-      "rmse": 0.8718421058188559,
+      "rmse": 0.871828384341761,
       "bound": 0.3,
       "direction": "must stay above"
     },
@@ -288,7 +290,7 @@
   "passed": true,
   "primary": {
     "metric": "rmse",
-    "point": 0.8718421058188559,
+    "point": 0.871828384341761,
     "published_line": 0.900462278141475,
     "train_mean": 0.9721898709221927
   },

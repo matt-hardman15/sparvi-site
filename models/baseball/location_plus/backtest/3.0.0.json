@@ -1,10 +1,10 @@
 {
-  "run_id": "6891c68052c6",
+  "run_id": "46abc02a37a6",
   "model": "location_plus",
   "version": "3.0.0",
   "kind": "full",
-  "ran_at": "2026-11-22T17:58:40Z",
-  "code_sha": "39feb48947b2b240853f5016d28c2b62a0600afb",
+  "ran_at": "2026-11-22T22:10:53Z",
+  "code_sha": "3c70ca6df3bc9870223529dfd26897139868ca18",
   "lockfile": "39654de38b4c91ec",
   "preregistered_at": "2026-11-19",
   "spec": {

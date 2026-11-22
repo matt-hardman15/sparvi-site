@@ -1,10 +1,10 @@
 {
-  "run_id": "2498e999a38d",
+  "run_id": "32072064f9a2",
   "model": "nfl_win_prob",
   "version": "1.0.1",
   "kind": "full",
-  "ran_at": "2026-11-22T18:32:55Z",
-  "code_sha": "39feb48947b2b240853f5016d28c2b62a0600afb",
+  "ran_at": "2026-11-22T22:45:06Z",
+  "code_sha": "3c70ca6df3bc9870223529dfd26897139868ca18",
   "lockfile": "39654de38b4c91ec",
   "preregistered_at": "2026-11-18",
   "spec": {
