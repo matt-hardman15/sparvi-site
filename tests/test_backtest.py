@@ -209,6 +209,40 @@ def test_label_permutation_over_several_seeds():
     assert leakage.label_permutation(_toy_perm(0.5), FOLD, spec=spec)["passed"] is False
 
 
+def _toy_loss_perm(shared_sd: float, leak: float = 0.0):
+    """A shuffled-label model for an error metric. Every shuffle's fit is off by one amount all test rows share (a
+    random slope on a real predictor x), which is what a regression fit to noise does. `leak` is skill that survives
+    the shuffle in every seed."""
+    n = 400
+    ids = [f"e{i}" for i in range(n)]
+    rng = np.random.default_rng(0)
+    x = rng.normal(size=n)
+    y = 0.6 * x + rng.normal(size=n)
+
+    def fit(loader, fold, permute_seed=None):
+        return {"slope": np.random.default_rng(permute_seed).normal(0.0, shared_sd)}
+
+    def predict(fitted, loader, fold):
+        return pd.DataFrame({"entity_id": ids, "point": (fitted["slope"] + leak) * x, "flat": 0.0})
+
+    return SimpleNamespace(fit=fit, predict=predict, outcome=lambda loader, fold: pd.DataFrame({"entity_id": ids, "y": y}))
+
+
+def test_loss_permutation_counts_the_chance_in_the_shuffles():
+    """A5-PERM: with a handful of shuffles whose errors every row shares, the average can beat the null by chance. The
+    rows-only bootstrap called that a leak for some seeds; the interval that also counts shuffle-to-shuffle variance
+    does not, and a real leak still fails."""
+    spec = {"primary_metric": "rmse", "permutation_seeds": 5, "null_baseline": "flat"}
+    clean = [leakage.label_permutation(_toy_loss_perm(0.08), FOLD, seed=s, n_boot=300, spec=spec) for s in range(1, 41)]
+    assert all(r["passed"] for r in clean), [r["per_seed"] for r in clean if not r["passed"]]
+    # the old interval (rows only) is still reported, and on this toy it would have failed at least one clean seed
+    assert any(r["ci90_rows_only"][1] < 0 for r in clean)
+    for r in clean:
+        assert r["ci90"][0] <= r["ci90_rows_only"][0] and r["ci90"][1] >= r["ci90_rows_only"][1] and r["half_width_shuffles"] > 0
+    leaky = [leakage.label_permutation(_toy_loss_perm(0.08, leak=0.4), FOLD, seed=s, n_boot=300, spec=spec) for s in range(1, 41)]
+    assert not any(r["passed"] for r in leaky)
+
+
 def test_gate_in_every_segment():
     """pass_gate.each_segment (CFB-PROJ, Matt): one weak segment fails the model even if the pooled rows pass."""
     rng = np.random.default_rng(3)
