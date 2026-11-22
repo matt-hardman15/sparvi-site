@@ -17,19 +17,19 @@
   "cfb_pbp_exclude_gap": 1000
  },
  "built": true,
- "games_checked": 11080,
+ "games_checked": 11144,
  "by_class": {
-  "match": 10763,
-  "over": 207,
+  "match": 10825,
+  "over": 208,
   "swapped": 8,
-  "under": 102
+  "under": 103
  },
  "by_decision": {
-  "keep": 309,
+  "keep": 311,
   "keep_no_score": 1,
   "repair_scores": 7
  },
- "plays": 1508736,
+ "plays": 1517055,
  "plays_in_repaired_games": 881,
  "games": [
   {

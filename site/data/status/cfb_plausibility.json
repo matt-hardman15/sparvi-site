@@ -75,7 +75,7 @@
    "tool": "Team pages and game logs",
    "name": "every FBS-vs-FBS game is in both teams' logs with the same score",
    "ok": true,
-   "detail": "19,352 team-games"
+   "detail": "19,472 team-games"
   },
   {
    "tool": "Team pages and game logs",
@@ -99,7 +99,7 @@
    "tool": "Play-by-play integrity",
    "name": "no team's offense or defense is credited in a game it didn't play",
    "ok": true,
-   "detail": "1,508,736 plays, each between its game's two teams"
+   "detail": "1,517,055 plays, each between its game's two teams"
   },
   {
    "tool": "Portal board",

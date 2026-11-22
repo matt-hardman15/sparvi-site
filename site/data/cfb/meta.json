@@ -271,14 +271,14 @@
    "season": 2026,
    "week": 12,
    "n_teams": 138,
-   "sd_power": 10.749960968273008,
-   "sd_epa": 3.332714752161278,
-   "sd_elo": 7.597998036023376,
-   "share_epa": 0.29827831217739986,
-   "share_elo": 0.7017216878225998,
-   "r_power_elo": 0.9928247834388362,
-   "r_power_epa": 0.9621226093562273,
-   "r_epa_elo": 0.9226201049112216
+   "sd_power": 10.83535138917322,
+   "sd_epa": 3.3084964463748783,
+   "sd_elo": 7.693738132307984,
+   "share_epa": 0.29452526052119177,
+   "share_elo": 0.7054747394788079,
+   "r_power_elo": 0.9935439141525916,
+   "r_power_epa": 0.9645725006691762,
+   "r_epa_elo": 0.9284154744900833
   }
  },
  "poll_week": {
@@ -759,7 +759,7 @@
     9,
     10,
     11,
-    11
+    12
    ],
    "cfp": [
     1,
@@ -781,87 +781,81 @@
   "week": 12,
   "rows": [
    {
-    "team": "Kentucky",
-    "ap": 17,
-    "power": 48,
-    "gap": 31
-   },
-   {
     "team": "Houston",
-    "ap": 20,
-    "power": 44,
-    "gap": 24
+    "ap": 17,
+    "power": 45,
+    "gap": 28
    },
    {
     "team": "Florida",
-    "ap": 23,
-    "power": 39,
-    "gap": 16
-   },
-   {
-    "team": "UCLA",
-    "ap": 4,
-    "power": 18,
-    "gap": 14
+    "ap": 20,
+    "power": 38,
+    "gap": 18
    },
    {
     "team": "Boise State",
-    "ap": 15,
-    "power": 26,
-    "gap": 11
+    "ap": 22,
+    "power": 32,
+    "gap": 10
    },
    {
-    "team": "Memphis",
-    "ap": 24,
-    "power": 32,
+    "team": "BYU",
+    "ap": 11,
+    "power": 20,
+    "gap": 9
+   },
+   {
+    "team": "USC",
+    "ap": 15,
+    "power": 24,
+    "gap": 9
+   },
+   {
+    "team": "UCLA",
+    "ap": 10,
+    "power": 18,
     "gap": 8
    },
    {
     "team": "Utah",
     "ap": 2,
-    "power": 9,
-    "gap": 7
-   },
-   {
-    "team": "USC",
-    "ap": 18,
-    "power": 24,
+    "power": 8,
     "gap": 6
    },
    {
-    "team": "BYU",
-    "ap": 12,
-    "power": 17,
+    "team": "Texas Tech",
+    "ap": 9,
+    "power": 14,
     "gap": 5
    },
    {
-    "team": "Texas",
-    "ap": 8,
-    "power": 11,
-    "gap": 3
-   },
-   {
-    "team": "Texas Tech",
-    "ap": 11,
-    "power": 14,
-    "gap": 3
-   },
-   {
     "team": "Miami",
-    "ap": 5,
-    "power": 6,
-    "gap": 1
+    "ap": 4,
+    "power": 7,
+    "gap": 3
    },
    {
     "team": "Tennessee",
-    "ap": 9,
+    "ap": 7,
     "power": 10,
-    "gap": 1
+    "gap": 3
    },
    {
-    "team": "Liberty",
-    "ap": 22,
-    "power": 23,
+    "team": "Arizona",
+    "ap": 16,
+    "power": 19,
+    "gap": 3
+   },
+   {
+    "team": "Oklahoma",
+    "ap": 19,
+    "power": 22,
+    "gap": 3
+   },
+   {
+    "team": "Texas",
+    "ap": 5,
+    "power": 6,
     "gap": 1
    },
    {
@@ -883,16 +877,16 @@
     "gap": -1
    },
    {
-    "team": "Louisville",
-    "ap": 21,
-    "power": 20,
+    "team": "Alabama",
+    "ap": 6,
+    "power": 5,
     "gap": -1
    },
    {
-    "team": "Alabama",
-    "ap": 7,
-    "power": 5,
-    "gap": -2
+    "team": "Missouri",
+    "ap": 24,
+    "power": 23,
+    "gap": -1
    },
    {
     "team": "Oregon",
@@ -901,34 +895,40 @@
     "gap": -2
    },
    {
-    "team": "Indiana",
-    "ap": 6,
-    "power": 3,
-    "gap": -3
-   },
-   {
-    "team": "Arizona",
-    "ap": 19,
+    "team": "Louisville",
+    "ap": 18,
     "power": 16,
-    "gap": -3
+    "gap": -2
    },
    {
     "team": "Wake Forest",
-    "ap": 10,
+    "ap": 8,
     "power": 4,
-    "gap": -6
+    "gap": -4
    },
    {
-    "team": "Ohio State",
-    "ap": 16,
-    "power": 7,
-    "gap": -9
+    "team": "Liberty",
+    "ap": 21,
+    "power": 17,
+    "gap": -4
    },
    {
     "team": "Ole Miss",
-    "ap": 25,
+    "ap": 23,
     "power": 15,
-    "gap": -10
+    "gap": -8
+   },
+   {
+    "team": "Indiana",
+    "ap": 12,
+    "power": 3,
+    "gap": -9
+   },
+   {
+    "team": "Ohio State",
+    "ap": 25,
+    "power": 9,
+    "gap": -16
    }
   ]
  }

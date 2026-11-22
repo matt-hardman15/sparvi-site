@@ -4206,8 +4206,8 @@
    "left_for": null,
    "bad_last_year": false,
    "expected": 3.67,
-   "actual": 2.62,
-   "effect": -1.05,
+   "actual": 0.08,
+   "effect": -3.59,
    "in_progress": true
   },
   {
@@ -4221,8 +4221,8 @@
    "left_for": null,
    "bad_last_year": false,
    "expected": 6.64,
-   "actual": 8.07,
-   "effect": 1.43,
+   "actual": 8.38,
+   "effect": 1.74,
    "in_progress": true
   },
   {
@@ -4236,8 +4236,8 @@
    "left_for": null,
    "bad_last_year": false,
    "expected": -3.13,
-   "actual": -14.07,
-   "effect": -10.94,
+   "actual": -14.5,
+   "effect": -11.37,
    "in_progress": true
   },
   {
@@ -4251,8 +4251,8 @@
    "left_for": null,
    "bad_last_year": true,
    "expected": -9.92,
-   "actual": -8.44,
-   "effect": 1.48,
+   "actual": -8.83,
+   "effect": 1.08,
    "in_progress": true
   },
   {
@@ -4266,8 +4266,8 @@
    "left_for": null,
    "bad_last_year": true,
    "expected": -10.39,
-   "actual": -19.23,
-   "effect": -8.83,
+   "actual": -18.33,
+   "effect": -7.94,
    "in_progress": true
   },
   {
@@ -4281,8 +4281,8 @@
    "left_for": "James Madison",
    "bad_last_year": false,
    "expected": 4.31,
-   "actual": 6.14,
-   "effect": 1.83,
+   "actual": 6.16,
+   "effect": 1.85,
    "in_progress": true
   },
   {
@@ -4296,8 +4296,8 @@
    "left_for": "Penn State",
    "bad_last_year": false,
    "expected": 5.71,
-   "actual": 4.16,
-   "effect": -1.55,
+   "actual": -0.13,
+   "effect": -5.84,
    "in_progress": true
   },
   {
@@ -4311,8 +4311,8 @@
    "left_for": "UCLA",
    "bad_last_year": false,
    "expected": 11.71,
-   "actual": 6.91,
-   "effect": -4.81,
+   "actual": 7.08,
+   "effect": -4.64,
    "in_progress": true
   },
   {
@@ -4326,8 +4326,8 @@
    "left_for": null,
    "bad_last_year": false,
    "expected": 6.77,
-   "actual": -2.86,
-   "effect": -9.63,
+   "actual": -1.92,
+   "effect": -8.69,
    "in_progress": true
   },
   {
@@ -4341,8 +4341,8 @@
    "left_for": null,
    "bad_last_year": false,
    "expected": 0.6,
-   "actual": 4.86,
-   "effect": 4.27,
+   "actual": 3.96,
+   "effect": 3.36,
    "in_progress": true
   },
   {
@@ -4356,8 +4356,8 @@
    "left_for": null,
    "bad_last_year": false,
    "expected": 7.0,
-   "actual": 18.53,
-   "effect": 11.53,
+   "actual": 17.73,
+   "effect": 10.73,
    "in_progress": true
   },
   {
@@ -4371,8 +4371,8 @@
    "left_for": "Arkansas",
    "bad_last_year": false,
    "expected": 1.7,
-   "actual": 7.51,
-   "effect": 5.81,
+   "actual": 7.02,
+   "effect": 5.32,
    "in_progress": true
   },
   {
@@ -4386,8 +4386,8 @@
    "left_for": null,
    "bad_last_year": false,
    "expected": 9.65,
-   "actual": 4.89,
-   "effect": -4.76,
+   "actual": 5.17,
+   "effect": -4.48,
    "in_progress": true
   },
   {
@@ -4401,8 +4401,8 @@
    "left_for": null,
    "bad_last_year": false,
    "expected": -2.65,
-   "actual": -1.63,
-   "effect": 1.02,
+   "actual": -3.59,
+   "effect": -0.94,
    "in_progress": true
   },
   {
@@ -4416,8 +4416,8 @@
    "left_for": "Oklahoma State",
    "bad_last_year": false,
    "expected": 7.25,
-   "actual": 5.28,
-   "effect": -1.98,
+   "actual": 4.82,
+   "effect": -2.43,
    "in_progress": true
   },
   {
@@ -4431,8 +4431,8 @@
    "left_for": null,
    "bad_last_year": true,
    "expected": -8.84,
-   "actual": -20.43,
-   "effect": -11.59,
+   "actual": -19.45,
+   "effect": -10.62,
    "in_progress": true
   },
   {
@@ -4446,8 +4446,8 @@
    "left_for": null,
    "bad_last_year": false,
    "expected": 1.66,
-   "actual": -5.82,
-   "effect": -7.48,
+   "actual": -6.03,
+   "effect": -7.69,
    "in_progress": true
   },
   {
@@ -4461,8 +4461,8 @@
    "left_for": null,
    "bad_last_year": true,
    "expected": -12.7,
-   "actual": 4.33,
-   "effect": 17.03,
+   "actual": 4.23,
+   "effect": 16.94,
    "in_progress": true
   },
   {
@@ -4476,8 +4476,8 @@
    "left_for": "LSU",
    "bad_last_year": false,
    "expected": 16.19,
-   "actual": 13.66,
-   "effect": -2.52,
+   "actual": 14.12,
+   "effect": -2.07,
    "in_progress": true
   },
   {
@@ -4491,8 +4491,8 @@
    "left_for": null,
    "bad_last_year": true,
    "expected": -10.32,
-   "actual": 2.23,
-   "effect": 12.55,
+   "actual": 1.83,
+   "effect": 12.15,
    "in_progress": true
   },
   {
@@ -4506,8 +4506,8 @@
    "left_for": null,
    "bad_last_year": false,
    "expected": 14.04,
-   "actual": 11.34,
-   "effect": -2.7,
+   "actual": 9.95,
+   "effect": -4.09,
    "in_progress": true
   },
   {
@@ -4521,8 +4521,8 @@
    "left_for": "Auburn",
    "bad_last_year": false,
    "expected": 8.87,
-   "actual": 1.69,
-   "effect": -7.18,
+   "actual": -1.17,
+   "effect": -10.05,
    "in_progress": true
   },
   {
@@ -4536,8 +4536,8 @@
    "left_for": "Memphis",
    "bad_last_year": true,
    "expected": -7.0,
-   "actual": -15.44,
-   "effect": -8.44,
+   "actual": -15.1,
+   "effect": -8.1,
    "in_progress": true
   },
   {
@@ -4551,8 +4551,8 @@
    "left_for": null,
    "bad_last_year": true,
    "expected": -4.66,
-   "actual": -9.56,
-   "effect": -4.9,
+   "actual": -8.65,
+   "effect": -3.99,
    "in_progress": true
   },
   {
@@ -4566,8 +4566,8 @@
    "left_for": "UConn",
    "bad_last_year": false,
    "expected": 5.42,
-   "actual": 1.87,
-   "effect": -3.55,
+   "actual": 2.12,
+   "effect": -3.31,
    "in_progress": true
   },
   {
@@ -4581,8 +4581,8 @@
    "left_for": "Florida",
    "bad_last_year": false,
    "expected": 3.54,
-   "actual": -8.23,
-   "effect": -11.76,
+   "actual": -7.81,
+   "effect": -11.35,
    "in_progress": true
   },
   {
@@ -4596,8 +4596,8 @@
    "left_for": null,
    "bad_last_year": false,
    "expected": -3.69,
-   "actual": 12.25,
-   "effect": 15.94,
+   "actual": 12.17,
+   "effect": 15.86,
    "in_progress": true
   },
   {
@@ -4611,8 +4611,8 @@
    "left_for": "Colorado State",
    "bad_last_year": false,
    "expected": -0.66,
-   "actual": 0.78,
-   "effect": 1.45,
+   "actual": 0.49,
+   "effect": 1.15,
    "in_progress": true
   },
   {
@@ -4626,8 +4626,8 @@
    "left_for": "Michigan",
    "bad_last_year": false,
    "expected": 15.77,
-   "actual": 18.22,
-   "effect": 2.45,
+   "actual": 19.1,
+   "effect": 3.33,
    "in_progress": true
   },
   {
@@ -4641,8 +4641,8 @@
    "left_for": null,
    "bad_last_year": false,
    "expected": -2.09,
-   "actual": -3.18,
-   "effect": -1.09,
+   "actual": -1.73,
+   "effect": 0.36,
    "in_progress": true
   },
   {
@@ -4656,8 +4656,8 @@
    "left_for": "Iowa State",
    "bad_last_year": false,
    "expected": 2.62,
-   "actual": -0.41,
-   "effect": -3.03,
+   "actual": -2.38,
+   "effect": -5.0,
    "in_progress": true
   }
  ]
