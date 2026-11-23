@@ -387,7 +387,7 @@
   {
    "name": "milb_players_2026: row count",
    "ok": true,
-   "detail": "9,807 rows (last accepted 9,800)"
+   "detail": "9,807 rows (last accepted 9,807)"
   },
   {
    "name": "milb_players_2026: one row per player_id + level + team_id",
