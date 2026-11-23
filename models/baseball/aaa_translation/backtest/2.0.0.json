@@ -1,10 +1,10 @@
 {
-  "run_id": "809ab1732dbb",
+  "run_id": "e056b1990782",
   "model": "aaa_translation",
   "version": "2.0.0",
   "kind": "full",
-  "ran_at": "2026-11-22T23:50:45Z",
-  "code_sha": "866b3b9843a5a370156ac98203ce57f901704017",
+  "ran_at": "2026-11-23T14:49:24Z",
+  "code_sha": "e2067f00eefc13a5d675b9bf6a76570562045ebd",
   "lockfile": "39654de38b4c91ec",
   "preregistered_at": "2026-11-20",
   "spec": {
