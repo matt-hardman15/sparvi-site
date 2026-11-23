@@ -16,7 +16,7 @@ import json
 
 import numpy as np
 from features import ZONE_BOT, ZONE_TOP
-from train import KINDS, MIN_PITCHES, OUT, SEED, fit_kinds, load, pitcher_season, predict_all, xrv100  # noqa: F401  (MIN_PITCHES: query strings)
+from train import KINDS, MIN_PITCHES, OUT, SEED, fitted, load, pitcher_season, predict_all, xrv100  # noqa: F401  (MIN_PITCHES: query strings)
 
 from sparvi.config import RAW, baseball
 from sparvi.provenance import provenance
@@ -26,8 +26,9 @@ Y, P = CFG.season, CFG.prev
 TRAIN = P - 1
 BOOT, BOOT_SEED = 2000, SEED
 
-tr = load("mlb", TRAIN)
-models = fit_kinds(tr)                      # bagged, same settings as train.py
+# Bagged, same settings as train.py; stored like the production models. When a fit is needed in the refresh it is
+# done twice and must come out identical (the repeatability check).
+models = fitted("oos", verify=True)
 rng = np.random.default_rng(BOOT_SEED)
 
 d_prev, d_cur = load("mlb", P), load("mlb", Y)

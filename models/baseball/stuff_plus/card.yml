@@ -3,7 +3,7 @@ name: stuff_plus
 title: Stuff+
 sport: baseball
 status: champion
-version: 2.0.1
+version: 2.0.2
 owner: Matt
 spec: 'What the ball does: velocity, movement, spin, release, and arm angle, relative to the pitcher''s primary
   fastball. No location, no count.'
@@ -90,10 +90,11 @@ backtest:
       when it completes.'
     accesses: 0
 experimental: 'this version has no passing backtest on record. Shown in two cases. Right after a new version: the
-  backtest workflow reruns the test on main and the label goes away when its report lands (2.0.1 changed shared
-  training code only; its Stuff+ models are identical to 2.0.0''s, which passed). Or the latest run didn''t clear
-  the strict gate: the gate asks that the 90% interval of the edge over last season''s results exclude zero, and
-  with about 320 pitchers that interval is wide enough for a rerun on revised data to fall back under it'
+  backtest workflow reruns the test on main and the label goes away when its report lands (2.0.2 changed shared
+  training code only, as 2.0.1 did; its Stuff+ models are identical to 2.0.0''s, which passed, and 2.0.1''s report
+  passed too). Or the latest run didn''t clear the strict gate: the gate asks that the 90% interval of the edge
+  over last season''s results exclude zero, and with about 320 pitchers that interval is wide enough for a rerun
+  on revised data to fall back under it'
 challengers: []
 history:
 - version: 1.0.1

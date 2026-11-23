@@ -36,7 +36,7 @@ jobs:
   refresh:
     if: github.event_name == 'workflow_dispatch' || github.event.schedule != '0 9 * 1-3,11-12 1'
     runs-on: ubuntu-24.04
-    timeout-minutes: 300   # bagged pitch-quality training (v2.0.0): ~65 min train + 2 x ~25 min robustness
+    timeout-minutes: 300   # only a run that has to train needs it (~65 min + 2 x ~25 min); otherwise minutes
     steps:
       # Push with the repo's deploy key, not GITHUB_TOKEN: main requires PRs with passing checks,
       # and on a personal repo the only actor that can be exempted for an unattended push is a
@@ -152,23 +152,32 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Rebuild models, pipeline, and site
-        id: build
+      # The pitch-quality models are stored, not refit (MODEL-ARTIFACTS, baseball/pitch_quality/artifacts.py). Their
+      # training seasons don't change during a season, so this step normally downloads the fitted models from the
+      # private bucket in seconds. It trains only when the model code or the training data changed (a model PR, the
+      # spring rollover): then it fits, fits the out-of-sample set a second time and requires an identical model (same
+      # data must give the same model), uploads, and records the new hashes in model_artifacts.json. A model that
+      # doesn't match that record stops the run here.
+      - name: Models (load the stored fit; train only when model code or training data changed)
+        id: models
         if: steps.inputs.outputs.changed == 'true'
-        run: uv run ./build.sh
-
-      # Same data must give the same model. Retrain the out-of-sample test (one season, ~2 min) and
-      # require byte-identical outputs; a failure here means training stopped being repeatable and
-      # published numbers would drift between refreshes on unchanged data.
-      - name: Check training is repeatable
-        id: repeat
-        if: steps.inputs.outputs.changed == 'true'
+        env:
+          SPARVI_MODELS: official
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
         run: |
           echo "CPU: $(nproc) cores, $(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2)"
-          o=baseball/pitch_quality/output
-          sha256sum $o/robustness.json $o/metrics_location.json $o/yoy_pairs.csv > /tmp/first.sha
-          uv run python baseball/pitch_quality/robustness.py > /dev/null
-          sha256sum -c /tmp/first.sha
+          uv run python baseball/pitch_quality/ensure_models.py
+
+      # Scores with the models the step above put in the local store (checked again against the record).
+      - name: Rebuild pipeline and site
+        id: build
+        if: steps.inputs.outputs.changed == 'true'
+        env:
+          SPARVI_MODELS: official
+        run: uv run ./build.sh
 
       # Plausibility tests (plausibility/baseball.py) on what the build produced: can the numbers each tool shows be
       # true? Like a failed data check, a failure publishes nothing: the rebuilt data is not committed, the site keeps
@@ -176,16 +185,16 @@ jobs:
       # /status/), and the run ends red.
       - name: Plausibility tests
         id: plausibility
-        if: steps.build.outcome == 'success' && steps.repeat.outcome == 'success'
+        if: steps.build.outcome == 'success'
         run: |
           if uv run python -m plausibility baseball; then echo "ok=true" >> "$GITHUB_OUTPUT"
           else echo "ok=false" >> "$GITHUB_OUTPUT"; fi
 
       # Commits the data-check and plausibility status every run, and the rebuilt data only when a build ran,
-      # passed, and its numbers passed the plausibility tests (never a half-built tree: a failed build or
-      # repeatability check skips this step).
+      # passed, and its numbers passed the plausibility tests (never a half-built tree: a failed model step or
+      # build skips this step).
       - name: Commit refreshed data
-        if: ${{ !cancelled() && steps.checks.outcome == 'success' && steps.build.outcome != 'failure' && steps.repeat.outcome != 'failure' }}
+        if: ${{ !cancelled() && steps.checks.outcome == 'success' && steps.models.outcome != 'failure' && steps.build.outcome != 'failure' }}
         run: |
           git config user.name "sparvi-bot"
           git config user.email "sparvi-bot@users.noreply.github.com"
@@ -196,6 +205,8 @@ jobs:
             # Everything the build regenerates: data, prose numbers, model outputs, listing thumbnails.
             git add site/data/baseball site/_generated/baseball.yml baseball/*/output site/baseball/*/thumb.png \
               baseball/build_inputs.sha256
+            # The record of the stored models (written once a fit is in the bucket; absent without bucket credentials).
+            if [ -f baseball/pitch_quality/model_artifacts.json ]; then git add baseball/pitch_quality/model_artifacts.json; fi
           fi
           if git diff --cached --quiet; then echo "No data changes."; exit 0; fi
           git commit -m "Baseball data refresh $(date -u +%Y-%m-%d)"

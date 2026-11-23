@@ -106,6 +106,16 @@ def fit_kinds(tr: pd.DataFrame, kinds=MODELS, seed: int = SEED, n_bags: int = N_
                 for g in GROUPS} for k in kinds}
 
 
+def fitted(name: str, verify: bool = False) -> dict:
+    """The fitted bags for a named training set, from the model store when its code and training data are unchanged and
+    trained otherwise (artifacts.py, MODEL-ARTIFACTS). "production": every MLB season before the current one (the
+    published grades). "oos": the season before last only (robustness.py's out-of-sample test)."""
+    import artifacts
+    seasons = {"production": CFG.train_seasons, "oos": [CFG.prev - 1]}[name]
+    return artifacts.get(name, seasons, lambda: fit_kinds(pd.concat([load("mlb", y) for y in seasons], ignore_index=True)),
+                         verify=verify)
+
+
 def predict(models: dict, df: pd.DataFrame, features: list[str] = FEATURES) -> pd.Series:
     """Bag average: each booster at its own best iteration."""
     pred = pd.Series(np.nan, index=df.index)
@@ -170,7 +180,7 @@ def main() -> None:
     ho = load("mlb", Y)
 
     # Early stopping uses the bag's held-out pitcher folds of the training data, never the holdout.
-    all_models = fit_kinds(tr)
+    all_models = fitted("production")
     (OUT / "models").mkdir(exist_ok=True)
     for old in (OUT / "models").glob("*.txt"):
         old.unlink()
