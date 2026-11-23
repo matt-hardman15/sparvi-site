@@ -1,0 +1,98 @@
+---
+title: "How the college football power rating works"
+pagetitle: "College football power rating, explained"
+description: "Sparvi's college football power rating is points better than an average FBS team on a neutral field. How it's built, how well it predicts, and its limits."
+date: 2026-11-22
+categories: [College Football, explainer]
+---
+
+::: {.finding}
+[The short answer]{.label}
+The power rating is how many points better than an average FBS team a team should be on a neutral field. A team rated 14 should beat a team rated 4 by 10. It adds two parts: how efficiently the team has played this season, with the strength of its opponents taken out, and its Elo rating, which carries results from this season and earlier ones.
+:::
+
+## See it: the two parts of each rating
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c1"></div>
+  <div class="plot-host" id="p1"></div>
+  <p class="caption" id="cap1"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt;
+  const meta = await S.load("/data/cfb/meta.json");
+  const [wk, teams] = await Promise.all([S.load(`/data/cfb/team_week_${meta.season}.json`), S.load("/data/cfb/teams.json")]);
+  const bySlug = new Map(teams.map(t => [t.id, t]));
+  const last = a => { for (let i = a.length - 1; i >= 0; i--) if (a[i] != null) return a[i]; return null; };
+  const all = wk.teams.map(t => { const s = t.series.no_gt; return { id: t.id, conf: t.conf, power: last(s.power), epa: last(s.pw_epa), elo: last(s.pw_elo), rank: last(s.rank) }; })
+    .filter(t => t.power != null && t.epa != null && t.elo != null).sort((a, b) => d3.descending(a.power, b.power));
+  const confs = [...new Set(all.map(t => t.conf))].filter(Boolean).sort();
+  const st = { v: "top" };
+  document.getElementById("c1").replaceChildren(
+    S.select("Teams", [["top", "Top 25"], ...confs.map(c => [c, c])], st.v, v => { st.v = v; draw(); }));
+  // One scale for every view: the widest stacked bar in the whole league.
+  const ext = d3.max(all, t => Math.max(Math.abs(Math.min(t.epa, 0) + Math.min(t.elo, 0)), Math.max(t.epa, 0) + Math.max(t.elo, 0)));
+  const PART = { epa: "This season's efficiency", elo: "Elo" };
+  function draw() {
+    const d = st.v === "top" ? all.slice(0, 25) : all.filter(t => t.conf === st.v);
+    const long = d.flatMap(t => ["elo", "epa"].map(k => ({ ...t, part: PART[k], pts: t[k] })));
+    S.plot(document.getElementById("p1"), w => Plot.plot({ ...S.plotDefaults(w), height: 80 + 22 * d.length, marginLeft: 150, marginRight: 40, marginBottom: 48,
+      x: { label: "Points better than an average FBS team →", domain: [-ext, ext], grid: true },
+      y: { label: null, domain: d.map(t => t.id) },
+      color: { domain: [PART.elo, PART.epa], range: ["#8a8b8f", "#0f5257"], legend: true },
+      marks: [
+        Plot.barX(long, Plot.stackX({ x: "pts", y: "id", fill: "part", offset: null })),
+        Plot.ruleX([0], { stroke: "#16181d" }),
+        Plot.dot(d, { x: "power", y: "id", r: 4, fill: "#fff", stroke: "#16181d", strokeWidth: 1.5 }),
+        Plot.tip(d, Plot.pointerY({ x: "power", y: "id", title: t => `${t.id} (${t.conf}), rank ${t.rank}\nPower rating ${f.num(t.power, 1)}\nFrom this season's efficiency: ${f.num(t.epa, 1)}\nFrom Elo: ${f.num(t.elo, 1)}` }))] }));
+    const c = meta.power_model.components;
+    document.getElementById("cap1").textContent = `${meta.season} through week ${meta.last_week}. Each bar is a team's rating split into its two parts, and the white dot is the total. Look for teams whose green part is large or points the other way from the gray: this season's play says something Elo hasn't caught up to. Across all ${c.n_teams} teams, about ${Math.round(100 * c.share_elo)}% of the spread in ratings comes from the Elo part. Hover for the numbers.`;
+  }
+  draw();
+})();
+</script>
+```
+
+## How it's calculated
+
+**Part one: efficiency.** Every play has an EPA (expected points added): how much it changed the points the offense should expect from the drive. A team's raw EPA per play depends heavily on who it played, so each offense and defense is rated by fitting every play on the offense, the defense, and home field together. That is [opponent-adjusted EPA](/learn/opponent-adjusted-epa/). Plays after a game is decided are left out.
+
+**Part two: Elo.** Elo moves after every game according to the result and the opponent's rating, and it carries over between seasons. Sparvi uses the version published by CollegeFootballData.com.
+
+**The blend.** The weights are fitted, not chosen. Across {{< meta cfb.pm_n_games >}} games, the combination that best matched final margins was {{< meta cfb.pm_net >}} points per 1.00 of net adjusted EPA per play plus {{< meta cfb.pm_elo_100 >}} points per 100 Elo points, with {{< meta cfb.pm_home >}} points for home field. Both parts are measured from that week's FBS average, so they add up to the rating.
+
+## How well it predicts
+
+Ratings through each week were used to predict the next week's games, {{< meta cfb.bt_first_season >}}–{{< meta cfb.bt_last_season >}}, with each season predicted by a model fit on the others. On {{< meta cfb.bt_n_games >}} games, the average miss in points was:
+
+| Predictor | Average miss |
+|---|---|
+| Home field alone | {{< meta cfb.bt_mae_home_only >}} |
+| Raw EPA per play | {{< meta cfb.bt_mae_raw_epa >}} |
+| Opponent-adjusted efficiency alone | {{< meta cfb.bt_mae_ours >}} |
+| Elo alone | {{< meta cfb.bt_mae_elo >}} |
+| **Power rating** | **{{< meta cfb.bt_mae_power >}}** |
+| Closing betting line | {{< meta cfb.bt_mae_line_close >}} |
+
+The power rating beat Elo by {{< meta cfb.bt_power_vs_elo >}} points a game (90% interval {{< meta cfb.bt_power_vs_elo_ci >}}): a real edge, and a small one. It picked the winner in {{< meta cfb.bt_win_power >}} of those games.
+
+## What it can't tell you
+
+- **Every predictor misses by a lot.** Even the best one in the table is off by {{< meta cfb.bt_mae_line_close >}} points a game. A rating gap of a few points is not a confident pick.
+- **The betting market is better.** Lines include injuries, weather, and lineup news the rating never sees. The market appears here only as an accuracy benchmark over many games.
+- **The efficiency part is thin early.** It is what this season's play adds, and early in a season it has few games behind it, so ratings start in week {{< meta cfb.min_week >}}. The caption above gives how much of the spread in ratings comes from Elo.
+- **It is not a résumé.** The rating estimates how good a team is, not what it has earned. A team can rank well below its poll position, or above it: [ranked versus good](/cfb/ranked-vs-good/) looks at those gaps.
+- **Status.** {{< meta models.cfb_power_rating >}} is labeled {{< meta models.cfb_power_rating_status >}}.
+
+## Where to find it
+
+- The [team ratings tool](/cfb/tools/team-ratings.html) has every FBS team by week, with both parts in points.
+- Every [team page](/cfb/teams/) has the team's rating and rank.
+- [What a loss costs](/cfb/what-a-loss-costs/) compares the rating with the playoff committee's rankings.
+- Short definitions are in the [glossary](/glossary.html#cfb-power).
+
+::: {.note}
+Data provided by [CollegeFootballData.com](https://collegefootballdata.com). More explainers are on the [Learn page](/learn/).
+:::

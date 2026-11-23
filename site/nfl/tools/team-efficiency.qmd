@@ -5,7 +5,7 @@ description: "Every NFL offense and defense in EPA per play and success rate, we
 page-layout: full
 ---
 
-How well each team moves the ball, and stops it, per play. **EPA per play** (expected points added) measures how much each play changed a team's expected points, so it credits a 6-yard gain on 3rd-and-5 more than on 3rd-and-10. **Success rate** is the share of plays with positive EPA. Defense numbers are what the defense allowed, so lower is better there; the chart flips that axis so up is always better. **Opponent-adjusted** numbers remove the strength of the opponents each team faced (see the note below). Move the week slider, or press play, to watch the season unfold. Click a team for its weekly page.
+How well each team moves the ball, and stops it, per play. **EPA per play** (expected points added) measures how much each play changed a team's expected points, so it credits a 6-yard gain on 3rd-and-5 more than on 3rd-and-10. **Success rate** is the share of plays with positive EPA. Defense numbers are what the defense allowed, so lower is better there; the chart flips that axis so up is always better. **[Opponent-adjusted](/learn/opponent-adjusted-epa/)** numbers remove the strength of the opponents each team faced (see the note below). Move the week slider, or press play, to watch the season unfold. Click a team for its weekly page.
 
 ```{=html}
 <div class="explorer">

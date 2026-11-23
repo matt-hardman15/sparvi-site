@@ -43,6 +43,9 @@ TITLE_MAX, DESC_MIN, DESC_MAX = 60, 120, 155
 SECTION_INPUTS = {
     "baseball": ["site/data/baseball", "site/_generated/baseball.yml"],
     "nfl": ["site/data/nfl", "site/_generated/nfl.yml"],
+    # Explainers quote every sport's numbers and chart its data, so any of them changing is a change to the page.
+    "learn": ["site/data/baseball", "site/_generated/baseball.yml", "site/data/cfb", "site/_generated/cfb.yml",
+              "site/_generated/nfl.yml", "site/_generated/models.yml"],
 }
 
 

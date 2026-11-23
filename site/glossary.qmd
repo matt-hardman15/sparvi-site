@@ -5,9 +5,11 @@ pagetitle: "Glossary of Sparvi metrics and terms"
 description: "What every number on Sparvi means and how it's calculated: pitch grades, swing decisions, percentiles, pitcher roles, EPA, success rate, and more."
 ---
 
+Longer explainers for the main metrics are on the [Learn page](/learn/).
+
 ## Pitching
 
-**Stuff+**: Pitch quality graded only on physical traits (velocity, movement, spin, release point, extension, arm angle, and gaps from the pitcher's primary fastball). 100 is an average qualified MLB pitcher from the season before ({{< meta baseball.scale_ref_season >}}), and the scale stays fixed all season; 10 points is one standard deviation. Pitch-level grades are scaled within fastballs, breaking balls, and offspeed pitches. [How it's built](/baseball/stuff-plus/#method).
+**Stuff+**: Pitch quality graded only on physical traits (velocity, movement, spin, release point, extension, arm angle, and gaps from the pitcher's primary fastball). 100 is an average qualified MLB pitcher from the season before ({{< meta baseball.scale_ref_season >}}), and the scale stays fixed all season; 10 points is one standard deviation. Pitch-level grades are scaled within fastballs, breaking balls, and offspeed pitches. [How it's built](/baseball/stuff-plus/#method). Explainer: [what is Stuff+?](/learn/stuff-plus/)
 
 [**Location+**]{#location-plus}: What a pitch's location was worth given the pitch: the Pitching+ model's value for the pitch where it crossed the plate (side, mirrored so inside is the same for every batter, and height within the batter's rulebook zone), minus the value of the same pitch in the same count without the location. Same target and same frozen scale as Stuff+. The zone comes from each batter's listed height ({{< meta baseball.loc_zone_bottom >}} to {{< meta baseball.loc_zone_top >}} of it), because Statcast's own zone fields changed definition in {{< meta baseball.season >}}. [How it's built](/baseball/stuff-or-command/#method).
 
@@ -87,7 +89,7 @@ description: "What every number on Sparvi means and how it's calculated: pitch g
 
 [**Garbage time**]{#nfl-garbage}: 4th-quarter plays when the offense's win probability is below {{< meta nfl.garbage_wp_lo >}} or above {{< meta nfl.garbage_wp_hi >}}. Teams play differently with the game decided, so the default view removes these plays; every team view can include them.
 
-[**Opponent-adjusted**]{#nfl-adjusted}: A team's own EPA/play with the strength of its opponents removed. Every play's EPA is fit on the offense, the defense, and home field together (ridge regression, as of each week), and each team is corrected by the average strength of the defenses (or offenses) it faced. The opponent strengths use penalties (λ = {{< meta nfl.adj_lambda_sched_off >}} plays for offenses, {{< meta nfl.adj_lambda_sched_def >}} for defenses) chosen by how well they predict a held-out game's EPA/play, both lighter than the penalty that forecasts next week's margins best (λ = {{< meta nfl.adj_lambda >}}). NFL schedules are balanced enough that the correction is modest: at most about {{< meta nfl.adj_corr_def_max >}} EPA/play through week {{< meta nfl.adj_corr_week >}} of {{< meta nfl.adj_corr_season >}}. [Details](/nfl/tools/team-efficiency.html).
+[**Opponent-adjusted**]{#nfl-adjusted}: A team's own EPA/play with the strength of its opponents removed. Every play's EPA is fit on the offense, the defense, and home field together (ridge regression, as of each week), and each team is corrected by the average strength of the defenses (or offenses) it faced. The opponent strengths use penalties (λ = {{< meta nfl.adj_lambda_sched_off >}} plays for offenses, {{< meta nfl.adj_lambda_sched_def >}} for defenses) chosen by how well they predict a held-out game's EPA/play, both lighter than the penalty that forecasts next week's margins best (λ = {{< meta nfl.adj_lambda >}}). NFL schedules are balanced enough that the correction is modest: at most about {{< meta nfl.adj_corr_def_max >}} EPA/play through week {{< meta nfl.adj_corr_week >}} of {{< meta nfl.adj_corr_season >}}. [Details](/nfl/tools/team-efficiency.html). Explainer: [opponent-adjusted EPA](/learn/opponent-adjusted-epa/).
 
 **Season to date / last {{< meta nfl.trailing_weeks >}} weeks**: The week slider shows every number as of the end of each week. "Season to date" counts weeks 1 through that week; the trailing window only the last {{< meta nfl.trailing_weeks >}} weeks. The final week's season-to-date numbers match the season totals exactly.
 
@@ -99,7 +101,7 @@ description: "What every number on Sparvi means and how it's calculated: pitch g
 
 [**Garbage time (college)**]{#cfb-garbage}: Plays when the score margin is more than {{< meta cfb.garbage_q2 >}} points in the 2nd quarter, {{< meta cfb.garbage_q3 >}} in the 3rd, or {{< meta cfb.garbage_q4 >}} in the 4th. Removed by default.
 
-[**Power rating**]{#cfb-power}: How many points better than an average FBS team a team should be on a neutral field. It combines opponent-adjusted EPA per play with CFBD's Elo rating, weighted by how well each predicted game margins ({{< meta cfb.bt_first_season >}}–{{< meta cfb.bt_last_season >}}). See the [team ratings tool](/cfb/tools/team-ratings.html).
+[**Power rating**]{#cfb-power}: How many points better than an average FBS team a team should be on a neutral field. It combines opponent-adjusted EPA per play with CFBD's Elo rating, weighted by how well each predicted game margins ({{< meta cfb.bt_first_season >}}–{{< meta cfb.bt_last_season >}}). See the [team ratings tool](/cfb/tools/team-ratings.html). Explainer: [how the power rating works](/learn/cfb-power-rating/).
 
 [**Elo**]{#cfb-elo}: A rating that moves after every game according to the result and the opponent's rating, carried from season to season. Sparvi uses CollegeFootballData.com's version.
 

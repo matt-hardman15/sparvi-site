@@ -23,6 +23,7 @@ listing:
 ```{=html}
 <div class="cards">
 <a class="card-link" href="/nfl/tools/team-efficiency.html"><span class="kicker">Tool</span><h3>Team efficiency</h3><p>Every team's offense and defense in EPA per play and success rate, opponent-adjusted or raw, week by week since {{< meta nfl.first_season >}}.</p></a>
+<a class="card-link" href="/learn/opponent-adjusted-epa/"><span class="kicker">Explainer</span><h3>Opponent-adjusted EPA</h3><p>What EPA per play looks like with the schedule taken out, and why it barely moves NFL numbers.</p></a>
 </div>
 ```
 
