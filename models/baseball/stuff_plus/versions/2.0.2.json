@@ -1,0 +1,72 @@
+{
+  "model": "stuff_plus",
+  "version": "2.0.2",
+  "status": "champion",
+  "registered": "2026-11-23",
+  "note": "PATCH (MODEL-ARTIFACTS): no model change. train.py now takes its fitted bags from the model store (baseball/pitch_quality/artifacts.py): fitted once per model code + training data, kept as LightGBM text models, and reloaded for scoring. A reloaded bag predicts bit for bit what the fitted one did (tests/test_training.py; and on this machine a stored-model run of train.py and robustness.py reproduced all 117 + 3 output files of the run that fitted them).",
+  "code_hash": "af9991db61ee59af47bab7d2b7a9fda955a30f36096a16e1fa1f4aaf1545b122",
+  "code_files": {
+    "baseball/pitch_quality/train.py": "5713d5edfb91bf2c70434a988ef8c7ff1bf5a8472560777e0484f95c9c707010",
+    "baseball/pitch_quality/features.py": "4022267505457d47023c047c51ec0e766959681b732de0c394293c9c5abd620d"
+  },
+  "training_data": {
+    "data/raw/statcast_mlb_2021.parquet": "1b698e40d05625dd91c8cc8e57b58638936bd2790f4e38e75084db7d4dba679c",
+    "data/raw/statcast_mlb_2022.parquet": "48f6695b2fac127262b02d9bf9f44bff693f968af931053f7c60b0d627f0ffa1",
+    "data/raw/statcast_mlb_2023.parquet": "46b2a481dfb269489e6f56835dce7315902d81bd06139f65fdd058d44166d339",
+    "data/raw/statcast_mlb_2024.parquet": "c5676654e7f48e22834e8a769256354ba890560b6862502a4e8b5722c960ddb4",
+    "data/raw/statcast_mlb_2025.parquet": "ae3d141a26a1ac8f6d4ab8c8a1cd93d2e791ee976fc58a3920c9c0bf00b59d0a",
+    "data/raw/statcast_mlb_2026.parquet": "d94f4ad13ed089e60b901c5e101aca511519a80d72e559e30c4d77b101751cab",
+    "data/raw/batter_heights.parquet": "70311258557f23c75e9ac72b04547c8cbe3aaccc52698fd37742cad0b168012e"
+  },
+  "artifacts": {
+    "baseball/pitch_quality/output/models/stuff_breaking_0.txt": "b5d25ec0245d9424e767bda589971bf589267bde934c49b47488b0633349eb8a",
+    "baseball/pitch_quality/output/models/stuff_breaking_1.txt": "dccf110c82671f00114fcd55153498b5e2c4301250a388a4053c3923689efe64",
+    "baseball/pitch_quality/output/models/stuff_breaking_2.txt": "a5453a5ea67f5325ccfd7223d66afc8437c7e924a9b90d442e24f8bc4e1e1068",
+    "baseball/pitch_quality/output/models/stuff_breaking_3.txt": "b4de7427d3c6eab456cc2ea774e8f7a1186b754918c29da88297de200f4d9b6f",
+    "baseball/pitch_quality/output/models/stuff_breaking_4.txt": "02eafcec95220de8c35badfd52d3e471e60d06e181156d3cece0bdc0e6e5fc5c",
+    "baseball/pitch_quality/output/models/stuff_breaking_5.txt": "87144631e78897748893cfac2f378ca10fcc86e245a84eff061153c33c988341",
+    "baseball/pitch_quality/output/models/stuff_breaking_6.txt": "b9fbc540ccc16a07e5f7362115431a8171264e1be05474ccfad79ffa4b52ad45",
+    "baseball/pitch_quality/output/models/stuff_breaking_7.txt": "805f979b4bd37d49ca13164e388d7db372f1c0c580864c024148e48381a2a250",
+    "baseball/pitch_quality/output/models/stuff_breaking_8.txt": "f6552fae511141edee8254158ebe11855871e9d23a3b78017c30d8044f48615c",
+    "baseball/pitch_quality/output/models/stuff_breaking_9.txt": "f1f63db40abd07ce9db3d6fb45e7b54c7bf2fcde141aed9f3d9d5c1b6f7e8751",
+    "baseball/pitch_quality/output/models/stuff_fastball_0.txt": "42d22024c7e50ff63b6ff3960f901a159203b80adea71508ef16a17a5c217c74",
+    "baseball/pitch_quality/output/models/stuff_fastball_1.txt": "593acfff2a3e5d45a6ec5f874977b894baaa25352e0eab35ee85c181b9e8d605",
+    "baseball/pitch_quality/output/models/stuff_fastball_2.txt": "064ff553a1940d76099978abfb0de60e0f9149dbae5cc6cf9b6aab0dbcbd1718",
+    "baseball/pitch_quality/output/models/stuff_fastball_3.txt": "58dbc62f82dfa76634bcc31a365accf17396365df13654f588738a5b8e8051cd",
+    "baseball/pitch_quality/output/models/stuff_fastball_4.txt": "d9376db7bef8eb81706970257202964c0e1d3530632d715314d3be9390ee5b1a",
+    "baseball/pitch_quality/output/models/stuff_fastball_5.txt": "6b52ef53b6450340d56bd9779180a4c9d7a6ac8ce7835db35ff03cd15af5d2c0",
+    "baseball/pitch_quality/output/models/stuff_fastball_6.txt": "5ab68bda98671d4e689fc33494edfd22115c2038fa2606b0a3c61e7670c5cc3b",
+    "baseball/pitch_quality/output/models/stuff_fastball_7.txt": "f06722995afc37422fbbb9f6f847084e39f52e832109074d577489f010b21818",
+    "baseball/pitch_quality/output/models/stuff_fastball_8.txt": "5c1004c9b0d23205ecc69475bd42d0bdeeb0f13acfe40cad7bf189aab152c027",
+    "baseball/pitch_quality/output/models/stuff_fastball_9.txt": "ff7bf8fcc700b9aa9648f9122a360b5832c2be583f1a960d8e85594faf1c2b97",
+    "baseball/pitch_quality/output/models/stuff_offspeed_0.txt": "3350dcb149055d7939add67ba7943617d08628351224b1f3c31d364b12d04c49",
+    "baseball/pitch_quality/output/models/stuff_offspeed_1.txt": "5ea8e1266591be7b5b5a1bb772a3b36aafdf6aa23589a9aa40eee45f2d280faf",
+    "baseball/pitch_quality/output/models/stuff_offspeed_2.txt": "7364bae232136ab72fc382b836d6f289c31ba7a990da9f4a14126f4a2e29d889",
+    "baseball/pitch_quality/output/models/stuff_offspeed_3.txt": "1b8fd43b31eff7fc75f7f9358fb9249d09805b3c65a9b818a9bc5fe3a2fcf8fc",
+    "baseball/pitch_quality/output/models/stuff_offspeed_4.txt": "b43dbf8535a92a7830845d0f80a3d7e0e0a237d9c85f281f17434c46e8bd3f0b",
+    "baseball/pitch_quality/output/models/stuff_offspeed_5.txt": "089c01d97a524068831ffe619ad7efc8e605f776124a17962336df3320cf4fe7",
+    "baseball/pitch_quality/output/models/stuff_offspeed_6.txt": "e5293d103f2a190b2a85a7169fc35137fcf52cc1a76f65e3325c839165acd92b",
+    "baseball/pitch_quality/output/models/stuff_offspeed_7.txt": "75ca837eb3137967ccade7c5b9b61d69ef630e656c55a942a3938b672dd9fe5f",
+    "baseball/pitch_quality/output/models/stuff_offspeed_8.txt": "f5ec67de8260bd755200318b22e6b883545a6a0539060007c9221e58e4978c6b",
+    "baseball/pitch_quality/output/models/stuff_offspeed_9.txt": "6e77b58ecd5b9ca7812470c7aeff10bbec7fb22513a27692ae104736f24dcd93",
+    "baseball/pitch_quality/output/scale_reference.json": "18a7219e52a5b94797f8a90fdb95754687eca0f23040d1b85bf14473d45735aa"
+  },
+  "eval": {
+    "set": "Out-of-sample year over year: models refit on the earliest season only, grade the next season, and correlate with the season after's run value (MLB pitchers with enough pitches both years). Same split as the published Stuff+ validation.",
+    "set_keys": {
+      "train_season": 2024,
+      "predictor_season": 2025,
+      "outcome_season": 2026,
+      "min_pitches": 500
+    },
+    "primary": "r_next_rv",
+    "higher_is_better": true
+  },
+  "metrics": {
+    "r_next_rv": 0.3068834680844296,
+    "r_self": 0.88700105750484,
+    "split_half": 0.993950443575018,
+    "aaa_to_mlb": 0.12714399830457446,
+    "holdout_pitch_r2": 0.0006276180512180263
+  }
+}

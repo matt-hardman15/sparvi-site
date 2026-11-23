@@ -3,7 +3,7 @@ name: location_plus
 title: Location+
 sport: baseball
 status: champion
-version: 3.0.0
+version: 3.0.1
 owner: Matt
 spec: 'What the location added to the pitch: the Pitching+ model''s prediction (shape, count, batter side and where
   the pitch crossed the plate, mirrored for batter handedness, height-based zone) minus the prediction of the same
@@ -56,7 +56,6 @@ published_in:
 - baseball/tools/rule-5
 backtest:
   preregistered_at: '2026-11-19'
-  candidate: 3.0.0
   candidate_spec: 'Location value given shape: the prediction of a model on shape, count, batter side and location,
     minus the prediction of the same model without location, averaged over a pitcher''s pitches. Chosen on development
     folds that never read 2026 (baseball/pitch_quality/output/development_location.json: outcomes 2024 and 2025;
@@ -99,6 +98,9 @@ backtest:
     seasons: []
     note: 'No sealed season yet: the only test season is 2026. The 2027 season becomes the vault when it completes.'
     accesses: 0
+  amended: '2026-11-23: the `candidate: 3.0.0` line is removed. 3.0.0 passed this block and was promoted on Nov
+    20, so the block now tests the published version; nothing else in it changed. (3.0.1 is the same model, stored
+    instead of refit.) `candidate_spec` stays as the record of how the spec was chosen.'
 challengers: []
 history:
 - version: 1.0.1
@@ -110,3 +112,6 @@ history:
 promotion_exception: '2.0.0 promoted on 2026-11-14 by Matt''s decision although its frozen-set r_next_rv (0.0077)
   is below 1.0.1''s (0.0116): the gap is inside the +-0.01 reproduction tolerance, 1.0.1''s value was itself seed
   noise, and 2.0.0 removes the seed instability shared with Stuff+ (same train.py).'
+experimental: this version has no passing backtest on record yet. 3.0.1 changed shared training code only (the fitted
+  models are stored and reloaded, MODEL-ARTIFACTS); its models are those of 3.0.0, which passed. The backtest workflow
+  reruns the test on main and this label goes away when its report lands

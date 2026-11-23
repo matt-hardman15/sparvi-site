@@ -2,6 +2,38 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-23 · Stuff+ 2.0.1 → 2.0.2, Location+ 3.0.0 → 3.0.1, Pitching+ 2.0.1 → 2.0.2 (patch: stored models, no model change; MODEL-ARTIFACTS)
+**Why.** The refresh refit the bagged models every time its inputs changed, about 65 minutes plus two 25-minute
+out-of-sample fits, although the training seasons don't change during a season.
+
+**What changed.** `train.py` and `robustness.py` take their fitted bags from a model store
+(`baseball/pitch_quality/artifacts.py`). A fitted set is one bundle of LightGBM text models, named by a key made from
+what training reads: `train.py`, `features.py`, the LightGBM version, each training season's raw file and the listed
+heights of the batters in those seasons. A bundle is looked up in the local store, then the private bucket, and fitted
+only when neither has it. Scoring always uses boosters parsed from the bundle, so numbers don't depend on whether the
+model was fitted in the same process. In the refresh, a new fit is uploaded (the bucket is append-only: one object per
+key) and its key and sha256 are recorded in `baseball/pitch_quality/model_artifacts.json`, committed with the data; a
+bundle that doesn't match that record stops the run. The repeatability check moved with the training: when the
+out-of-sample set has to be fitted it is fitted twice and must come out identical. `artifacts.py` is not in the cards'
+code lists: it decides which stored fit is used and never changes a fit.
+
+**Checked.** A reloaded booster predicts exactly what the fitted one did, with the same trees and gain importance: on
+one real model group (103,330 pitches, max difference 0) and in `tests/test_training.py` for all three families.
+On this machine, `train.py` run twice (first fitting, then from the store) wrote identical files, all 117 (grades,
+scale reference, importance, the 90 model files, pitch-level predictions), and `robustness.py` likewise (3 files).
+The key ignores a batter added to the heights file later and changes with a training season's file, a training
+batter's height or the model code.
+
+**Registry.** Patch versions, registered as champions directly: the models are the ones already published. Location+'s
+backtest block loses its `candidate: 3.0.0` line (dated `amended` note: 3.0.0 passed and was promoted, so the block
+tests the published version). Until the backtest workflow records reports for the new versions on main, Stuff+ and
+Location+ show their experimental reason, which says so.
+
+**After merge.** The first refresh finds no stored fit, trains as before, uploads and records. From then on the model
+step is a download. Not done here: scoring still runs over every season each refresh (on this machine 38 minutes for
+`train.py` and 13 for `robustness.py` with stored models, against 248 and 28 when fitting; CI is about four times
+faster), and the backtest workflow still refits its own folds.
+
 ## 2026-11-20 · Triple-A → MLB translation 1.0.0 → 2.0.0 (major: a line for 50-149 PA/BF; M5-EB)
 **Why.** The translation covered players with 150+ PA or batters faced in Triple-A; the tools showed nothing below
 that, which is where most mid-season call-ups are. Stretching the published line down to them treats 60 plate
