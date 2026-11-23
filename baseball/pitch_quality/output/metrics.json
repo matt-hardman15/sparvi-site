@@ -10,41 +10,17 @@
     "pitching": 0.03
   },
   "trees": {
-    "stuff/fastball": [
-      483,
-      479,
-      441,
-      546,
-      743,
-      496,
-      712,
-      617,
-      637,
-      622
-    ],
-    "stuff/breaking": [
-      219,
-      179,
-      624,
-      307,
-      207,
-      371,
-      182,
-      342,
-      314,
-      515
-    ],
-    "stuff/offspeed": [
-      138,
-      517,
-      148,
-      231,
-      475,
-      192,
-      183,
-      361,
-      181,
-      185
+    "no_loc/breaking": [
+      73,
+      90,
+      160,
+      54,
+      46,
+      4,
+      57,
+      54,
+      70,
+      108
     ],
     "no_loc/fastball": [
       83,
@@ -58,18 +34,6 @@
       99,
       136
     ],
-    "no_loc/breaking": [
-      73,
-      90,
-      160,
-      54,
-      46,
-      4,
-      57,
-      54,
-      70,
-      108
-    ],
     "no_loc/offspeed": [
       16,
       100,
@@ -81,18 +45,6 @@
       55,
       52,
       17
-    ],
-    "pitching/fastball": [
-      584,
-      432,
-      677,
-      411,
-      471,
-      434,
-      503,
-      414,
-      469,
-      502
     ],
     "pitching/breaking": [
       243,
@@ -106,6 +58,18 @@
       345,
       402
     ],
+    "pitching/fastball": [
+      584,
+      432,
+      677,
+      411,
+      471,
+      434,
+      503,
+      414,
+      469,
+      502
+    ],
     "pitching/offspeed": [
       159,
       442,
@@ -117,37 +81,73 @@
       282,
       183,
       270
+    ],
+    "stuff/breaking": [
+      219,
+      179,
+      624,
+      307,
+      207,
+      371,
+      182,
+      342,
+      314,
+      515
+    ],
+    "stuff/fastball": [
+      483,
+      479,
+      441,
+      546,
+      743,
+      496,
+      712,
+      617,
+      637,
+      622
+    ],
+    "stuff/offspeed": [
+      138,
+      517,
+      148,
+      231,
+      475,
+      192,
+      183,
+      361,
+      181,
+      185
     ]
   },
   "train_pitch_r2": 0.0029695434777615715,
   "train_pitch_r2_loc": 0.043144930463644426,
   "train_pitch_r2_pitching": 0.04694207622741586,
-  "holdout_pitch_r2": 0.0006276180512180263,
-  "holdout_pitch_r2_loc": 0.03567374597124906,
-  "holdout_pitch_r2_pitching": 0.036395770758500645,
-  "split_half_r_stuff": 0.993950443575018,
-  "split_half_r_loc": 0.7133477019347412,
-  "split_half_r_pitching": 0.8247845813241045,
+  "holdout_pitch_r2": 0.000626959468300381,
+  "holdout_pitch_r2_loc": 0.035676911385458254,
+  "holdout_pitch_r2_pitching": 0.03639939766776601,
+  "split_half_r_stuff": 0.9939491619335308,
+  "split_half_r_loc": 0.7132339855424017,
+  "split_half_r_pitching": 0.8247171017215108,
   "split_half_r_actual_rv": 0.1985091127640586,
   "yoy_n": 324,
   "yoy_r_stuff_prev_to_rv_cur": 0.3335587919448464,
   "yoy_r_rv_prev_to_rv_cur": 0.19259585980517263,
-  "yoy_r_stuff_prev_to_stuff_cur": 0.8661862761522294,
-  "yoy_r_loc_prev_to_loc_cur": 0.6207720674675845,
-  "yoy_r_pitching_prev_to_pitching_cur": 0.7224173550991645,
+  "yoy_r_stuff_prev_to_stuff_cur": 0.8662882930995868,
+  "yoy_r_loc_prev_to_loc_cur": 0.6207580143248989,
+  "yoy_r_pitching_prev_to_pitching_cur": 0.7224781619212568,
   "aaa_to_mlb_n": 148,
   "aaa_to_mlb_r_stuff": 0.12714399830457446,
   "aaa_to_mlb_r_actual": -0.0195575881539763,
   "aaa_to_mlb_r_loc": 0.04997008960938319,
   "aaa_to_mlb_r_pitching": 0.09343572539862605,
-  "aaa_mean_stuff_plus_qualified": 91.83642632761222,
-  "mlb_mean_stuff_plus_qualified": 99.97470735023231,
-  "aaa_mean_loc_plus_qualified": 84.2194673549835,
-  "mlb_mean_loc_plus_qualified": 99.19052048043125,
-  "aaa_mean_pitching_plus_qualified": 84.8377576574916,
-  "mlb_mean_pitching_plus_qualified": 99.34000223303572,
+  "aaa_mean_stuff_plus_qualified": 91.83544697672285,
+  "mlb_mean_stuff_plus_qualified": 99.972801954886,
+  "aaa_mean_loc_plus_qualified": 84.21953765109606,
+  "mlb_mean_loc_plus_qualified": 99.18856827492702,
+  "aaa_mean_pitching_plus_qualified": 84.83728287182281,
+  "mlb_mean_pitching_plus_qualified": 99.33785254232914,
   "n_pitches_mlb": 2126609,
-  "n_pitches_aaa": 1331511,
+  "n_pitches_aaa": 1331512,
   "provenance": {
     "data": {
       "statcast_aaa_2025.parquet": {
@@ -156,7 +156,7 @@
         "last_game": "2025-09-21"
       },
       "statcast_aaa_2026.parquet": {
-        "rows": 671555,
+        "rows": 671556,
         "first_game": "2026-03-27",
         "last_game": "2026-09-20"
       },

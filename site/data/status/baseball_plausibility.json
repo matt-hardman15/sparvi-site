@@ -15,13 +15,13 @@
    "tool": "Stuff+ leaderboard",
    "name": "MLB league mean of Location+ is 100 on the MLB scale (final date, pitch-weighted)",
    "ok": true,
-   "detail": "mean 100.01 (expected 100 ± 2)"
+   "detail": "mean 100.00 (expected 100 ± 2)"
   },
   {
    "tool": "Stuff+ leaderboard",
    "name": "MLB league mean of Pitching+ is 100 on the MLB scale (final date, pitch-weighted)",
    "ok": true,
-   "detail": "mean 99.30 (expected 100 ± 2)"
+   "detail": "mean 99.29 (expected 100 ± 2)"
   },
   {
    "tool": "Stuff+ leaderboard",
@@ -135,7 +135,7 @@
    "tool": "Stuff+ leaderboard",
    "name": "MLB offspeed pitch grades average 100 within their group (±3)",
    "ok": true,
-   "detail": "Stuff+ 100.4, Location+ 99.6, Pitching+ 99.8"
+   "detail": "Stuff+ 100.3, Location+ 99.6, Pitching+ 99.8"
   },
   {
    "tool": "Stuff+ leaderboard",

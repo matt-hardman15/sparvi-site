@@ -1,0 +1,44 @@
+{
+  "oos": {
+    "inputs": {
+      "code": {
+        "features.py": "4022267505457d47023c047c51ec0e766959681b732de0c394293c9c5abd620d",
+        "train.py": "5713d5edfb91bf2c70434a988ef8c7ff1bf5a8472560777e0484f95c9c707010"
+      },
+      "heights": "3a02ae4472ef9d1303e9b552bb1464986389c6787717c2c1696ad15af5b496c6",
+      "lightgbm": "4.7.0",
+      "raw": {
+        "statcast_mlb_2024.parquet": "d1a4c7e1c3ccbcc53dfb5d512dc371bd8535a21f6759eb13aabb6b4f86a596a9"
+      },
+      "seasons": [
+        2024
+      ],
+      "set": "oos"
+    },
+    "key": "e22f06f9b1e4b9126f9d4c66d3481a980ffd9d29cb0342e6c0c17fd295c80944",
+    "object": "models/pitch_quality/oos/e22f06f9b1e4b9126f9d4c66d3481a980ffd9d29cb0342e6c0c17fd295c80944.zip",
+    "sha256": "6b39e974dcc41776198eddeeeafd6bbb1ab78c142afa4798089a5d60fda5f084"
+  },
+  "production": {
+    "inputs": {
+      "code": {
+        "features.py": "4022267505457d47023c047c51ec0e766959681b732de0c394293c9c5abd620d",
+        "train.py": "5713d5edfb91bf2c70434a988ef8c7ff1bf5a8472560777e0484f95c9c707010"
+      },
+      "heights": "451331bab2f03f4e02a501cbd0e08e9649de7742ea146f4f94f1581fc9314859",
+      "lightgbm": "4.7.0",
+      "raw": {
+        "statcast_mlb_2024.parquet": "d1a4c7e1c3ccbcc53dfb5d512dc371bd8535a21f6759eb13aabb6b4f86a596a9",
+        "statcast_mlb_2025.parquet": "95558d78cbb754a47851ac871999cc04702ccc532ca0ca3dcd1ebdbdd8d969c2"
+      },
+      "seasons": [
+        2024,
+        2025
+      ],
+      "set": "production"
+    },
+    "key": "5543b2f732b93df44b9844c7dd6e8d11a00970fb646bb997dd15e9af45179ac0",
+    "object": "models/pitch_quality/production/5543b2f732b93df44b9844c7dd6e8d11a00970fb646bb997dd15e9af45179ac0.zip",
+    "sha256": "b261d8f7bd93f8713e4837dff386581a9ba4aa2863350b54827dc6903209d927"
+  }
+}

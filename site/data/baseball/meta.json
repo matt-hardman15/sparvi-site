@@ -33,41 +33,17 @@
    "pitching": 0.03
   },
   "trees": {
-   "stuff/fastball": [
-    483,
-    479,
-    441,
-    546,
-    743,
-    496,
-    712,
-    617,
-    637,
-    622
-   ],
-   "stuff/breaking": [
-    219,
-    179,
-    624,
-    307,
-    207,
-    371,
-    182,
-    342,
-    314,
-    515
-   ],
-   "stuff/offspeed": [
-    138,
-    517,
-    148,
-    231,
-    475,
-    192,
-    183,
-    361,
-    181,
-    185
+   "no_loc/breaking": [
+    73,
+    90,
+    160,
+    54,
+    46,
+    4,
+    57,
+    54,
+    70,
+    108
    ],
    "no_loc/fastball": [
     83,
@@ -81,18 +57,6 @@
     99,
     136
    ],
-   "no_loc/breaking": [
-    73,
-    90,
-    160,
-    54,
-    46,
-    4,
-    57,
-    54,
-    70,
-    108
-   ],
    "no_loc/offspeed": [
     16,
     100,
@@ -104,18 +68,6 @@
     55,
     52,
     17
-   ],
-   "pitching/fastball": [
-    584,
-    432,
-    677,
-    411,
-    471,
-    434,
-    503,
-    414,
-    469,
-    502
    ],
    "pitching/breaking": [
     243,
@@ -129,6 +81,18 @@
     345,
     402
    ],
+   "pitching/fastball": [
+    584,
+    432,
+    677,
+    411,
+    471,
+    434,
+    503,
+    414,
+    469,
+    502
+   ],
    "pitching/offspeed": [
     159,
     442,
@@ -140,37 +104,73 @@
     282,
     183,
     270
+   ],
+   "stuff/breaking": [
+    219,
+    179,
+    624,
+    307,
+    207,
+    371,
+    182,
+    342,
+    314,
+    515
+   ],
+   "stuff/fastball": [
+    483,
+    479,
+    441,
+    546,
+    743,
+    496,
+    712,
+    617,
+    637,
+    622
+   ],
+   "stuff/offspeed": [
+    138,
+    517,
+    148,
+    231,
+    475,
+    192,
+    183,
+    361,
+    181,
+    185
    ]
   },
   "train_pitch_r2": 0.0029695434777615715,
   "train_pitch_r2_loc": 0.043144930463644426,
   "train_pitch_r2_pitching": 0.04694207622741586,
-  "holdout_pitch_r2": 0.0006276180512180263,
-  "holdout_pitch_r2_loc": 0.03567374597124906,
-  "holdout_pitch_r2_pitching": 0.036395770758500645,
-  "split_half_r_stuff": 0.993950443575018,
-  "split_half_r_loc": 0.7133477019347412,
-  "split_half_r_pitching": 0.8247845813241045,
+  "holdout_pitch_r2": 0.000626959468300381,
+  "holdout_pitch_r2_loc": 0.035676911385458254,
+  "holdout_pitch_r2_pitching": 0.03639939766776601,
+  "split_half_r_stuff": 0.9939491619335308,
+  "split_half_r_loc": 0.7132339855424017,
+  "split_half_r_pitching": 0.8247171017215108,
   "split_half_r_actual_rv": 0.1985091127640586,
   "yoy_n": 324,
   "yoy_r_stuff_prev_to_rv_cur": 0.3335587919448464,
   "yoy_r_rv_prev_to_rv_cur": 0.19259585980517263,
-  "yoy_r_stuff_prev_to_stuff_cur": 0.8661862761522294,
-  "yoy_r_loc_prev_to_loc_cur": 0.6207720674675845,
-  "yoy_r_pitching_prev_to_pitching_cur": 0.7224173550991645,
+  "yoy_r_stuff_prev_to_stuff_cur": 0.8662882930995868,
+  "yoy_r_loc_prev_to_loc_cur": 0.6207580143248989,
+  "yoy_r_pitching_prev_to_pitching_cur": 0.7224781619212568,
   "aaa_to_mlb_n": 148,
   "aaa_to_mlb_r_stuff": 0.12714399830457446,
   "aaa_to_mlb_r_actual": -0.0195575881539763,
   "aaa_to_mlb_r_loc": 0.04997008960938319,
   "aaa_to_mlb_r_pitching": 0.09343572539862605,
-  "aaa_mean_stuff_plus_qualified": 91.83642632761222,
-  "mlb_mean_stuff_plus_qualified": 99.97470735023231,
-  "aaa_mean_loc_plus_qualified": 84.2194673549835,
-  "mlb_mean_loc_plus_qualified": 99.19052048043125,
-  "aaa_mean_pitching_plus_qualified": 84.8377576574916,
-  "mlb_mean_pitching_plus_qualified": 99.34000223303572,
+  "aaa_mean_stuff_plus_qualified": 91.83544697672285,
+  "mlb_mean_stuff_plus_qualified": 99.972801954886,
+  "aaa_mean_loc_plus_qualified": 84.21953765109606,
+  "mlb_mean_loc_plus_qualified": 99.18856827492702,
+  "aaa_mean_pitching_plus_qualified": 84.83728287182281,
+  "mlb_mean_pitching_plus_qualified": 99.33785254232914,
   "n_pitches_mlb": 2126609,
-  "n_pitches_aaa": 1331511
+  "n_pitches_aaa": 1331512
  },
  "stuff_robustness": {
   "train_season": 2024,
@@ -197,9 +197,9 @@
    "bottom": 0.27
   },
   "split_half": {
-   "stuff": 0.993950443575018,
-   "loc": 0.7133477019347412,
-   "pitching": 0.8247845813241045,
+   "stuff": 0.9939491619335308,
+   "loc": 0.7132339855424017,
+   "pitching": 0.8247171017215108,
    "results": 0.1985091127640586
   },
   "yoy": {
@@ -266,9 +266,9 @@
     }
    },
    "r_self": {
-    "stuff": 0.88700105750484,
-    "loc": 0.6671649661540058,
-    "pitching": 0.7550835590301406,
+    "stuff": 0.8870962599151204,
+    "loc": 0.667146847840448,
+    "pitching": 0.755105783132149,
     "results": 0.19259585980517263
    }
   },
@@ -280,9 +280,9 @@
    "results": -0.0195575881539763
   },
   "holdout_pitch_r2": {
-   "stuff": 0.0006276180512180263,
-   "loc": 0.03567374597124906,
-   "pitching": 0.036395770758500645
+   "stuff": 0.000626959468300381,
+   "loc": 0.035676911385458254,
+   "pitching": 0.03639939766776601
   }
  },
  "shape_results": {
@@ -321,26 +321,26 @@
    "velo": {
     "threshold": 1.0,
     "n_big": 152,
-    "slope_all": 0.6582614146678649,
+    "slope_all": 0.6582583553486028,
     "gain": {
      "n": 78,
      "mean_change": 1.3550020937797114,
-     "mean_kept": 1.075658557200494,
-     "persistence": 0.8179332577304129,
+     "mean_kept": 1.075661848077452,
+     "persistence": 0.8179355806807401,
      "persistence_ci90": [
-      0.68631907997839,
-      0.9506713450935514
+      0.6863218322879826,
+      0.9506739561906197
      ],
      "share_kept_half_or_more": 0.6153846153846154
     },
     "loss": {
      "n": 74,
      "mean_change": -1.3474850011028914,
-     "mean_kept": -0.7618414371216629,
-     "persistence": 0.5524724294428407,
+     "mean_kept": -0.7618377904742231,
+     "persistence": 0.5524699036129453,
      "persistence_ci90": [
-      0.4026088192039727,
-      0.6987820163149179
+      0.4026064903839521,
+      0.698779271589316
      ],
      "share_kept_half_or_more": 0.5
     }
@@ -348,26 +348,26 @@
    "ivb": {
     "threshold": 1.5,
     "n_big": 127,
-    "slope_all": 0.787572671749155,
+    "slope_all": 0.7875716479261702,
     "gain": {
      "n": 61,
      "mean_change": 2.246911460396126,
-     "mean_kept": 1.683071679635747,
-     "persistence": 0.7357496621618108,
+     "mean_kept": 1.683074019637308,
+     "persistence": 0.7357506191469008,
      "persistence_ci90": [
-      0.5661047571993862,
-      0.9049559026290893
+      0.5661060190586318,
+      0.9049570015956764
      ],
      "share_kept_half_or_more": 0.6065573770491803
     },
     "loss": {
      "n": 66,
      "mean_change": -2.1309853363785938,
-     "mean_kept": -1.552312870651272,
-     "persistence": 0.7844273123094649,
+     "mean_kept": -1.5523107776879994,
+     "persistence": 0.7844264288740711,
      "persistence_ci90": [
-      0.6007433939833735,
-      0.9509397574167974
+      0.6007425600130041,
+      0.9509389278425802
      ],
      "share_kept_half_or_more": 0.6212121212121212
     }
@@ -375,26 +375,26 @@
    "hb": {
     "threshold": 1.5,
     "n_big": 111,
-    "slope_all": 0.7713880353371627,
+    "slope_all": 0.7714087498409046,
     "gain": {
      "n": 53,
      "mean_change": 2.139129160880813,
-     "mean_kept": 1.6433029253152032,
-     "persistence": 0.7804699407379179,
+     "mean_kept": 1.643287780995339,
+     "persistence": 0.7804637157337077,
      "persistence_ci90": [
-      0.6351338790609244,
-      0.9193245010628667
+      0.6351285493069556,
+      0.9193182825774817
      ],
      "share_kept_half_or_more": 0.6792452830188679
     },
     "loss": {
      "n": 58,
      "mean_change": -2.032537810896869,
-     "mean_kept": -1.8231402077385364,
-     "persistence": 0.8895223033697207,
+     "mean_kept": -1.823153585221083,
+     "persistence": 0.8895281657001207,
      "persistence_ci90": [
-      0.732685602785953,
-      1.0539858394033064
+      0.7326908890517528,
+      1.0539924170478185
      ],
      "share_kept_half_or_more": 0.7068965517241379
     }
@@ -403,25 +403,25 @@
   "velo_by_pitch_class": {
    "fastball_gain": {
     "n": 37,
-    "persistence": 0.8211690971048644
+    "persistence": 0.8211712565204728
    },
    "fastball_loss": {
     "n": 25,
-    "persistence": 0.3976143208966869
+    "persistence": 0.39761178043015083
    },
    "non_fastball_gain": {
     "n": 41,
-    "persistence": 0.8151444240054891
+    "persistence": 0.8151468878995055
    },
    "non_fastball_loss": {
     "n": 49,
-    "persistence": 0.6220338069060998
+    "persistence": 0.6220312876508998
    }
   },
   "baseline_offseason_drift_sd": {
-   "velo": 0.9014768216531378,
-   "ivb": 1.3377658713395622,
-   "hb": 1.1751781662400198
+   "velo": 0.9014766500059999,
+   "ivb": 1.3377658327372202,
+   "hb": 1.1751799816236081
   },
   "baseline_n": 123,
   "min_pitches_per_half": 100,
