@@ -1,10 +1,10 @@
 {
-  "run_id": "5e567cd3c07b",
+  "run_id": "809ab1732dbb",
   "model": "aaa_translation",
   "version": "2.0.0",
   "kind": "full",
-  "ran_at": "2026-11-22T21:28:52Z",
-  "code_sha": "3c70ca6df3bc9870223529dfd26897139868ca18",
+  "ran_at": "2026-11-22T23:50:45Z",
+  "code_sha": "866b3b9843a5a370156ac98203ce57f901704017",
   "lockfile": "39654de38b4c91ec",
   "preregistered_at": "2026-11-20",
   "spec": {
@@ -241,9 +241,15 @@
       "edge_over": "train_mean",
       "est": 0.002021790601336914,
       "ci90": [
+        -0.002423669680466314,
+        0.006460790092900305
+      ],
+      "interval": "rows (block bootstrap) and shuffles (t across per-shuffle means), in quadrature",
+      "ci90_rows_only": [
         0.0012988022808408902,
         0.0027039280365973315
       ],
+      "half_width_shuffles": 0.004386274615834761,
       "seeds": 20,
       "per_seed": [
         -0.019595215749368608,

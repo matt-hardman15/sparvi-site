@@ -1,10 +1,10 @@
 {
-  "run_id": "32072064f9a2",
+  "run_id": "a34ace06b6fc",
   "model": "nfl_win_prob",
   "version": "1.0.1",
   "kind": "full",
-  "ran_at": "2026-11-22T22:45:06Z",
-  "code_sha": "3c70ca6df3bc9870223529dfd26897139868ca18",
+  "ran_at": "2026-11-23T01:05:26Z",
+  "code_sha": "866b3b9843a5a370156ac98203ce57f901704017",
   "lockfile": "39654de38b4c91ec",
   "preregistered_at": "2026-11-18",
   "spec": {
@@ -179,9 +179,15 @@
       "edge_over": "null",
       "est": 0.005509720517751606,
       "ci90": [
+        0.0025106007512866024,
+        0.008611349793490595
+      ],
+      "interval": "rows (block bootstrap) and shuffles (t across per-shuffle means), in quadrature",
+      "ci90_rows_only": [
         0.004066841150128825,
         0.007155103652474818
       ],
+      "half_width_shuffles": 0.0026292239357060447,
       "seeds": 10,
       "per_seed": [
         0.00423915340537673,
