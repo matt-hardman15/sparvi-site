@@ -65,6 +65,8 @@ website:
             href: cfb/tools/team-ratings.qmd
           - text: Transfer portal board
             href: cfb/tools/portal-board.qmd
+      - text: Learn
+        href: learn/index.qmd
       - text: Glossary
         href: glossary.qmd
       - text: About

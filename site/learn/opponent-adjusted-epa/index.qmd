@@ -1,0 +1,100 @@
+---
+title: "Opponent-adjusted EPA: why schedule strength matters"
+pagetitle: "What is opponent-adjusted EPA in football?"
+description: "Opponent-adjusted EPA is a team's expected points added per play with the strength of its opponents taken out. How it works, and when it matters."
+date: 2026-11-22
+categories: [College Football, NFL, explainer]
+---
+
+::: {.finding}
+[The short answer]{.label}
+EPA (expected points added) measures how much each play changed the points an offense should expect from its drive. Opponent-adjusted EPA is a team's EPA per play with the strength of its opponents taken out, so an offense that has faced good defenses is not marked down for it. In college football, where schedules differ widely, the adjustment changes the picture. In the NFL it changes little.
+:::
+
+## See it: raw versus adjusted, every FBS team
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c1"></div>
+  <div class="plot-host" id="p1"></div>
+  <p class="caption" id="cap1"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt;
+  const meta = await S.load("/data/cfb/meta.json");
+  const wk = await S.load(`/data/cfb/team_week_${meta.season}.json`);
+  const last = a => { for (let i = a.length - 1; i >= 0; i--) if (a[i] != null) return a[i]; return null; };
+  const SIDES = { off: "Offense", def: "Defense" };
+  const st = { side: "off", q: "" };
+  // The fit rates every team in the data, FCS opponents included, so the adjustment moves nearly all of FBS the same
+  // way. What separates teams is each one's shift compared with the typical FBS team's (the median): "helped" is
+  // positive when a team gains more than that (a defense is better when lower).
+  const rows = side => { const sign = side === "off" ? 1 : -1;
+    const d = wk.teams.map(t => { const s = t.series.no_gt, raw = last(s[`${side}_epa`]), adj = last(s[`${side}_epa_adj`]);
+      return { id: t.id, conf: t.conf, raw, adj, shift: raw == null || adj == null ? null : adj - raw }; }).filter(t => t.shift != null);
+    const med = d3.median(d, t => t.shift);
+    return d.map(t => ({ ...t, med, helped: sign * (t.shift - med) })); };
+  // One scale for both sides, so switching shows that the offense and defense corrections are the same size.
+  const both = [...rows("off"), ...rows("def")];
+  const dom = d3.extent(both.flatMap(t => [t.raw, t.adj])), lim = d3.max(both, t => Math.abs(t.helped));
+  document.getElementById("c1").replaceChildren(
+    S.el("label", {}, "Side", S.seg(Object.entries(SIDES), st.side, v => { st.side = v; draw(); })),
+    S.search("Find a team", "Team", v => { st.q = v; draw(); }, st.q));
+  function draw() {
+    const d = rows(st.side), hi = st.q ? d.filter(t => t.id.toLowerCase().includes(st.q)).slice(0, 6) : [];
+    const better = st.side === "off" ? "higher is better" : "lower is better";
+    S.plot(document.getElementById("p1"), w => Plot.plot({ ...S.plotDefaults(w), height: 400, grid: true, clip: true,
+      x: { label: `Raw EPA per play (${better}) →`, domain: dom }, y: { label: "↑ Opponent-adjusted EPA per play", domain: dom },
+      color: { type: "diverging", domain: [-lim, lim], pivot: 0, range: ["#2a78d6", "#d9d8d3", "#eb6834"], legend: true, label: "Schedule, against the typical FBS team's (orange = harder)" },
+      marks: [
+        Plot.line([[dom[0], dom[0] + d[0].med], [dom[1], dom[1] + d[0].med]], { stroke: "#8a8b8f", strokeDasharray: "3,3" }),
+        Plot.dot(d, { x: "raw", y: "adj", r: 3.5, fill: "helped", fillOpacity: hi.length ? 0.25 : 0.85 }),
+        Plot.dot(hi, { x: "raw", y: "adj", r: 6, fill: "helped", stroke: "#16181d", strokeWidth: 1.5 }),
+        Plot.text(hi, { x: "raw", y: "adj", text: "id", dy: -12, fontWeight: 600 }),
+        Plot.tip(d, Plot.pointer({ x: "raw", y: "adj", title: t => `${t.id} (${t.conf})\nRaw ${f.num(t.raw, 3)} · adjusted ${f.num(t.adj, 3)}\nSchedule ${t.helped >= 0 ? "harder" : "easier"} than the typical FBS team's by ${f.num(Math.abs(t.helped), 3)} EPA per play` }))] }));
+    const big = d.filter(t => Math.abs(t.helped) >= 0.05).length;
+    document.getElementById("cap1").textContent = `${meta.season} through week ${meta.last_week}, ${SIDES[st.side].toLowerCase()}, garbage time removed. The dashed line is the typical FBS team's adjustment (${f.num(d[0].med, 3)} EPA per play: the fit includes the FCS teams on FBS schedules, so almost every FBS schedule is harder than the average of all teams in the data). Orange teams played a harder schedule than the typical FBS team and gain from the adjustment; blue teams played an easier one. ${big} of ${d.length} teams sit 0.05 EPA per play or more from the line. Search for a team or hover for its numbers.`;
+  }
+  draw();
+})();
+</script>
+```
+
+## How it's calculated
+
+A simple average of opponents' numbers runs into a circle: to know how good a team's opponents are, you need to adjust their numbers for their own opponents first. The fix is to estimate every team at once.
+
+1. Take every play of the season, with its EPA.
+2. Fit all of them together: each play's EPA is explained by the offense on the field, the defense on the field, and whether the offense was at home. This produces a strength for every offense and every defense that already accounts for who each one played.
+3. A team's adjusted number is its own EPA per play minus the average strength of the opponents it faced.
+
+Strength is measured against every team in the data. In college football that includes the FCS teams that FBS teams schedule, so nearly every FBS team's number moves in the same direction. What separates teams is how far each one moves compared with the rest, which is what the chart colors.
+
+The fit uses ridge regression, which pulls every team's strength toward average until there is enough evidence to say otherwise. Without that, a team with three games would get an extreme rating. How hard to pull is set by testing, not taste: the college penalty (λ = {{< meta cfb.lambda >}}) is the one whose ratings best predicted the next week's margins.
+
+Plays after a game is decided are left out, because teams play differently then.
+
+## When it matters
+
+**College football: a lot.** FBS teams play most of their games inside their own conference, and conferences differ in strength. In a backtest over {{< meta cfb.bt_n_games >}} games, raw EPA per play missed the next week's margin by {{< meta cfb.bt_mae_raw_epa >}} points on average and the opponent-adjusted rating by {{< meta cfb.bt_mae_ours >}}.
+
+**The NFL: not much.** Every NFL team plays a similar schedule from one pool of 32. Through week {{< meta nfl.adj_corr_week >}} of {{< meta nfl.adj_corr_season >}}, the largest correction to any offense was {{< meta nfl.adj_corr_off_max >}} EPA per play, against a spread between offenses of {{< meta nfl.adj_corr_off_sd >}}. Over {{< meta nfl.adj_n_games >}} games, adjusted numbers predicted the next week's margin no better than raw ones ({{< meta nfl.adj_mae >}} points against {{< meta nfl.adj_mae_raw >}}).
+
+## What it can't tell you
+
+- **It under-corrects on purpose.** Pulling strengths toward average means part of a real schedule effect is left in. In a simulated NFL season with a known schedule effect, the method recovered {{< meta nfl.adj_sim_recovered >}} of it over a full season and {{< meta nfl.adj_sim_recovered_week >}} partway through.
+- **Early in a season it is close to raw.** With few games, there is little evidence about any opponent, so the correction is small whether or not the schedule was hard.
+- **It adjusts for opponents, not circumstances.** Injuries, weather, and a backup quarterback's three starts are all inside a team's number.
+- **It is an average over plays.** Two teams with the same adjusted EPA can get there differently: one with steady gains, one with a few long plays.
+
+## Where to find it
+
+- The [college team ratings tool](/cfb/tools/team-ratings.html) shows adjusted or raw numbers for every FBS team, and they feed the [power rating](/learn/cfb-power-rating/).
+- The [NFL team efficiency tool](/nfl/tools/team-efficiency.html) does the same for all 32 teams.
+- Every [college team page](/cfb/teams/) and [NFL team page](/nfl/teams/) carries the adjusted numbers by week.
+- Short definitions are in the [glossary](/glossary.html#nfl-adjusted).
+
+::: {.note}
+Current versions: {{< meta models.cfb_power_rating >}} and {{< meta models.nfl_team_efficiency >}}. College data provided by [CollegeFootballData.com](https://collegefootballdata.com); NFL data from [nflverse](https://github.com/nflverse) (CC-BY 4.0). More explainers are on the [Learn page](/learn/).
+:::

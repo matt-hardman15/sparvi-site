@@ -1,0 +1,98 @@
+---
+title: "What is Stuff+? Stuff+, Location+, and Pitching+ explained"
+pagetitle: "What is Stuff+? Pitch grades explained"
+description: "Stuff+ grades a pitch on velocity, movement, and release alone. What 100 means, how Location+ and Pitching+ differ, and what the grades can't tell you."
+date: 2026-11-22
+categories: [Baseball, explainer]
+---
+
+::: {.finding}
+[The short answer]{.label}
+Stuff+ grades a pitch on its physical traits alone: how hard it is thrown, how it moves, and where it is released. Where the pitch ends up and what the hitter does with it are left out. On Sparvi, 100 is the average qualified MLB pitcher of {{< meta baseball.scale_ref_season >}} and 10 points is one standard deviation, so a 110 is one standard deviation better than average.
+:::
+
+Two companion grades use the same scale. **Location+** is what the pitch's location was worth, given the pitch. **Pitching+** puts the pitch, its location, the count, and the batter's side into one model.
+
+## See it: {{< meta baseball.season >}} MLB pitchers
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c1"></div>
+  <div class="plot-host" id="p1"></div>
+  <p class="caption" id="cap1"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt;
+  const [rows, meta] = await Promise.all([S.load("/data/baseball/stuff_pitchers.json"), S.load("/data/baseball/meta.json")]);
+  const GRADES = { stuff_plus: "Stuff+", loc_plus: "Location+", pitching_plus: "Pitching+" };
+  const st = { g: "stuff_plus", q: "" };
+  const pool = rows.filter(d => d.level === "MLB" && S.qualifies(meta.qualifiers, "MLB", null, d.pitches, d.role, 1));
+  // One scale for all three grades, so switching shows which grade spreads pitchers out more.
+  const all = pool.flatMap(d => Object.keys(GRADES).map(k => d[k])).filter(v => v != null);
+  const lo = Math.floor(d3.min(all) / 5) * 5, hi = Math.ceil(d3.max(all) / 5) * 5;
+  document.getElementById("c1").replaceChildren(
+    S.el("label", {}, "Grade", S.seg(Object.entries(GRADES), st.g, v => { st.g = v; draw(); })),
+    S.search("Find a pitcher", "Name", v => { st.q = v; draw(); }, st.q));
+  function draw() {
+    const d = pool.filter(x => x[st.g] != null);
+    const bins = d3.bin().domain([lo, hi]).thresholds(d3.range(lo, hi, 2.5)).value(x => x[st.g])(d)
+      .filter(b => b.length).map(b => ({ x0: b.x0, x1: b.x1, mid: (b.x0 + b.x1) / 2, n: b.length }));
+    const found = st.q ? d.filter(x => x.name.toLowerCase().includes(st.q)).slice(0, 3) : [];
+    S.plot(document.getElementById("p1"), w => Plot.plot({ ...S.plotDefaults(w), height: 300, marginBottom: 40,
+      x: { label: `${GRADES[st.g]} →`, domain: [lo, hi] }, y: { label: "↑ Pitchers", grid: true },
+      color: { type: "diverging", domain: [80, 120], pivot: 100, range: ["#2a78d6", "#d9d8d3", "#eb6834"], clamp: true },
+      marks: [
+        Plot.rectY(bins, { x1: "x0", x2: "x1", y: "n", fill: "mid", insetLeft: 0.5, insetRight: 0.5 }),
+        Plot.tip(bins, Plot.pointerX({ x: "mid", y: "n", title: b => `${GRADES[st.g]} ${b.x0} to ${b.x1}
+${b.n} pitcher${b.n === 1 ? "" : "s"}` })),
+        Plot.ruleX([100], { stroke: "#16181d", strokeDasharray: "3,3" }),
+        Plot.ruleX(found, { x: st.g, stroke: "#0f5257", strokeWidth: 2 }),
+        ...found.map((x, i) => Plot.text([x], { x: st.g, frameAnchor: "top", dy: 4 + 14 * i, text: d => `${d.name} ${f.num(d[st.g], 0)}`, fontWeight: 600, fill: "#0f5257", textAnchor: "start", dx: 4 })),
+        Plot.ruleY([0])] }));
+    const sd = d3.deviation(d, x => x[st.g]), above = d.filter(x => x[st.g] >= 110).length;
+    document.getElementById("cap1").textContent = `${meta.season} MLB, ${d.length} pitchers at their role's pitch minimum. The dashed line is 100, an average ${meta.scale_reference.reference_season} MLB pitcher; blue bars are below it and orange bars above. ${above} of ${d.length} grade 110 or better on ${GRADES[st.g]}, and the spread is ${f.num(sd, 1)} points. Switch grades to compare the spreads, or search for a pitcher to mark him.`;
+  }
+  draw();
+})();
+</script>
+```
+
+## The three grades
+
+**Stuff+** reads only what the pitcher controls before the ball leaves his hand and in flight: velocity, movement, spin, release point, extension, arm angle, and how each pitch differs from his primary fastball. The inputs that matter most are {{< meta baseball.stuff_top_features >}}.
+
+**Location+** asks what the spot was worth for that pitch. It is the Pitching+ model's value for the pitch where it crossed the plate, minus the value of the same pitch in the same count without the location. A fastball at the top of the zone and a slider there are not graded alike.
+
+**Pitching+** is its own model with everything in it. It is not an average of the other two, so a pitcher below 100 on both can grade lower on Pitching+ than on either.
+
+## How it's calculated
+
+Each grade starts from a model trained on MLB pitches from {{< meta baseball.train_span >}} to predict a pitch's run value: how much it changed the runs a team should expect to allow. A pitcher's grade is the average prediction over his pitches, rescaled so that the {{< meta baseball.scale_ref_n >}} MLB pitchers with {{< meta baseball.scale_ref_min >}}+ pitches in {{< meta baseball.scale_ref_season >}} average 100 with a standard deviation of 10. That scale stays fixed for the whole season, and Triple-A pitchers are graded on it too, which is why the average qualified Triple-A pitcher sits near {{< meta baseball.stuff_aaa_mean >}} Stuff+.
+
+## What it's good for
+
+A grade is useful when it is steadier than results and says something about what comes next.
+
+- **It settles fast.** Split a pitcher's season into alternating halves and his Stuff+ in one half matches the other almost exactly (r = {{< meta baseball.loc_split_stuff >}}). His run value does not (r = {{< meta baseball.loc_split_results >}}).
+- **It carries to next season.** Among {{< meta baseball.loc_yoy_n >}} MLB pitchers, last season's Stuff+ predicted this season's run value at r = {{< meta baseball.loc_next_stuff >}} ({{< meta baseball.loc_next_stuff_ci >}}) and Pitching+ at r = {{< meta baseball.loc_next_pitching >}}. Last season's run value managed r = {{< meta baseball.loc_next_results >}}.
+- **Location+ is the weaker signal.** It predicted next season at r = {{< meta baseball.loc_next_loc >}} ({{< meta baseball.loc_next_loc_ci >}}): real, but small.
+
+## What it can't tell you
+
+- **It is not results.** In the same season, Stuff+ and run value correlate at only r = {{< meta baseball.loc_r_stuff_rv >}}. Sequencing, deception, and the hitters faced are outside the model.
+- **None of these correlations is large.** Most of what happens to a pitcher next season is not predicted by any of the three grades.
+- **Small samples wobble.** Leaderboards hold pitchers to a minimum number of pitches for their role ({{< meta baseball.q_mlb_sp >}} for MLB starters).
+- **The model itself has noise.** Retraining with a different random seed moves a pitcher's Stuff+ by {{< meta baseball.stab_stuff_mean >}} points on average and his Location+ by {{< meta baseball.stab_loc_mean >}}, so a gap of a point between two pitchers is inside the model's own noise.
+- **Other sites' Stuff+ numbers differ.** The name is shared, but each model has its own inputs, training seasons, and scale. Compare pitchers within one site's version.
+
+## Where to find it
+
+- The [pitch-grade leaderboard](/baseball/tools/stuff-leaderboard.html) has every MLB and Triple-A pitcher and pitch, by week.
+- The [Triple-A explorer](/baseball/tools/triple-a.html) and every [player page](/baseball/players/) show the grades beside results.
+- [How Stuff+ is built and tested](/baseball/stuff-plus/) and [stuff or command?](/baseball/stuff-or-command/) carry the full method and checks.
+- Short definitions of every term are in the [glossary](/glossary.html).
+
+::: {.note}
+Current versions: {{< meta models.stuff_plus >}}, {{< meta models.location_plus >}}, {{< meta models.pitching_plus >}}. Data: pitch-level Statcast from [Baseball Savant](https://baseballsavant.mlb.com). More explainers are on the [Learn page](/learn/).
+:::

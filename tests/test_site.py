@@ -247,6 +247,38 @@ def act_stuff_or_command(p):
     assert p.locator("#p2 svg").count() >= 1
 
 
+def act_learn_hub(p):
+    assert p.locator(".card-link").count() == 3
+
+
+def act_learn_stuff(p):
+    """SEO-4: the pitch-grade explainer's distribution chart, its grade switch and its pitcher search."""
+    assert "average" in p.text_content(".finding") and p.locator("#p1 svg rect").count() > 5
+    cap = p.text_content("#cap1")
+    assert "Stuff+" in cap and "pitchers at their role's pitch minimum" in cap
+    seg(p, "#c1", "Location+"); assert "Location+" in p.text_content("#cap1") and p.locator("#p1 svg rect").count() > 5
+    seg(p, "#c1", "Pitching+"); assert "Pitching+" in p.text_content("#cap1")
+    search(p, "#c1", "a"); assert p.locator("#p1 svg text").count() > 0
+
+
+def act_learn_power(p):
+    """SEO-4: the power-rating explainer's two-part bars; a conference view lists only that conference."""
+    assert p.locator("#p1 svg rect").count() >= 50 and "Elo part" in p.text_content("#cap1")     # 25 teams x 2 parts
+    assert p.locator("table tbody tr").count() == 6                                              # the backtest table
+    conf = p.locator("#c1 select option").nth(1).get_attribute("value")
+    p.locator("#c1 select").select_option(conf)
+    n = p.locator("#p1 svg rect").count()
+    assert 8 <= n <= 50 and n % 2 == 0
+
+
+def act_learn_adjusted(p):
+    """SEO-4: the opponent-adjustment explainer's raw-vs-adjusted scatter, both sides, and the team search."""
+    n = p.locator("#p1 svg circle").count()
+    assert n >= 120 and "offense" in p.text_content("#cap1")
+    seg(p, "#c1", "Defense"); assert "defense" in p.text_content("#cap1") and p.locator("#p1 svg circle").count() >= 120
+    search(p, "#c1", "ohio"); assert p.locator("#p1 svg circle").count() > n
+
+
 def act_translation(p):
     assert p.locator("#p1 svg circle").count() == 10 and "bootstrap" in p.text_content("#cap1")
     assert rows(p, "#t1") == 10
@@ -712,6 +744,10 @@ PAGES = [
     ("cfb-ranked-vs-good", "/cfb/ranked-vs-good/", act_cfb_article),
     ("cfb-what-a-loss-costs", "/cfb/what-a-loss-costs/", act_cfb_loss_cost),
     ("cfb-coaching-changes", "/cfb/coaching-changes/", act_cfb_carousel),
+    ("learn", "/learn/", act_learn_hub),
+    ("learn-stuff-plus", "/learn/stuff-plus/", act_learn_stuff),
+    ("learn-cfb-power-rating", "/learn/cfb-power-rating/", act_learn_power),
+    ("learn-opponent-adjusted-epa", "/learn/opponent-adjusted-epa/", act_learn_adjusted),
     ("glossary", "/glossary.html", None),
     ("about", "/about.html", None),
     ("status", "/status.html", act_status),
@@ -876,6 +912,8 @@ def _ld_types(rel):
     ("baseball/players/ryan-ramsey-687547/index.html", {"BreadcrumbList", "ProfilePage"}),
     ("baseball/teams/aaa/oma/index.html", {"BreadcrumbList", "SportsTeam"}),
     ("glossary.html", {"BreadcrumbList"}),
+    ("learn/index.html", {"BreadcrumbList"}),
+    ("learn/stuff-plus/index.html", {"BreadcrumbList", "Article"}),
 ])
 def test_structured_data_by_page_type(rel, want):
     _, types = _ld_types(rel)

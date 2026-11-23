@@ -1,0 +1,31 @@
+---
+no-chart-libs: true
+title: "Learn"
+image: /assets/og-default.png
+pagetitle: "Learn: sports analytics metrics explained"
+description: "Plain-language explainers for the numbers on Sparvi: what each metric measures, how it's calculated, how well it predicts, and what it can't tell you."
+page-layout: full
+---
+
+Each explainer answers one question, shows the metric on current data, and says what it can and can't tell you. For one-line definitions, use the [glossary](/glossary.html).
+
+## Baseball
+
+```{=html}
+<div class="cards">
+<a class="card-link" href="/learn/stuff-plus/"><span class="kicker">Baseball · Explainer</span><h3>What is Stuff+?</h3><p>Stuff+, Location+, and Pitching+: what each pitch grade reads, what 100 means, and how well the grades predict next season.</p></a>
+</div>
+```
+
+## Football
+
+```{=html}
+<div class="cards">
+<a class="card-link" href="/learn/cfb-power-rating/"><span class="kicker">College Football · Explainer</span><h3>How the power rating works</h3><p>Points better than an average FBS team: the two parts of the rating, how the blend is fitted, and how far off it is in a typical game.</p></a>
+<a class="card-link" href="/learn/opponent-adjusted-epa/"><span class="kicker">College Football · NFL · Explainer</span><h3>Opponent-adjusted EPA</h3><p>What EPA per play looks like with the schedule taken out, why that matters in college football, and why it barely moves NFL numbers.</p></a>
+</div>
+```
+
+## Use the numbers
+
+The explainers describe the metrics. The tools hold the data: the [pitch-grade leaderboard](/baseball/tools/stuff-leaderboard.html), the [college team ratings](/cfb/tools/team-ratings.html), and [NFL team efficiency](/nfl/tools/team-efficiency.html).
