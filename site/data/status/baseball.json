@@ -92,7 +92,7 @@
   {
    "name": "statcast_aaa_2026: row count",
    "ok": true,
-   "detail": "671,556 rows (last accepted 671,555)"
+   "detail": "671,556 rows (last accepted 671,556)"
   },
   {
    "name": "statcast_aaa_2026: one row per game_pk + at_bat_number + pitch_number",
