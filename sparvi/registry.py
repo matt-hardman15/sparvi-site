@@ -254,6 +254,7 @@ def site_numbers(root: Path = ROOT) -> dict[str, str]:
             out[f"{m.name}_status"] = ("validated in the backtest harness" + (f": {covers}" if covers else "")
                                        if st["state"] == "validated"
                                        else f"experimental: {st['reason']}" if st["state"] == "experimental"
+                                       else "backtest out of date" if st.get("stale")
                                        else "not yet backtested")
     return out
 
