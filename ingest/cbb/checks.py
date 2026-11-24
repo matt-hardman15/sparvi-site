@@ -11,11 +11,19 @@ There are no basketball pages yet, so the status file is kept with the raw data 
 in site/data/status/. It holds data-derived values only.
 
     python -m ingest.cbb.checks
+    python -m ingest.cbb.checks --history     # each past season on disk (CBB-HIST), and a table of what each holds
+
+A past season gets the same checks without the ratings tables (never pulled for a past season) and without the
+in-season freshness check; its status file is data/raw/cbb/_status/cbb_<season>.json. The report flags a season as
+thin when its games, box scores or lines fall well below the other seasons'.
 """
 from __future__ import annotations
 
+import json
 import sys
 from datetime import date, timedelta
+
+import duckdb
 
 import ingest.common.checks as common
 from sparvi.config import RAW, cbb
@@ -29,12 +37,22 @@ MIN_TEAMS_RATED, MIN_TEAMS_ROSTERED, MIN_ROSTER = 0.95, 0.95, 8
 MAX_STALE, STALE_DAYS, FRESH_DAYS = 0.01, 3, 4
 
 
-def run(today: date | None = None) -> bool:
+HISTORY_TABLES = tuple(t for t in TABLES if not t.startswith("ratings"))
+THIN = 0.75                  # a past season is flagged when a count is under this share of the seasons' median
+
+
+def run(today: date | None = None, season: int | None = None) -> bool:
     cfg = cbb()
-    s, today = cfg.season, today or date.today()
+    s, today = season or cfg.season, today or date.today()
+    past = s < cfg.season
     common.STATUS = OUT / "_status"
     c = common.Checks("cbb")
-    ok = {t: c.table(f"{t}_{s}", OUT / f"{t}_{s}.parquet", t) for t in TABLES}
+    if past:                 # same contract, its own status file
+        c.sport = f"cbb_{s}"
+        prev = common.STATUS / f"{c.sport}.json"
+        c.prev_rows = json.loads(prev.read_text(encoding="utf-8")).get("rows", {}) if prev.exists() else {}
+    ok = {t: c.table(f"{t}_{s}", OUT / f"{t}_{s}.parquet", t) for t in (HISTORY_TABLES if past else TABLES)}
+    ok |= {t: False for t in TABLES if t not in ok}
     r = lambda t: f"read_parquet('{(OUT / f'{t}_{s}.parquet').as_posix()}')"  # noqa: E731
     through = {}
     if ok["games"]:
@@ -48,7 +66,7 @@ def run(today: date | None = None) -> bool:
         c.add("games: none left unplayed days after its date", stale <= MAX_STALE * max(played, 1),
               f"{stale} of {played:,} still scheduled or in progress more than {STALE_DAYS} days after tip-off (limit {MAX_STALE:.0%})")
         in_season = date.fromisoformat(cfg.start) + timedelta(days=FRESH_DAYS) <= today <= date.fromisoformat(cfg.end)
-        if in_season:
+        if in_season and not past:
             fresh = last is not None and last.date() >= today - timedelta(days=FRESH_DAYS)
             c.add("games: the newest final game is recent", fresh, f"last final game {through['last_final_game']}")
     if ok["games"] and ok["team_games"] and ok["player_games"]:
@@ -77,5 +95,55 @@ def run(today: date | None = None) -> bool:
     return c.finish(through)
 
 
+def summary(season: int) -> dict:
+    """What a season's files hold (counts only)."""
+    f = lambda t: OUT / f"{t}_{season}.parquet"  # noqa: E731
+    r = lambda t: f"read_parquet('{f(t).as_posix()}')"  # noqa: E731
+    q = lambda sql: duckdb.sql(sql).fetchone()  # noqa: E731
+    out = {"season": season}
+    if f("games").exists():
+        out["games"], out["final"], out["first"], out["last"] = q(
+            f"select count(*), count(*) filter (where status = 'final'), min(cast(startDate as date)), max(cast(startDate as date)) from {r('games')}")
+    for t in ("team_games", "player_games", "lines", "rankings", "roster", "teams", "portal"):
+        out[t] = q(f"select count(*) from {r(t)}")[0] if f(t).exists() else None
+    if f("lines").exists() and f("games").exists():
+        out["providers"] = ", ".join(x[0] for x in duckdb.sql(f"select distinct provider from {r('lines')} order by 1").fetchall())
+        out["line_share"] = q(f"select count(distinct l.gameId) / greatest(count(distinct g.id), 1) from (select id from {r('games')} "
+                              f"where status = 'final') g left join {r('lines')} l on l.gameId = g.id")[0]
+    if f("team_games").exists() and f("games").exists():
+        out["team_box_share"] = q(f"select count(distinct t.gameId) / greatest(count(distinct g.id), 1) from (select id from {r('games')} "
+                                  f"where status = 'final') g left join {r('team_games')} t on t.gameId = g.id")[0]
+    if f("player_games").exists() and f("games").exists():
+        out["player_box_share"] = q(f"select count(distinct p.gameId) / greatest(count(distinct g.id), 1) from (select id from {r('games')} "
+                                    f"where status = 'final') g left join {r('player_games')} p on p.gameId = g.id")[0]
+    return out
+
+
+def history() -> bool:
+    """The checks on every past season on disk, then one row per season and the seasons that look thin."""
+    seasons = [s for s in cbb().history_seasons if (OUT / f"games_{s}.parquet").exists()]
+    if not seasons:
+        print("no past seasons on disk (python ingest/cbb/pull.py --history)")
+        return True
+    ok = all([run(season=s) for s in seasons])
+    rows = [summary(s) for s in seasons]
+    cols = ("games", "final", "team_games", "player_games", "lines", "line_share", "team_box_share", "player_box_share", "rankings",
+            "roster", "teams", "portal")
+    print("season  first       last        " + "  ".join(f"{c:>12s}" for c in cols))
+    for x in rows:
+        cells = [("" if x.get(c) is None else f"{x[c]:.1%}" if c.endswith("share") else f"{x[c]:,}") for c in cols]
+        print(f"{x['season']}    {x.get('first')}  {x.get('last')}  " + "  ".join(f"{v:>12s}" for v in cells))
+    for x in rows:
+        print(f"{x['season']} line providers: {x.get('providers')}")
+    for c in ("final", "team_games", "player_games", "lines", "line_share"):
+        vals = sorted(x[c] for x in rows if x.get(c) is not None)
+        if vals:
+            med = vals[len(vals) // 2]
+            for x in rows:
+                if x.get(c) is not None and x[c] < THIN * med:
+                    print(f"THIN  {x['season']} {c}: {x[c]:,.3g} against a median of {med:,.3g}")
+    return ok
+
+
 if __name__ == "__main__":
-    sys.exit(0 if run() else 1)
+    sys.exit(0 if (history() if "--history" in sys.argv[1:] else run()) else 1)

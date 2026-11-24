@@ -147,13 +147,23 @@ class CBB:
     end: str
     call_reserve: int        # stop basketball pulls when the shared CFBD quota left falls to this (football needs the rest)
     approve_over: int
+    history_first: int | None = None
+
+    @property
+    def history_seasons(self) -> list[int]:
+        """Past seasons pulled once by hand (`ingest/cbb/pull.py --history`, CBB-HIST) for model development and
+        backtests. Optional everywhere: the daily workflow never pulls them, and they are read only where a file exists."""
+        return [] if self.history_first is None else list(range(self.history_first, self.season))
 
 
 @cache
 def cbb() -> CBB:
     c = _load()["cbb"]
     x = CBB(season=int(c["season"]), start=str(c["start"]), end=str(c["end"]),
-            call_reserve=int(c.get("call_reserve", 1000)), approve_over=int(c.get("approve_over", 300)))
+            call_reserve=int(c.get("call_reserve", 1000)), approve_over=int(c.get("approve_over", 300)),
+            history_first=int(c["history_first"]) if "history_first" in c else None)
+    if x.history_first is not None and x.history_first >= x.season:
+        raise ValueError("sparvi.toml: [cbb] history_first must be before season")
     if not (x.start < x.end and x.end.startswith(str(x.season))):
         raise ValueError("sparvi.toml: [cbb] the season window must end in the season's year")
     return x

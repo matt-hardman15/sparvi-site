@@ -4,6 +4,8 @@ only, no pages yet. Snapshots can't be made after the fact, and several of these
 
     python ingest/cbb/pull.py --estimate     # how many uncached calls a run needs (no calls)
     python ingest/cbb/pull.py                # pull (asks for --yes above the approval line)
+    python ingest/cbb/pull.py --history --estimate      # the same for the past seasons, per season and in total
+    python ingest/cbb/pull.py --history [--season YYYY] # pull the past seasons (CBB-HIST), newest first
 
 Output (data/raw/cbb/, never committed; raw data is not redistributed), one file per table for the season in
 sparvi.toml [cbb]:
@@ -23,6 +25,15 @@ The API returns at most 3,000 games a call (1,000 for player box scores), so gam
 player box scores by week; a window that comes back at its cap stops the pull. A window is cached for good a week
 after it ends. Columns and types are cast to contracts/cbb_ingest.yml: a column the contract doesn't list is not
 kept, and a contract column the source stops sending fails the checks.
+
+Past seasons (CBB-HIST): `--history` pulls each season from sparvi.toml [cbb] history_first to the one before the
+current season, for model development and backtests. By hand, once; the daily workflow never does. Same tables,
+windows, caps and contract, with two differences. Every window of a past season is final, so its response is cached
+for good. And the three ratings tables are NOT pulled: the source overwrites them, so a past season's file would hold
+end-of-season values, and anything reading it as a feature for a game in that season would be reading the future. A
+past season whose response doesn't fit the contract (a column missing, a value of another type) is not written: the
+pull stops and names the difference. `--history` also stops before calling if it would leave fewer than
+HISTORY_FLOOR calls in the month.
 
 Calls: about a dozen a run. The quota (5,000 a month) is shared with college football; the pull stops at the
 reserve in sparvi.toml [cbb].
@@ -45,6 +56,8 @@ from sparvi.config import RAW, ROOT, cbb
 
 BASE = "https://api.collegebasketballdata.com"
 OUT = RAW / "cbb"
+HISTORY_FLOOR = 2000         # a history pull must leave at least this many calls in the month (football, the portal window)
+RATINGS = ("ratings_adjusted", "ratings_srs", "ratings_elo")     # overwritten at the source: current season only
 FINISHED_DAYS = 7            # a window is final (cacheable) this long after it ends
 CAPS = {"/games": 3000, "/games/teams": 3000, "/lines": 3000, "/games/players": 1000}    # games per call (API docs)
 TYPES = {"BIGINT": "Int64", "DOUBLE": "float64", "BOOLEAN": "boolean", "VARCHAR": "string"}
@@ -59,10 +72,12 @@ def client() -> Client:
     return Client(reserve=cbb().call_reserve, base=BASE, cache=OUT / "cache", log=OUT / "_calls.csv")
 
 
-def windows(days: int | None) -> list[tuple[pd.Timestamp, pd.Timestamp]]:
-    """[start, end) windows covering the season: calendar months (days None) or runs of `days` from the season's first day."""
+def windows(days: int | None, season: int | None = None) -> list[tuple[pd.Timestamp, pd.Timestamp]]:
+    """[start, end) windows covering the season: calendar months (days None) or runs of `days` from the season's first day.
+    A past season has the current season's first and last day, that many years earlier."""
     cfg = cbb()
-    first, last = pd.Timestamp(cfg.start, tz="UTC"), pd.Timestamp(cfg.end, tz="UTC") + pd.Timedelta(days=1)
+    back = pd.DateOffset(years=cfg.season - (season or cfg.season))
+    first, last = pd.Timestamp(cfg.start, tz="UTC") - back, pd.Timestamp(cfg.end, tz="UTC") - back + pd.Timedelta(days=1)
     out, a = [], first
     while a < last:
         b = (a + pd.offsets.MonthBegin(1)).normalize() if days is None else a + pd.Timedelta(days=days)
@@ -71,21 +86,25 @@ def windows(days: int | None) -> list[tuple[pd.Timestamp, pd.Timestamp]]:
     return out
 
 
-def requests_for(now: datetime | None = None) -> list[tuple[str, str, dict, bool]]:
-    """(table, endpoint, params, completed) for the season, windows not yet begun left out."""
+def requests_for(now: datetime | None = None, season: int | None = None) -> list[tuple[str, str, dict, bool]]:
+    """(table, endpoint, params, completed) for the season, windows not yet begun left out. A past season (CBB-HIST):
+    no ratings tables (module docstring), and everything is completed, so every response is cached for good."""
     now = now or _now()
-    s = cbb().season
+    s = season or cbb().season
+    past = s < cbb().season
     r = [("teams", "/teams", {"season": s}, False), ("rankings", "/rankings", {"season": s}, False),
          ("ratings_adjusted", "/ratings/adjusted", {"season": s}, False), ("ratings_srs", "/ratings/srs", {"season": s}, False),
          ("ratings_elo", "/ratings/elo", {"season": s}, False), ("roster", "/teams/roster", {"season": s}, False),
          ("portal", "/recruiting/portal", {"year": s}, False)]
+    if past:
+        r = [(t, ep, prm, True) for t, ep, prm, _ in r if t not in RATINGS]
     for table, ep, days in (("games", "/games", None), ("team_games", "/games/teams", None), ("lines", "/lines", None),
                             ("player_games", "/games/players", 7)):
-        for a, b in windows(days):
+        for a, b in windows(days, s):
             if a > now:
                 continue
             prm = {"season": s, "startDateRange": a.strftime("%Y-%m-%dT%H:%M:%SZ"), "endDateRange": b.strftime("%Y-%m-%dT%H:%M:%SZ")}
-            r.append((table, ep, prm, b < now - timedelta(days=FINISHED_DAYS)))
+            r.append((table, ep, prm, past or b < now - timedelta(days=FINISHED_DAYS)))
     return r
 
 
@@ -147,6 +166,31 @@ def conform(df: pd.DataFrame, table: str, spec: dict) -> pd.DataFrame:
     return out.drop_duplicates(spec["key"], keep="last").sort_values(spec["key"], kind="stable").reset_index(drop=True)
 
 
+def mismatch(df: pd.DataFrame, spec: dict) -> list[str]:
+    """How a flattened response differs from the contract: columns it lacks, and columns holding a value the contract's
+    type can't take (conform would turn it into a missing value without a word)."""
+    out = [f"no column {c}" for c in spec["columns"] if c not in df.columns]
+    for c, t in spec["columns"].items():
+        if c not in df.columns:
+            continue
+        v = df[c].dropna()
+        if t in ("BIGINT", "DOUBLE"):
+            bad = v[pd.to_numeric(v, errors="coerce").isna() | v.map(lambda x: isinstance(x, (bool, str)))]
+            if t == "BIGINT" and bad.empty:
+                bad = v[pd.to_numeric(v) % 1 != 0]
+        elif t == "BOOLEAN":
+            bad = v[~v.map(lambda x: isinstance(x, bool))]
+        else:
+            bad = v[v.map(lambda x: isinstance(x, (bool, int, float)))]
+        if len(bad):
+            out.append(f"{c} is {t} in the contract; {len(bad):,} values are not (e.g. {bad.iloc[0]!r})")
+    return out
+
+
+class ContractMismatch(RuntimeError):
+    pass
+
+
 def infer(df: pd.DataFrame) -> dict[str, str]:
     """A first contract from a real pull (review by hand: an all-missing column can only be guessed)."""
     out = {}
@@ -164,10 +208,11 @@ def infer(df: pd.DataFrame) -> dict[str, str]:
 
 
 # ---- the pull ---------------------------------------------------------------------------------------------------
-def pull(c: Client, infer_only: bool = False) -> dict[str, pd.DataFrame]:
-    s = cbb().season
+def pull(c: Client, infer_only: bool = False, season: int | None = None) -> dict[str, pd.DataFrame]:
+    s = season or cbb().season
+    past = s < cbb().season
     raw: dict[str, list] = {}
-    for table, ep, prm, done in requests_for():
+    for table, ep, prm, done in requests_for(season=s):
         data = c.get(ep, prm, done)
         if ep in CAPS:
             games = len({g.get("gameId", g.get("id")) for g in data})
@@ -180,8 +225,13 @@ def pull(c: Client, infer_only: bool = False) -> dict[str, pd.DataFrame]:
     d1 = {t["id"] for t in raw.get("teams", [])}
     if "roster" in raw:            # the roster endpoint returns every school the source knows; keep Division I
         raw["roster"] = [t for t in raw["roster"] if t.get("teamId") in d1]
-    for table, rows in raw.items():
-        df = FRAMES[table](rows)
+    flat = {table: FRAMES[table](rows) for table, rows in raw.items()}
+    if past and not infer_only:        # a past season is written whole or not at all
+        bad = {t: m for t, df in flat.items() if not df.empty and t in specs and (m := mismatch(_jsonable(df), specs[t]))}
+        if bad:
+            lines = [f"  {t}: {x}" for t, m in bad.items() for x in m]
+            raise ContractMismatch("\n".join([f"season {s} doesn't fit contracts/cbb_ingest.yml; nothing written for it:", *lines]))
+    for table, df in flat.items():
         if infer_only:
             frames[table] = df
             continue
@@ -196,17 +246,62 @@ def pull(c: Client, infer_only: bool = False) -> dict[str, pd.DataFrame]:
     return frames
 
 
+def _need(c: Client, season: int | None = None) -> int:
+    return sum(1 for _, ep, prm, done in requests_for(season=season) if not (done and c.cached(ep, prm)))
+
+
+def history(c: Client, cfg, a) -> int:
+    """The past seasons, newest first (if the quota runs short, the recent seasons are the ones on disk)."""
+    seasons = sorted(cfg.history_seasons, reverse=True)
+    if a.season:
+        if a.season not in seasons:
+            print(f"season {a.season} is not a history season ({seasons[-1]} to {seasons[0]})")
+            return 2
+        seasons = [a.season]
+    need = {s: _need(c, s) for s in seasons}
+    total = sum(need.values())
+    for s in seasons:
+        print(f"season {s}: {need[s]} uncached calls needed")
+    print(f"history, {len(seasons)} season(s): {total} uncached calls needed; {c.remaining} left this month (shared with football), "
+          f"{c.remaining - total} after; a history pull must leave {HISTORY_FLOOR}")
+    if a.estimate:
+        return 0
+    if c.remaining - total < HISTORY_FLOOR:
+        print(f"that would leave fewer than {HISTORY_FLOOR} calls: not pulling. Pull fewer seasons (--season YYYY) or wait for next month")
+        return 2
+    if total > cfg.approve_over and not a.yes:
+        print(f"more than {cfg.approve_over} calls: rerun with --yes")
+        return 2
+    for s in seasons:
+        print(f"season {s}:")
+        try:
+            frames = pull(c, infer_only=a.infer, season=s)
+        except (BudgetExhausted, ContractMismatch) as e:
+            print(f"stopped: {e}")
+            return 1
+        if a.infer:
+            print(yaml.safe_dump({t: {"columns": infer(df)} for t, df in frames.items() if not df.empty}, sort_keys=False, width=200))
+    print(f"{c.calls - 1} calls used; {c.remaining} left")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--estimate", action="store_true")
     ap.add_argument("--yes", action="store_true", help="go ahead above the approval line")
     ap.add_argument("--infer", action="store_true", help="print a contract inferred from this pull (writes no table)")
+    ap.add_argument("--history", action="store_true", help="the past seasons (CBB-HIST), not the current one; by hand only")
+    ap.add_argument("--season", type=int, help="with --history: this past season only")
     a = ap.parse_args()
+    if a.season and not a.history:
+        ap.error("--season goes with --history")
     cfg = cbb()
     c = client()
-    need = sum(1 for _, ep, prm, done in requests_for() if not (done and c.cached(ep, prm)))
     info = c.info()                                   # free: it consumes no calls
     c.remaining = info.get("remainingCalls")
+    if a.history:
+        return history(c, cfg, a)
+    need = _need(c)
     print(f"season {cfg.season}: {need} uncached calls needed; {c.remaining} left this month (shared with football), "
           f"basketball stops at {cfg.call_reserve}")
     if a.estimate:

@@ -183,13 +183,45 @@ def _poll_available(df: pd.DataFrame, ingested: pd.Timestamp) -> pd.Series:
     return d.fillna(ingested.tz_localize(None).normalize())
 
 
+def _tipoff(df: pd.DataFrame, ingested: pd.Timestamp) -> pd.Series:
+    """A past season's line is taken as known at tip-off (the source keeps one row per game and book, no history)."""
+    return pd.to_datetime(df["startDate"], utc=True).dt.tz_localize(None)
+
+
+def _season_start(season: int):
+    """A past season's attribute tables (teams, rosters) are taken as known from its first day. Approximate: the source
+    keeps one version, so a mid-season change is already in it."""
+    c = cbb()
+    first = pd.Timestamp(c.start) - pd.DateOffset(years=c.season - season)
+    return lambda df, ingested: pd.Series(first, index=df.index)
+
+
+def cbb_history_tables() -> list[Table]:
+    """Past seasons (CBB-HIST): pulled by hand for model development and backtests; a table only where its file exists,
+    so the daily workflow, which never pulls them, is unaffected. No ratings tables: the source overwrites them, so a
+    past season's would be end-of-season values. Game data is known the day after tip-off, as in the current season.
+    Lines are for scoring forecasts only, never a feature."""
+    d, out = RAW / "cbb", []
+    for s in cbb().history_seasons:
+        f = lambda name, s=s: d / f"{name}_{s}.parquet"  # noqa: E731
+        out += [Table(f"cbb_teams_{s}", f("teams"), ("id",), _season_start(s)),
+                Table(f"cbb_games_{s}", f("games"), ("id",), _cbb_game_available),
+                Table(f"cbb_team_games_{s}", f("team_games"), ("gameId", "teamId"), _tipoff_next_day),
+                Table(f"cbb_player_games_{s}", f("player_games"), ("gameId", "teamId", "player_athleteId"), _tipoff_next_day),
+                Table(f"cbb_lines_{s}", f("lines"), ("gameId", "provider"), _tipoff),
+                Table(f"cbb_rankings_{s}", f("rankings"), ("season", "seasonType", "week", "pollType", "teamId"), _poll_available),
+                Table(f"cbb_roster_{s}", f("roster"), ("teamId", "player_id"), _season_start(s))]
+    return [t for t in out if t.path.exists()]
+
+
 def cbb_tables() -> list[Table]:
-    """College basketball (CBB-0a): the current season only. Ratings, lines and rosters are overwritten at the source,
+    """College basketball (CBB-0a): the current season, then any past seasons on disk (cbb_history_tables). Ratings,
+    lines and rosters are overwritten at the source,
     so each version is recorded when first seen; that record is why the pull started before there were any pages
     (The three ratings tables change wholesale every night; at 365 rows they are under the mass-update guard's floor.)"""
     s, d = cbb().season, RAW / "cbb"
     f = lambda name: d / f"{name}_{s}.parquet"  # noqa: E731
-    return [Table(f"cbb_teams_{s}", f("teams"), ("id",)),
+    return cbb_history_tables() + [Table(f"cbb_teams_{s}", f("teams"), ("id",)),
             Table(f"cbb_games_{s}", f("games"), ("id",), _cbb_game_available),
             Table(f"cbb_team_games_{s}", f("team_games"), ("gameId", "teamId"), _tipoff_next_day),
             Table(f"cbb_player_games_{s}", f("player_games"), ("gameId", "teamId", "player_athleteId"), _tipoff_next_day),
