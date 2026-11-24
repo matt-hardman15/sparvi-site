@@ -5,7 +5,7 @@ description: "Triple-A players likely eligible for the Rule 5 Draft and not on a
 page-layout: full
 ---
 
-Every {{< meta baseball.season >}} Triple-A player who is likely eligible for the Rule 5 Draft and isn't on a 40-man roster, as of the {{< meta baseball.r5_snapshot >}} roster snapshot. Pitchers are graded on [Stuff+](/baseball/stuff-plus/) and strikeout-minus-walk rate, with [Location+ and Pitching+](/baseball/stuff-or-command/) alongside; hitters on swing decisions and contact quality, the numbers that [carry over best](/baseball/two-week-signal/). Eligibility is an **estimate** from signing dates and ages; hover a status for the reasoning. What the board shows and what it can't: [the Rule 5 board, explained](/baseball/rule-5/).
+Every {{< meta baseball.season >}} Triple-A player who is [likely eligible](/learn/rule-5-eligibility/) for the Rule 5 Draft and isn't on a 40-man roster, as of the {{< meta baseball.r5_snapshot >}} roster snapshot. Pitchers are graded on [Stuff+](/baseball/stuff-plus/) and strikeout-minus-walk rate, with [Location+ and Pitching+](/baseball/stuff-or-command/) alongside; hitters on swing decisions and contact quality, the numbers that [carry over best](/baseball/two-week-signal/). Eligibility is an **estimate** from signing dates and ages; hover a status for the reasoning. What the board shows and what it can't: [the Rule 5 board, explained](/baseball/rule-5/).
 
 ```{=html}
 <div class="explorer">

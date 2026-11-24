@@ -51,7 +51,7 @@ Longer explainers for the main metrics are on the [Learn page](/learn/).
 
 ## Roster rules
 
-[**Rule 5 eligible**]{#rule-5}: A player not on a 40-man roster whose protection window has run out can be taken by another club in the Rule 5 Draft. The window is five seasons for a player who was 18 or younger on the June 5 before his first pro contract, four for 19 or older. The [Rule 5 board](/baseball/tools/rule-5.html) estimates eligibility from signing dates and ages; its statuses are **Eligible** (signing date known), **Likely eligible** (signing date estimated from the draft year), and **Unknown** (no signing record). How well the estimate matched published lists is in the [method box](/baseball/rule-5/#method).
+[**Rule 5 eligible**]{#rule-5}: A player not on a 40-man roster whose protection window has run out can be taken by another club in the Rule 5 Draft. The window is five seasons for a player who was 18 or younger on the June 5 before his first pro contract, four for 19 or older ([how eligibility works](/learn/rule-5-eligibility/)). The [Rule 5 board](/baseball/tools/rule-5.html) estimates eligibility from signing dates and ages; its statuses are **Eligible** (signing date known), **Likely eligible** (signing date estimated from the draft year), and **Unknown** (no signing record). How well the estimate matched published lists is in the [method box](/baseball/rule-5/#method).
 
 ## Conventions
 
