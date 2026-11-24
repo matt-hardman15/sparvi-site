@@ -1,0 +1,91 @@
+---
+title: "Chase rate, zone contact, and swing decisions explained"
+pagetitle: "Chase rate and swing decisions, explained"
+description: "Chase rate, zone swing, zone contact, and whiff rate: what each measures, why they settle faster than results, and how they carry from Triple-A to MLB."
+date: 2026-11-23
+categories: [Baseball, explainer, hitting]
+---
+
+::: {.finding}
+[The short answer]{.label}
+Swing decisions are which pitches a hitter chooses to swing at. **Chase rate** is how often he swings at pitches outside the strike zone. **Zone swing** is how often he swings at pitches in it. **Zone contact** is how often those in-zone swings hit the ball, and **whiff rate** is how often any swing misses. They describe the hitter's approach, not his results, and they settle in far fewer plate appearances than results such as wOBA do.
+:::
+
+## See it: Triple-A hitters this season
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c1"></div>
+  <div class="plot-host" id="p1"></div>
+  <p class="caption" id="cap1"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt;
+  const [rows, meta] = await Promise.all([S.load("/data/baseball/aaa_hitters.json"), S.load("/data/baseball/meta.json")]);
+  // y metric: [label, lower is better?]
+  const YS = { zone_contact_pct: ["Zone contact", false], zone_swing_pct: ["Zone swing", false], whiff_pct: ["Whiff rate", true] };
+  const st = { y: "zone_contact_pct", q: "" };
+  const pool = rows.filter(d => d.qualified && d.chase_pct != null && d.xwoba_pctl != null);
+  document.getElementById("c1").replaceChildren(
+    S.el("label", {}, "Against chase rate", S.seg(Object.entries(YS).map(([k, v]) => [k, v[0]]), st.y, v => { st.y = v; draw(); })),
+    S.search("Find a hitter", "Name", v => { st.q = v; draw(); }, st.q));
+  const pct = v => f.num(100 * v, 1) + "%";
+  function draw() {
+    const [label, lowGood] = YS[st.y], d = pool.filter(x => x[st.y] != null);
+    const hi = st.q ? d.filter(x => x.name.toLowerCase().includes(st.q)).slice(0, 6) : [];
+    const mx = d3.median(d, x => x.chase_pct), my = d3.median(d, x => x[st.y]);
+    S.plot(document.getElementById("p1"), w => Plot.plot({ ...S.plotDefaults(w), height: 400, grid: true, marginBottom: 45,
+      // Both axes point the same way: right and up are better for the hitter.
+      x: { label: "Chase rate (axis flipped: right chases less) →", tickFormat: v => f.num(100 * v, 0) + "%", reverse: true, nice: true },
+      y: { label: `↑ ${label}${lowGood ? " (axis flipped: up misses less)" : ""}`, tickFormat: v => f.num(100 * v, 0) + "%", reverse: lowGood, nice: true },
+      color: { type: "diverging", domain: [0, 100], pivot: 50, range: ["#2a78d6", "#d9d8d3", "#eb6834"], legend: true, label: "xwOBA percentile among qualified Triple-A hitters" },
+      marks: [
+        Plot.ruleX([mx], { stroke: "#8a8b8f", strokeDasharray: "3,3" }), Plot.ruleY([my], { stroke: "#8a8b8f", strokeDasharray: "3,3" }),
+        Plot.dot(d, { x: "chase_pct", y: st.y, r: 3.5, fill: "xwoba_pctl", fillOpacity: hi.length ? 0.2 : 0.85 }),
+        Plot.dot(hi, { x: "chase_pct", y: st.y, r: 6, fill: "xwoba_pctl", stroke: "#16181d", strokeWidth: 1.5 }),
+        Plot.text(hi, { x: "chase_pct", y: st.y, text: "name", dy: -12, fontWeight: 600 }),
+        Plot.tip(d, Plot.pointer({ x: "chase_pct", y: st.y, title: x => `${x.name} (${x.team}, ${f.int(x.pa)} PA)\nChase ${pct(x.chase_pct)} · zone swing ${pct(x.zone_swing_pct)}\nZone contact ${pct(x.zone_contact_pct)} · whiff ${pct(x.whiff_pct)}\nxwOBA ${f.num(x.xwoba, 3)} (percentile ${f.num(x.xwoba_pctl, 0)})` }))] }));
+    const r = S.corr(d, "chase_pct", st.y);
+    document.getElementById("cap1").textContent = `${meta.season} Triple-A, ${d.length} qualified hitters. Dashed lines are the league medians: a ${pct(mx)} chase rate and ${pct(my)} ${label.toLowerCase()}. Right and up are better for the hitter. Chase rate and ${label.toLowerCase()} are ${Math.abs(r) < 0.2 ? "nearly unrelated" : "related"} (r = ${f.num(r, 2)}), so they are separate skills to read. Color is contact quality (xwOBA): look for whether orange gathers in one corner. Search for a hitter or hover for his numbers.`;
+  }
+  draw();
+})();
+</script>
+```
+
+## The four numbers
+
+- **Chase rate** = swings at pitches outside the zone ÷ pitches outside the zone. Lower is better. Bunt attempts are left out.
+- **Zone swing** = swings at pitches in the zone ÷ pitches in the zone. A hitter who rarely chases but also takes strikes is passive, not selective, so read the two together.
+- **Zone contact** = contact ÷ swings at pitches in the zone. It is the bat-to-ball part.
+- **Whiff rate** = swinging strikes ÷ all swings. Foul tips count as whiffs, matching Baseball Savant.
+
+All four depend on where the zone is. Sparvi uses the rulebook zone: from {{< meta baseball.loc_zone_bottom >}} to {{< meta baseball.loc_zone_top >}} of the batter's listed height, as wide as the plate, with a pitch counted in the zone if any part of the ball touches it. Statcast records that zone for MLB from {{< meta baseball.season >}} and for Triple-A throughout. Earlier MLB seasons used a taller zone set from each batter's stance, so Sparvi applies the height-based zone to every season and level to keep the rates comparable.
+
+## Why they are worth reading
+
+**They settle fast.** Split Triple-A seasons into {{< meta baseball.tw_block_days >}}-day blocks and compare each hitter's block with his next one ({{< meta baseball.tw_hit_pairs >}} pairs, {{< meta baseball.tw_seasons >}}). Chase rate in one block correlated with the next at r = {{< meta baseball.tw_hit_chase >}} and whiff rate at {{< meta baseball.tw_hit_whiff >}}. xwOBA managed {{< meta baseball.tw_hit_xwoba >}} and wOBA {{< meta baseball.tw_hit_woba >}}. Two weeks of swing decisions say something; two weeks of results mostly don't. [The two-week signal](/baseball/two-week-signal/) has the full comparison.
+
+**They carry to the majors.** Across {{< meta baseball.tr_h_n_pooled >}} moves from Triple-A to MLB, a hitter's chase rate at the two levels correlated at r = {{< meta baseball.tr_h_r_chase_pct >}} ({{< meta baseball.tr_h_r_chase_pct_ci >}}), whiff rate at {{< meta baseball.tr_h_r_whiff_pct >}}, zone swing at {{< meta baseball.tr_h_r_zone_swing_pct >}}, and zone contact at {{< meta baseball.tr_h_r_zone_contact_pct >}}. His wOBA carried at {{< meta baseball.tr_h_r_woba >}}.
+
+**The shift is predictable.** Against major league pitching the typical hitter chased {{< meta baseball.tr_h_adj_chase_pct_abs >}} points more and whiffed {{< meta baseball.tr_h_adj_whiff_pct_abs >}} points more. [The Triple-A translation](/baseball/aaa-translation/) gives the shift for every number.
+
+## What they can't tell you
+
+- **Approach is not production.** A hitter's Triple-A chase rate correlated with his MLB xwOBA at only r = {{< meta baseball.tr_h_out_chase_pct >}}. Not chasing helps, but a hitter still has to hit the ball hard.
+- **They depend on the pitches he saw.** A hitter who is pitched around sees more balls, and one who faces weak pitching sees more hittable strikes. The rates are not adjusted for either.
+- **Small samples still wobble.** These numbers settle faster than results, not instantly. Tools mark hitters below {{< meta baseball.min_pa_qualified >}} plate appearances over a full season as unqualified.
+- **Other sites' rates differ.** The formulas are the same, but the zone is not, so a chase rate here can differ from the same hitter's rate elsewhere.
+- **Hitters here are Triple-A only.** Sparvi's hitting pages cover Triple-A.
+
+## Where to find it
+
+- The [Triple-A explorer](/baseball/tools/triple-a.html) ranks every hitter on all four, with league percentiles and what changed in the last two weeks.
+- Each [player page](/baseball/players/) charts them through the season.
+- The [Rule 5 board](/baseball/tools/rule-5.html) ranks unprotected hitters on swing decisions and contact quality, and [how Rule 5 eligibility works](/learn/rule-5-eligibility/) explains who is on it.
+- Short definitions, including the [strike zone](/glossary.html#strike-zone), are in the [glossary](/glossary.html).
+
+::: {.note}
+Data: pitch-level Statcast from [Baseball Savant](https://baseballsavant.mlb.com). Sparvi publishes aggregates only. More explainers are on the [Learn page](/learn/).
+:::

@@ -37,7 +37,7 @@ Longer explainers for the main metrics are on the [Learn page](/learn/).
 
 ## Hitting
 
-**Chase rate**: Swings at pitches outside the strike zone ÷ pitches outside the zone. Bunt attempts are excluded.
+**Chase rate**: Swings at pitches outside the strike zone ÷ pitches outside the zone. Bunt attempts are excluded. Explainer: [swing decisions](/learn/swing-decisions/).
 
 **Zone swing / zone contact**: Swing rate on pitches in the zone, and contact rate on those swings.
 
