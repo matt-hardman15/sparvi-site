@@ -1,10 +1,10 @@
 {
-  "run_id": "3d1649200e0a",
+  "run_id": "77742e0f9a87",
   "model": "nfl_win_prob",
   "version": "1.0.1",
   "kind": "full",
-  "ran_at": "2026-11-24T17:39:41Z",
-  "code_sha": "f9b7b71bf065839db06ad945b3f4cfff498dbf64",
+  "ran_at": "2026-11-24T19:15:57Z",
+  "code_sha": "4033cc85d822e04684f048a265d0826bcb96a33b",
   "lockfile": "39654de38b4c91ec",
   "preregistered_at": "2026-11-18",
   "spec": {
@@ -76,11 +76,11 @@
     "point": 0.15842633747254756,
     "baselines": {
       "baseline": {
-        "value": 0.16983901904062548,
+        "value": 0.1698390190406255,
         "paired": {
-          "est": -0.011412681568077926,
+          "est": -0.011412681568077954,
           "ci90": [
-            -0.014870066184502219,
+            -0.014870066184502217,
             -0.007970972785024587
           ],
           "n": 246692,
@@ -106,10 +106,10 @@
       "ci_excludes_zero": true
     },
     "passed": true,
-    "gap": 0.011412681568077926,
+    "gap": 0.011412681568077954,
     "per_baseline": {
       "baseline": {
-        "gap": 0.011412681568077926,
+        "gap": 0.011412681568077954,
         "ci90_low": 0.007970972785024587
       }
     }
@@ -225,7 +225,7 @@
   "primary": {
     "metric": "brier",
     "point": 0.15842633747254756,
-    "baseline": 0.16983901904062548
+    "baseline": 0.1698390190406255
   },
   "revision_safe": false,
   "approximate_tables": []
