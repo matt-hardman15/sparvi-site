@@ -178,7 +178,7 @@
         2024,
         2025
       ],
-      "decisions": 2019,
+      "decisions": 2186,
       "bootstrap": 50,
       "p_block": 0.005017984812824726,
       "fg_snap": 18.0,
@@ -190,11 +190,11 @@
       },
       "kick_start": 69.058986814712,
       "calls": {
-        "go": 409,
-        "kick": 432,
-        "toss-up": 1178
+        "go": 449,
+        "kick": 472,
+        "toss-up": 1265
       },
-      "inputs": "a055839b7ae7a71c07ac23fe05c2ee4e4572dc048b2895439a12594a91a92a6e"
+      "inputs": "75dc383727d525fca38a423c23051fb12528bae0e7234be57a0b05a1c3b42487"
     }
   }
 }
