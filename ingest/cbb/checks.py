@@ -14,11 +14,13 @@ in site/data/status/. It holds data-derived values only.
     python -m ingest.cbb.checks --history     # each past season on disk (CBB-HIST), and a table of what each holds
 
 A past season gets the same checks without the ratings tables (never pulled for a past season) and without the
-in-season freshness check; its status file is data/raw/cbb/_status/cbb_<season>.json. The report flags a season as
+in-season freshness check, and with the portal table; a game still "scheduled" is reported as not played, and
+possessions are held to each season's measured rate (KNOWN_GAPS); its status file is data/raw/cbb/_status/cbb_<season>.json. The report flags a season as
 thin when its games, box scores or lines fall well below the other seasons'.
 """
 from __future__ import annotations
 
+import copy
 import json
 import sys
 from datetime import date, timedelta
@@ -37,7 +39,13 @@ MIN_TEAMS_RATED, MIN_TEAMS_ROSTERED, MIN_ROSTER = 0.95, 0.95, 8
 MAX_STALE, STALE_DAYS, FRESH_DAYS = 0.01, 3, 4
 
 
-HISTORY_TABLES = tuple(t for t in TABLES if not t.startswith("ratings"))
+HISTORY_TABLES = tuple(t for t in TABLES if not t.startswith("ratings")) + ("portal",)
+# Past seasons' known gaps (Matt, Nov 24 2026): the source's older box scores are partial (points always, the rest
+# sometimes), so possessions are missing more often than the contract allows for the current season. The contract is
+# unchanged; a past season is held to what the pull of Nov 24 2026 measured, plus half a point, so a later pull that
+# is worse still fails. Measured: 23.52%, 8.73%, 2.32%, 2.59% (2024 and 2026 are under the contract's 2%).
+KNOWN_GAPS = {2021: {("team_games", "teamStats_possessions"): 0.24}, 2022: {("team_games", "teamStats_possessions"): 0.0925},
+              2023: {("team_games", "teamStats_possessions"): 0.0285}, 2025: {("team_games", "teamStats_possessions"): 0.031}}
 THIN = 0.75                  # a past season is flagged when a count is under this share of the seasons' median
 
 
@@ -51,6 +59,9 @@ def run(today: date | None = None, season: int | None = None) -> bool:
         c.sport = f"cbb_{s}"
         prev = common.STATUS / f"{c.sport}.json"
         c.prev_rows = json.loads(prev.read_text(encoding="utf-8")).get("rows", {}) if prev.exists() else {}
+        c.contract = copy.deepcopy(c.contract)
+        for (t, col), limit in KNOWN_GAPS.get(s, {}).items():
+            c.contract[t]["max_null"][col] = limit
     ok = {t: c.table(f"{t}_{s}", OUT / f"{t}_{s}.parquet", t) for t in (HISTORY_TABLES if past else TABLES)}
     ok |= {t: False for t in TABLES if t not in ok}
     r = lambda t: f"read_parquet('{(OUT / f'{t}_{s}.parquet').as_posix()}')"  # noqa: E731
@@ -63,8 +74,11 @@ def run(today: date | None = None, season: int | None = None) -> bool:
         cut = f"timestamp '{today - timedelta(days=STALE_DAYS)}'"
         stale, played = c.sql(f"select count(*) filter (where status in ('scheduled', 'in_progress')), count(*) from {r('games')} "
                               f"where cast(startDate as timestamp) < {cut}")
-        c.add("games: none left unplayed days after its date", stale <= MAX_STALE * max(played, 1),
-              f"{stale} of {played:,} still scheduled or in progress more than {STALE_DAYS} days after tip-off (limit {MAX_STALE:.0%})")
+        if past:             # a finished season: a game still "scheduled" was never played (reported, not a failure)
+            c.add("games: not played", True, f"{stale} of {played:,} still scheduled or in progress (counted as not played)")
+        else:
+            c.add("games: none left unplayed days after its date", stale <= MAX_STALE * max(played, 1),
+                  f"{stale} of {played:,} still scheduled or in progress more than {STALE_DAYS} days after tip-off (limit {MAX_STALE:.0%})")
         in_season = date.fromisoformat(cfg.start) + timedelta(days=FRESH_DAYS) <= today <= date.fromisoformat(cfg.end)
         if in_season and not past:
             fresh = last is not None and last.date() >= today - timedelta(days=FRESH_DAYS)

@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 import yaml
 
+import ingest.cbb.checks as checks
 import ingest.cbb.pull as pull
 from ingest.snapshot import cbb_tables
 from sparvi.config import ROOT, cbb
@@ -67,13 +68,14 @@ def test_a_window_at_the_api_cap_stops_the_pull(monkeypatch, tmp_path):
 def test_snapshot_tables_match_the_contract():
     s = cbb().season
     tables = {t.name: t for t in cbb_tables() if t.name.endswith(f"_{s}")}        # past seasons: the history tests below
-    assert set(tables) == {f"cbb_{k}_{s}" for k in CONTRACT}, "every contract table is snapshotted, under a cbb_ name"
-    for k, spec in CONTRACT.items():
+    current = {k: v for k, v in CONTRACT.items() if k != "portal" or (pull.OUT / f"portal_{s}.parquet").exists()}   # portal: from the spring window
+    assert set(tables) == {f"cbb_{k}_{s}" for k in current}, "every contract table is snapshotted, under a cbb_ name"
+    for k, spec in current.items():
         t = tables[f"cbb_{k}_{s}"]
         assert list(t.key) == spec["key"] and t.path.name == f"{k}_{s}.parquet"
         assert all(c in spec["columns"] for c in spec["key"])
     from ingest.common.snapshots import MIN_MASS_UPDATE
-    assert len(CONTRACT) == 10 and MIN_MASS_UPDATE > 400, "the ratings tables (about 365 teams) change wholesale every night"
+    assert len(CONTRACT) == 11 and MIN_MASS_UPDATE > 400, "the ratings tables (about 365 teams) change wholesale every night"
     games = pd.DataFrame({"startDate": ["2026-11-14T21:00:00.000Z", "2026-11-28T21:00:00.000Z"], "status": ["final", "scheduled"]})
     at = tables[f"cbb_games_{s}"].available_at(games, pd.Timestamp("2026-11-20T12:00:00", tz="UTC"))
     assert list(at) == [pd.Timestamp("2026-11-15"), pd.Timestamp("2026-11-20")], "a result the day after; a scheduled game when first seen"
@@ -104,6 +106,7 @@ def test_past_season_requests_are_final_and_leave_out_the_ratings():
     assert all(done for _, _, _, done in r), "a past season's windows are final: cached for good"
     assert not any(t.startswith("ratings") for t, _, _, _ in r), "the source overwrites ratings: a past season's would be end-of-season values"
     assert {t for t, _, _, _ in r} == {"teams", "rankings", "roster", "portal", "games", "team_games", "lines", "player_games"}
+    assert {t for t, _, _, _ in r} == set(checks.HISTORY_TABLES), "every past-season table pulled is checked"
     assert all(prm.get("season", prm.get("year")) == s for _, _, prm, _ in r)
     first = min(pd.Timestamp(prm["startDateRange"]) for _, _, prm, _ in r if "startDateRange" in prm)
     assert first.year == s - 1 and first.month == 11
@@ -160,3 +163,19 @@ def test_history_snapshot_tables_only_where_the_file_exists(monkeypatch, tmp_pat
     assert list(tables[f"cbb_roster_{s}"].available_at(games, now)) == [first], "a roster from the season's first day (approximate)"
     for k in ("games", "lines", "roster"):
         assert list(tables[f"cbb_{k}_{s}"].key) == CONTRACT[k]["key"]
+
+
+def test_portal_entries_without_a_destination_still_have_the_contract_columns():
+    entry = {"id": 1, "sourceId": "9", "year": 2026, "firstName": "A", "lastName": "B", "position": "G", "stars": None, "rating": None,
+             "eligibility": "immediate", "yearsRemaining": None, "origin": {"id": 3, "name": "X", "conference": "C"}, "destination": None}
+    df = pull.FRAMES["portal"]([entry, {**entry, "id": 2}])
+    assert pull.mismatch(pull._jsonable(df), CONTRACT["portal"]) == []
+    out = pull.conform(df, "portal", CONTRACT["portal"])
+    assert list(out.columns) == list(CONTRACT["portal"]["columns"]) and out["destination_id"].isna().all() and len(out) == 2
+
+
+def test_known_gaps_hold_a_past_season_to_what_was_measured_and_leave_the_contract_alone():
+    limit = CONTRACT["team_games"]["max_null"]["teamStats_possessions"]
+    assert limit == 0.02, "the current season's limit is the contract's"
+    assert all(v > limit for gaps in checks.KNOWN_GAPS.values() for v in gaps.values())
+    assert set(checks.KNOWN_GAPS) <= set(cbb().history_seasons), "only past seasons have recorded gaps"

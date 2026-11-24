@@ -18,7 +18,8 @@ sparvi.toml [cbb]:
     ratings_adjusted_{season}, ratings_srs_{season}, ratings_elo_{season}
                                the source's own team ratings as of the pull (it overwrites them)
     roster_{season}            one row per team x player
-    portal_{season}            transfer portal entries (empty until the spring window)
+    portal_{season}            transfer portal entries (empty until the spring window). No dates, and the destination is
+                               overwritten: an outcome table, never a feature for the season it describes
     cache/, _calls.csv         raw responses and the call log (ingest/cfb/client.py)
 
 The API returns at most 3,000 games a call (1,000 for player box scores), so games are pulled by calendar month and
@@ -61,7 +62,7 @@ RATINGS = ("ratings_adjusted", "ratings_srs", "ratings_elo")     # overwritten a
 FINISHED_DAYS = 7            # a window is final (cacheable) this long after it ends
 CAPS = {"/games": 3000, "/games/teams": 3000, "/lines": 3000, "/games/players": 1000}    # games per call (API docs)
 TYPES = {"BIGINT": "Int64", "DOUBLE": "float64", "BOOLEAN": "boolean", "VARCHAR": "string"}
-NOT_KEPT = {"teams": ("logos",)}      # columns left out on purpose (everything else not in the contract is named on the console)
+NOT_KEPT = {"teams": ("logos",), "portal": ("destination",)}      # columns left out on purpose (everything else not in the contract is named on the console)
 
 
 def _now() -> datetime:
@@ -120,6 +121,17 @@ def _flat(raw: list[dict], record_path: str | None = None, meta: list[str] | Non
     return pd.json_normalize(raw, sep="_")
 
 
+def _portal(raw: list[dict]) -> pd.DataFrame:
+    """One row per entry. A player with no destination yet has `destination: null`, which flattens to one empty column
+    and no destination_* columns when it is true of every row: add them, so the frame has the contract's columns."""
+    df = _flat(raw)
+    if not df.empty:
+        for c in ("destination_id", "destination_name", "destination_conference"):
+            if c not in df.columns:
+                df[c] = None
+    return df
+
+
 GAME_META = ["gameId", "season", "seasonType", "startDate", "teamId", "team", "conference", "opponentId", "opponent", "isHome",
              "gameMinutes", "gamePace"]
 LINE_META = ["gameId", "season", "seasonType", "startDate", "homeTeamId", "homeTeam", "awayTeamId", "awayTeam", "homeScore", "awayScore"]
@@ -128,7 +140,7 @@ FRAMES = {
     "teams": lambda raw: _flat(raw), "games": lambda raw: _flat(raw), "team_games": lambda raw: _flat(raw),
     "player_games": lambda raw: _flat(raw, "players", GAME_META), "lines": lambda raw: _flat(raw, "lines", LINE_META),
     "rankings": lambda raw: _flat(raw), "ratings_adjusted": lambda raw: _flat(raw), "ratings_srs": lambda raw: _flat(raw),
-    "ratings_elo": lambda raw: _flat(raw), "roster": lambda raw: _flat(raw, "players", ROSTER_META), "portal": lambda raw: _flat(raw),
+    "ratings_elo": lambda raw: _flat(raw), "roster": lambda raw: _flat(raw, "players", ROSTER_META), "portal": lambda raw: _portal(raw),
 }
 
 

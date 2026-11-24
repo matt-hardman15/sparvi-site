@@ -210,7 +210,9 @@ def cbb_history_tables() -> list[Table]:
                 Table(f"cbb_player_games_{s}", f("player_games"), ("gameId", "teamId", "player_athleteId"), _tipoff_next_day),
                 Table(f"cbb_lines_{s}", f("lines"), ("gameId", "provider"), _tipoff),
                 Table(f"cbb_rankings_{s}", f("rankings"), ("season", "seasonType", "week", "pollType", "teamId"), _poll_available),
-                Table(f"cbb_roster_{s}", f("roster"), ("teamId", "player_id"), _season_start(s))]
+                Table(f"cbb_roster_{s}", f("roster"), ("teamId", "player_id"), _season_start(s)),
+                # No dates at the source and the destination is overwritten: taken as known when the next season starts.
+                Table(f"cbb_portal_{s}", f("portal"), ("id",), _season_start(s + 1))]
     return [t for t in out if t.path.exists()]
 
 
@@ -230,7 +232,8 @@ def cbb_tables() -> list[Table]:
             Table(f"cbb_ratings_adjusted_{s}", f("ratings_adjusted"), ("teamId",)),
             Table(f"cbb_ratings_srs_{s}", f("ratings_srs"), ("teamId",)),
             Table(f"cbb_ratings_elo_{s}", f("ratings_elo"), ("teamId",)),
-            Table(f"cbb_roster_{s}", f("roster"), ("teamId", "player_id"))]
+            Table(f"cbb_roster_{s}", f("roster"), ("teamId", "player_id"))] + \
+        ([Table(f"cbb_portal_{s}", f("portal"), ("id",))] if f("portal").exists() else [])     # from the spring window
 
 
 TABLES = {"baseball": baseball_tables, "nfl": nfl_tables, "cfb": cfb_tables, "cbb": cbb_tables}
