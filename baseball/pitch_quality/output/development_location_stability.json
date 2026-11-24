@@ -1,0 +1,926 @@
+{
+ "seeds": [
+  7,
+  8
+ ],
+ "min_pitches_stability": 300,
+ "min_pitches_outcome": 500,
+ "window": "2",
+ "setups": {
+  "published": {
+   "learning_rate": {
+    "full": 0.03,
+    "no_loc": 0.03
+   },
+   "bag_members": 10,
+   "folds": {
+    "2024": {
+     "train_seasons": [
+      2021,
+      2022
+     ],
+     "grade_season": 2023,
+     "n_stability": 581,
+     "n_outcome": 324,
+     "points": {
+      "mean_abs": 0.732,
+      "p95": 2.051,
+      "max": 4.585,
+      "share_over_1": 0.2444,
+      "share_over_2": 0.0568
+     },
+     "parts": {
+      "full": {
+       "mean_abs": 0.531,
+       "p95": 1.411,
+       "max": 3.257,
+       "share_over_1": 0.1343,
+       "share_over_2": 0.0189
+      },
+      "no_loc": {
+       "mean_abs": 0.627,
+       "p95": 1.569,
+       "max": 4.207,
+       "share_over_1": 0.1859,
+       "share_over_2": 0.0241
+      },
+      "r_between_models_seed_differences": 0.222
+     },
+     "r_next_rv": {
+      "by_seed": [
+       0.1427,
+       0.1308
+      ],
+      "mean": 0.1367
+     },
+     "r_between_seeds": 0.9961,
+     "trees": {
+      "full_7": {
+       "fastball": [
+        306,
+        677
+       ],
+       "breaking": [
+        224,
+        538
+       ],
+       "offspeed": [
+        139,
+        273
+       ]
+      },
+      "full_8": {
+       "fastball": [
+        320,
+        804
+       ],
+       "breaking": [
+        253,
+        383
+       ],
+       "offspeed": [
+        159,
+        290
+       ]
+      },
+      "no_loc_7": {
+       "fastball": [
+        99,
+        189
+       ],
+       "breaking": [
+        52,
+        149
+       ],
+       "offspeed": [
+        6,
+        87
+       ]
+      },
+      "no_loc_8": {
+       "fastball": [
+        85,
+        315
+       ],
+       "breaking": [
+        61,
+        193
+       ],
+       "offspeed": [
+        21,
+        110
+       ]
+      }
+     }
+    },
+    "2025": {
+     "train_seasons": [
+      2022,
+      2023
+     ],
+     "grade_season": 2024,
+     "n_stability": 568,
+     "n_outcome": 311,
+     "points": {
+      "mean_abs": 0.671,
+      "p95": 1.816,
+      "max": 3.737,
+      "share_over_1": 0.2324,
+      "share_over_2": 0.0352
+     },
+     "parts": {
+      "full": {
+       "mean_abs": 0.622,
+       "p95": 1.684,
+       "max": 3.335,
+       "share_over_1": 0.1954,
+       "share_over_2": 0.0282
+      },
+      "no_loc": {
+       "mean_abs": 0.384,
+       "p95": 1.016,
+       "max": 2.205,
+       "share_over_1": 0.0546,
+       "share_over_2": 0.0018
+      },
+      "r_between_models_seed_differences": 0.147
+     },
+     "r_next_rv": {
+      "by_seed": [
+       0.1409,
+       0.1473
+      ],
+      "mean": 0.1441
+     },
+     "r_between_seeds": 0.9966,
+     "trees": {
+      "full_7": {
+       "fastball": [
+        341,
+        708
+       ],
+       "breaking": [
+        244,
+        469
+       ],
+       "offspeed": [
+        200,
+        335
+       ]
+      },
+      "full_8": {
+       "fastball": [
+        381,
+        574
+       ],
+       "breaking": [
+        234,
+        372
+       ],
+       "offspeed": [
+        165,
+        312
+       ]
+      },
+      "no_loc_7": {
+       "fastball": [
+        106,
+        212
+       ],
+       "breaking": [
+        48,
+        155
+       ],
+       "offspeed": [
+        38,
+        86
+       ]
+      },
+      "no_loc_8": {
+       "fastball": [
+        81,
+        195
+       ],
+       "breaking": [
+        45,
+        137
+       ],
+       "offspeed": [
+        22,
+        96
+       ]
+      }
+     }
+    }
+   },
+   "mean_abs_points": 0.702,
+   "share_over_1": 0.2384,
+   "r_next_rv": 0.1404
+  },
+  "bags_20": {
+   "learning_rate": {
+    "full": 0.03,
+    "no_loc": 0.03
+   },
+   "bag_members": 20,
+   "folds": {
+    "2024": {
+     "train_seasons": [
+      2021,
+      2022
+     ],
+     "grade_season": 2023,
+     "n_stability": 581,
+     "n_outcome": 324,
+     "points": {
+      "mean_abs": 0.433,
+      "p95": 1.227,
+      "max": 2.933,
+      "share_over_1": 0.0826,
+      "share_over_2": 0.0052
+     },
+     "parts": {
+      "full": {
+       "mean_abs": 0.342,
+       "p95": 0.919,
+       "max": 3.431,
+       "share_over_1": 0.0361,
+       "share_over_2": 0.0017
+      },
+      "no_loc": {
+       "mean_abs": 0.298,
+       "p95": 0.789,
+       "max": 1.758,
+       "share_over_1": 0.0224,
+       "share_over_2": 0.0
+      },
+      "r_between_models_seed_differences": 0.129
+     },
+     "r_next_rv": {
+      "by_seed": [
+       0.1319,
+       0.133
+      ],
+      "mean": 0.1325
+     },
+     "r_between_seeds": 0.9987,
+     "trees": {
+      "full_7": {
+       "fastball": [
+        372,
+        1076
+       ],
+       "breaking": [
+        209,
+        663
+       ],
+       "offspeed": [
+        142,
+        394
+       ]
+      },
+      "full_8": {
+       "fastball": [
+        310,
+        753
+       ],
+       "breaking": [
+        232,
+        686
+       ],
+       "offspeed": [
+        133,
+        547
+       ]
+      },
+      "no_loc_7": {
+       "fastball": [
+        68,
+        283
+       ],
+       "breaking": [
+        30,
+        171
+       ],
+       "offspeed": [
+        7,
+        96
+       ]
+      },
+      "no_loc_8": {
+       "fastball": [
+        63,
+        347
+       ],
+       "breaking": [
+        19,
+        217
+       ],
+       "offspeed": [
+        1,
+        126
+       ]
+      }
+     }
+    },
+    "2025": {
+     "train_seasons": [
+      2022,
+      2023
+     ],
+     "grade_season": 2024,
+     "n_stability": 568,
+     "n_outcome": 311,
+     "points": {
+      "mean_abs": 0.522,
+      "p95": 1.445,
+      "max": 2.412,
+      "share_over_1": 0.1303,
+      "share_over_2": 0.0088
+     },
+     "parts": {
+      "full": {
+       "mean_abs": 0.34,
+       "p95": 0.881,
+       "max": 2.164,
+       "share_over_1": 0.0317,
+       "share_over_2": 0.0035
+      },
+      "no_loc": {
+       "mean_abs": 0.435,
+       "p95": 1.169,
+       "max": 2.45,
+       "share_over_1": 0.0968,
+       "share_over_2": 0.0141
+      },
+      "r_between_models_seed_differences": 0.179
+     },
+     "r_next_rv": {
+      "by_seed": [
+       0.1486,
+       0.1532
+      ],
+      "mean": 0.1509
+     },
+     "r_between_seeds": 0.998,
+     "trees": {
+      "full_7": {
+       "fastball": [
+        341,
+        886
+       ],
+       "breaking": [
+        240,
+        629
+       ],
+       "offspeed": [
+        149,
+        485
+       ]
+      },
+      "full_8": {
+       "fastball": [
+        344,
+        928
+       ],
+       "breaking": [
+        196,
+        568
+       ],
+       "offspeed": [
+        151,
+        464
+       ]
+      },
+      "no_loc_7": {
+       "fastball": [
+        81,
+        351
+       ],
+       "breaking": [
+        21,
+        226
+       ],
+       "offspeed": [
+        17,
+        140
+       ]
+      },
+      "no_loc_8": {
+       "fastball": [
+        56,
+        461
+       ],
+       "breaking": [
+        11,
+        189
+       ],
+       "offspeed": [
+        2,
+        179
+       ]
+      }
+     }
+    }
+   },
+   "mean_abs_points": 0.478,
+   "share_over_1": 0.1065,
+   "r_next_rv": 0.1417
+  },
+  "both_slow": {
+   "learning_rate": {
+    "full": 0.005,
+    "no_loc": 0.005
+   },
+   "bag_members": 10,
+   "folds": {
+    "2024": {
+     "train_seasons": [
+      2021,
+      2022
+     ],
+     "grade_season": 2023,
+     "n_stability": 581,
+     "n_outcome": 324,
+     "points": {
+      "mean_abs": 0.446,
+      "p95": 1.234,
+      "max": 3.084,
+      "share_over_1": 0.0826,
+      "share_over_2": 0.0069
+     },
+     "parts": {
+      "full": {
+       "mean_abs": 0.257,
+       "p95": 0.746,
+       "max": 1.824,
+       "share_over_1": 0.0189,
+       "share_over_2": 0.0
+      },
+      "no_loc": {
+       "mean_abs": 0.409,
+       "p95": 1.119,
+       "max": 3.816,
+       "share_over_1": 0.074,
+       "share_over_2": 0.0069
+      },
+      "r_between_models_seed_differences": 0.228
+     },
+     "r_next_rv": {
+      "by_seed": [
+       0.1289,
+       0.1259
+      ],
+      "mean": 0.1274
+     },
+     "r_between_seeds": 0.9985,
+     "trees": {
+      "full_7": {
+       "fastball": [
+        2304,
+        3793
+       ],
+       "breaking": [
+        1340,
+        3388
+       ],
+       "offspeed": [
+        1053,
+        1834
+       ]
+      },
+      "full_8": {
+       "fastball": [
+        2402,
+        4213
+       ],
+       "breaking": [
+        1586,
+        3185
+       ],
+       "offspeed": [
+        1188,
+        1626
+       ]
+      },
+      "no_loc_7": {
+       "fastball": [
+        563,
+        1470
+       ],
+       "breaking": [
+        258,
+        828
+       ],
+       "offspeed": [
+        22,
+        408
+       ]
+      },
+      "no_loc_8": {
+       "fastball": [
+        681,
+        1627
+       ],
+       "breaking": [
+        373,
+        904
+       ],
+       "offspeed": [
+        141,
+        604
+       ]
+      }
+     }
+    },
+    "2025": {
+     "train_seasons": [
+      2022,
+      2023
+     ],
+     "grade_season": 2024,
+     "n_stability": 568,
+     "n_outcome": 311,
+     "points": {
+      "mean_abs": 0.355,
+      "p95": 1.045,
+      "max": 2.555,
+      "share_over_1": 0.0528,
+      "share_over_2": 0.0035
+     },
+     "parts": {
+      "full": {
+       "mean_abs": 0.268,
+       "p95": 0.745,
+       "max": 1.803,
+       "share_over_1": 0.0158,
+       "share_over_2": 0.0
+      },
+      "no_loc": {
+       "mean_abs": 0.206,
+       "p95": 0.56,
+       "max": 1.565,
+       "share_over_1": 0.0053,
+       "share_over_2": 0.0
+      },
+      "r_between_models_seed_differences": -0.123
+     },
+     "r_next_rv": {
+      "by_seed": [
+       0.1513,
+       0.1461
+      ],
+      "mean": 0.1487
+     },
+     "r_between_seeds": 0.999,
+     "trees": {
+      "full_7": {
+       "fastball": [
+        2668,
+        4719
+       ],
+       "breaking": [
+        1637,
+        3101
+       ],
+       "offspeed": [
+        1181,
+        1772
+       ]
+      },
+      "full_8": {
+       "fastball": [
+        2693,
+        4179
+       ],
+       "breaking": [
+        1577,
+        2749
+       ],
+       "offspeed": [
+        1011,
+        2173
+       ]
+      },
+      "no_loc_7": {
+       "fastball": [
+        590,
+        1378
+       ],
+       "breaking": [
+        326,
+        624
+       ],
+       "offspeed": [
+        104,
+        551
+       ]
+      },
+      "no_loc_8": {
+       "fastball": [
+        551,
+        1305
+       ],
+       "breaking": [
+        157,
+        791
+       ],
+       "offspeed": [
+        121,
+        581
+       ]
+      }
+     }
+    }
+   },
+   "mean_abs_points": 0.4,
+   "share_over_1": 0.0677,
+   "r_next_rv": 0.1381
+  },
+  "both_slow_bags_20": {
+   "learning_rate": {
+    "full": 0.005,
+    "no_loc": 0.005
+   },
+   "bag_members": 20,
+   "folds": {
+    "2024": {
+     "train_seasons": [
+      2021,
+      2022
+     ],
+     "grade_season": 2023,
+     "n_stability": 581,
+     "n_outcome": 324,
+     "points": {
+      "mean_abs": 0.264,
+      "p95": 0.75,
+      "max": 2.459,
+      "share_over_1": 0.0172,
+      "share_over_2": 0.0017
+     },
+     "parts": {
+      "full": {
+       "mean_abs": 0.21,
+       "p95": 0.581,
+       "max": 1.723,
+       "share_over_1": 0.0069,
+       "share_over_2": 0.0
+      },
+      "no_loc": {
+       "mean_abs": 0.179,
+       "p95": 0.497,
+       "max": 1.203,
+       "share_over_1": 0.0034,
+       "share_over_2": 0.0
+      },
+      "r_between_models_seed_differences": 0.087
+     },
+     "r_next_rv": {
+      "by_seed": [
+       0.132,
+       0.1335
+      ],
+      "mean": 0.1328
+     },
+     "r_between_seeds": 0.9995,
+     "trees": {
+      "full_7": {
+       "fastball": [
+        1948,
+        3991
+       ],
+       "breaking": [
+        1357,
+        3487
+       ],
+       "offspeed": [
+        947,
+        2151
+       ]
+      },
+      "full_8": {
+       "fastball": [
+        1908,
+        3877
+       ],
+       "breaking": [
+        1542,
+        3643
+       ],
+       "offspeed": [
+        843,
+        2186
+       ]
+      },
+      "no_loc_7": {
+       "fastball": [
+        546,
+        1511
+       ],
+       "breaking": [
+        250,
+        892
+       ],
+       "offspeed": [
+        5,
+        610
+       ]
+      },
+      "no_loc_8": {
+       "fastball": [
+        428,
+        2032
+       ],
+       "breaking": [
+        286,
+        1173
+       ],
+       "offspeed": [
+        4,
+        803
+       ]
+      }
+     }
+    },
+    "2025": {
+     "train_seasons": [
+      2022,
+      2023
+     ],
+     "grade_season": 2024,
+     "n_stability": 568,
+     "n_outcome": 311,
+     "points": {
+      "mean_abs": 0.313,
+      "p95": 0.854,
+      "max": 2.136,
+      "share_over_1": 0.0299,
+      "share_over_2": 0.0018
+     },
+     "parts": {
+      "full": {
+       "mean_abs": 0.201,
+       "p95": 0.551,
+       "max": 1.136,
+       "share_over_1": 0.007,
+       "share_over_2": 0.0
+      },
+      "no_loc": {
+       "mean_abs": 0.203,
+       "p95": 0.55,
+       "max": 1.227,
+       "share_over_1": 0.0053,
+       "share_over_2": 0.0
+      },
+      "r_between_models_seed_differences": -0.202
+     },
+     "r_next_rv": {
+      "by_seed": [
+       0.1469,
+       0.1417
+      ],
+      "mean": 0.1443
+     },
+     "r_between_seeds": 0.9992,
+     "trees": {
+      "full_7": {
+       "fastball": [
+        2476,
+        5238
+       ],
+       "breaking": [
+        1107,
+        2818
+       ],
+       "offspeed": [
+        1109,
+        1707
+       ]
+      },
+      "full_8": {
+       "fastball": [
+        2018,
+        4925
+       ],
+       "breaking": [
+        1243,
+        2959
+       ],
+       "offspeed": [
+        712,
+        2169
+       ]
+      },
+      "no_loc_7": {
+       "fastball": [
+        487,
+        1741
+       ],
+       "breaking": [
+        133,
+        1032
+       ],
+       "offspeed": [
+        108,
+        649
+       ]
+      },
+      "no_loc_8": {
+       "fastball": [
+        373,
+        1598
+       ],
+       "breaking": [
+        153,
+        965
+       ],
+       "offspeed": [
+        34,
+        933
+       ]
+      }
+     }
+    }
+   },
+   "mean_abs_points": 0.288,
+   "share_over_1": 0.0236,
+   "r_next_rv": 0.1386
+  }
+ },
+ "gate": {
+  "both_slow_bags_20": {
+   "bootstrap_samples": 2000,
+   "folds": {
+    "2024": {
+     "n": 324,
+     "seed": 7,
+     "vs_published_location": {
+      "r": 0.132,
+      "r_baseline": 0.0608,
+      "edge": 0.0712,
+      "ci90": [
+       0.011,
+       0.1256
+      ],
+      "strict_gate": true
+     },
+     "vs_current_setup": {
+      "r": 0.132,
+      "r_baseline": 0.1427,
+      "edge": -0.0106,
+      "ci90": [
+       -0.0196,
+       -0.0028
+      ],
+      "strict_gate": false
+     },
+     "pitching_vs_current_setup": {
+      "r": 0.2989,
+      "r_baseline": 0.3013,
+      "edge": -0.0024,
+      "ci90": [
+       -0.0052,
+       0.0005
+      ],
+      "strict_gate": false
+     }
+    },
+    "2025": {
+     "n": 311,
+     "seed": 7,
+     "vs_published_location": {
+      "r": 0.1469,
+      "r_baseline": -0.0004,
+      "edge": 0.1473,
+      "ci90": [
+       0.091,
+       0.2037
+      ],
+      "strict_gate": true
+     },
+     "vs_current_setup": {
+      "r": 0.1469,
+      "r_baseline": 0.1409,
+      "edge": 0.006,
+      "ci90": [
+       -0.0007,
+       0.0126
+      ],
+      "strict_gate": false
+     },
+     "pitching_vs_current_setup": {
+      "r": 0.2727,
+      "r_baseline": 0.271,
+      "edge": 0.0017,
+      "ci90": [
+       -0.0016,
+       0.005
+      ],
+      "strict_gate": false
+     }
+    }
+   }
+  }
+ }
+}
