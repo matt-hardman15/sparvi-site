@@ -97,7 +97,7 @@ There is also a minor league phase. A player left off his club's Triple-A reserv
         Plot.text(bars, { x: "k", y: "n", text: "n", dy: -8, fontWeight: 600 }),
         Plot.ruleY([0])] }));
     const first = known.filter(r => r.y === Y).length, unknown = d.length - known.length;
-    document.getElementById("cap1").textContent = `${known.length} ${meta.season} Triple-A ${st.side === "hit" ? "hitters" : st.side === "pit" ? "pitchers" : "players"} left off 40-man rosters and estimated eligible. The teal bar is the class that became eligible this winter: ${first} of ${known.length}. The gray bars were already eligible in an earlier draft and were not taken, or have since come off a 40-man roster.${unknown ? ` ${unknown} with no signing record are not shown.` : ""} Hover for counts.`;
+    document.getElementById("cap1").textContent = `${known.length} Triple-A ${st.side === "hit" ? "hitters" : st.side === "pit" ? "pitchers" : "players"} from ${meta.season}, left off 40-man rosters and estimated eligible. The teal bar is the class that became eligible this winter: ${first} of ${known.length}. The gray bars were already eligible in an earlier draft and were not taken, or have since come off a 40-man roster.${unknown ? ` ${unknown} with no signing record are not shown.` : ""} Hover for counts.`;
   }
   draw();
 })();

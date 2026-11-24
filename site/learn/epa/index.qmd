@@ -1,0 +1,99 @@
+---
+title: "What is EPA? Expected points added in football"
+pagetitle: "What is EPA (expected points added)?"
+description: "EPA measures how much a play changed the points an offense should expect. How expected points work, what EPA per play tells you, and where it misleads."
+date: 2026-11-23
+categories: [NFL, College Football, explainer]
+---
+
+::: {.finding}
+[The short answer]{.label}
+EPA (expected points added) is how much a play changed the points an offense should expect to score. Every situation has an expected value that depends on the down, the distance, and the field position. EPA is the value after the play minus the value before it. A 6-yard gain is worth more on 3rd-and-5, where it keeps the drive alive, than on 3rd-and-10, where it doesn't.
+:::
+
+Yards treat every gain alike. EPA asks what the gain was worth, which is why it has become the standard way to compare offenses and defenses.
+
+## See it: every NFL team this season
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c1"></div>
+  <div class="plot-host" id="p1"></div>
+  <p class="caption" id="cap1"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt;
+  const meta = await S.load("/data/nfl/meta.json");
+  const [wk, teams] = await Promise.all([S.load(`/data/nfl/team_week_${meta.season}.json`), S.load("/data/nfl/teams.json")]);
+  const name = new Map(teams.map(t => [t.id, t.name]));
+  const last = a => { for (let i = a.length - 1; i >= 0; i--) if (a[i] != null) return a[i]; return null; };
+  const KINDS = { "": "All plays", pass_: "Passes", run_: "Runs" };
+  const st = { k: "", q: "" };
+  const rows = k => wk.teams.map(t => { const s = t.series.no_gt, off = last(s[`off_${k}epa`]), def = last(s[`def_${k}epa`]);
+    return { id: t.id, name: name.get(t.id) || t.id, off, def, net: off == null || def == null ? null : off - def }; }).filter(t => t.net != null);
+  // One scale for all three views, so switching shows that passing numbers spread teams out more than rushing ones.
+  const every = Object.keys(KINDS).flatMap(rows);
+  const xd = d3.extent(every, t => t.off), yd = d3.extent(every, t => t.def), lim = d3.max(every, t => Math.abs(t.net));
+  document.getElementById("c1").replaceChildren(
+    S.el("label", {}, "Plays", S.seg(Object.entries(KINDS), st.k, v => { st.k = v; draw(); })),
+    S.search("Find a team", "Team", v => { st.q = v; draw(); }, st.q));
+  function draw() {
+    const d = rows(st.k), hi = st.q ? d.filter(t => t.name.toLowerCase().includes(st.q) || t.id.toLowerCase() === st.q).slice(0, 4) : [];
+    S.plot(document.getElementById("p1"), w => Plot.plot({ ...S.plotDefaults(w), height: 400, grid: true, clip: true, marginBottom: 45,
+      x: { label: "Offense: EPA per play →", domain: xd, nice: true }, y: { label: "↑ Defense: EPA per play allowed (axis flipped, so up is better)", domain: yd, nice: true, reverse: true },
+      color: { type: "diverging", domain: [-lim, lim], pivot: 0, range: ["#2a78d6", "#d9d8d3", "#eb6834"], legend: true, label: "Net EPA per play (offense minus defense allowed)" },
+      marks: [
+        Plot.ruleX([0], { stroke: "#8a8b8f", strokeDasharray: "3,3" }), Plot.ruleY([0], { stroke: "#8a8b8f", strokeDasharray: "3,3" }),
+        Plot.dot(d, { x: "off", y: "def", r: 5, fill: "net", fillOpacity: hi.length ? 0.25 : 0.9 }),
+        Plot.text(hi.length ? [] : d, { x: "off", y: "def", text: "id", dy: -10, fontSize: 10, fill: "#4d4f55" }),
+        Plot.dot(hi, { x: "off", y: "def", r: 7, fill: "net", stroke: "#16181d", strokeWidth: 1.5 }),
+        Plot.text(hi, { x: "off", y: "def", text: "name", dy: -13, fontWeight: 600 }),
+        Plot.tip(d, Plot.pointer({ x: "off", y: "def", title: t => `${t.name}\nOffense ${f.num(t.off, 3)} EPA per play\nDefense allows ${f.num(t.def, 3)}\nNet ${f.num(t.net, 3)}` }))] }));
+    const best = d.slice().sort((a, b) => d3.descending(a.net, b.net))[0];
+    document.getElementById("cap1").textContent = `${meta.season} through week ${meta.last_week}, ${KINDS[st.k].toLowerCase()}, garbage time removed. Right is a better offense; up is a better defense, because the vertical axis is flipped (a defense wants to allow less). Orange teams are ahead on net EPA per play and blue teams behind; the best right now is ${best.name} at ${f.num(best.net, 3)}. Dashed lines are zero. Hover for each team's numbers.`;
+  }
+  draw();
+})();
+</script>
+```
+
+## How it's calculated
+
+**Expected points.** Take every time in recent seasons that a team had, say, 1st-and-10 at its own 25, and average the next score in that half, counting the opponent's as negative. That average is the situation's expected points. Do it for every down, distance, and yard line, smoothed by a model that also sees time and timeouts, and every situation has a value. Deep in your own end it is close to zero or negative; near the goal line it approaches a touchdown.
+
+**The play's EPA** is expected points after minus expected points before. A touchdown is worth the gap between its points and what the drive was already expected to produce. An interception is worth the points lost on the drive plus the points handed to the opponent, which is why turnovers are among the largest swings in the data.
+
+**EPA per play** is a team's total divided by its plays. For a defense it is what the defense allowed, so lower is better.
+
+Sparvi does not fit its own expected-points model. NFL pages use nflverse's, and college pages use CollegeFootballData.com's, which that source calls PPA. The two are built separately, so an NFL number and a college number are not on the same footing.
+
+## What counts
+
+- **Plays:** passes (including sacks and scrambles) and runs. Two-point tries, kneel-downs, and spikes are left out.
+- **Garbage time is removed by default.** In the NFL that means 4th-quarter plays when the offense's win probability is below {{< meta nfl.garbage_wp_lo >}} or above {{< meta nfl.garbage_wp_hi >}}. Teams play differently once a game is decided.
+- **Success rate** is the companion number. On NFL pages it is the share of plays with positive EPA. College pages use a yards-based definition instead, so the two are not comparable.
+
+## What it tells you
+
+- **Efficiency so far is a fair guide to the rest of a season.** Across {{< meta nfl.jax_pred_n >}} NFL team-seasons, net EPA per play through week {{< meta nfl.jax_week >}} correlated with rest-of-season point differential at r = {{< meta nfl.jax_r_net >}}. Win percentage to that point did about as well (r = {{< meta nfl.jax_r_win >}}).
+- **Offense numbers carry more than defense numbers.** Across {{< meta nfl.od_n >}} offense-versus-defense matchups, an offense's EPA per play tracked how it played that week about {{< meta nfl.od_ratio >}} times as closely as the opposing defense's did (90% interval {{< meta nfl.od_ratio_ci >}}). [Offense or defense](/nfl/offense-or-defense/) has the detail.
+
+## What it can't tell you
+
+- **It grades the play, not the player.** A completed pass credits the whole offense: the line, the route, the throw, the call. Splitting that credit takes other data.
+- **It inherits the expected-points model.** A different model gives slightly different values, mostly in unusual situations.
+- **A few plays can dominate a small sample.** Turnovers and long touchdowns are worth several points each, so a team's EPA per play over three games can turn on two or three snaps.
+- **It doesn't know who the opponent was.** A team's raw number reflects its schedule. [Opponent-adjusted EPA](/learn/opponent-adjusted-epa/) takes that out, which matters a lot in college and little in the NFL.
+- **It is not win probability.** Three points mean more in a tied fourth quarter than in a blowout. Decisions late in games, like [fourth downs](/nfl/fourth-downs/), are judged on win probability instead.
+
+## Where to find it
+
+- The [NFL team efficiency tool](/nfl/tools/team-efficiency.html) has every team's offense and defense by week since {{< meta nfl.first_season >}}, with pass and run splits.
+- The [college team ratings tool](/cfb/tools/team-ratings.html) has the same for every FBS team, and feeds the [power rating](/learn/cfb-power-rating/).
+- Every [NFL team page](/nfl/teams/) and [college team page](/cfb/teams/) has the team's EPA per play week by week.
+- Short definitions are in the [glossary](/glossary.html#nfl-epa).
+
+::: {.note}
+NFL data: [nflverse](https://github.com/nflverse) (CC-BY 4.0). College data provided by [CollegeFootballData.com](https://collegefootballdata.com). More explainers are on the [Learn page](/learn/).
+:::

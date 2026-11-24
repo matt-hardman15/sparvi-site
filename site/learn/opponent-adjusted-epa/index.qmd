@@ -8,7 +8,7 @@ categories: [College Football, NFL, explainer]
 
 ::: {.finding}
 [The short answer]{.label}
-EPA (expected points added) measures how much each play changed the points an offense should expect from its drive. Opponent-adjusted EPA is a team's EPA per play with the strength of its opponents taken out, so an offense that has faced good defenses is not marked down for it. In college football, where schedules differ widely, the adjustment changes the picture. In the NFL it changes little.
+[EPA](/learn/epa/) (expected points added) measures how much each play changed the points an offense should expect from its drive. Opponent-adjusted EPA is a team's EPA per play with the strength of its opponents taken out, so an offense that has faced good defenses is not marked down for it. In college football, where schedules differ widely, the adjustment changes the picture. In the NFL it changes little.
 :::
 
 ## See it: raw versus adjusted, every FBS team

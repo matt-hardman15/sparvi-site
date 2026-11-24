@@ -248,7 +248,7 @@ def act_stuff_or_command(p):
 
 
 def act_learn_hub(p):
-    assert p.locator(".card-link").count() == 4
+    assert p.locator(".card-link").count() == 5
 
 
 def act_learn_stuff(p):
@@ -274,6 +274,14 @@ def act_learn_rule5(p):
     n_all = p.locator("#p1 svg rect").count()
     assert n_all >= 5 and "became eligible this winter" in p.text_content("#cap1")
     seg(p, "#c1", "Pitchers"); assert "pitchers" in p.text_content("#cap1") and p.locator("#p1 svg rect").count() >= 5
+
+
+def act_learn_epa(p):
+    """SEO-4: the EPA explainer's offense-vs-defense scatter: 32 teams in every view, and the team search."""
+    assert p.locator("#p1 svg circle").count() == 32 and "all plays" in p.text_content("#cap1")
+    seg(p, "#c1", "Passes"); assert "passes" in p.text_content("#cap1") and p.locator("#p1 svg circle").count() == 32
+    seg(p, "#c1", "Runs"); assert "runs" in p.text_content("#cap1")
+    search(p, "#c1", "chiefs"); assert p.locator("#p1 svg circle").count() == 33
 
 
 def act_learn_power(p):
@@ -761,6 +769,7 @@ PAGES = [
     ("cfb-coaching-changes", "/cfb/coaching-changes/", act_cfb_carousel),
     ("learn", "/learn/", act_learn_hub),
     ("learn-stuff-plus", "/learn/stuff-plus/", act_learn_stuff),
+    ("learn-epa", "/learn/epa/", act_learn_epa),
     ("learn-rule-5-eligibility", "/learn/rule-5-eligibility/", act_learn_rule5),
     ("learn-cfb-power-rating", "/learn/cfb-power-rating/", act_learn_power),
     ("learn-opponent-adjusted-epa", "/learn/opponent-adjusted-epa/", act_learn_adjusted),
