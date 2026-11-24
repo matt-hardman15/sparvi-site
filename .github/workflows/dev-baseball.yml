@@ -1,0 +1,184 @@
+name: dev-baseball
+
+# Model development on a GitHub runner (DEV-CI). A development script that fits models for hours on a laptop takes a
+# fraction of that here (the same fit: 248 minutes on the laptop, 21 on a runner, Nov 23 2026), and Actions minutes
+# are free for a public repository.
+#
+#   gh workflow run dev-baseball.yml --ref <branch> -f script=pitch_quality/develop_loc_stable.py -f args="published"
+#   python scripts/dev_results.py fetch <run id>        # afterwards: the result files, under dev_results/<run id>/
+#
+# Run by hand only, from a branch (the script and its code come from that branch). It commits nothing and publishes
+# nothing. What leaves the job is the script's aggregate result file (baseball/*/output/development*.json, the same
+# file that gets committed in a pull request), printed into the log by scripts/dev_results.py. Raw Statcast and the
+# pitcher-level fits the scripts keep to resume from stay in the repository's caches, as in the other workflows:
+# never committed, never printed, never uploaded as an artifact (artifacts of a public repository are public).
+# Official numbers still come from the backtest workflow; this is for choosing what to test.
+
+on:
+  workflow_dispatch:
+    inputs:
+      script:
+        description: "Development script (under baseball/)"
+        type: choice
+        required: true
+        options:
+          - pitch_quality/develop_loc_stable.py
+          - pitch_quality/develop_loc.py
+          - pitch_quality/develop_loc_gates.py
+          - pitch_quality/develop.py
+          - pitch_quality/develop_chain.py
+          - aaa_translation/develop.py
+      args:
+        description: "Arguments for the script (letters, digits, spaces and _ . : = , - only)"
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  develop:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350    # the runner limit is 6 hours; fits are kept as they finish, so a rerun resumes
+    env:
+      SCRIPT: ${{ inputs.script }}
+      ARGS: ${{ inputs.args }}
+    steps:
+      - name: Check the arguments
+        run: |
+          if ! printf '%s' "$ARGS" | grep -qE '^[A-Za-z0-9_ .:=,-]*$'; then echo "args may hold only letters, digits, spaces and _ . : = , -"; exit 1; fi
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3 (no floating major tags after v7)
+        with:
+          enable-cache: true
+
+      - run: uv sync --frozen
+
+      - name: Raw-data cache keys (same as refresh-baseball and backtest)
+        id: cfg
+        run: |
+          season=$(uv run python -m sparvi.config baseball.season)
+          past=$(uv run python -m sparvi.config baseball.past_seasons)
+          hist=$(uv run python -c "from sparvi.config import baseball; print(' '.join(map(str, baseball().history_seasons)))")
+          aaa_hist=$(uv run python -c "from sparvi.config import baseball; print(' '.join(map(str, baseball().aaa_history_seasons)))")
+          echo "season=$season" >> "$GITHUB_OUTPUT"
+          echo "key=baseball-raw-past-${past// /-}-v1" >> "$GITHUB_OUTPUT"
+          echo "hist=$hist" >> "$GITHUB_OUTPUT"
+          echo "hist_key=baseball-history-dev-${hist// /-}-v1" >> "$GITHUB_OUTPUT"
+          echo "aaa_hist=$aaa_hist" >> "$GITHUB_OUTPUT"
+          echo "aaa_hist_key=baseball-aaa-history-${aaa_hist// /-}-v1" >> "$GITHUB_OUTPUT"
+          {
+            echo "paths<<EOF"
+            for y in $past; do echo "data/raw/*_${y}.parquet"; done
+            echo "EOF"
+            echo "hist_paths<<EOF"
+            for y in $hist; do echo "data/raw/statcast_mlb_${y}.parquet"; done
+            echo "EOF"
+            echo "aaa_hist_paths<<EOF"
+            for y in $aaa_hist; do echo "data/raw/statcast_aaa_${y}.parquet"; done
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Restore past-season raw data
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: ${{ steps.cfg.outputs.paths }}
+          key: ${{ steps.cfg.outputs.key }}
+          fail-on-cache-miss: true
+
+      # Same path list as refresh-baseball's (a cache entry only matches its exact paths). Development folds never read
+      # the current season's outcomes; some scripts load its file for the season's as-of tables.
+      - name: Restore current-season raw data
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: data/raw/*_${{ steps.cfg.outputs.season }}.parquet
+          key: baseball-raw-cur-${{ steps.cfg.outputs.season }}-none
+          restore-keys: baseball-raw-cur-${{ steps.cfg.outputs.season }}-
+          fail-on-cache-miss: true
+
+      # The development folds train on the MLB history seasons, which the refresh never pulls: this workflow's own
+      # cache, or on a miss the private R2 snapshots (as the backtest workflow does for its one history season).
+      - name: Restore the MLB history seasons (cache)
+        id: hist
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: ${{ steps.cfg.outputs.hist_paths }}
+          key: ${{ steps.cfg.outputs.hist_key }}
+
+      - name: Restore the MLB history seasons (R2 snapshots)
+        if: steps.hist.outputs.cache-hit != 'true'
+        env:
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: uv run python -m ingest.baseball.history restore ${{ steps.cfg.outputs.hist }}
+
+      - name: Save the MLB history seasons
+        if: steps.hist.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: ${{ steps.cfg.outputs.hist_paths }}
+          key: ${{ steps.cfg.outputs.hist_key }}
+
+      # Same key and paths as the backtest workflow's Triple-A history cache, so the two share it.
+      - name: Restore the Triple-A history seasons (cache)
+        if: steps.cfg.outputs.aaa_hist != ''
+        id: aaa_hist
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: ${{ steps.cfg.outputs.aaa_hist_paths }}
+          key: ${{ steps.cfg.outputs.aaa_hist_key }}
+
+      - name: Restore the Triple-A history seasons (R2 snapshots)
+        if: steps.cfg.outputs.aaa_hist != '' && steps.aaa_hist.outputs.cache-hit != 'true'
+        env:
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: uv run python -m ingest.baseball.history restore $(for y in ${{ steps.cfg.outputs.aaa_hist }}; do echo "aaa:$y"; done)
+
+      # Batter heights (Location+'s zone): the backtest workflow's cache, topped up from the MLB Stats API.
+      - name: Restore batter heights
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: data/raw/batter_heights.parquet
+          key: baseball-heights-none
+          restore-keys: baseball-heights-
+
+      - name: Pull missing batter heights (MLB Stats API)
+        run: uv run python -c "from ingest.baseball.pull import pull_heights; pull_heights()"
+
+      # The fits a development script keeps so a stopped run can resume (pitcher-level, private). Each run saves its
+      # own copy and the next run starts from the most recent one.
+      - name: Restore earlier development fits
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: baseball/*/output/dev_cache
+          key: baseball-dev-cache-none
+          restore-keys: baseball-dev-cache-
+
+      - name: Run the development script
+        run: |
+          echo "CPU: $(nproc) cores, $(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2)"
+          # $ARGS is split into words on purpose; its characters were checked in the first step.
+          uv run python "baseball/$SCRIPT" $ARGS
+
+      - name: Save the development fits
+        if: always()    # also after a failure or the time limit, so the next run resumes
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: baseball/*/output/dev_cache
+          key: baseball-dev-cache-${{ github.run_id }}-${{ github.run_attempt }}
+
+      # The aggregate result files this run wrote or changed, into the log (scripts/dev_results.py fetch reads them).
+      - name: Results
+        if: ${{ !cancelled() }}
+        run: |
+          files=$( (git diff --name-only; git ls-files --others --exclude-standard) | grep -E '^baseball/[a-z0-9_]+/output/development[a-z0-9_]*\.json$' || true)
+          if [ -z "$files" ]; then echo "The script changed no result file."; exit 0; fi
+          echo "$files"
+          uv run python scripts/dev_results.py emit $files
