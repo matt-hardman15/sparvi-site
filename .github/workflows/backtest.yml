@@ -38,7 +38,7 @@ concurrency:
 jobs:
   backtest:
     runs-on: ubuntu-24.04
-    timeout-minutes: 180   # bagged pitch-quality models (v2.0.0) train ~10x longer
+    timeout-minutes: 350   # the runner limit is 6 hours. The Location+ candidate (rate 0.005, bags of 20: LOC-STABLE) fits about 70 minutes a time, three times a run
     steps:
       - name: Changed paths (pull request)
         id: gate

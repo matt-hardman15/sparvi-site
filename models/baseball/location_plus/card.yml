@@ -56,12 +56,24 @@ published_in:
 - baseball/tools/rule-5
 backtest:
   preregistered_at: '2026-11-19'
+  candidate: 4.0.0
   candidate_spec: 'Location value given shape: the prediction of a model on shape, count, batter side and location,
     minus the prediction of the same model without location, averaged over a pitcher''s pitches. Chosen on development
     folds that never read 2026 (baseball/pitch_quality/output/development_location.json: outcomes 2024 and 2025;
     r with next-season RV/100 +0.147, 90% interval +0.077 to +0.210, against +0.030 for the published features).
     train.py is unchanged until this test passes; the report is written as 3.0.0 and does not validate the published
     version.'
+  candidate_training: '4.0.0 (registered 2026-11-24, LOC-STABLE): the same grade with both models trained at learning
+    rate 0.005 in bags of 20 (3.0.x: 0.03, bags of 10), so that it moves less between training seeds. Chosen on
+    development folds that never read 2026 (baseball/pitch_quality/output/development_location_stability.json, outcomes
+    2024 and 2025, two seeds, run on GitHub''s runners): mean movement between seeds 0.29 Location+ points with
+    2% of pitchers over 1, against 0.70 and 24% for the 3.0.x training; r with next-season RV/100 0.139 against
+    0.140. The gate statistic on those folds at seed 7: edge over the location-only features +0.071 (90% interval
+    +0.011 to +0.126) and +0.147 (+0.091 to +0.204), passing the strict gate on both. Against the 3.0.x training
+    on the same pitchers the edge was -0.011 (-0.020 to -0.003) on one fold and +0.006 (-0.001 to +0.013) on the
+    other: no consistent difference, and smaller than the 3.0.x training''s own spread between seeds (r 0.131 to
+    0.143 on the first fold). train.py is unchanged until this test passes; the report is written as 4.0.0 and does
+    not validate the published version.'
   module: models/baseball/location_plus/backtest.py
   target: Next-season run value per 100 pitches (RV/100), MLB pitchers with 500+ pitches in both seasons
   decision_dates: season start (March 1 of the outcome season)
@@ -79,6 +91,7 @@ backtest:
   - published_location
   - stuff
   - last_season
+  - v3_setup
   primary_metric: pearson_r
   report_partial_given: stuff
   bootstrap: 2000
@@ -100,7 +113,17 @@ backtest:
     accesses: 0
   amended: '2026-11-23: the `candidate: 3.0.0` line is removed. 3.0.0 passed this block and was promoted on Nov
     20, so the block now tests the published version; nothing else in it changed. (3.0.1 is the same model, stored
-    instead of refit.) `candidate_spec` stays as the record of how the spec was chosen.'
+    instead of refit.) `candidate_spec` stays as the record of how the spec was chosen.
+
+    2026-11-24 (Matt chose the candidate): `candidate: 4.0.0` and `candidate_training` are added, and the module
+    now trains both models at learning rate 0.005 in bags of 20. The target, fold, sample, gate and its baseline
+    are unchanged: the candidate must beat the location-only features (`published_location`, the features of Location+
+    2.0.0) with the edge''s 90% interval above zero. One reported baseline is added, `v3_setup`: the same grade
+    trained as 3.0.x trains it, on the same fold. It is the direct comparison and is not part of the gate: the change
+    is made for seed stability, which this test does not measure (stability.py does, after the change), and on the
+    development folds the two trainings'' r differed by less than the seed spread. The 2026 outcomes have been read
+    once already, by 3.0.0''s test of this block (r 0.157). This is a second registered test on that season; the
+    candidate and its training were chosen without it.'
 challengers: []
 history:
 - version: 1.0.1
@@ -112,6 +135,3 @@ history:
 promotion_exception: '2.0.0 promoted on 2026-11-14 by Matt''s decision although its frozen-set r_next_rv (0.0077)
   is below 1.0.1''s (0.0116): the gap is inside the +-0.01 reproduction tolerance, 1.0.1''s value was itself seed
   noise, and 2.0.0 removes the seed instability shared with Stuff+ (same train.py).'
-experimental: this version has no passing backtest on record yet. 3.0.1 changed shared training code only (the fitted
-  models are stored and reloaded, MODEL-ARTIFACTS); its models are those of 3.0.0, which passed. The backtest workflow
-  reruns the test on main and this label goes away when its report lands
