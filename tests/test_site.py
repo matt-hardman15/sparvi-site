@@ -248,7 +248,7 @@ def act_stuff_or_command(p):
 
 
 def act_learn_hub(p):
-    assert p.locator(".card-link").count() == 5
+    assert p.locator(".card-link").count() == 6
 
 
 def act_learn_stuff(p):
@@ -282,6 +282,15 @@ def act_learn_epa(p):
     seg(p, "#c1", "Passes"); assert "passes" in p.text_content("#cap1") and p.locator("#p1 svg circle").count() == 32
     seg(p, "#c1", "Runs"); assert "runs" in p.text_content("#cap1")
     search(p, "#c1", "chiefs"); assert p.locator("#p1 svg circle").count() == 33
+
+
+def act_learn_swing(p):
+    """SEO-4: the swing-decisions explainer's scatter of qualified Triple-A hitters, its three views and the search."""
+    n = p.locator("#p1 svg circle").count()
+    assert n >= 100 and "zone contact" in p.text_content("#cap1") and "qualified hitters" in p.text_content("#cap1")
+    seg(p, "#c1", "Zone swing"); assert "zone swing" in p.text_content("#cap1") and p.locator("#p1 svg circle").count() == n
+    seg(p, "#c1", "Whiff rate"); assert "whiff rate" in p.text_content("#cap1") and "misses less" in p.text_content("#p1")
+    search(p, "#c1", "a"); assert p.locator("#p1 svg circle").count() > n
 
 
 def act_learn_power(p):
@@ -769,6 +778,7 @@ PAGES = [
     ("cfb-coaching-changes", "/cfb/coaching-changes/", act_cfb_carousel),
     ("learn", "/learn/", act_learn_hub),
     ("learn-stuff-plus", "/learn/stuff-plus/", act_learn_stuff),
+    ("learn-swing-decisions", "/learn/swing-decisions/", act_learn_swing),
     ("learn-epa", "/learn/epa/", act_learn_epa),
     ("learn-rule-5-eligibility", "/learn/rule-5-eligibility/", act_learn_rule5),
     ("learn-cfb-power-rating", "/learn/cfb-power-rating/", act_learn_power),
