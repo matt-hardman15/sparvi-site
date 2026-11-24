@@ -14,6 +14,7 @@ Each explainer answers one question, shows the metric on current data, and says 
 ```{=html}
 <div class="cards">
 <a class="card-link" href="/learn/stuff-plus/"><span class="kicker">Baseball · Explainer</span><h3>What is Stuff+?</h3><p>Stuff+, Location+, and Pitching+: what each pitch grade reads, what 100 means, and how well the grades predict next season.</p></a>
+<a class="card-link" href="/learn/rule-5-eligibility/"><span class="kicker">Baseball · Explainer</span><h3>How Rule 5 eligibility works</h3><p>The four- and five-season windows, the 40-man roster, what a pick costs, and a calculator for any signing year.</p></a>
 </div>
 ```
 
@@ -21,6 +22,7 @@ Each explainer answers one question, shows the metric on current data, and says 
 
 ```{=html}
 <div class="cards">
+<a class="card-link" href="/learn/epa/"><span class="kicker">NFL · College Football · Explainer</span><h3>What is EPA?</h3><p>Expected points added: how a play's value is worked out, what EPA per play says about a team, and where it misleads.</p></a>
 <a class="card-link" href="/learn/cfb-power-rating/"><span class="kicker">College Football · Explainer</span><h3>How the power rating works</h3><p>Points better than an average FBS team: the two parts of the rating, how the blend is fitted, and how far off it is in a typical game.</p></a>
 <a class="card-link" href="/learn/opponent-adjusted-epa/"><span class="kicker">College Football · NFL · Explainer</span><h3>Opponent-adjusted EPA</h3><p>What EPA per play looks like with the schedule taken out, why that matters in college football, and why it barely moves NFL numbers.</p></a>
 </div>

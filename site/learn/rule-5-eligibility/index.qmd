@@ -1,0 +1,124 @@
+---
+title: "How Rule 5 Draft eligibility works"
+pagetitle: "Rule 5 Draft eligibility, explained"
+description: "Who can be taken in the Rule 5 Draft: the four- and five-season windows, the 40-man roster, what a pick costs, and a calculator for any signing year."
+date: 2026-11-23
+categories: [Baseball, explainer, roster rules]
+---
+
+::: {.finding}
+[The short answer]{.label}
+A minor leaguer can be taken in the Rule 5 Draft if he is not on his club's 40-man roster and has been in pro ball long enough. Long enough is five seasons for a player who was 18 or younger on the June 5 before he signed his first contract, and four seasons for a player who was 19 or older. Clubs protect a player by adding him to the 40-man roster before the deadline in November.
+:::
+
+The rule exists so that clubs can't stockpile players in the minors who could play in the majors somewhere else. This winter's protection deadline was {{< meta baseball.r5_deadline >}}, and the draft is scheduled for {{< meta baseball.r5_draft >}}.
+
+## Work out a player's year
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c0"></div>
+  <p id="calc" style="font-size:1.05rem;margin:.75rem 0 .25rem"></p>
+  <p class="caption" id="cap0"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi;
+  const meta = await S.load("/data/baseball/meta.json");
+  const Y = meta.season, years = d3.range(Y - 8, Y + 1).reverse();
+  const st = { age: "21", year: String(Y - 3), late: "no" };
+  const host = document.getElementById("c0");
+  function controls() {
+    host.replaceChildren(
+      S.select("Age on the June 5 before signing", d3.range(16, 25).map(a => [String(a), a === 24 ? "24 or older" : String(a)]), st.age, v => { st.age = v; draw(); }),
+      S.select("Year signed", years.map(y => [String(y), String(y)]), st.year, v => { st.year = v; draw(); }),
+      S.el("label", {}, "Signed", S.seg([["no", "During the season"], ["yes", "After his league's season ended"]], st.late, v => { st.late = v; draw(); })));
+  }
+  function draw() {
+    const win = +st.age <= 18 ? 5 : 4, first = +st.year + (st.late === "yes" ? 1 : 0), draft = first + win - 1;
+    const when = draft < Y ? `He has been eligible since the ${draft} draft, so he is eligible this winter if he is not on a 40-man roster.`
+      : draft === Y ? `He is eligible for the first time this winter (the ${draft} draft) unless he was added to a 40-man roster by the deadline.`
+      : `He is not eligible until the ${draft} draft, so his club does not need to protect him yet.`;
+    document.getElementById("calc").innerHTML = `<strong>${win} seasons: ${first} through ${draft}.</strong> ${when}`;
+    document.getElementById("cap0").textContent = `A player ${+st.age <= 18 ? "18 or younger" : "19 or older"} gets ${win} seasons. The year he signed counts as the first one if he signed before his first league's season ended; a contract signed after that starts the count the next year.`;
+  }
+  controls(); draw();
+})();
+</script>
+```
+
+## The rule, step by step
+
+1. **Find the player's age on the June 5 before he signed his first pro contract.** That date, not his age when he signed, sets the window. A high school draftee is usually 18 on it; a college junior is usually 21.
+2. **Count seasons from the year he signed.** 18 or younger: five. 19 or older: four. The signing year counts if he signed before the season of the league he was first assigned to had ended, which for rookie and complex leagues is late August. Most draftees sign in July, so their draft year counts.
+3. **Check the 40-man roster after the November deadline.** If his window has run out and he is not on it, any other club can select him.
+
+So a college junior who signed three drafts ago has to be protected, or left exposed, this winter. A high schooler from the same draft has one more season.
+
+## What a pick costs
+
+A club that selects a player in the major league phase pays his old club $100,000 and has to keep him on its active major league roster for the whole next season. He can go on the injured list, but he needs at least 90 days on the active roster. If the club won't carry him, he goes through waivers and is then offered back to his old club for $50,000. The club also needs an open spot on its own 40-man roster to make a pick.
+
+That roster rule is the real price: the selecting club gives a major league spot, all season, to a player his old club chose not to protect.
+
+There is also a minor league phase. A player left off his club's Triple-A reserve list can be taken for $24,000 with no roster requirement.
+
+## See it: this winter's unprotected Triple-A players
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c1"></div>
+  <div class="plot-host" id="p1"></div>
+  <p class="caption" id="cap1"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi;
+  const [hit, pit, meta] = await Promise.all([S.load("/data/baseball/rule5_hitters.json"), S.load("/data/baseball/rule5_pitchers.json"), S.load("/data/baseball/meta.json")]);
+  const Y = meta.season, FLOOR = Y - 6;
+  // The board's reason text ends "... eligible from the 2024 Rule 5 Draft."; players with no signing record have none.
+  const year = r => { const m = /eligible from the (\d{4}) Rule 5 Draft/.exec(r.reason || ""); return m ? +m[1] : null; };
+  const rows = [...hit.map(r => ({ side: "hit", y: year(r) })), ...pit.map(r => ({ side: "pit", y: year(r) }))];
+  const st = { side: "all" };
+  document.getElementById("c1").replaceChildren(
+    S.el("label", {}, "Players", S.seg([["all", "All"], ["hit", "Hitters"], ["pit", "Pitchers"]], st.side, v => { st.side = v; draw(); })));
+  const label = y => (y <= FLOOR ? `${FLOOR} or earlier` : String(y));
+  const order = [...d3.range(FLOOR, Y + 1).map(label)];
+  // One scale for every view: the tallest bar with everyone counted.
+  const top = d3.max(d3.rollups(rows.filter(r => r.y != null), v => v.length, r => label(r.y)), d => d[1]);
+  function draw() {
+    const d = rows.filter(r => st.side === "all" || r.side === st.side), known = d.filter(r => r.y != null);
+    const bars = d3.rollups(known, v => v.length, r => label(r.y)).map(([k, n]) => ({ k, n, first: k === String(Y) }));
+    S.plot(document.getElementById("p1"), w => Plot.plot({ ...S.plotDefaults(w), height: 300, marginBottom: 45,
+      x: { label: "First Rule 5 Draft the player was eligible for →", domain: order }, y: { label: "↑ Players on the board", domain: [0, top], grid: true },
+      marks: [
+        Plot.barY(bars, { x: "k", y: "n", fill: b => (b.first ? "#0f5257" : "#8a8b8f"), tip: true,
+          title: b => `${b.k}: ${b.n} player${b.n === 1 ? "" : "s"}${b.first ? " (eligible for the first time this winter)" : ""}` }),
+        Plot.text(bars, { x: "k", y: "n", text: "n", dy: -8, fontWeight: 600 }),
+        Plot.ruleY([0])] }));
+    const first = known.filter(r => r.y === Y).length, unknown = d.length - known.length;
+    document.getElementById("cap1").textContent = `${known.length} Triple-A ${st.side === "hit" ? "hitters" : st.side === "pit" ? "pitchers" : "players"} from ${meta.season}, left off 40-man rosters and estimated eligible. The teal bar is the class that became eligible this winter: ${first} of ${known.length}. The gray bars were already eligible in an earlier draft and were not taken, or have since come off a 40-man roster.${unknown ? ` ${unknown} with no signing record are not shown.` : ""} Hover for counts.`;
+  }
+  draw();
+})();
+</script>
+```
+
+## What this page can't tell you
+
+- **Sparvi's eligibility is an estimate.** The [Rule 5 board](/baseball/tools/rule-5.html) works it out from signing dates and ages in the public transaction record. Checked against {{< meta baseball.r5_val_n >}} players on published {{< meta baseball.season >}} eligibility lists, it agreed on {{< meta baseball.r5_val_agree >}}. For {{< meta baseball.r5_n_likely >}} players the signing date is assumed from the draft year, and {{< meta baseball.r5_n_unknown >}} have no record at all.
+- **Edge cases are not modeled.** Voided contracts, players signed out of foreign professional leagues, and time on restricted lists can all change a player's year.
+- **Only Triple-A players are on the board.** Eligible players at Double-A and below are missing, and those are often the ones clubs gamble on.
+- **Eligible is not the same as available.** A minor league free agent is not under contract, so he can't be drafted: {{< meta baseball.r5_n_free_agents >}} of this season's Triple-A players are in that group.
+- **The draft itself depends on a labor deal.** The collective bargaining agreement expires {{< meta baseball.r5_cba >}}, and the major league phase only happens if a deal is in place.
+
+## Where to find it
+
+- The [Rule 5 board](/baseball/tools/rule-5.html) lists every unprotected, eligible Triple-A player with the reason for his status.
+- [The Rule 5 board, explained](/baseball/rule-5/) covers which of their numbers carry to the majors.
+- Each [player page](/baseball/players/) shows the grades and swing decisions the board ranks on, and [what Stuff+ is](/learn/stuff-plus/) explains the pitching side.
+- The one-line definition is in the [glossary](/glossary.html#rule-5).
+
+::: {.note}
+The rule's terms (the windows, the fees, the roster requirement) are from MLB's [Rule 5 Draft glossary entry](https://www.mlb.com/glossary/transactions/rule-5-draft). Player data: the MLB Stats API and pitch-level Statcast from [Baseball Savant](https://baseballsavant.mlb.com). More explainers are on the [Learn page](/learn/).
+:::

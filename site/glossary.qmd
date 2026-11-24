@@ -51,7 +51,7 @@ Longer explainers for the main metrics are on the [Learn page](/learn/).
 
 ## Roster rules
 
-[**Rule 5 eligible**]{#rule-5}: A player not on a 40-man roster whose protection window has run out can be taken by another club in the Rule 5 Draft. The window is five seasons for a player who was 18 or younger on the June 5 before his first pro contract, four for 19 or older. The [Rule 5 board](/baseball/tools/rule-5.html) estimates eligibility from signing dates and ages; its statuses are **Eligible** (signing date known), **Likely eligible** (signing date estimated from the draft year), and **Unknown** (no signing record). How well the estimate matched published lists is in the [method box](/baseball/rule-5/#method).
+[**Rule 5 eligible**]{#rule-5}: A player not on a 40-man roster whose protection window has run out can be taken by another club in the Rule 5 Draft. The window is five seasons for a player who was 18 or younger on the June 5 before his first pro contract, four for 19 or older ([how eligibility works](/learn/rule-5-eligibility/)). The [Rule 5 board](/baseball/tools/rule-5.html) estimates eligibility from signing dates and ages; its statuses are **Eligible** (signing date known), **Likely eligible** (signing date estimated from the draft year), and **Unknown** (no signing record). How well the estimate matched published lists is in the [method box](/baseball/rule-5/#method).
 
 ## Conventions
 
@@ -71,7 +71,7 @@ Longer explainers for the main metrics are on the [Learn page](/learn/).
 
 ## NFL {#nfl}
 
-[**EPA per play**]{#nfl-epa}: Expected points added. Every snap starts with an expected number of points for the offense, given down, distance, field position, and time; EPA is how much the play changed it. A 6-yard gain on 3rd-and-5 adds more than on 3rd-and-10. Sparvi uses nflverse's EPA model. Defense numbers are EPA allowed, so lower is better.
+[**EPA per play**]{#nfl-epa}: Expected points added. Every snap starts with an expected number of points for the offense, given down, distance, field position, and time; EPA is how much the play changed it. A 6-yard gain on 3rd-and-5 adds more than on 3rd-and-10. Sparvi uses nflverse's EPA model. Defense numbers are EPA allowed, so lower is better. Explainer: [what is EPA?](/learn/epa/)
 
 [**Plays counted**]{#nfl-plays}: Passes (including sacks and scrambles) and runs with an EPA. Two-point tries, kneel-downs, and spikes are left out. Regular season only.
 
@@ -95,7 +95,7 @@ Longer explainers for the main metrics are on the [Learn page](/learn/).
 
 ## College football {#cfb}
 
-[**EPA per play (college)**]{#cfb-epa}: Expected points added per play, from CollegeFootballData.com's EPA model (it calls it PPA). Same idea as the NFL version: how much each play changed the offense's expected points. Passes include sacks; runs include fumbles, because the data doesn't say which kind of play fumbled.
+[**EPA per play (college)**]{#cfb-epa}: Expected points added per play, from CollegeFootballData.com's EPA model (it calls it PPA). Same idea as the NFL version ([explainer](/learn/epa/)): how much each play changed the offense's expected points. Passes include sacks; runs include fumbles, because the data doesn't say which kind of play fumbled.
 
 [**Success rate (college)**]{#cfb-success}: A play gains at least 50% of the yards to go on 1st down, 70% on 2nd, or all of them on 3rd and 4th. (The NFL pages use a different definition: positive EPA.)
 
