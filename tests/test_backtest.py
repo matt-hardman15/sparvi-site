@@ -165,6 +165,78 @@ def test_paired_bootstrap_is_seeded_and_blocked():
     assert r1 == r2 and r1["blocks"] == 50 and r1["ci90"][0] > 0
 
 
+def _stamp(days_ago: float) -> str:
+    from datetime import UTC, datetime, timedelta
+    return (datetime.now(UTC) - timedelta(days=days_ago)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _toy_card(tmp_path, **extra):
+    import yaml
+    d = tmp_path / "models" / "test" / "toy"
+    (d / "backtest").mkdir(parents=True, exist_ok=True)
+    card = {"name": "toy", "title": "Toy", "sport": "test", "status": "champion", "version": "1.0.0"} | extra
+    (d / "card.yml").write_text(yaml.safe_dump(card), encoding="utf-8")
+    return d
+
+
+def _toy_report(d, version: str, days_ago: float | None, passed: bool = True) -> None:
+    import json
+    rep = {"version": version, "passed": passed, "folds": [2026], "revision_safe": False, "gate": {"passed": passed},
+           "leakage": {"timestamp": {"passed": True}},
+           "evaluation": {"metric": "pearson_r", "n": 10, "point": 0.2, "baselines": {
+               "published": {"value": 0.0, "paired": {"est": 0.2, "ci90": [0.1, 0.3]}}}}}
+    rep |= {"ran_at": "unknown   "} if days_ago is None else {"ran_at": _stamp(days_ago)}
+    (d / "backtest" / f"{version}.json").write_text(json.dumps(rep), encoding="utf-8")
+
+
+def test_publish_gate_needs_a_recent_backtest(tmp_path, monkeypatch):
+    """A5-next: a pass older than the limit doesn't count, and the export stops."""
+    from backtest.gate import MAX_AGE_DAYS, BacktestRequired, require_passing, status
+    from sparvi import registry
+    monkeypatch.delenv("GITHUB_EVENT_NAME", raising=False)
+    d = _toy_card(tmp_path)
+    _toy_report(d, "1.0.0", MAX_AGE_DAYS - 1)
+    assert require_passing("toy", root=tmp_path) == {"model": "toy", "version": "1.0.0", "state": "validated", "report": "1.0.0.json"}
+    _toy_report(d, "1.0.0", MAX_AGE_DAYS + 1)
+    st = status("toy", tmp_path)
+    assert st["state"] == "blocked" and st["stale"] and f"{MAX_AGE_DAYS + 1} days ago" in st["reason"]
+    with pytest.raises(BacktestRequired, match="last ran"):
+        require_passing("toy", root=tmp_path)
+    assert registry.site_numbers(tmp_path)["toy_status"] == "backtest out of date"
+    _toy_report(d, "1.0.0", None)                                        # a report without a run date is not current
+    with pytest.raises(BacktestRequired, match="no run date"):
+        require_passing("toy", root=tmp_path)
+    # nothing is published from a pull request's checks, and the one that repairs the backtest must be able to pass
+    _toy_report(d, "1.0.0", MAX_AGE_DAYS + 1)
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request")
+    assert require_passing("toy", root=tmp_path)["state"] == "validated"
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "schedule")
+    with pytest.raises(BacktestRequired):
+        require_passing("toy", root=tmp_path)
+
+
+def test_stale_backtest_with_a_candidate_or_an_experimental_flag(tmp_path, monkeypatch):
+    from backtest.gate import MAX_AGE_DAYS, BacktestRequired, require_passing
+    monkeypatch.delenv("GITHUB_EVENT_NAME", raising=False)
+    # While a candidate is tested, the weekly run rewrites the candidate's report: the newer date counts...
+    d = _toy_card(tmp_path, backtest={"candidate": "2.0.0"})
+    _toy_report(d, "1.0.0", MAX_AGE_DAYS + 20)
+    _toy_report(d, "2.0.0", 2, passed=False)
+    assert require_passing("toy", root=tmp_path)["state"] == "validated"
+    _toy_report(d, "2.0.0", MAX_AGE_DAYS + 3)
+    with pytest.raises(BacktestRequired, match=f"{MAX_AGE_DAYS + 3} days ago"):
+        require_passing("toy", root=tmp_path)
+    # ...but a candidate's pass never stands in for the published version's own
+    _toy_report(d, "1.0.0", 1, passed=False)
+    _toy_report(d, "2.0.0", 1)
+    with pytest.raises(BacktestRequired, match="failed its gate"):
+        require_passing("toy", root=tmp_path)
+    # a model flagged experimental publishes with its label, stale pass or not
+    d = _toy_card(tmp_path, experimental="old test")
+    _toy_report(d, "1.0.0", MAX_AGE_DAYS + 5)
+    assert require_passing("toy", root=tmp_path)["state"] == "experimental"
+
+
 def test_publish_gate(tmp_path):
     import json
 
@@ -188,9 +260,9 @@ def test_publish_gate(tmp_path):
     card["experimental"] = "not yet validated"
     (d / "card.yml").write_text(yaml.safe_dump(card), encoding="utf-8")
     assert require_passing("toy", root=tmp_path)["state"] == "experimental"
-    (d / "backtest" / "1.0.0.json").write_text(json.dumps({"version": "1.0.0", "passed": True}), encoding="utf-8")
+    (d / "backtest" / "1.0.0.json").write_text(json.dumps({"version": "1.0.0", "passed": True, "ran_at": _stamp(0)}), encoding="utf-8")
     assert require_passing("toy", root=tmp_path)["state"] == "validated"
-    (d / "backtest" / "1.0.0.json").write_text(json.dumps({"version": "0.9.0", "passed": True}), encoding="utf-8")
+    (d / "backtest" / "1.0.0.json").write_text(json.dumps({"version": "0.9.0", "passed": True, "ran_at": _stamp(0)}), encoding="utf-8")
     del card["experimental"]
     (d / "card.yml").write_text(yaml.safe_dump(card), encoding="utf-8")
     with pytest.raises(BacktestRequired):
@@ -343,7 +415,7 @@ def test_a_candidate_report_never_validates_the_published_version(tmp_path):
     (d / "card.yml").write_text(yaml.safe_dump(card), encoding="utf-8")
     m = registry.get("toy", tmp_path)
     assert runner.tested_version(m) == "2.0.0" and ci.last_report(m) is None
-    rep = {"version": "2.0.0", "passed": True, "ran_at": "2026-11-19T00:00:00Z", "folds": [2026], "revision_safe": False,
+    rep = {"version": "2.0.0", "passed": True, "ran_at": _stamp(1), "folds": [2026], "revision_safe": False,
            "gate": {"passed": True}, "leakage": {"timestamp": {"passed": True}},
            "evaluation": {"metric": "pearson_r", "n": 10, "point": 0.2, "baselines": {
                "published": {"value": 0.0, "paired": {"est": 0.2, "ci90": [0.1, 0.3]}}}}}
