@@ -76,6 +76,34 @@ def test_honest_model_passes_every_leakage_test():
     assert df["point"].notna().all() and len(df) > 20
 
 
+def test_leakage_tests_reuse_the_folds_predictions():
+    """BT-REUSE: given the fold's clean predictions, run_all fits once less and reports the same thing."""
+    m, fits = honest_model(), []
+
+    def fit(loader, fold, permute_seed=None):
+        fits.append((loader.poison is not None, permute_seed))
+        return m.fit(loader, fold, permute_seed)
+    mod, lo = SimpleNamespace(fit=fit, predict=m.predict, outcome=m.outcome), Loader()
+    pred, audit = runner.fold_predictions(mod, lo, FOLD)
+    df = runner.score_fold(mod, lo, FOLD, pred)
+    assert audit["passes"] and len(pred) >= len(df) and fits == [(False, None)]
+    fits.clear()
+    given = leakage.run_all("toy", mod, {"group_by": "entity_id"}, FOLD, df, clean=pred)
+    assert (False, None) not in fits and (True, None) in fits, "the clean fit is not repeated; the poisoned one still runs"
+    n_given = len(fits)
+    fits.clear()
+    refit = leakage.run_all("toy", mod, {"group_by": "entity_id"}, FOLD, df)
+    assert len(fits) == n_given + 1 and fits[0] == (False, None)
+    assert given == refit and given["future_poisoning"]["passed"] and given["future_poisoning"]["n"] == len(pred)
+
+
+def test_reused_predictions_still_catch_a_leaky_model():
+    mod, lo = leaky_model(), Loader()
+    pred, _ = runner.fold_predictions(mod, lo, FOLD)
+    out = leakage.run_all("toy", mod, {"group_by": "none"}, FOLD, runner.score_fold(mod, lo, FOLD, pred), clean=pred)
+    assert not out["future_poisoning"]["passed"]
+
+
 def test_future_poisoning_and_timestamp_catch_a_leaky_model():
     mod, lo = leaky_model(), Loader()
     df, audit = runner.run_fold(mod, lo, FOLD)
