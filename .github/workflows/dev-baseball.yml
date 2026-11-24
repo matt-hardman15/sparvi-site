@@ -24,6 +24,7 @@ on:
         options:
           - pitch_quality/develop_loc_stable.py
           - pitch_quality/develop_combine.py
+          - pitch_quality/develop_arsenal.py
           - pitch_quality/develop_loc.py
           - pitch_quality/develop_loc_gates.py
           - pitch_quality/develop.py
