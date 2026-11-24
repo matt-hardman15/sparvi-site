@@ -161,9 +161,12 @@ def not_applicable(test: str, declared: dict) -> dict | None:
     return {"passed": True, "not_applicable": reason}
 
 
-def run_all(name: str, mod, spec: dict, fold, scored: pd.DataFrame) -> dict:
+def run_all(name: str, mod, spec: dict, fold, scored: pd.DataFrame, clean: pd.DataFrame | None = None) -> dict:
+    """`clean`: the fold's predictions from an unpoisoned loader, when the caller already has them (the runner does, from
+    scoring the fold); fitted here otherwise. A fit is the expensive part of a run, and it is deterministic."""
     loader = Loader()
-    clean = mod.predict(mod.fit(loader, fold), loader, fold)
+    if clean is None:
+        clean = mod.predict(mod.fit(loader, fold), loader, fold)
     na = spec.get("not_applicable") or {}
     out = {"future_poisoning": future_poisoning(mod, fold, clean),
            "label_permutation": not_applicable("label_permutation", na) or label_permutation(mod, fold, spec=spec)}

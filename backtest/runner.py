@@ -40,7 +40,8 @@ def folds_for(spec: dict, fast: bool):
     return fs[-s.get("fast_folds", 1):] if fast else fs
 
 
-def run_fold(mod, loader: Loader, fold) -> tuple[pd.DataFrame, dict]:
+def fold_predictions(mod, loader: Loader, fold) -> tuple[pd.DataFrame, dict]:
+    """Fit and predict one fold: the model's predictions (every entity, before outcomes are joined) and the timestamp audit."""
     start = len(loader.served)
     fitted = mod.fit(loader, fold)
     fit_max = loader.max_available_at(start)
@@ -50,9 +51,16 @@ def run_fold(mod, loader: Loader, fold) -> tuple[pd.DataFrame, dict]:
     audit = {"fit_max_available_at": fit_max, "train_until": fold.train_until,
              "predict_max_available_at": pred_max, "decision_date": fold.decision_date,
              "passes": (fit_max is None or fit_max <= fold.train_until) and (pred_max is None or pred_max <= fold.decision_date)}
-    y = mod.outcome(loader, fold)
-    df = pred.merge(y, on="entity_id", how="inner").assign(fold=fold.test_season)
-    return df, audit
+    return pred, audit
+
+
+def score_fold(mod, loader: Loader, fold, pred: pd.DataFrame) -> pd.DataFrame:
+    return pred.merge(mod.outcome(loader, fold), on="entity_id", how="inner").assign(fold=fold.test_season)
+
+
+def run_fold(mod, loader: Loader, fold) -> tuple[pd.DataFrame, dict]:
+    pred, audit = fold_predictions(mod, loader, fold)
+    return score_fold(mod, loader, fold, pred), audit
 
 
 def evaluate(df: pd.DataFrame, spec: dict, segments: bool = True) -> dict:
@@ -131,10 +139,10 @@ def run(name: str, fast: bool = False, loader: Loader | None = None, write: bool
     spec = m.card["backtest"]
     mod = load_module(spec["module"])
     loader = loader or Loader()
-    frames, audits = [], []
+    frames, audits, preds = [], [], {}
     for fold in folds_for(spec, fast):
-        df, audit = run_fold(mod, loader, fold)
-        frames.append(df)
+        preds[fold.test_season], audit = fold_predictions(mod, loader, fold)
+        frames.append(score_fold(mod, loader, fold, preds[fold.test_season]))
         audits.append({"fold": fold.test_season, **audit})
     df = pd.concat(frames, ignore_index=True)
     ev = evaluate(df, spec)
@@ -142,7 +150,10 @@ def run(name: str, fast: bool = False, loader: Loader | None = None, write: bool
     leak = {"timestamp": {"passed": all(a["passes"] for a in audits), "folds": audits}}
     if leakage:
         from backtest import leakage as lk
-        leak.update(lk.run_all(name, mod, spec, folds_for(spec, True)[-1], df))
+        last = folds_for(spec, True)[-1]
+        # The leakage tests compare against this fold's clean predictions, which the loop above just made: training is
+        # deterministic, so they are passed in and not refit (BT-REUSE). Not from a loader that corrupts what it serves.
+        leak.update(lk.run_all(name, mod, spec, last, df, clean=preds.get(last.test_season) if loader.poison is None else None))
     passed = g["passed"] and all(v["passed"] for v in leak.values())
     rep = {
         "run_id": uuid.uuid4().hex[:12], "model": name, "version": tested_version(m), "kind": "fast" if fast else "full",
