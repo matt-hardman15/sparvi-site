@@ -34,7 +34,7 @@
   "lines_2023": 3072,
   "lines_2024": 3172,
   "lines_2025": 3289,
-  "lines_2026": 2356,
+  "lines_2026": 2425,
   "play_players_2014": 171229,
   "play_players_2015": 173083,
   "play_players_2016": 171319,
@@ -2042,7 +2042,7 @@
   {
    "name": "games_2026: row count",
    "ok": true,
-   "detail": "895 rows (last accepted 888)"
+   "detail": "895 rows (last accepted 895)"
   },
   {
    "name": "games_2026: one row per id",
@@ -2082,7 +2082,7 @@
   {
    "name": "plays_2026: row count",
    "ok": true,
-   "detail": "272,427 rows (last accepted 250,923)"
+   "detail": "272,427 rows (last accepted 272,427)"
   },
   {
    "name": "plays_2026: one row per id",
@@ -2142,7 +2142,7 @@
   {
    "name": "rankings_2026: row count",
    "ok": true,
-   "detail": "726 rows (last accepted 676)"
+   "detail": "726 rows (last accepted 726)"
   },
   {
    "name": "rankings_2026: one row per season + seasonType + week + poll + school",
@@ -2167,7 +2167,7 @@
   {
    "name": "lines_2026: row count",
    "ok": true,
-   "detail": "2,356 rows (last accepted 2,300)"
+   "detail": "2,425 rows (last accepted 2,356)"
   },
   {
    "name": "lines_2026: one row per game_id + provider",
@@ -4077,7 +4077,7 @@
   {
    "name": "roster_2026: row count",
    "ok": true,
-   "detail": "31,599 rows (last accepted 31,590)"
+   "detail": "31,599 rows (last accepted 31,599)"
   },
   {
    "name": "roster_2026: one row per id + team",
@@ -4102,7 +4102,7 @@
   {
    "name": "player_stats_2026: row count",
    "ok": true,
-   "detail": "163,444 rows (last accepted 159,045)"
+   "detail": "163,444 rows (last accepted 163,444)"
   },
   {
    "name": "player_stats_2026: one row per playerId + team + category + statType",
@@ -4132,7 +4132,7 @@
   {
    "name": "player_usage_2026: row count",
    "ok": true,
-   "detail": "5,560 rows (last accepted 5,480)"
+   "detail": "5,560 rows (last accepted 5,560)"
   },
   {
    "name": "player_usage_2026: one row per id + team",
@@ -4157,7 +4157,7 @@
   {
    "name": "player_ppa_2026: row count",
    "ok": true,
-   "detail": "5,560 rows (last accepted 5,480)"
+   "detail": "5,560 rows (last accepted 5,560)"
   },
   {
    "name": "player_ppa_2026: one row per id + team",
@@ -4177,7 +4177,7 @@
   {
    "name": "player_wepa_2026: row count",
    "ok": true,
-   "detail": "879 rows (last accepted 844)"
+   "detail": "879 rows (last accepted 879)"
   },
   {
    "name": "player_wepa_2026: one row per kind + athleteId + team",
@@ -4757,7 +4757,7 @@
   {
    "name": "play_players_2026: row count",
    "ok": true,
-   "detail": "296,442 rows (last accepted 273,114)"
+   "detail": "296,442 rows (last accepted 296,442)"
   },
   {
    "name": "play_players_2026: one row per play_id + role",
