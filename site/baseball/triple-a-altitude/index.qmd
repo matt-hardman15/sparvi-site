@@ -1,0 +1,153 @@
+---
+title: "Five Triple-A parks make pitchers' stuff look worse than it is"
+pagetitle: "Triple-A altitude parks understate Stuff+"
+description: "Salt Lake, Reno, Albuquerque, El Paso and Las Vegas record less pitch movement than any other Triple-A park. What that hides, and who it affects."
+date: 2026-11-25
+categories: [Baseball, pitching, prospects]
+image: thumb.png
+card-key: baseball.alt_net_delta
+card-prefix: ""
+card-suffix: " pts"
+card-label: "Stuff+ hidden by altitude for pitchers on five Triple-A teams"
+---
+
+::: {.finding}
+[The finding]{.label}
+The {{< meta baseball.alt_n_alt_parks >}} high-altitude parks in Triple-A record **{{< meta baseball.alt_factor_lo >}} to {{< meta baseball.alt_factor_hi >}} of the pitch movement an MLB park records** for the same pitchers; every other Triple-A park records {{< meta baseball.alt_other_factor_lo >}} to {{< meta baseball.alt_other_factor_hi >}}. Putting the readings back on an MLB footing raises the Stuff+ of pitchers on those five teams by **{{< meta baseball.alt_team_delta >}} points on average**, against {{< meta baseball.alt_other_delta >}} for everyone else in Triple-A.
+:::
+
+::: {.so-what}
+[So what]{.label}
+
+- **Reading a Triple-A grade:** a pitcher for {{< meta baseball.alt_park_list >}} is graded about {{< meta baseball.alt_net_delta >}} points lower, against other Triple-A pitchers, than his pitches deserve. The site's grades are the readings as recorded, so make that allowance yourself for now.
+- **Rule 5 draft:** {{< meta baseball.alt_r5_alt_n >}} unprotected pitchers on the board pitch for those five teams. After the adjustment {{< meta baseball.alt_r5_alt_100_after >}} of them grade 100 or better, up from {{< meta baseball.alt_r5_alt_100_before >}}. The largest gains: {{< meta baseball.alt_r5_risers >}}.
+- **What doesn't change:** the top of the board. {{< meta baseball.alt_r5_alt_top_before >}} of these pitchers were in the top {{< meta baseball.alt_r5_top >}} by Stuff+ before the adjustment and {{< meta baseball.alt_r5_alt_top_after >}} after it.
+- **What this leaves out:** velocity is not adjusted, the correction slightly overshoots at altitude, and it says nothing about health, command, or makeup.
+:::
+
+## How much movement each park records
+
+```{=html}
+<div class="explorer">
+  <div class="plot-host" id="parks"></div>
+  <p class="caption" id="pcap"></p>
+</div>
+```
+
+## Every Triple-A pitcher, as recorded and adjusted
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c"></div>
+  <div class="plot-host" id="scatter"></div>
+  <p class="caption" id="scap"></p>
+  <div id="t"><div class="loading">Loading…</div></div>
+  <p class="caption" id="tcap"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt, U = S.urlState;
+  const D = await S.load("/data/baseball/altitude.json");
+  const TEAL = "#0f5257", GRAY = "#b9b8b3";
+  const pct = v => f.num(100 * v, 0) + "%", sgn = v => (v > 0 ? "+" : v < 0 ? "−" : "") + f.num(Math.abs(v), 1);
+  const city = p => p.club.replace(/ \S+$/, "");
+
+  // ---- Parks: share of MLB movement recorded, with its 90% interval ----
+  const parks = D.parks.slice().sort((a, b) => a.factor - b.factor);
+  S.plot(document.getElementById("parks"), w => Plot.plot({ ...S.plotDefaults(w), height: 26 * parks.length + 60, marginLeft: 150, marginBottom: 45,
+    x: { label: "Share of MLB movement the park records →", tickFormat: v => f.num(100 * v, 0) + "%", grid: true, domain: [Math.floor(20 * d3.min(parks, p => p.lo)) / 20, Math.ceil(20 * d3.max(parks, p => p.hi)) / 20] },
+    y: { label: null, domain: parks.map(p => p.club) },
+    marks: [
+      Plot.ruleX([1], { stroke: "#16181d", strokeDasharray: "3,3" }),
+      Plot.ruleY(parks, { y: "club", x1: "lo", x2: "hi", stroke: p => (p.altitude ? TEAL : GRAY), strokeWidth: 3 }),
+      Plot.dot(parks, { y: "club", x: "factor", r: 5, fill: p => (p.altitude ? TEAL : "#8a8b8f"), stroke: "#fff" }),
+      Plot.tip(parks, Plot.pointerY({ y: "club", x: "factor", title: p => `${p.club}\nRecords ${pct(p.factor)} of MLB movement (90% interval ${pct(p.lo)} to ${pct(p.hi)})\nFrom ${f.int(p.fit_pitchers)} pitchers seen there and in MLB, ${D.fit_seasons.join("–")}\nWorth ${sgn(p.points)} Stuff+ points to the pitches thrown there in ${D.season}` }))] }));
+  const alt = parks.filter(p => p.altitude), rest = parks.filter(p => !p.altitude);
+  document.getElementById("pcap").textContent = `Each Triple-A park's readings of induced vertical and horizontal break, as a share of what the same pitchers' pitches of the same type recorded in MLB parks (${D.fit_seasons.join(" and ")}; the bar is a 90% interval). The dashed line is an MLB park. The ${alt.length} dark bars are the high-altitude parks, from ${pct(alt[0].factor)} (${city(alt[0])}) to ${pct(alt[alt.length - 1].factor)} (${city(alt[alt.length - 1])}); the other ${rest.length} run from ${pct(rest[0].factor)} to ${pct(rest[rest.length - 1].factor)}. Hover for each park.`;
+
+  // ---- Pitchers ----
+  const WHO = { r5: "Rule 5 board", all: "All Triple-A" }, TEAMS = { all: "All teams", alt: "The five altitude teams" };
+  const DEF = { who: "r5", teams: "all" };
+  const st = { who: WHO[U.get("who")] ? U.get("who") : DEF.who, teams: TEAMS[U.get("teams")] ? U.get("teams") : DEF.teams, q: "" };
+  const all = D.pitchers, lo = Math.floor(d3.min(all, d => d.stuff_plus) / 10) * 10, hi = Math.ceil(d3.max(all, d => d.stuff_adj) / 10) * 10;
+  const dmax = Math.ceil(d3.max(all, d => d.delta)), dmin = Math.floor(d3.min(all, d => d.delta));
+  document.getElementById("c").replaceChildren(
+    S.el("label", {}, "Pitchers", S.seg(Object.entries(WHO), st.who, v => { st.who = v; draw(); })),
+    S.el("label", {}, "Teams", S.seg(Object.entries(TEAMS), st.teams, v => { st.teams = v; draw(); })),
+    S.search("Find a pitcher", "Name", v => { st.q = v; draw(); }, st.q));
+  let table = null;
+  function draw() {
+    const rows = all.filter(d => (st.who === "all" || d.r5) && (st.teams === "all" || d.alt_team));
+    const found = st.q ? rows.filter(d => d.name.toLowerCase().includes(st.q)).slice(0, 6) : [];
+    S.plot(document.getElementById("scatter"), w => Plot.plot({ ...S.plotDefaults(w), height: 400, grid: true, marginBottom: 45,
+      x: { label: "Stuff+ as recorded (the published grade) →", domain: [lo, hi] },
+      y: { label: "↑ Change with the park adjustment (Stuff+ points)", domain: [dmin, dmax] },
+      color: { domain: ["On one of the five altitude teams", "Other Triple-A teams"], range: [TEAL, GRAY], legend: true },
+      marks: [
+        Plot.ruleY([0], { stroke: "#16181d" }),
+        Plot.dot(rows.filter(d => !d.alt_team), { x: "stuff_plus", y: "delta", r: 3.5, fill: () => "Other Triple-A teams", fillOpacity: found.length ? 0.2 : 0.7, clip: true }),
+        Plot.dot(rows.filter(d => d.alt_team), { x: "stuff_plus", y: "delta", r: 4, fill: () => "On one of the five altitude teams", fillOpacity: found.length ? 0.25 : 0.9, clip: true }),
+        Plot.dot(found, { x: "stuff_plus", y: "delta", r: 7, fill: d => (d.alt_team ? "On one of the five altitude teams" : "Other Triple-A teams"), stroke: "#16181d", strokeWidth: 1.5 }),
+        Plot.text(found, { x: "stuff_plus", y: "delta", text: "name", dy: -13, fontWeight: 600 }),
+        Plot.tip(rows, Plot.pointer({ x: "stuff_plus", y: "delta", title: d => `${d.name} (${d.team}${d.org ? ", " + d.org : ""}), ${f.int(d.pitches)} pitches\nStuff+ ${f.num(d.stuff_plus, 0)} as recorded, ${f.num(d.stuff_adj, 0)} adjusted (${sgn(d.delta)})\n${pct(d.alt_share)} of his pitches were thrown at altitude` }))] }));
+    const a = rows.filter(d => d.alt_team), o = rows.filter(d => !d.alt_team), m = x => d3.mean(x, d => d.delta);
+    document.getElementById("scap").textContent = `${rows.length} pitchers with ${D.min_pitches}+ Triple-A pitches in ${D.season} (${st.who === "r5" ? "the Rule 5 board" : "all of Triple-A"}${st.teams === "alt" ? ", the five altitude teams only" : ""}). Across is the published Stuff+; up is how much it changes when each pitch's movement is put on an MLB park's footing. `
+      + (a.length ? `The ${a.length} dark dots are pitchers on the five altitude teams, who gain ${sgn(m(a))} on average` : "No pitcher on an altitude team is shown")
+      + (o.length ? `; the ${o.length} others gain ${sgn(m(o))}. ` : ". ")
+      + `Nearly every dot is above zero because every Triple-A park records a little less than an MLB park. Search for a pitcher or hover for his numbers.`;
+    const cols = [
+      { key: "name", label: "Pitcher", align: "l", html: r => S.playerLink(r.id, r.name), sortVal: r => r.name },
+      { key: "team", label: "Club", align: "l", title: "His Triple-A club this season" },
+      { key: "org", label: "Org", align: "l", fmt: v => v || "—", title: "Current organization, for pitchers on the Rule 5 board" },
+      { key: "pitches", label: "Pitches", fmt: f.int },
+      { key: "alt_share", label: "At altitude", fmt: pct, title: "Share of his Triple-A pitches thrown in the five high-altitude parks" },
+      { key: "stuff_plus", label: "Stuff+", fmt: v => f.num(v, 0), heat: "plus", heatVal: r => r.stuff_plus, title: "As recorded: the published grade" },
+      { key: "stuff_adj", label: "Adjusted", fmt: v => f.num(v, 0), heat: "plus", heatVal: r => r.stuff_adj, title: "With each pitch's movement on an MLB park's footing" },
+      { key: "delta", label: "Change", fmt: sgn, title: "Adjusted minus as recorded" },
+    ];
+    table ||= S.table(document.getElementById("t"), cols, { sortKey: "delta", desc: true, pageSize: 25 });
+    table.update(st.q ? rows.filter(d => d.name.toLowerCase().includes(st.q)) : rows);
+    document.getElementById("tcap").textContent = `Sorted by the change; click a column to sort by it. 100 is an average MLB pitcher and 10 points is one standard deviation. The adjusted grade is an analysis, not the published grade: leaderboards, player pages, and the Rule 5 board show Stuff+ as recorded.`;
+    U.set({ who: st.who, teams: st.teams }, DEF);
+  }
+  draw();
+})();
+</script>
+```
+
+## Why a park changes a pitch
+
+A pitch moves because its spin pushes against the air. Thinner air pushes back less, so the same pitch, thrown the same way, breaks less at altitude. Salt Lake City, Reno, Albuquerque, El Paso, and Las Vegas all sit well above the rest of Triple-A, and all five are in the Pacific Coast League.
+
+[Stuff+](/learn/stuff-plus/) grades a pitch from its velocity, [movement](/learn/induced-vertical-break/), spin, and release. It has no idea where the pitch was thrown. A fastball that rides at sea level reads as a flatter one in Albuquerque, and the grade follows the reading.
+
+The effect is not a judgment about the pitchers. It shows up when the same pitcher is measured in both places. Among the {{< meta baseball.alt_val_n >}} pitchers who threw at least {{< meta baseball.alt_min_pitches >}} pitches in both Triple-A and MLB in {{< meta baseball.alt_season >}}, pitches thrown in the five altitude parks graded {{< meta baseball.alt_val_alt_before >}} Stuff+ points below the same pitcher's MLB pitches of the same type. In the other Triple-A parks the gap was {{< meta baseball.alt_val_other_before >}}.
+
+## What the adjustment does, and how well it works
+
+For each park, take every pitcher who threw there and in MLB during {{< meta baseball.alt_fit_seasons >}}, and compare the movement of each of his Triple-A pitches with his own MLB average for that pitch type. The park's factor is the share of MLB movement it records. Extension, the distance in front of the rubber where the ball is released, reads {{< meta baseball.alt_extension_in >}} inches shorter in Triple-A at every park, and gets one correction.
+
+Those factors were then applied to {{< meta baseball.alt_season >}}, a season they were not fitted on. With each pitch's movement divided by its park's factor, the altitude gap for the same pitchers went from {{< meta baseball.alt_val_alt_before >}} points to {{< meta baseball.alt_val_alt_after >}}: most of it is gone, and the correction goes slightly past zero. In the other parks the gap went from {{< meta baseball.alt_val_other_before >}} to {{< meta baseball.alt_val_other_after >}}. About a point is left everywhere. Pitchers also throw slightly harder in MLB; velocity is left alone here because the data can't separate tracking from effort.
+
+## What it means for the Rule 5 board
+
+The [Rule 5 board](/baseball/tools/rule-5.html) ranks unprotected Triple-A pitchers on Stuff+ among other things, on the readings as recorded. Of the {{< meta baseball.alt_r5_n >}} board pitchers with {{< meta baseball.alt_min_pitches >}}+ pitches, {{< meta baseball.alt_r5_alt_n >}} pitch for the five altitude teams. Their Stuff+ rises {{< meta baseball.alt_r5_alt_delta >}} points on average with the adjustment, against {{< meta baseball.alt_r5_other_delta >}} for the rest of the board, and by as much as {{< meta baseball.alt_r5_max_delta >}} for one pitcher.
+
+That is enough to change how an individual pitcher reads and not enough to reorder the board. A club deciding between two similar arms should know that one of them was measured in thin air. A club looking for the best stuff available finds mostly the same names.
+
+<details class="method" id="method">
+<summary>Method and caveats</summary>
+
+**Data.** Pitch-level Statcast for Triple-A and MLB. Park factors use {{< meta baseball.alt_fit_seasons >}}; the grades adjusted are {{< meta baseball.alt_season >}} Triple-A, {{< meta baseball.alt_n_pitchers >}} pitchers with {{< meta baseball.alt_min_pitches >}}+ pitches.
+
+**Park factors.** {{< meta baseball.alt_fit_pitchers >}} pitchers threw in both Triple-A and MLB in a season of {{< meta baseball.alt_fit_seasons >}}. Each of their Triple-A pitches is set against that pitcher's MLB average for the same pitch type and season, leaving out MLB games at Coors Field. A park's factor is the least-squares share of that MLB movement it records, with induced vertical break and horizontal break fitted together, because thin air shrinks all movement in proportion. Intervals are 90%, from resampling pitchers. An additive correction (a fixed number of inches per park) was also tried and removed less than half of the altitude gap, since it moves a curveball the wrong way.
+
+**The adjusted grade.** Every {{< meta baseball.alt_season >}} Triple-A pitch is graded twice with the published Stuff+ models: as recorded, and with its movement divided by the factor of the park it was thrown in and its extension corrected. A pitcher's change is the difference between the two averages. The adjusted grade shown is his published Stuff+ plus that change. Each pitch uses its own park, so a visiting pitcher's pitches at altitude are corrected too: the more of a pitcher's pitches were thrown at altitude, the larger his change.
+
+**The check.** The form of the correction was chosen on {{< meta baseball.alt_choose_season >}} and confirmed on {{< meta baseball.alt_season >}}, each time with factors from the two seasons before. Across all parks the same pitchers graded {{< meta baseball.alt_val_gap_before >}} points higher in MLB than in Triple-A as recorded and {{< meta baseball.alt_val_gap_after >}} after the adjustment.
+
+**What it can't tell you.** Velocity is not adjusted. The correction overshoots at altitude by about a point, so the true allowance is a little smaller than shown. A factor describes a park's average effect over two seasons, not a given night's weather. Only Stuff+ is adjusted here: Location+ and Pitching+ are as recorded. Park effects on hitters' numbers are a separate question and are not measured. The adjusted grades are an analysis beside the published ones; the published grades change only when the models are retrained with the adjustment.
+
+Code: [`baseball/altitude/`](https://github.com/matt-hardman15/sparvi-site/tree/main/baseball/altitude) · Models: {{< meta models.stuff_plus >}}. Data: Baseball Savant (Statcast). Sparvi is not affiliated with MLB or any club.
+
+</details>

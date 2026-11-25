@@ -53,7 +53,7 @@ def test_committed_data_passes_and_writes_nothing(tmp_path):
     ok, results = run(ROOT, tmp_path)
     assert ok, failed(results)
     assert len(results) >= 80 and all(r["ok"] is True for r in results.values())
-    assert {r["tool"] for r in results.values()} >= {bb.LB, bb.AAA, bb.R5, bb.PP, bb.FARM, bb.TR, bb.FA, bb.TWO}
+    assert {r["tool"] for r in results.values()} >= {bb.LB, bb.AAA, bb.R5, bb.PP, bb.FARM, bb.TR, bb.FA, bb.ALT, bb.TWO}
     assert not (tmp_path / "status").exists()          # write=False
 
 
@@ -146,6 +146,18 @@ def test_duplicates_decreasing_counts_and_bad_intervals_fail(root, tmp_path):
     assert not ok and "One row per pitcher and level in the season table" in f
     assert "MLB season-to-date pitches, games, and batters faced never decrease from week to week" in f
     assert "Every organization's score is inside its own interval" in f
+
+
+def test_altitude_table_that_disagrees_with_the_leaderboard_or_itself_fails(root, tmp_path):
+    def bump(d):
+        d["pitchers"][0]["stuff_plus"] += 3            # no longer the leaderboard's grade, nor adjusted minus change
+        d["parks"][0]["factor"] = 1.05                 # an altitude park reading more than the others
+    edit(root, "altitude", bump)
+    ok, results = run(root, tmp_path)
+    f = failed(results)
+    assert not ok and "The adjusted Stuff+ is the published Stuff+ plus the change" in f
+    assert "The as-recorded Stuff+ in the altitude table is the leaderboard's" in f
+    assert "The high-altitude parks record less movement than every other park" in f
 
 
 def test_missing_player_page_fails(root, tmp_path):
