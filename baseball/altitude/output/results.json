@@ -37,7 +37,8 @@
    "altitude": -1.1738306803920089,
    "others": 1.0556978907900185,
    "largest_park": 3.2097715293705216
-  }
+  },
+  "additive_altitude": 3.9648029447250948
  },
  "published_check": {
   "pitchers": 220,

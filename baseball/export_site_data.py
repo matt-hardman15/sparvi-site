@@ -1123,6 +1123,17 @@ if not H["coef_pitching"] > H["coef_results"]:
 if not (trailed and ahead and sp):
     raise StaleProse("Free-agent article: the lists of free agents whose results trailed or ran ahead (and the top starter) are empty.")
 
+# ---- Triple-A grades at altitude (baseball/altitude; article site/baseball/triple-a-altitude/) -----------
+# The analysis runs by hand (it grades a Triple-A season twice) and supplies each pitcher's change; the adjusted grade
+# shown is his published Stuff+ plus that change, so the article matches the board and the leaderboard.
+from baseball.altitude import page_data as ALT  # noqa: E402
+
+alt_data, alt_numbers = ALT.build(read_json(HERE / "altitude" / "output" / "results.json"), read_json(OUT / "stuff_pitchers.json"),
+                                  read_json(OUT / "rule5_pitchers.json"),
+                                  {r["club"]: r["club_name"] for r in read_json(OUT / "farm_orgs.json")})
+write_json(OUT / "altitude.json", alt_data)
+N.update(alt_numbers)
+
 # Seed sensitivity of the bagged pitch-quality models (pitch_quality/stability.py, v2.0.0), for the method notes.
 STAB = read_json(PQ / "stability.json")
 N.update({"stab_n": str(STAB["n"]), "stab_min_pitches": str(STAB["min_pitches"]),

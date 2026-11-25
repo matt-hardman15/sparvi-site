@@ -32,6 +32,7 @@ python baseball/pitch_quality/thumb.py
 python baseball/farm_systems/thumb.py
 python baseball/aaa_translation/thumb.py
 python baseball/free_agents/thumb.py     # free_agents/analysis.py runs by hand (needs the free-agent list pull)
+python baseball/altitude/thumb.py        # altitude/analysis.py runs by hand (it grades a Triple-A season twice)
 # NFL: rebuilt when its raw data is here (python ingest/nfl/pull.py); otherwise the committed
 # site/data/nfl is rendered as-is.
 if [ -d data/raw/nfl ]; then ./nfl/build.sh; fi

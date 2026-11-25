@@ -40,6 +40,7 @@ ORGS = 30
 
 LB, AAA, R5, PP, FARM, TR, FA, TWO = ("Stuff+ leaderboard", "Triple-A explorer", "Rule 5 board", "Player pages",
                                        "Farm systems", "Triple-A translation", "Free-agent pitchers", "Two-week signal")
+ALT = "Triple-A altitude"
 
 
 def snap_rows(snap: dict, window: str, i: int, present: str) -> list[dict]:
@@ -81,6 +82,7 @@ def run(suite: Suite) -> None:
     farm(suite)
     translation(suite)
     free_agents(suite)
+    altitude(suite)
     two_week(suite)
 
 
@@ -410,6 +412,29 @@ def free_agents(suite: Suite) -> None:
     suite.check(FA, "One row per pitcher", len(ids) == len(set(ids)), f"{len(ids)} pitchers")
     m = wmean([r["stuff_plus"] for r in fa], [r["pitches"] for r in fa])
     suite.within(FA, "Free agents' average Stuff+ is near the MLB average (they are MLB pitchers, MLB scale)", m, 92, 108, ".1f", "mean")
+
+
+# -- Triple-A grades at altitude ---------------------------------------------------------------------------------------
+def altitude(suite: Suite) -> None:
+    d = suite.load(f"{DATA}/altitude.json")
+    rows, parks = d["pitchers"], d["parks"]
+    ids = [r["id"] for r in rows]
+    suite.check(ALT, "One row per pitcher in the altitude table", len(ids) == len(set(ids)) and len(ids) >= 300, f"{len(ids)} pitchers")
+    bad = [r["name"] for r in rows if abs(r["stuff_adj"] - (r["stuff_plus"] + r["delta"])) > 0.051]
+    suite.check(ALT, "The adjusted Stuff+ is the published Stuff+ plus the change", not bad, f"e.g. {bad[0]}" if bad else f"{len(rows)} pitchers")
+    pub = {r["id"]: r["stuff_plus"] for r in suite.load(f"{DATA}/stuff_pitchers.json") if r["level"] == "AAA"}
+    bad = [r["name"] for r in rows if pub.get(r["id"]) != r["stuff_plus"]]
+    suite.check(ALT, "The as-recorded Stuff+ in the altitude table is the leaderboard's", not bad, f"e.g. {bad[0]}" if bad else "")
+    bad = [p["club"] for p in parks if not (0.6 <= p["lo"] <= p["factor"] <= p["hi"] <= 1.1)]
+    suite.check(ALT, "Every park records between 60% and 110% of MLB movement, inside its own interval", bool(parks) and not bad,
+                f"e.g. {bad[0]}" if bad else f"{len(parks)} parks, {min(p['factor'] for p in parks):.2f} to {max(p['factor'] for p in parks):.2f}")
+    hi, lo = [p["factor"] for p in parks if p["altitude"]], [p["factor"] for p in parks if not p["altitude"]]
+    suite.check(ALT, "The high-altitude parks record less movement than every other park", bool(hi) and bool(lo) and max(hi) < min(lo),
+                f"altitude up to {max(hi):.3f}, others from {min(lo):.3f}" if hi and lo else "missing")
+    # A park correction is a few points: a change beyond 20 would mean the factors were applied wrong (e.g. multiplied).
+    big = [r["name"] for r in rows if abs(r["delta"]) > 20]
+    suite.check(ALT, "No pitcher's grade changes by more than 20 points", not big,
+                f"e.g. {big[0]}" if big else f"largest {max(abs(r['delta']) for r in rows):.1f}")
 
 
 # -- Two-week signal ---------------------------------------------------------------------------------------------------

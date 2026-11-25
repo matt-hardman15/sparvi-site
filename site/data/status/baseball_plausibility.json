@@ -1,7 +1,7 @@
 {
  "sport": "baseball",
  "ok": true,
- "n_checks": 86,
+ "n_checks": 92,
  "n_failed": 0,
  "n_not_run": 0,
  "checks": [
@@ -508,6 +508,42 @@
    "name": "Free agents' average Stuff+ is near the MLB average (they are MLB pitchers, MLB scale)",
    "ok": true,
    "detail": "mean 95.8 (allowed 92 to 108)"
+  },
+  {
+   "tool": "Triple-A altitude",
+   "name": "One row per pitcher in the altitude table",
+   "ok": true,
+   "detail": "978 pitchers"
+  },
+  {
+   "tool": "Triple-A altitude",
+   "name": "The adjusted Stuff+ is the published Stuff+ plus the change",
+   "ok": true,
+   "detail": "978 pitchers"
+  },
+  {
+   "tool": "Triple-A altitude",
+   "name": "The as-recorded Stuff+ in the altitude table is the leaderboard's",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "tool": "Triple-A altitude",
+   "name": "Every park records between 60% and 110% of MLB movement, inside its own interval",
+   "ok": true,
+   "detail": "30 parks, 0.79 to 1.01"
+  },
+  {
+   "tool": "Triple-A altitude",
+   "name": "The high-altitude parks record less movement than every other park",
+   "ok": true,
+   "detail": "altitude up to 0.863, others from 0.943"
+  },
+  {
+   "tool": "Triple-A altitude",
+   "name": "No pitcher's grade changes by more than 20 points",
+   "ok": true,
+   "detail": "largest 15.6"
   },
   {
    "tool": "Two-week signal",

@@ -481,6 +481,18 @@ def act_free_agents(p):
     seg(p, "#c", "All"); seg(p, "#c", "Everyone")
 
 
+def act_altitude(p):
+    """R5-ALTITUDE: 30 parks with intervals; the pitcher scatter and table follow the board / all and team filters."""
+    assert "movement" in p.text_content(".finding") and p.locator("#parks svg circle").count() == 30
+    assert "high-altitude parks" in p.text_content("#pcap")
+    n = p.locator("#scatter svg circle").count()
+    assert n >= 150 and rows(p, "#t") == 25 and p.locator("#t a[href^='/baseball/players/']").count() >= 20
+    seg(p, "#c", "All Triple-A"); assert query(p)["who"] == "all" and p.locator("#scatter svg circle").count() > n
+    seg(p, "#c", "The five altitude teams"); assert query(p)["teams"] == "alt" and "altitude teams only" in p.text_content("#scap")
+    assert 100 <= p.locator("#scatter svg circle").count() < n * 2
+    seg(p, "#c", "Rule 5 board"); seg(p, "#c", "All teams")
+
+
 def act_farm(p):
     assert "r = " in p.text_content("#cap1") and p.locator("#p1 svg circle").count() >= 25
     select(p, "#c1", "Measure", "fb_velo")
@@ -767,6 +779,7 @@ PAGES = [
     ("two-week", "/baseball/two-week-signal/", act_two_week),
     ("farm-systems", "/baseball/farm-systems/", act_farm),
     ("free-agent-pitchers", "/baseball/free-agent-pitchers/", act_free_agents),
+    ("triple-a-altitude", "/baseball/triple-a-altitude/", act_altitude),
     ("stuff-leaderboard", "/baseball/tools/stuff-leaderboard.html", act_leaderboard),
     ("triple-a", "/baseball/tools/triple-a.html", act_triple_a),
     ("triple-a-mlb", "/baseball/tools/triple-a.html?view=mlb", act_triple_a_mlb),
