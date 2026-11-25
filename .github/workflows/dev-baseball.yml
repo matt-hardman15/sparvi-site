@@ -23,6 +23,7 @@ on:
         required: true
         options:
           - pitch_quality/develop_loc_stable.py
+          - pitch_quality/develop_combine.py
           - pitch_quality/develop_loc.py
           - pitch_quality/develop_loc_gates.py
           - pitch_quality/develop.py
@@ -46,7 +47,7 @@ jobs:
     steps:
       - name: Check the arguments
         run: |
-          if ! printf '%s' "$ARGS" | grep -qE '^[A-Za-z0-9_ .:=,-]*$'; then echo "args may hold only letters, digits, spaces and _ . : = , -"; exit 1; fi
+          if ! printf '%s\n' "$ARGS" | grep -qE '^[A-Za-z0-9_ .:=,-]*$'; then echo "args may hold only letters, digits, spaces and _ . : = , -"; exit 1; fi
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
