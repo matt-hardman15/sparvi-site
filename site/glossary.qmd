@@ -47,7 +47,7 @@ Longer explainers for the main metrics are on the [Learn page](/learn/).
 
 **EV90**: The 90th-percentile exit velocity on balls in play. A steadier read on raw power than average or max exit velocity.
 
-**xwOBA**: Expected weighted on-base average. Uses the expected value of each ball in play from exit velocity and launch angle, plus actual strikeouts, walks, and hit-by-pitches.
+**xwOBA**: Expected weighted on-base average. Uses the expected value of each ball in play from exit velocity and launch angle, plus actual strikeouts, walks, and hit-by-pitches. Explainer: [what is xwOBA?](/learn/xwoba/).
 
 ## Roster rules
 
