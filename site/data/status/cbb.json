@@ -1,0 +1,373 @@
+{
+ "sport": "cbb",
+ "ok": true,
+ "data_through": {
+  "last_final_game": "2026-11-25"
+ },
+ "n_checks": 70,
+ "n_failed": 0,
+ "rows": {
+  "games_2027": 1630,
+  "lines_2027": 2120,
+  "player_games_2027": 31294,
+  "rankings_2027": 316,
+  "ratings_adjusted_2027": 365,
+  "ratings_elo_2027": 365,
+  "ratings_srs_2027": 365,
+  "roster_2027": 5583,
+  "team_games_2027": 2766,
+  "teams_2027": 365
+ },
+ "checks": [
+  {
+   "name": "teams_2027: columns and types",
+   "ok": true,
+   "detail": "15 contract columns"
+  },
+  {
+   "name": "teams_2027: row count",
+   "ok": true,
+   "detail": "365 rows (last accepted 365)"
+  },
+  {
+   "name": "teams_2027: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "teams_2027: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2027: school missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "teams_2027: conference missing",
+   "ok": true,
+   "detail": "0.00% (limit 2%)"
+  },
+  {
+   "name": "games_2027: columns and types",
+   "ok": true,
+   "detail": "39 contract columns"
+  },
+  {
+   "name": "games_2027: row count",
+   "ok": true,
+   "detail": "1,630 rows (last accepted 1,598)"
+  },
+  {
+   "name": "games_2027: one row per id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "games_2027: id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2027: startDate missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2027: status missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2027: homeTeamId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games_2027: awayTeamId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "team_games_2027: columns and types",
+   "ok": true,
+   "detail": "96 contract columns"
+  },
+  {
+   "name": "team_games_2027: row count",
+   "ok": true,
+   "detail": "2,766 rows (last accepted 2,134)"
+  },
+  {
+   "name": "team_games_2027: one row per gameId + teamId",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "team_games_2027: gameId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "team_games_2027: teamId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "team_games_2027: teamStats_points_total missing",
+   "ok": true,
+   "detail": "0.00% (limit 2%)"
+  },
+  {
+   "name": "team_games_2027: teamStats_possessions missing",
+   "ok": true,
+   "detail": "0.51% (limit 2%)"
+  },
+  {
+   "name": "player_games_2027: columns and types",
+   "ok": true,
+   "detail": "50 contract columns"
+  },
+  {
+   "name": "player_games_2027: row count",
+   "ok": true,
+   "detail": "31,294 rows (last accepted 24,583)"
+  },
+  {
+   "name": "player_games_2027: one row per gameId + teamId + player_athleteId",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "player_games_2027: gameId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_games_2027: teamId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_games_2027: player_athleteId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "player_games_2027: player_minutes missing",
+   "ok": true,
+   "detail": "0.00% (limit 5%)"
+  },
+  {
+   "name": "lines_2027: columns and types",
+   "ok": true,
+   "detail": "17 contract columns"
+  },
+  {
+   "name": "lines_2027: row count",
+   "ok": true,
+   "detail": "2,120 rows (last accepted 1,623)"
+  },
+  {
+   "name": "lines_2027: one row per gameId + provider",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "lines_2027: gameId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "lines_2027: provider missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2027: columns and types",
+   "ok": true,
+   "detail": "11 contract columns"
+  },
+  {
+   "name": "rankings_2027: row count",
+   "ok": true,
+   "detail": "316 rows (last accepted 243)"
+  },
+  {
+   "name": "rankings_2027: one row per season + seasonType + week + pollType + teamId",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "rankings_2027: teamId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2027: pollType missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "rankings_2027: week missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "ratings_adjusted_2027: columns and types",
+   "ok": true,
+   "detail": "10 contract columns"
+  },
+  {
+   "name": "ratings_adjusted_2027: row count",
+   "ok": true,
+   "detail": "365 rows (last accepted 365)"
+  },
+  {
+   "name": "ratings_adjusted_2027: one row per teamId",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "ratings_adjusted_2027: teamId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "ratings_adjusted_2027: netRating missing",
+   "ok": true,
+   "detail": "0.00% (limit 2%)"
+  },
+  {
+   "name": "ratings_srs_2027: columns and types",
+   "ok": true,
+   "detail": "5 contract columns"
+  },
+  {
+   "name": "ratings_srs_2027: row count",
+   "ok": true,
+   "detail": "365 rows (last accepted 365)"
+  },
+  {
+   "name": "ratings_srs_2027: one row per teamId",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "ratings_srs_2027: teamId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "ratings_srs_2027: rating missing",
+   "ok": true,
+   "detail": "0.00% (limit 2%)"
+  },
+  {
+   "name": "ratings_elo_2027: columns and types",
+   "ok": true,
+   "detail": "5 contract columns"
+  },
+  {
+   "name": "ratings_elo_2027: row count",
+   "ok": true,
+   "detail": "365 rows (last accepted 365)"
+  },
+  {
+   "name": "ratings_elo_2027: one row per teamId",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "ratings_elo_2027: teamId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "ratings_elo_2027: elo missing",
+   "ok": true,
+   "detail": "0.00% (limit 2%)"
+  },
+  {
+   "name": "roster_2027: columns and types",
+   "ok": true,
+   "detail": "22 contract columns"
+  },
+  {
+   "name": "roster_2027: row count",
+   "ok": true,
+   "detail": "5,583 rows (last accepted 5,583)"
+  },
+  {
+   "name": "roster_2027: one row per teamId + player_id",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "roster_2027: teamId missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "roster_2027: player_id missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "roster_2027: player_name missing",
+   "ok": true,
+   "detail": "0.00% (limit 0%)"
+  },
+  {
+   "name": "games: every final game has both scores",
+   "ok": true,
+   "detail": "1,385 final games"
+  },
+  {
+   "name": "games: none left unplayed days after its date",
+   "ok": true,
+   "detail": "1 of 1,174 still scheduled or in progress more than 3 days after tip-off (limit 1%)"
+  },
+  {
+   "name": "games: the newest final game is recent",
+   "ok": true,
+   "detail": "last final game 2026-11-25"
+  },
+  {
+   "name": "team_games: both sides' box scores for final games",
+   "ok": true,
+   "detail": "1,217 of 1,218 (99.9%; bar 98%)"
+  },
+  {
+   "name": "player_games: a player box score for final games",
+   "ok": true,
+   "detail": "1,215 of 1,218 (99.8%; bar 97%)"
+  },
+  {
+   "name": "team_games: points equal the game's score",
+   "ok": true,
+   "detail": "2,766 of 2,766 (100.0%; bar 99%)"
+  },
+  {
+   "name": "ratings_adjusted: covers the Division I teams",
+   "ok": true,
+   "detail": "365 of 365 teams"
+  },
+  {
+   "name": "ratings_srs: covers the Division I teams",
+   "ok": true,
+   "detail": "365 of 365 teams"
+  },
+  {
+   "name": "ratings_elo: covers the Division I teams",
+   "ok": true,
+   "detail": "365 of 365 teams"
+  },
+  {
+   "name": "roster: teams with a roster",
+   "ok": true,
+   "detail": "365 of 365 teams list 8+ players"
+  }
+ ]
+}
