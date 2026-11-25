@@ -21,6 +21,7 @@ metadata-files:
   - _generated/baseball.yml
   - _generated/nfl.yml
   - _generated/cfb.yml
+  - _generated/cbb.yml
   - _generated/models.yml
 
 website:
@@ -44,6 +45,8 @@ website:
         href: nfl/index.qmd
       - text: College Football
         href: cfb/index.qmd
+      - text: College Basketball
+        href: cbb/index.qmd
       - text: Tools
         menu:
           - text: Baseball
@@ -65,6 +68,10 @@ website:
             href: cfb/tools/team-ratings.qmd
           - text: Transfer portal board
             href: cfb/tools/portal-board.qmd
+          - text: "---"
+          - text: College Basketball
+          - text: Team ratings
+            href: cbb/tools/team-ratings.qmd
       - text: Learn
         href: learn/index.qmd
       - text: Glossary

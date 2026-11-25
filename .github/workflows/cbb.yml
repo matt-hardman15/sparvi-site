@@ -5,7 +5,9 @@ name: cbb
 #      ratings, lines and rosters, and this records each version as it was first seen.
 #   2. The day's forecasts into the forecast ledger, and finished games resolved (CBB-DAILY, cbb/ratings/freeze.py), on
 #      main only. The ledger files are committed on their own and pushed with the deploy key, as sparvi/ledger.py
-#      requires. A failure here leaves part 1 done. There are no basketball pages yet: nothing else is committed.
+#      requires. A failure here leaves part 1 done.
+#   3. This morning's ratings for the site (CBB-PAGES-1, cbb/export_site_data.py), committed after the plausibility
+#      suite passes. That push runs deploy.yml.
 # The run is at 11:40 UTC, hours before the day's first tip-off; a forecast is only written for a game not yet started.
 # About a dozen API calls a run, from the quota shared with college football; the pull stops at the reserve in
 # sparvi.toml [cbb]. Raw data stays private (the Actions cache and the R2 bucket), per the source's terms.
@@ -100,14 +102,30 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: uv run python -m cbb.ratings.freeze
 
-      - name: Commit the ledger on its own
+      # ---- The ratings page (CBB-PAGES-1) ----
+      # This morning's ratings for the site, then the plausibility suite on them: a failure keeps the rebuilt ratings
+      # from being committed (the page keeps yesterday's) and ends the run red, after the ledger has been pushed.
+      - name: Ratings for the site
         if: github.ref == 'refs/heads/main'
+        run: uv run python cbb/export_site_data.py
+
+      - name: Plausibility tests
+        if: github.ref == 'refs/heads/main'
+        id: plaus
+        run: uv run python -m plausibility cbb
+
+      - name: Commit the ledger on its own, then the ratings
+        if: ${{ github.ref == 'refs/heads/main' && !cancelled() }}
         run: |
           git config user.name "sparvi-bot"
           git config user.email "sparvi-bot@users.noreply.github.com"
           git add forecasts
-          if git diff --cached --quiet; then echo "No ledger lines today."; exit 0; fi
-          git commit -m "Ledger: college basketball forecasts $(date -u +%Y-%m-%d)"
+          if ! git diff --cached --quiet; then git commit -m "Ledger: college basketball forecasts $(date -u +%Y-%m-%d)"; fi
+          # The site's ratings in their own commit (only when the plausibility suite passed; its status file either way).
+          git add site/data/status/cbb_plausibility.json site/data/status/cbb.json
+          if [ "${{ steps.plaus.outcome }}" = "success" ]; then git add site/data/cbb site/_generated/cbb.yml; fi
+          if ! git diff --cached --quiet; then git commit -m "College basketball ratings $(date -u +%Y-%m-%d)"; fi
+          if [ "$(git rev-list --count origin/main..HEAD)" = "0" ]; then echo "Nothing new."; exit 0; fi
           git pull --rebase origin main
           uv run python -m sparvi.ledger check --base origin/main
           git push origin HEAD:main

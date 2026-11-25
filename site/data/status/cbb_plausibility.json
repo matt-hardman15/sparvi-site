@@ -1,0 +1,69 @@
+{
+ "sport": "cbb",
+ "ok": true,
+ "n_checks": 10,
+ "n_failed": 0,
+ "n_not_run": 0,
+ "checks": [
+  {
+   "tool": "Basketball team ratings",
+   "name": "One row per Division I team",
+   "ok": true,
+   "detail": "365 teams"
+  },
+  {
+   "tool": "Basketball team ratings",
+   "name": "Net rating is offense plus defense",
+   "ok": true,
+   "detail": "365 teams"
+  },
+  {
+   "tool": "Basketball team ratings",
+   "name": "Rank follows the net rating",
+   "ok": true,
+   "detail": "365 rows in 1 groups"
+  },
+  {
+   "tool": "Basketball team ratings",
+   "name": "The average Division I team's net rating is near zero",
+   "ok": true,
+   "detail": "mean 0.18 (allowed -4 to 4)"
+  },
+  {
+   "tool": "Basketball team ratings",
+   "name": "Net ratings spread like team strength does (4 to 25 points per 100 possessions)",
+   "ok": true,
+   "detail": "sd 15.0 (allowed 4 to 25)"
+  },
+  {
+   "tool": "Basketball team ratings",
+   "name": "No team is implausibly far from average",
+   "ok": true,
+   "detail": "largest net 45.8"
+  },
+  {
+   "tool": "Basketball team ratings",
+   "name": "Every team's tempo is between 55 and 82 possessions",
+   "ok": true,
+   "detail": "league 69.0"
+  },
+  {
+   "tool": "Basketball team ratings",
+   "name": "No team has more rated games than games played",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "tool": "Basketball team ratings",
+   "name": "Home court is worth between 1 and 6 points",
+   "ok": true,
+   "detail": "points 3.3 (allowed 1 to 6)"
+  },
+  {
+   "tool": "Basketball team ratings",
+   "name": "The model's version and state are published",
+   "ok": true,
+   "detail": "experimental"
+  }
+ ]
+}

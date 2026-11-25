@@ -113,3 +113,20 @@ def day(loader, on, season: int, earlier: list[int], as_of=None, fitted: dict | 
     out = now.assign(ratings_margin=now["pred_margin"].to_numpy(), margin=point, margin_lo80=point - Z80 * sd, margin_hi80=point + Z80 * sd,
                      p_home=M.win_probability(point, sd), total=now["pred_total"].to_numpy(), game_type=M.game_type(now).to_numpy())
     return out.drop(columns=["pred_margin", "pred_total"]), ratings
+
+
+def morning(loader, on, season: int, earlier: list[int], as_of=None) -> tuple[pd.DataFrame, dict]:
+    """Every team's ratings on the morning of game day `on` (as `day` computes them, without the forecasts), and the
+    league terms: {'mu': mean efficiency, 'hca': home court in points per 100 possessions, 'mu_t': mean tempo,
+    'games': counted games so far, 'through': the last game day included}."""
+    on = pd.Timestamp(on).normalize()
+    as_of = on + pd.Timedelta(days=2) if as_of is None else pd.Timestamp(as_of)
+    prev, prev_teams = final_ratings(M.load_games(loader, earlier, pd.Timestamp(f"{season - 1}-10-31")))
+    played = M.load_games(loader, [season], as_of)
+    played = played[played["date"] < on]
+    teams = M.teams_of(played).astype("int64")
+    r = M.fit_ratings(played, on, teams, M.season_prior(prev, prev_teams, teams, M.PUBLISHED.carry, {}), M.PUBLISHED)
+    games = pd.Series(np.r_[played["home"], played["away"]]).value_counts().reindex(teams).fillna(0).astype(int).to_numpy()
+    out = pd.DataFrame({"team": teams, "offense": r["off"], "defense": r["def"], "net": r["off"] + r["def"], "tempo": r["mu_t"] + r["tempo"], "games": games})
+    return out, {"mu": r["mu"], "hca": r["hca"], "mu_t": r["mu_t"], "games": int(len(played)),
+                 "through": played["date"].max() if len(played) else None}

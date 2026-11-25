@@ -1,0 +1,95 @@
+---
+title: "College basketball team ratings"
+pagetitle: "College basketball team ratings, updated daily"
+description: "Every Division I men's team's net, offensive and defensive rating and tempo, refit each morning from the season's games, with how the model has tested."
+page-layout: full
+---
+
+Every Division I men's team in {{< meta cbb.season_label >}}, through the games of {{< meta cbb.through >}}. The **net rating** is how many points per 100 possessions a team would outscore an average Division I team by on a neutral court. It is the sum of an **offensive rating** (points scored above average) and a **defensive rating** (points prevented above average), so higher is better for all three. **Tempo** is possessions per 40 minutes against an average opponent.
+
+The ratings are refit every morning from this season's games, starting from where each team finished last season. Early in a season they lean on last season; by January they mostly reflect this one.
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c"></div>
+  <div id="scatter" class="plot-host"></div>
+  <p class="caption" id="scap"></p>
+  <div id="t"><div class="loading">Loading…</div></div>
+  <p class="caption" id="tcap"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt, U = S.urlState;
+  const [D, meta] = await Promise.all([S.load("/data/cbb/ratings.json"), S.load("/data/cbb/meta.json")]);
+  const all = D.teams, n = all.length;
+  const DEF = { conf: "all" };
+  const st = { conf: meta.conferences.includes(U.get("conf")) ? U.get("conf") : DEF.conf, q: "" };
+  const sgn = v => (v > 0 ? "+" : v < 0 ? "−" : "") + f.num(Math.abs(v), 1);
+  const pctl = rank => 100 * (1 - (rank - 1) / (n - 1));           // percentile among all teams, higher = better
+  const through = new Date(D.through + "T12:00:00Z").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
+  // One pair of axes whatever the filter: the whole of Division I sets the scale.
+  const pad = (a, b) => [Math.floor(a / 5) * 5, Math.ceil(b / 5) * 5];
+  const xd = pad(...d3.extent(all, d => d.off)), yd = pad(...d3.extent(all, d => d.def));
+  const lim = Math.max(...d3.extent(all, d => d.net).map(Math.abs));
+  document.getElementById("c").replaceChildren(
+    S.select("Conference", [["all", "All of Division I"], ...meta.conferences.map(c => [c, c])], st.conf, v => { st.conf = v; draw(); }),
+    S.search("Find a team", "Team", v => { st.q = v; draw(); }, st.q));
+  let table = null;
+  function draw() {
+    const shown = all.filter(d => st.conf === "all" || d.conf === st.conf);
+    const found = st.q ? shown.filter(d => d.team.toLowerCase().includes(st.q)).slice(0, 6) : [];
+    const ids = new Set(shown.map(d => d.id));
+    S.plot(document.getElementById("scatter"), w => Plot.plot({ ...S.plotDefaults(w), height: Math.min(520, Math.max(360, w * 0.6)), grid: true, marginBottom: 45,
+      x: { label: "Offensive rating (points scored above average, per 100 possessions) →", domain: xd },
+      y: { label: "↑ Defensive rating (points prevented above average)", domain: yd },
+      color: { type: "diverging", domain: [-lim, lim], pivot: 0, range: ["#2a78d6", "#d9d8d3", "#eb6834"], legend: true, label: "Net rating" },
+      marks: [
+        Plot.ruleX([0], { stroke: "#8a8b8f", strokeDasharray: "3,3" }), Plot.ruleY([0], { stroke: "#8a8b8f", strokeDasharray: "3,3" }),
+        Plot.dot(all, { x: "off", y: "def", r: 4, fill: "net", fillOpacity: d => (ids.has(d.id) ? (found.length ? 0.3 : 0.9) : 0.08), clip: true }),
+        Plot.dot(found, { x: "off", y: "def", r: 7, fill: "net", stroke: "#16181d", strokeWidth: 1.5 }),
+        Plot.text(found, { x: "off", y: "def", text: "team", dy: -13, fontWeight: 600 }),
+        Plot.tip(shown, Plot.pointer({ x: "off", y: "def", title: d => `${d.team} (${d.conf}), ${d.w}–${d.l}\nNet ${sgn(d.net)} (rank ${d.rank} of ${n})\nOffense ${sgn(d.off)} (${d.off_rank}) · defense ${sgn(d.def)} (${d.def_rank})\nTempo ${f.num(d.tempo, 1)} possessions` }))] }));
+    const best = shown[0];
+    document.getElementById("scap").textContent = `${shown.length} teams${st.conf === "all" ? "" : " in the " + st.conf + " (the rest of Division I is faded)"}, through ${through}. Right is a better offense and up is a better defense; the dashed lines are an average Division I team. Orange is a better net rating and blue a worse one. `
+      + `${best.team} has the best net rating shown, ${sgn(best.net)} points per 100 possessions. Search for a team or hover for its numbers.`;
+    const cols = [
+      { key: "rank", label: "Rank", fmt: f.int, title: "By net rating, among all of Division I" },
+      { key: "team", label: "Team", align: "l" },
+      { key: "conf", label: "Conference", align: "l" },
+      { key: "w", label: "Record", html: r => `${r.w}–${r.l}`, sortVal: r => r.w - r.l, title: "Every game this season, including games the ratings don't count" },
+      { key: "net", label: "Net", fmt: sgn, heat: "pct", heatVal: r => pctl(r.rank), title: "Offense plus defense: points per 100 possessions better than an average Division I team" },
+      { key: "off", label: "Offense", fmt: sgn, heat: "pct", heatVal: r => pctl(r.off_rank), title: "Points scored above average per 100 possessions" },
+      { key: "def", label: "Defense", fmt: sgn, heat: "pct", heatVal: r => pctl(r.def_rank), title: "Points prevented above average per 100 possessions; higher is better" },
+      { key: "tempo", label: "Tempo", fmt: v => f.num(v, 1), title: "Possessions per 40 minutes against an average opponent" },
+      { key: "games", label: "Games", fmt: f.int, title: "Games the ratings count: both teams in a Division I conference, with possessions recorded" },
+    ];
+    table ||= S.table(document.getElementById("t"), cols, { sortKey: "rank", desc: false, pageSize: 25 });
+    table.update(st.q ? shown.filter(d => d.team.toLowerCase().includes(st.q)) : shown);
+    document.getElementById("tcap").textContent = `Ratings are in points per 100 possessions against an average Division I team on a neutral court; colors rank each column across all ${n} teams (orange better, blue worse). Home court is worth ${f.num(meta.home_court_points, 1)} points of margin in a typical game. Click a column to sort.`;
+    U.set({ conf: st.conf }, DEF);
+  }
+  draw();
+})();
+</script>
+```
+
+::: {.note}
+Model version: [{{< meta models.cbb_team_rating >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/cbb/team_rating/card.yml) ({{< meta models.cbb_team_rating_status >}}).
+:::
+
+<details class="method" id="method">
+<summary>Method, testing and caveats</summary>
+
+**Data.** Team box scores for every game between two teams in a Division I conference, {{< meta cbb.n_games >}} games so far this season. A game counts once its score is final and possessions are recorded for both teams.
+
+**Ratings.** For each game, possessions are the average of the two teams' counts, scaled to 40 minutes, and each side's efficiency is its points per 100 possessions. A regression then explains every game's efficiencies: the league average ({{< meta cbb.league_efficiency >}} points per 100 possessions), plus the offense's rating, minus the opposing defense's, plus home court (none on a neutral court). Tempo is fitted the same way. Each rating is pulled toward where the team finished last season with the weight of {{< meta cbb.prior_games >}} games, so a team's first few games move it only part of the way.
+
+**What a rating forecasts.** Two teams' ratings give an expected margin and total for a game between them. Home court is worth {{< meta cbb.home_court >}} points of margin at an average tempo.
+
+**How it has tested.** On {{< meta cbb.dev_seasons >}} ({{< meta cbb.dev_games >}} games, each forecast from games before its date), the forecast margin missed by {{< meta cbb.dev_mae >}} points on average. The ratings alone missed by {{< meta cbb.dev_mae_ratings >}}; the full forecast also adjusts for three-point luck, who was available, roster continuity, and recent form, which are not shown on this page. For comparison, the source's Elo rating missed by {{< meta cbb.dev_mae_elo >}}, last season's ratings never updated by {{< meta cbb.dev_mae_prior >}}, and home court alone by {{< meta cbb.dev_mae_home >}}. It called {{< meta cbb.dev_accuracy >}} of winners. Those two seasons were used to develop the model; the registered test is the season after them: {{< meta models.cbb_team_rating_backtest >}}.
+
+**What it can't tell you.** The ratings know scores and possessions, not who is hurt, who transferred in, or how a team matches up. Early in a season they are mostly last season. A typical game still misses by about {{< meta cbb.dev_mae >}} points, so a small gap between two teams means little. Team ratings of this kind are widely published; these are Sparvi's own, fitted from box scores as described, and will differ from others'.
+
+Data provided by [CollegeBasketballData.com](https://collegebasketballdata.com). Sparvi is not affiliated with the NCAA or any school. Code: [`cbb/ratings/`](https://github.com/matt-hardman15/sparvi-site/tree/main/cbb/ratings).
+
+</details>

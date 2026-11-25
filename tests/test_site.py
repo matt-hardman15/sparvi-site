@@ -247,6 +247,22 @@ def act_stuff_or_command(p):
     assert p.locator("#p2 svg").count() >= 1
 
 
+def act_cbb_hub(p):
+    assert p.locator(".card-link").count() >= 1 and "net rating" in p.text_content("main")
+
+
+def act_cbb_ratings(p):
+    """CBB-PAGES-1: every Division I team on the scatter; the conference filter narrows the table, not the axes."""
+    n = p.locator("#scatter svg circle").count()
+    assert n >= 300 and rows(p, "#t") == 25 and "average Division I team" in p.text_content("#scap")
+    ticks = p.locator("#scatter svg [aria-label='x-axis tick label'] text").all_text_contents()
+    p.select_option("#c select", "Big Ten")
+    assert query(p)["conf"] == "Big Ten" and "Big Ten" in p.text_content("#scap") and rows(p, "#t") <= 25
+    assert p.locator("#scatter svg circle").count() == n                               # the rest stays, faded
+    assert p.locator("#scatter svg [aria-label='x-axis tick label'] text").all_text_contents() == ticks
+    assert "experimental" in p.text_content(".note") or "validated" in p.text_content(".note")
+
+
 def act_learn_hub(p):
     assert p.locator(".card-link").count() == 8
 
@@ -810,6 +826,8 @@ PAGES = [
     ("cfb-ranked-vs-good", "/cfb/ranked-vs-good/", act_cfb_article),
     ("cfb-what-a-loss-costs", "/cfb/what-a-loss-costs/", act_cfb_loss_cost),
     ("cfb-coaching-changes", "/cfb/coaching-changes/", act_cfb_carousel),
+    ("cbb", "/cbb/", act_cbb_hub),
+    ("cbb-team-ratings", "/cbb/tools/team-ratings.html", act_cbb_ratings),
     ("learn", "/learn/", act_learn_hub),
     ("learn-stuff-plus", "/learn/stuff-plus/", act_learn_stuff),
     ("learn-swing-decisions", "/learn/swing-decisions/", act_learn_swing),

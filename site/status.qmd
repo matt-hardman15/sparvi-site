@@ -20,8 +20,9 @@ and the site keeps showing the last data that passed. This page shows the most r
   const S = Sparvi;
   const sports = [["baseball", "Baseball", "Baseball Savant (Statcast) and the MLB Stats API"],
                   ["nfl", "NFL", "nflverse play-by-play, schedules, and team stats"],
-                  ["cfb", "College football", "CollegeFootballData.com play-by-play, games, polls, and lines"]];
-  const through = (k, d) => k === "nfl" || k === "cfb"
+                  ["cfb", "College football", "CollegeFootballData.com play-by-play, games, polls, and lines"],
+                  ["cbb", "College basketball", "CollegeBasketballData.com games and box scores"]];
+  const through = (k, d) => k === "cbb" ? (d.last_final_game ? `games through ${d.last_final_game}` : "no games yet") : k === "nfl" || k === "cfb"
     ? (d.week ? `${d.season} season through week ${d.week} (last game ${d.last_game})` : "no games yet")
     : Object.entries(d).map(([lvl, day]) => `${lvl === "mlb" ? "MLB" : "Triple-A"} through ${day}`).join(" · ");
   const tryLoad = async url => { try { return await S.load(url); } catch (e) { return null; } };
