@@ -82,7 +82,7 @@ def partial_r(x, y, z) -> float:
 
 
 def partial_bootstrap(df: pd.DataFrame, a: str, given: str, y: str, block: str | None, n: int = 2000, seed: int = 7) -> dict:
-    """partial_r(a, y | given) with a 90% interval from resampling blocks (rows if None). Reported, never gated."""
+    """partial_r(a, y | given) with a 90% interval from resampling blocks (rows if None)."""
     rng = np.random.default_rng(seed)
     groups = [df.index[df[block] == g].to_numpy() for g in df[block].unique()] if block else [np.array([i]) for i in df.index]
     draws = np.empty(n)

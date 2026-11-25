@@ -74,8 +74,13 @@ def evaluate(df: pd.DataFrame, spec: dict, segments: bool = True) -> dict:
         out["baselines"][b] = {"value": metrics.score(metric, df[b], df["y"]),
                                "paired": metrics.paired_bootstrap(df.reset_index(drop=True), metric, "point", b, "y", block,
                                                                   n=spec.get("bootstrap", 2000), seed=spec.get("seed", 7))}
-    if spec.get("report_partial_given"):   # pre-registered and reported, not part of the gate (Location+: given Stuff+)
-        out["partial_r"] = metrics.partial_bootstrap(df.reset_index(drop=True), "point", spec["report_partial_given"], "y", block,
+    # Pre-registered either way: reported beside the gate (Location+: `report_partial_given`), or the gate itself
+    # (Pitching+: `pass_gate.partial_given`).
+    given = {x for x in (spec.get("report_partial_given"), (spec.get("pass_gate") or {}).get("partial_given")) if x}
+    if len(given) > 1:
+        raise ValueError(f"report_partial_given and pass_gate.partial_given name different columns: {sorted(given)}")
+    if given:
+        out["partial_r"] = metrics.partial_bootstrap(df.reset_index(drop=True), "point", given.pop(), "y", block,
                                                      n=spec.get("bootstrap", 2000), seed=spec.get("seed", 7))
     noise = (spec.get("pass_gate") or {}).get("calibration_noise")
     if noise:   # F4's calibration gate: the ECE must sit below what perfect calibration shows on these rows by chance
@@ -89,8 +94,21 @@ def evaluate(df: pd.DataFrame, spec: dict, segments: bool = True) -> dict:
 def gate(ev: dict, g: dict) -> dict:
     """The pre-registered pass gate. Comparisons are oriented so 'better' is positive. beats_baseline is one baseline
     or a list; with a list, every check must hold against each of them (gap and lower bound are the worst). A gate with
-    no beats_baseline (a calibration gate, e.g. F4's lookup-table components) checks min_point alone."""
+    no beats_baseline (a calibration gate, e.g. F4's lookup-table components) checks min_point alone.
+    A gate with partial_given (Pitching+; Matt, Nov 25 2026) asks whether the prediction knows something a named
+    column doesn't: its partial correlation with the outcome given that column must be above zero, and with
+    ci_excludes_zero so must the low end of its 90% interval. It can't be combined with beats_baseline."""
     sign = 1 if metrics.higher_is_better(ev["metric"]) else -1
+    if g.get("partial_given"):
+        if g.get("beats_baseline"):
+            raise ValueError("a gate has partial_given or beats_baseline, not both")
+        p = ev["partial_r"]
+        if p["given"] != g["partial_given"]:
+            raise ValueError(f"the partial r was computed given {p['given']}, the gate names {g['partial_given']}")
+        lo = min(p["ci90"])
+        checks = {"partial_above_zero": p["est"] > 0, "ci_excludes_zero": (lo > 0) if g.get("ci_excludes_zero") else True}
+        return {"checks": checks, "passed": all(checks.values()), "gap": p["est"], "per_baseline": {},
+                "partial": {"given": p["given"], "est": p["est"], "ci90_low": lo}}
     if not g.get("beats_baseline"):
         if g.get("calibration_noise"):
             bar = ev["ece_noise"]["bar"]

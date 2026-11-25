@@ -379,7 +379,7 @@ def test_ci_runs_only_the_models_a_change_touches():
     assert names(["site/index.qmd", "README.md"]) == []
     assert names(["models/cfb/system_fit/backtest/1.1.8.json", "backtest/runs/runs.jsonl"]) == []
     assert names(["cfb/proj/pit.py"]) == ["cfb_player_projection"]
-    assert names(["baseball/pitch_quality/train.py"]) == ["location_plus", "stuff_plus"]
+    assert names(["baseball/pitch_quality/train.py"]) == ["location_plus", "pitching_plus", "stuff_plus"]
     assert names(["baseball/aaa_translation/develop.py"]) == ["aaa_translation"]      # the candidate's code (M5-EB)
     assert "cfb_player_profile" in names(["cfb/profile/features.yml"]) and "stuff_plus" not in names(["cfb/profile/features.yml"])
     assert pick(["backtest/leakage.py"]) is None and pick(["uv.lock"]) is None
@@ -398,6 +398,32 @@ def test_partial_r_is_reported_with_an_interval():
     spec = {"primary_metric": "pearson_r", "baselines": ["stuff"], "report_partial_given": "stuff", "bootstrap": 100}
     ev = runner.evaluate(df.rename(columns={"adds": "point"}).assign(fold=1), spec)
     assert ev["partial_r"]["given"] == "stuff" and ev["partial_r"]["est"] == a["est"]
+
+
+def test_partial_gate_asks_what_the_grade_adds():
+    """A5-port-PITCHING: the gate passes a grade that knows something the named column doesn't, and fails a noisy copy
+    of that column even though the copy predicts the outcome well on its own."""
+    rng = np.random.default_rng(0)
+    z, extra = rng.normal(size=400), rng.normal(size=400)
+    df = pd.DataFrame({"entity_id": range(400), "stuff": z, "y": z + extra + rng.normal(size=400), "fold": 1})
+    spec = {"primary_metric": "pearson_r", "baselines": ["stuff"], "bootstrap": 300,
+            "pass_gate": {"partial_given": "stuff", "ci_excludes_zero": True}}
+    adds = runner.evaluate(df.assign(point=extra + rng.normal(0, 0.5, 400)), spec)
+    copy = runner.evaluate(df.assign(point=z + rng.normal(0, 0.5, 400)), spec)
+    g = runner.gate(adds, spec["pass_gate"])
+    assert g["passed"] and g["partial"]["given"] == "stuff" and g["gap"] == adds["partial_r"]["est"] and g["partial"]["ci90_low"] > 0
+    assert copy["point"] > 0.4 and not runner.gate(copy, spec["pass_gate"])["passed"]
+    # an interval that reaches zero fails the strict form and passes the lenient one
+    ev = {"metric": "pearson_r", "point": 0.3, "baselines": {}, "partial_r": {"given": "stuff", "est": 0.09, "ci90": [-0.01, 0.18]}}
+    assert not runner.gate(ev, {"partial_given": "stuff", "ci_excludes_zero": True})["passed"]
+    assert runner.gate(ev, {"partial_given": "stuff"})["passed"]
+    # the block can't name two columns, and the gate is one kind or the other
+    with pytest.raises(ValueError):
+        runner.evaluate(df.assign(point=z, other=z), {**spec, "report_partial_given": "other"})
+    with pytest.raises(ValueError):
+        runner.gate(ev, {"partial_given": "stuff", "beats_baseline": "stuff"})
+    with pytest.raises(ValueError):
+        runner.gate(ev, {"partial_given": "last_season"})
 
 
 def test_a_candidate_report_never_validates_the_published_version(tmp_path):
@@ -515,3 +541,23 @@ def test_small_sample_translation_formula_and_committed_constants():
         assert set(pub["small"][side]) == set(P[side]) and not {"stuff_plus", "loc_plus", "pitching_plus", "rv_plus"} & set(P[side])
         for m, k in P[side].items():
             assert all(abs(pub["small"][side][m][f] - k[f]) < 1e-7 for f in ("mean", "k", "talent", "intercept", "slope", "base"))
+
+
+def test_pitching_plus_module_fits_stuff_only_for_the_clean_run(monkeypatch):
+    """A5-port-PITCHING: the gate needs Stuff+ fit on the same fold; the leakage refits check Pitching+'s own grade
+    and skip that fit. Training is stubbed: this checks the module's wiring, not a model."""
+    mod = runner.load_module("models/baseball/pitching_plus/backtest.py")
+    pitches = pd.DataFrame({"pitcher": [1] * 3 + [2] * 3, "game_year": 2025, "player_name": ["a"] * 3 + ["b"] * 3, "p_throws": "R",
+                            "team": "X", "rv": [0.1, 0.2, 0.3, -0.1, -0.2, -0.3], "rv_x": 0.0})
+    asked = []
+    monkeypatch.setattr(mod, "_pitches", lambda loader, season, as_of: pitches.copy())
+    monkeypatch.setattr(mod, "fit_kinds", lambda tr, kinds: asked.append(list(kinds)) or dict.fromkeys(kinds))
+    monkeypatch.setattr(mod, "predict_all", lambda models, d: [d.__setitem__({"pitching": "xrv_pitching", "stuff": "xrv"}[k], d["rv"] * 2) for k in models])
+    monkeypatch.setattr(mod, "MIN_PITCHES", 3)
+    fold = SimpleNamespace(train_seasons=[2023, 2024], train_until="2024-12-31", test_season=2026, decision_date="2026-03-01")
+    clean = mod.predict(mod.fit(SimpleNamespace(poison=None), fold), None, fold)
+    assert asked[-1] == ["pitching", "stuff"] and clean["stuff"].notna().all() and np.allclose(clean["point"], [40.0, -40.0])
+    for fitted in (mod.fit(SimpleNamespace(poison=None), fold, permute_seed=1), mod.fit(SimpleNamespace(poison=object()), fold)):
+        assert asked[-1] == ["pitching"]
+        again = mod.predict(fitted, None, fold)
+        assert again["point"].tolist() == clean["point"].tolist() and again["stuff"].isna().all()

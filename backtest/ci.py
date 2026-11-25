@@ -125,10 +125,11 @@ def main() -> int:
         else:   # calibration gate (F4's lookup tables): the ECE against the noise bar
             nb = ev.get("ece_noise", {})
             edge = f"noise bar {nb['bar']:.4f} (q{nb['q']:.2f})" if nb else "no baseline"
-        if "partial_r" in ev:   # pre-registered and reported, not part of the gate
+        if "partial_r" in ev:   # pre-registered: the gate itself (pass_gate.partial_given) or reported beside it
             p = ev["partial_r"]
+            role = "the gate" if "partial" in rep["gate"] else "reported, not gated"
             notes_all.append(f"**{m.name}**: partial r given {p['given']} {p['est']:+.3f} (90% interval {p['ci90'][0]:+.3f} to "
-                             f"{p['ci90'][1]:+.3f}; reported, not gated)")
+                             f"{p['ci90'][1]:+.3f}; {role})")
         rows.append({"model": m.name, "version": rep["version"], "kind": rep["kind"], "metric": rep["evaluation"]["metric"],
                      "now": f"{rep['evaluation']['point']:.4f}", "prev": f"{comparable_point(rep, prev):.4f}" if comparable_point(rep, prev) is not None else "none",
                      "edge": edge,
