@@ -1,8 +1,12 @@
 name: cbb
 
-# College basketball (CBB-0a): ingest, checks and private snapshots only. There are no basketball pages yet, so this
-# workflow builds nothing, commits nothing and deploys nothing. It exists because snapshots can't be made after the
-# fact: the source overwrites its ratings, lines and rosters, and this records each version as it was first seen.
+# College basketball. Two parts, in this order:
+#   1. Ingest, checks and private snapshots (CBB-0a). Snapshots can't be made after the fact: the source overwrites its
+#      ratings, lines and rosters, and this records each version as it was first seen.
+#   2. The day's forecasts into the forecast ledger, and finished games resolved (CBB-DAILY, cbb/ratings/freeze.py), on
+#      main only. The ledger files are committed on their own and pushed with the deploy key, as sparvi/ledger.py
+#      requires. A failure here leaves part 1 done. There are no basketball pages yet: nothing else is committed.
+# The run is at 11:40 UTC, hours before the day's first tip-off; a forecast is only written for a game not yet started.
 # About a dozen API calls a run, from the quota shared with college football; the pull stops at the reserve in
 # sparvi.toml [cbb]. Raw data stays private (the Actions cache and the R2 bucket), per the source's terms.
 
@@ -24,6 +28,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ssh-key: ${{ github.ref == 'refs/heads/main' && secrets.SPARVI_DEPLOY_KEY || '' }}
 
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
         with:
@@ -64,3 +70,44 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
         run: uv run python -m ingest.snapshot cbb --require
+
+      # ---- The day's forecasts (CBB-DAILY) ----
+      # The ratings' prior is last season's final ratings, and the second stage is fit on the seasons before this one:
+      # the past seasons come from the backtest workflow's cache, or on a miss from the private snapshots. No API calls.
+      - name: College basketball past seasons
+        if: github.ref == 'refs/heads/main'
+        id: hist_cfg
+        run: echo "key=cbb-history-$(uv run python -c "from sparvi.config import cbb; print('-'.join(map(str, cbb().history_seasons)))")-v1" >> "$GITHUB_OUTPUT"
+
+      - name: Restore past seasons (cache)
+        if: github.ref == 'refs/heads/main'
+        id: hist
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: data/raw/cbb
+          key: ${{ steps.hist_cfg.outputs.key }}
+
+      - name: Restore past seasons (R2 snapshots)
+        if: github.ref == 'refs/heads/main'      # a no-op for every table the cache brought back
+        env:
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: uv run python -m ingest.cbb.history restore
+
+      - name: Forecasts and resolutions into the ledger
+        if: github.ref == 'refs/heads/main'
+        run: uv run python -m cbb.ratings.freeze
+
+      - name: Commit the ledger on its own
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "sparvi-bot"
+          git config user.email "sparvi-bot@users.noreply.github.com"
+          git add forecasts
+          if git diff --cached --quiet; then echo "No ledger lines today."; exit 0; fi
+          git commit -m "Ledger: college basketball forecasts $(date -u +%Y-%m-%d)"
+          git pull --rebase origin main
+          uv run python -m sparvi.ledger check --base origin/main
+          git push origin HEAD:main
