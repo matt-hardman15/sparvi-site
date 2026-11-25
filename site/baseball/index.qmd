@@ -27,6 +27,7 @@ listing:
 <a class="card-link" href="/learn/stuff-plus/"><span class="kicker">Explainer</span><h3>What is Stuff+?</h3><p>What Stuff+, Location+, and Pitching+ each read, what 100 means, and how well the grades predict next season.</p></a>
 <a class="card-link" href="/learn/swing-decisions/"><span class="kicker">Explainer</span><h3>Chase rate and swing decisions</h3><p>What chase rate, zone swing, zone contact, and whiff rate measure, and why they settle faster than results.</p></a>
 <a class="card-link" href="/learn/xwoba/"><span class="kicker">Explainer</span><h3>What is xwOBA?</h3><p>How expected wOBA is built, why it is steadier than wOBA, and what it leaves out.</p></a>
+<a class="card-link" href="/learn/induced-vertical-break/"><span class="kicker">Explainer</span><h3>What is IVB?</h3><p>Induced vertical break and ride, with every MLB pitch of the season on a movement chart.</p></a>
 </div>
 ```
 

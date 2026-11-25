@@ -1,0 +1,90 @@
+---
+title: "What is IVB? Induced vertical break explained"
+pagetitle: "What is IVB? Induced vertical break explained"
+description: "Induced vertical break is how much a pitch's spin lifts or drops it against gravity alone. What ride means, how pitch types differ, and what IVB misses."
+date: 2026-11-25
+categories: [Baseball, explainer, pitching]
+---
+
+::: {.finding}
+[The short answer]{.label}
+Every pitch falls on its way to the plate. **Induced vertical break (IVB)** is how far the pitch finishes above or below where gravity alone would have put it, in inches. The difference comes from spin. A four-seam fastball with a lot of backspin falls less than the hitter expects, which is called **ride**, and has a high positive IVB. A curveball's topspin pushes it down further than gravity would, so its IVB is negative.
+:::
+
+IVB has a sideways partner, **horizontal break**: how far the same spin moves the pitch left or right. On Sparvi it is shown so that movement toward the pitcher's arm side is positive for right- and left-handers alike.
+
+## See it: {{< meta baseball.season >}} MLB pitches
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c1"></div>
+  <div class="plot-host" id="p1"></div>
+  <p class="caption" id="cap1"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt, MIN = 100;
+  const [rows, meta] = await Promise.all([S.load("/data/baseball/stuff_pitches.json"), S.load("/data/baseball/meta.json")]);
+  const TYPES = { FF: "Four-seam", SI: "Sinker", FC: "Cutter", SL: "Slider", ST: "Sweeper", CU: "Curveball", CH: "Changeup" };
+  const st = { pt: "FF", q: "" };
+  const pool = rows.filter(d => d.level === "MLB" && d.n >= MIN && TYPES[d.pt] && d.ivb != null && d.hb != null && d.stuff_plus != null);
+  // One pair of axes for every pitch type, so switching shows where each type lives.
+  const pad = (a, b) => [Math.floor(a / 5) * 5, Math.ceil(b / 5) * 5];
+  const xd = pad(...d3.extent(pool, d => d.hb)), yd = pad(...d3.extent(pool, d => d.ivb));
+  document.getElementById("c1").replaceChildren(
+    S.el("label", {}, "Pitch type", S.seg(Object.entries(TYPES), st.pt, v => { st.pt = v; draw(); })),
+    S.search("Find a pitcher", "Name", v => { st.q = v; draw(); }, st.q));
+  const inch = v => f.num(v, 1) + " in";
+  function draw() {
+    const d = pool.filter(x => x.pt === st.pt), name = TYPES[st.pt].toLowerCase();
+    const hi = st.q ? d.filter(x => x.name.toLowerCase().includes(st.q)).slice(0, 6) : [];
+    const mi = d3.median(d, x => x.ivb), mh = d3.median(d, x => x.hb);
+    S.plot(document.getElementById("p1"), w => Plot.plot({ ...S.plotDefaults(w), height: 420, grid: true, marginBottom: 45,
+      x: { label: "Horizontal break (inches; right is toward the arm side) →", domain: xd },
+      y: { label: "↑ Induced vertical break (inches)", domain: yd },
+      color: { type: "diverging", domain: [80, 120], pivot: 100, range: ["#2a78d6", "#d9d8d3", "#eb6834"], clamp: true, legend: true, label: "Stuff+ of the pitch" },
+      marks: [
+        Plot.ruleY([0], { stroke: "#16181d" }), Plot.ruleX([0], { stroke: "#16181d" }),
+        Plot.dot(d, { x: "hb", y: "ivb", r: 3.5, fill: "stuff_plus", fillOpacity: hi.length ? 0.2 : 0.85, clip: true }),
+        Plot.dot(hi, { x: "hb", y: "ivb", r: 6, fill: "stuff_plus", stroke: "#16181d", strokeWidth: 1.5, clip: true }),
+        Plot.text(hi, { x: "hb", y: "ivb", text: "name", dy: -12, fontWeight: 600 }),
+        Plot.tip(d, Plot.pointer({ x: "hb", y: "ivb", title: x => `${x.name} (${x.team}), ${TYPES[x.pt].toLowerCase()}\n${f.int(x.n)} pitches at ${f.num(x.velo, 1)} mph\nIVB ${inch(x.ivb)} · horizontal ${inch(x.hb)}\nStuff+ ${f.num(x.stuff_plus, 0)}` }))] }));
+    const r = S.corr(d, "ivb", "stuff_plus"), a = Math.abs(r);
+    const how = a < 0.2 ? "grades about the same on Stuff+ whatever its IVB" : `grades ${r > 0 ? "higher" : "lower"} on Stuff+ as IVB rises`;
+    document.getElementById("cap1").textContent = `${meta.season} MLB, ${d.length} pitchers who threw ${MIN}+ ${name}s. Each dot is one pitcher's ${name}; the lines cross at no spin-induced movement. The typical ${name} has ${inch(mi)} of IVB and ${inch(mh)} of horizontal break. Among these, a ${name} ${how} (r = ${f.num(r, 2)}). Orange dots grade above the average MLB pitch and blue below. Switch pitch types to see each one's place on the same axes, or search for a pitcher.`;
+  }
+  draw();
+})();
+</script>
+```
+
+## How to read it
+
+- **Zero is not flat.** A pitch with zero IVB drops exactly as much as gravity makes it. Even the best riding fastball still falls; it falls less than a hitter's eye has learned to expect from that speed.
+- **Fastballs sit high, breaking balls low.** Backspin lifts four-seamers. Sinkers and changeups have less lift and more arm-side run. Cutters, sliders, and sweepers move to the glove side, and curveballs sit below zero.
+- **It is a pitcher's average.** Each dot is the mean over every pitch of that type he threw. Individual pitches scatter around it.
+
+## What it's good for
+
+**It is a large part of a pitch grade.** The inputs that matter most to [Stuff+](/learn/stuff-plus/) are {{< meta baseball.stuff_top_features >}}. The model does not reward IVB in one direction for every pitch: what helps a four-seamer is not what helps a sinker, which is why the chart shows the relation one pitch type at a time.
+
+**A change in it tends to last.** Across {{< meta baseball.shape_n >}} MLB pitch types, {{< meta baseball.shape_move_lo >}}–{{< meta baseball.shape_move_hi >}}% of a midseason change in movement was still there the following spring. [Which pitch-shape changes stick](/baseball/shape-changes/) has the detail.
+
+## What it can't tell you
+
+- **More is not always better.** What helps one pitch type can hurt another, and for some it matters little. The chart's caption gives the relation for each type.
+- **It is one part of a pitch's shape.** Velocity, horizontal break, release height, and arm angle all change how the same IVB plays. The same IVB plays differently from a low release than from over the top.
+- **It depends on the air.** Spin moves a ball by pushing against air, so the same pitch moves less where the air is thin.
+- **It is not location or results.** IVB says how the ball moved, not where it was thrown or what the hitter did.
+- **Definitions differ.** Some sources show total vertical movement with gravity included, where every pitch has a large drop. Check which one a number is before comparing.
+
+## Where to find it
+
+- The [pitch-grade leaderboard](/baseball/tools/stuff-leaderboard.html) lists IVB, horizontal break, and velocity for every MLB and Triple-A pitch, by week.
+- Each [player page](/baseball/players/) shows a pitcher's arsenal with the movement of every pitch.
+- [What is Stuff+?](/learn/stuff-plus/) explains the grade that IVB feeds, and [how Stuff+ is built and tested](/baseball/stuff-plus/) lists every input.
+- Short definitions are in the [glossary](/glossary.html).
+
+::: {.note}
+Current version: {{< meta models.stuff_plus >}}. Data: pitch-level Statcast from [Baseball Savant](https://baseballsavant.mlb.com). Sparvi publishes aggregates only. More explainers are on the [Learn page](/learn/).
+:::

@@ -248,7 +248,7 @@ def act_stuff_or_command(p):
 
 
 def act_learn_hub(p):
-    assert p.locator(".card-link").count() == 7
+    assert p.locator(".card-link").count() == 8
 
 
 def act_learn_stuff(p):
@@ -301,6 +301,17 @@ def act_learn_xwoba(p):
     seg(p, "#c1", "Strikeout rate"); assert "Strikeout rate and xwOBA" in p.text_content("#cap1") and p.locator("#p1 svg circle").count() == n
     seg(p, "#c1", "Walk rate"); assert "Walk rate and xwOBA" in p.text_content("#cap1")
     search(p, "#c1", "a"); assert p.locator("#p1 svg circle").count() > n
+
+
+def act_learn_ivb(p):
+    """SEO-4: the IVB explainer's movement chart: one pitch type at a time on fixed axes, and the search."""
+    n = p.locator("#p1 svg circle").count()
+    assert n >= 100 and "four-seam" in p.text_content("#cap1") and "of IVB" in p.text_content("#cap1")
+    ticks = p.locator("#p1 svg [aria-label='x-axis tick label'] text").all_text_contents()
+    seg(p, "#c1", "Curveball"); assert "curveball" in p.text_content("#cap1") and p.locator("#p1 svg circle").count() != n
+    assert p.locator("#p1 svg [aria-label='x-axis tick label'] text").all_text_contents() == ticks      # the axes don't move
+    seg(p, "#c1", "Sinker"); m = p.locator("#p1 svg circle").count()
+    search(p, "#c1", "a"); assert p.locator("#p1 svg circle").count() > m
 
 
 def act_learn_power(p):
@@ -790,6 +801,7 @@ PAGES = [
     ("learn-stuff-plus", "/learn/stuff-plus/", act_learn_stuff),
     ("learn-swing-decisions", "/learn/swing-decisions/", act_learn_swing),
     ("learn-xwoba", "/learn/xwoba/", act_learn_xwoba),
+    ("learn-induced-vertical-break", "/learn/induced-vertical-break/", act_learn_ivb),
     ("learn-epa", "/learn/epa/", act_learn_epa),
     ("learn-rule-5-eligibility", "/learn/rule-5-eligibility/", act_learn_rule5),
     ("learn-cfb-power-rating", "/learn/cfb-power-rating/", act_learn_power),
