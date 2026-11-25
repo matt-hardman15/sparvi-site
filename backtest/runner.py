@@ -4,7 +4,8 @@
     python -m backtest.runner stuff_plus --fast     # the most recent fold(s) only (pull requests)
 
 The model module implements fit(loader, fold), predict(fitted, loader, fold) -> entity_id, point,
-<baselines...>, and outcome(loader, fold) -> entity_id, y. The harness owns the dates: a model only
+<baselines...>, and outcome(loader, fold) -> entity_id, y; optionally secondary(scored rows) -> dict, aggregate
+scores reported with the run and never gated. The harness owns the dates: a model only
 ever sees data through the point-in-time loader, as of the dates in its fold, and the timestamp audit
 fails the run if anything later slipped into a prediction.
 """
@@ -164,6 +165,8 @@ def run(name: str, fast: bool = False, loader: Loader | None = None, write: bool
         audits.append({"fold": fold.test_season, **audit})
     df = pd.concat(frames, ignore_index=True)
     ev = evaluate(df, spec)
+    if hasattr(mod, "secondary"):   # a module's own pre-registered secondary scores (reported with the run, never gated)
+        ev["secondary"] = mod.secondary(df)
     g = gate_all(ev, spec["pass_gate"])
     leak = {"timestamp": {"passed": all(a["passes"] for a in audits), "folds": audits}}
     if leakage:

@@ -20,7 +20,7 @@ on:
     branches: [main]
     # The full run commits its own reports and run log; those paths are excluded (the `!` patterns
     # come last and win) so that commit can't trigger another run.
-    paths: [models/**, backtest/**, baseball/**, ingest/**, football/**, nfl/**, cfb/**, sparvi/**, sparvi.toml,
+    paths: [models/**, backtest/**, baseball/**, ingest/**, football/**, nfl/**, cfb/**, cbb/**, sparvi/**, sparvi.toml,
             pyproject.toml, uv.lock, .github/workflows/backtest.yml,
             "!backtest/runs/**", "!models/*/*/backtest/**"]
   schedule:
@@ -55,7 +55,7 @@ jobs:
           done
           [ -n "$files" ] || { echo "could not list the pull request's files"; exit 1; }
           echo "$files" > "$RUNNER_TEMP/changed.txt"
-          if echo "$files" | grep -qE '^(models/|backtest/|baseball/|ingest/|football/|nfl/|cfb/|sparvi/|sparvi\.toml$|pyproject\.toml$|uv\.lock$|\.github/workflows/backtest\.yml$)'; then
+          if echo "$files" | grep -qE '^(models/|backtest/|baseball/|ingest/|football/|nfl/|cfb/|cbb/|sparvi/|sparvi\.toml$|pyproject\.toml$|uv\.lock$|\.github/workflows/backtest\.yml$)'; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "run=false" >> "$GITHUB_OUTPUT"
@@ -227,6 +227,38 @@ jobs:
       - name: Parse missing play-player links (from the CFB cache)
         if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'cfb') }}
         run: if [ -d data/raw/cfb/cache ]; then uv run python -m ingest.cfb.play_players --missing; fi
+
+      # College basketball (CBB-0): the team rating's backtest reads past seasons that were pulled once by hand and
+      # snapshotted (CBB-HIST); the daily cbb workflow never has them. This workflow's own cache, or on a miss the
+      # private R2 snapshots. No API calls. The Monday run keeps the cache from expiring.
+      - name: College basketball past seasons
+        if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'cbb') }}
+        id: cbb_cfg
+        run: echo "key=cbb-history-$(uv run python -c "from sparvi.config import cbb; print('-'.join(map(str, cbb().history_seasons)))")-v1" >> "$GITHUB_OUTPUT"
+
+      - name: Restore college basketball past seasons (cache)
+        if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'cbb') }}
+        id: cbb_hist
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: data/raw/cbb
+          key: ${{ steps.cbb_cfg.outputs.key }}
+
+      - name: Restore college basketball past seasons (R2 snapshots)
+        if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'cbb') && steps.cbb_hist.outputs.cache-hit != 'true' }}
+        env:
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: uv run python -m ingest.cbb.history restore
+
+      - name: Save college basketball past seasons
+        if: ${{ steps.sel.outputs.go == 'true' && contains(steps.sel.outputs.sports, 'cbb') && steps.cbb_hist.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: data/raw/cbb
+          key: ${{ steps.cbb_cfg.outputs.key }}
 
       # Batter heights (Location+'s zone) aren't in refresh-baseball's caches: this workflow keeps its own.
       - name: Restore batter heights

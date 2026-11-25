@@ -1,0 +1,51 @@
+{
+  "model": "cbb_team_rating",
+  "version": "1.0.0",
+  "status": "champion",
+  "registered": "2026-11-25",
+  "note": "First version (CBB-0): settings and feature groups chosen on 2022-2023, development on 2024-2025; the registered test is season 2026.",
+  "code_hash": "f0ccf8d6e1645b54524b18b7b6c2cadad102755027d5873d5d5959b77fcdea8e",
+  "code_files": {
+    "cbb/ratings/model.py": "752ec5fefda6c9bb8b066bef3f20e731a02a43f6524198432365b552723f0e79",
+    "cbb/ratings/features.py": "b9e5274608a8541c29ed4aefa2dd032ffdfe11de0fb0c9b016ffd65d3f7aa78f",
+    "cbb/ratings/scoring.py": "4b0996636e8ecab4c298a3aa68d0e14ef71c66c35cbbfd491ebd1f89c5987a07"
+  },
+  "training_data": {
+    "data/raw/cbb/games_2021.parquet": "d942ffbca83b96bdd42ed42df3fbe9f128605c2f0a5bced49ca5da8644ffaa16",
+    "data/raw/cbb/games_2022.parquet": "c47e6e192277246105a132a35231f6cb9799ffb772f36a636457b5660e630422",
+    "data/raw/cbb/games_2023.parquet": "729b8477ee40ac3d4427b224603d4eb8f5002f74d0ff694f4f92acdd733dcefb",
+    "data/raw/cbb/games_2024.parquet": "23673ef9c0bca17d2d8ee2fcd7a369ea5234be649dad0184b272684367dba432",
+    "data/raw/cbb/games_2025.parquet": "4e2c3fb2e06d8436d8e6fc58aa758a1fc659eb34447a86b4ad94a3487fb46523",
+    "data/raw/cbb/team_games_2021.parquet": "fc6e6513ab15f3358e5edd999ece8932d91fb1c9a64d5005f1651c29c055843b",
+    "data/raw/cbb/team_games_2022.parquet": "df2e0228262b05cfe4281af344638ea5e0354c1d7f7217529cca3f0a2baa09f1",
+    "data/raw/cbb/team_games_2023.parquet": "cc35ec9596f93483203145674e9e36212447dee760944a56b98f038ea55575c6",
+    "data/raw/cbb/team_games_2024.parquet": "599008f858eebb3e6a8679ccc920c43c65058c452909e68372c121d1d32e542f",
+    "data/raw/cbb/team_games_2025.parquet": "d8db98060604e028207ece3a155a3e5d802b89f0c635eb4116435a1bdbf7802d",
+    "data/raw/cbb/player_games_2021.parquet": "05733e9b304cac3ccef125da0762d69c7324fa83493d6d698ef6d72bd3fa47f8",
+    "data/raw/cbb/player_games_2022.parquet": "4ba164badf7a97f7ec52ca5ff066b068a08868687a9806dbe54aa78f17daea26",
+    "data/raw/cbb/player_games_2023.parquet": "ad7d0d2e59b526c98f150c102dc21f14581c25a8d7220613184d47427edaeb6f",
+    "data/raw/cbb/player_games_2024.parquet": "9618f53dedf27607b1f37ec9ce1ecc1f62f378789bbaaa63a66f2a0f8d1533ca",
+    "data/raw/cbb/player_games_2025.parquet": "be44b26ebc57ab72d636cfb22ae5c6829e0037d359ba3c3462e229f7a2a4b799"
+  },
+  "artifacts": {},
+  "eval": {
+    "set": "Development seasons 2024 and 2025, walk-forward: each season forecast one game date at a time, with everything fit on other seasons taken from the forecast seasons before it. Settings and feature groups were chosen on 2022 and 2023. These two seasons had been scored before (by an earlier prototype), so they are development seasons, not a test: the test is the registered backtest on 2026.",
+    "set_keys": {
+      "seasons": [
+        2024,
+        2025
+      ],
+      "games": 11281
+    },
+    "primary": "margin_mae",
+    "higher_is_better": false
+  },
+  "metrics": {
+    "margin_mae": 8.993319662894814,
+    "margin_mae_ratings_only": 9.070266198282317,
+    "margin_mae_elo": 9.704144256166902,
+    "total_mae": 13.161536420820672,
+    "log_loss": 0.5292359160392553,
+    "calibration_error": 0.014213857157086302
+  }
+}

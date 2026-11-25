@@ -18,9 +18,10 @@ class Fold:
 
 
 def _on(season: int, month_day: str) -> pd.Timestamp:
-    """A date in season `season`'s calendar year, or with a "+1:" prefix the next one (seasons that end in February)."""
-    if month_day.startswith("+1:"):
-        return pd.Timestamp(f"{season + 1}-{month_day[3:]}")
+    """A date in season `season`'s calendar year, or with a "+1:" prefix the next one (seasons that end in February),
+    or with "-1:" the one before (a season named for the year it ends, as college basketball's is, starts in it)."""
+    if month_day.startswith(("+1:", "-1:")):
+        return pd.Timestamp(f"{season + int(month_day[:2])}-{month_day[3:]}")
     return pd.Timestamp(f"{season}-{month_day}")
 
 

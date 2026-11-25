@@ -2,6 +2,51 @@
 
 Newest first. Each entry: date, model and version, what changed, why, and before/after metrics.
 
+## 2026-11-25 · College basketball team rating 1.0.0 (new model; CBB-0)
+**Why.** The first college basketball model: team strength that forecasts a game's margin, total and winner. Model,
+card and backtest only. No pages, no ledger forecasts and no daily job yet.
+
+**What it is.** Each Division I team has an offense, a defense and a tempo, fit by ridge regression on the season's
+games before the forecast date and refit for every game date. Efficiency (points per 100 possessions) is the league
+mean plus offense minus the opposing defense plus home court; tempo is the league mean plus the two teams' tempos. The
+ridge pulls each rating toward last season's final rating with the weight of 5 games. A second stage regresses the
+ratings' margin error on four feature groups (three-point luck, availability, continuity, form), each from games
+before the forecast date. Code: `cbb/ratings/` (`model.py`, `features.py`, `scoring.py`); development:
+`cbb/ratings/develop.py`.
+
+**How it was chosen.** Seasons were given roles before any run: 2021 seeds 2022's prior; 2022 and 2023 choose the
+settings and the feature groups; 2024 and 2025 are development seasons (an earlier prototype had already scored them);
+2026 is the registered test and cannot be loaded by a development run.
+- Settings, 45 combinations on 2022-2023: prior weight 5 games, carry-over 1.0, no recency weighting (margin error
+  9.02 points). The surface is flat: seven settings are within 0.05.
+- Feature groups, leave-one-group-out on 2022-2023: three-point luck, availability, continuity and form are kept.
+  Rest, four factors and portal minutes are dropped; removing the portal group lowered the error by 0.029 points
+  (90% interval 0.019 to 0.040). Luck and form are the two whose removal clearly hurts; availability and continuity
+  are kept by the rule with intervals that reach zero.
+
+**Development, 2024 and 2025 (11,281 games, walk-forward).** Margin error in points:
+
+| Forecast | MAE | Model minus it (90% interval by game date) |
+|---|---|---|
+| Home court | 11.32 | -2.33 (-2.48 to -2.18) |
+| Last season's ratings, never updated | 10.17 | -1.18 (-1.27 to -1.09) |
+| The source's pre-game Elo | 9.70 | -0.71 (-0.83 to -0.60) |
+| Ratings alone | 9.07 | -0.08 (-0.10 to -0.05) |
+| Ratings with the second stage (the model) | 8.99 | |
+
+Total: 13.16 points against 14.81 for the earlier seasons' mean. Home win probability: log loss 0.529, 72.5% of
+winners called, calibration error 0.014. By month the error is largest in November (9.65) and near 8.8 from January
+on. The closing line, as an aggregate benchmark on the 93% of games that have one: 8.80 against the model's 8.99.
+
+**Registered test.** Season 2026, one read, in the backtest harness (`models/cbb/team_rating/backtest.py`). Gate
+(Matt, Nov 25): margin error below home court, last season's ratings and the source's Elo, each with the 90%
+interval of the difference below zero. The module run on 2025 reproduces the development numbers for that season
+exactly. Until the report is recorded on main the card is flagged experimental.
+
+**Checked.** Forecasts and features for a date do not change when every later game is changed
+(`tests/test_cbb_model.py`); the ratings recover known strengths on synthetic games; a development run cannot load
+2026 or any table as of a date after October 31, 2025.
+
 ## 2026-11-23 · Stuff+ 2.0.1 → 2.0.2, Location+ 3.0.0 → 3.0.1, Pitching+ 2.0.1 → 2.0.2 (patch: stored models, no model change; MODEL-ARTIFACTS)
 **Why.** The refresh refit the bagged models every time its inputs changed, about 65 minutes plus two 25-minute
 out-of-sample fits, although the training seasons don't change during a season.
