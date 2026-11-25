@@ -56,3 +56,19 @@ def test_history_seasons_are_optional_everywhere():
         assert s not in b.aaa_seasons and s in b.season_windows
     assert _cli("baseball.mlb_seasons") == " ".join(map(str, b.mlb_seasons))     # what build.sh and the workflows read
     assert _cli("baseball.aaa_seasons") == " ".join(map(str, b.aaa_seasons))
+
+
+def test_cbb_history_seasons_are_optional_everywhere():
+    """CBB-HIST: past basketball seasons are pulled by hand. They stop before the current season, and each is a snapshot
+    table only where its file exists (the daily workflow never has them)."""
+    from ingest.snapshot import cbb_tables
+    from sparvi.config import CBB, RAW, cbb
+
+    c = cbb()
+    assert c.history_seasons == list(range(c.history_first, c.season)) and c.season not in c.history_seasons
+    assert CBB(season=2027, start="2026-11-01", end="2027-04-10", call_reserve=1000, approve_over=300).history_seasons == []
+    names = {t.name for t in cbb_tables()}
+    for s in c.history_seasons:
+        for t in ("teams", "games", "team_games", "player_games", "lines", "rankings", "roster"):
+            assert (f"cbb_{t}_{s}" in names) == (RAW / "cbb" / f"{t}_{s}.parquet").exists()
+        assert not any(n.startswith("cbb_ratings") and n.endswith(str(s)) for n in names), "no ratings tables for a past season"
