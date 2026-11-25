@@ -19,7 +19,7 @@ Longer explainers for the main metrics are on the [Learn page](/learn/).
 
 [**Scales (MLB scale, Triple-A scale)**]{#scales}: Every "+" number on the site (Stuff+, Location+, Pitching+, RV+) is on the **MLB scale** at every level: 100 is the average qualified MLB pitcher of the season before, so Triple-A pitchers as a group grade well below 100 (about {{< meta baseball.stuff_aaa_mean >}} Stuff+, {{< meta baseball.loc_mean_aaa_cur >}} Location+, {{< meta baseball.pitching_mean_aaa_cur >}} Pitching+). Percentiles in the Triple-A explorer and the Rule 5 board are on the **Triple-A scale**: a player's rank among qualified Triple-A players, with 50 the Triple-A median.
 
-**IVB (induced vertical break)**: How far a pitch finishes above or below where a spinless pitch would, in inches. High-IVB fastballs "ride"; curveballs have negative IVB.
+**IVB (induced vertical break)**: How far a pitch finishes above or below where a spinless pitch would, in inches. High-IVB fastballs "ride"; curveballs have negative IVB. Explainer: [what is IVB?](/learn/induced-vertical-break/).
 
 **HB (horizontal break)**: Sideways movement in inches, **positive toward the pitcher's arm side** for both righties and lefties, so shapes compare directly.
 
