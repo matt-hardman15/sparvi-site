@@ -23,7 +23,7 @@ from cbb.ratings import scoring as S
 Z80 = 1.2815515655446004
 COLS = [c for name in F.KEPT for c in F.GROUPS[name]]
 SCHEDULE_COLS = ["id", "season", "seasonType", "startDate", "status", "neutralSite", "conferenceGame", "gameType",
-                 "homeTeamId", "homeTeam", "homeConference", "awayTeamId", "awayTeam", "awayConference"]
+                 "homeTeamId", "homeTeam", "homeConference", "awayTeamId", "awayTeam", "awayConference", "homeTeamEloStart", "awayTeamEloStart"]
 
 
 def scheduled(loader, season: int, on: pd.Timestamp, as_of) -> pd.DataFrame:
@@ -38,6 +38,7 @@ def scheduled(loader, season: int, on: pd.Timestamp, as_of) -> pd.DataFrame:
         "home_name": g["homeTeam"].astype(str), "away_name": g["awayTeam"].astype(str),
         "neutral": g["neutralSite"].fillna(False).astype(bool), "season_type": g["seasonType"].astype(str),
         "conference_game": g["conferenceGame"].fillna(False).astype(bool), "site_type": g["gameType"].astype(str),
+        "status": g["status"].astype(str), "elo_diff": (g["homeTeamEloStart"] - g["awayTeamEloStart"]).astype(float),
     }).sort_values(["start", "game_id"]).reset_index(drop=True)
 
 
@@ -106,6 +107,9 @@ def day(loader, on, season: int, earlier: list[int], as_of=None, fitted: dict | 
     x = x[x["game_id"].isin(set(today["game_id"])) & x["date"].eq(on)].set_index("game_id").reindex(now["game_id"])
     point = F.apply(x.reset_index(), COLS, fitted["beta"])
     sd = fitted["fixed"]["margin_sd"]
+    site = (~now["neutral"]).to_numpy(float)       # the baselines, as the backtest defines them (Elo only where the source has it)
+    now["home_margin"] = fitted["fixed"]["home_margin"] * site
+    now["elo_margin"] = fitted["fixed"]["elo_per_point"] * now["elo_diff"].to_numpy() + fitted["fixed"]["elo_home"] * site
     out = now.assign(ratings_margin=now["pred_margin"].to_numpy(), margin=point, margin_lo80=point - Z80 * sd, margin_hi80=point + Z80 * sd,
                      p_home=M.win_probability(point, sd), total=now["pred_total"].to_numpy(), game_type=M.game_type(now).to_numpy())
     return out.drop(columns=["pred_margin", "pred_total"]), ratings

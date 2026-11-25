@@ -89,3 +89,47 @@ def test_opening_day_is_the_prior_and_a_new_team_is_league_average():
     out2, ratings2 = D.day(ld, "2021-11-10", 2022, [2021], fitted=fitted)
     new = ratings2.set_index("team").loc[99]
     assert new["offense"] == 0 and new["defense"] == 0 and len(out2) == 6
+
+
+def _day_frame():
+    g, ld, fitted = _setup()
+    f, _ = D.day(ld, "2021-11-24", 2022, [2021], fitted=fitted)
+    return f.assign(status="scheduled")              # the synthetic schedule is final; the job only writes scheduled games
+
+
+def test_ledger_records_are_valid_and_only_for_games_not_yet_started(tmp_path, monkeypatch):
+    """CBB-DAILY: one line per game, before tip-off, never twice; the whole write path in a scratch ledger."""
+    from cbb.ratings import freeze as Z
+    from sparvi import ledger
+    f = _day_frame()
+    now = f["start"].min() - pd.Timedelta(hours=6)
+    recs = Z.records(f, 2022, "1.0.0", set(), now)
+    assert len(recs) == len(f) == 6 and len({r["forecast_id"] for r in recs}) == 6
+    r = recs[0]
+    assert r["prob"] is None and r["lo80"] < r["point"] < r["hi80"] and 0 < r["detail"]["p_home"] < 1
+    assert set(r["baselines"]) == {"ratings", "prior", "home"} and "elo" not in str(r)       # the source's rating is not handed out
+    assert Z.records(f, 2022, "1.0.0", {x["forecast_id"] for x in recs}, now) == []            # never forecast again
+    assert Z.records(f, 2022, "1.0.0", set(), f["start"].max()) == []                         # none after tip-off
+    assert Z.records(f.assign(status="final"), 2022, "1.0.0", set(), now) == []
+    gate = lambda m: {"model": m, "version": "1.0.0", "state": "experimental", "reason": "test"}  # noqa: E731
+    monkeypatch.setattr(ledger, "_now", lambda: now.to_pydatetime())            # the writer's clock, on the synthetic morning
+    assert ledger.append_forecasts("cbb", 2022, recs, root=tmp_path, gate=gate) == 6
+    fc, res = ledger.read("cbb", 2022, tmp_path)
+    assert len(fc) == 6 and res == [] and fc[0]["model_state"] == "experimental" and fc[0]["resolves_after"] > fc[0]["created_at"][:10]
+
+
+def test_resolutions_score_final_games_void_cancelled_ones_and_wait_for_the_rest():
+    from cbb.ratings import freeze as Z
+    f = _day_frame()
+    recs = Z.records(f, 2022, "1.0.0", set(), f["start"].min() - pd.Timedelta(hours=6))
+    ids = [r["entity_id"] for r in recs]
+    games = pd.DataFrame({"id": ids, "status": ["final", "final", "cancelled", "postponed", "scheduled", "final"],
+                          "homePoints": [80, 61, None, None, None, None], "awayPoints": [71, 70, None, None, None, None]})
+    after = recs[0]["resolves_after"]
+    out = {r["forecast_id"]: r for r in Z.resolutions(recs, set(), games, after)}
+    assert out[recs[0]["forecast_id"]] == {"forecast_id": recs[0]["forecast_id"], "status": "scored", "actual": 9, "sample": "80-71"}
+    assert out[recs[1]["forecast_id"]]["actual"] == -9 and out[recs[2]["forecast_id"]]["status"] == "void"
+    assert len(out) == 3                                                    # postponed, scheduled, and final without a score: wait
+    assert Z.resolutions(recs, set(out), games, after) == []                # each resolves once
+    early = pd.Timestamp(after) - pd.Timedelta(days=1)
+    assert [r["status"] for r in Z.resolutions(recs, set(), games, early.date())] == ["void"]   # not scored before resolves_after
