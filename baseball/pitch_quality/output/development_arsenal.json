@@ -1,0 +1,428 @@
+{
+ "folds": {
+  "2024": {
+   "train_seasons": [
+    2021,
+    2022
+   ],
+   "grade_season": 2023,
+   "n": 324
+  },
+  "2025": {
+   "train_seasons": [
+    2022,
+    2023
+   ],
+   "grade_season": 2024,
+   "n": 311
+  }
+ },
+ "n": 635,
+ "pitchers": 420,
+ "min_pitches": 500,
+ "seeds": [
+  7,
+  8
+ ],
+ "bootstrap_samples": 2000,
+ "reference": "base",
+ "groups": {
+  "mix": [
+   "velo_vs_mix",
+   "ivb_vs_mix",
+   "hb_vs_mix",
+   "n_types",
+   "move_spread",
+   "velo_range"
+  ],
+  "release": [
+   "rel_x_vs_fb",
+   "rel_z_vs_fb",
+   "ext_vs_fb",
+   "rel_sd"
+  ],
+  "spin": [
+   "axis_dev",
+   "move_per_rpm"
+  ],
+  "angle": [
+   "vaa_mid",
+   "haa_mid"
+  ]
+ },
+ "variants": {
+  "base": {
+   "features": 12,
+   "r": 0.2886,
+   "r_by_fold": {
+    "2024": 0.2951,
+    "2025": 0.2821
+   },
+   "partial_r_k_given_grade": 0.2287,
+   "r_grade_with_k": 0.4562,
+   "r_with_base_grade": 1.0,
+   "trees": {
+    "2024": {
+     "fastball": [
+      331,
+      1069
+     ],
+     "breaking": [
+      202,
+      541
+     ],
+     "offspeed": [
+      38,
+      385
+     ]
+    },
+    "2025": {
+     "fastball": [
+      455,
+      932
+     ],
+     "breaking": [
+      109,
+      680
+     ],
+     "offspeed": [
+      67,
+      338
+     ]
+    }
+   },
+   "gain_share_new": {
+    "2024": {},
+    "2025": {}
+   },
+   "r_other_seed": 0.2849
+  },
+  "mix": {
+   "features": 18,
+   "r": 0.2999,
+   "r_by_fold": {
+    "2024": 0.3018,
+    "2025": 0.298
+   },
+   "partial_r_k_given_grade": 0.2182,
+   "r_grade_with_k": 0.4809,
+   "r_with_base_grade": 0.9664,
+   "trees": {
+    "2024": {
+     "fastball": [
+      316,
+      1049
+     ],
+     "breaking": [
+      226,
+      555
+     ],
+     "offspeed": [
+      54,
+      571
+     ]
+    },
+    "2025": {
+     "fastball": [
+      493,
+      1043
+     ],
+     "breaking": [
+      183,
+      491
+     ],
+     "offspeed": [
+      56,
+      325
+     ]
+    }
+   },
+   "gain_share_new": {
+    "2024": {
+     "velo_vs_mix": 0.0483,
+     "ivb_vs_mix": 0.0504,
+     "hb_vs_mix": 0.0438,
+     "n_types": 0.0101,
+     "move_spread": 0.0417,
+     "velo_range": 0.0472
+    },
+    "2025": {
+     "velo_vs_mix": 0.0503,
+     "ivb_vs_mix": 0.0512,
+     "hb_vs_mix": 0.0444,
+     "n_types": 0.01,
+     "move_spread": 0.0455,
+     "velo_range": 0.0506
+    }
+   },
+   "vs_base": {
+    "r": 0.0113,
+    "r_ci90": [
+     -0.0064,
+     0.0304
+    ]
+   }
+  },
+  "release": {
+   "features": 16,
+   "r": 0.2883,
+   "r_by_fold": {
+    "2024": 0.2785,
+    "2025": 0.298
+   },
+   "partial_r_k_given_grade": 0.2298,
+   "r_grade_with_k": 0.4577,
+   "r_with_base_grade": 0.9361,
+   "trees": {
+    "2024": {
+     "fastball": [
+      336,
+      1084
+     ],
+     "breaking": [
+      161,
+      562
+     ],
+     "offspeed": [
+      59,
+      697
+     ]
+    },
+    "2025": {
+     "fastball": [
+      417,
+      1401
+     ],
+     "breaking": [
+      125,
+      757
+     ],
+     "offspeed": [
+      132,
+      405
+     ]
+    }
+   },
+   "gain_share_new": {
+    "2024": {
+     "rel_x_vs_fb": 0.0346,
+     "rel_z_vs_fb": 0.0294,
+     "ext_vs_fb": 0.0321,
+     "rel_sd": 0.0607
+    },
+    "2025": {
+     "rel_x_vs_fb": 0.0345,
+     "rel_z_vs_fb": 0.0332,
+     "ext_vs_fb": 0.0372,
+     "rel_sd": 0.0651
+    }
+   },
+   "vs_base": {
+    "r": -0.0003,
+    "r_ci90": [
+     -0.022,
+     0.0217
+    ]
+   }
+  },
+  "spin": {
+   "features": 14,
+   "r": 0.2794,
+   "r_by_fold": {
+    "2024": 0.2869,
+    "2025": 0.2719
+   },
+   "partial_r_k_given_grade": 0.2337,
+   "r_grade_with_k": 0.4521,
+   "r_with_base_grade": 0.9908,
+   "trees": {
+    "2024": {
+     "fastball": [
+      293,
+      1065
+     ],
+     "breaking": [
+      232,
+      506
+     ],
+     "offspeed": [
+      51,
+      436
+     ]
+    },
+    "2025": {
+     "fastball": [
+      338,
+      966
+     ],
+     "breaking": [
+      88,
+      517
+     ],
+     "offspeed": [
+      126,
+      319
+     ]
+    }
+   },
+   "gain_share_new": {
+    "2024": {
+     "axis_dev": 0.0843,
+     "move_per_rpm": 0.0628
+    },
+    "2025": {
+     "axis_dev": 0.095,
+     "move_per_rpm": 0.0647
+    }
+   },
+   "vs_base": {
+    "r": -0.0092,
+    "r_ci90": [
+     -0.0184,
+     0.0004
+    ]
+   }
+  },
+  "angle": {
+   "features": 14,
+   "r": 0.2811,
+   "r_by_fold": {
+    "2024": 0.2914,
+    "2025": 0.2707
+   },
+   "partial_r_k_given_grade": 0.2349,
+   "r_grade_with_k": 0.4411,
+   "r_with_base_grade": 0.9742,
+   "trees": {
+    "2024": {
+     "fastball": [
+      595,
+      3618
+     ],
+     "breaking": [
+      242,
+      1256
+     ],
+     "offspeed": [
+      85,
+      604
+     ]
+    },
+    "2025": {
+     "fastball": [
+      894,
+      3696
+     ],
+     "breaking": [
+      126,
+      921
+     ],
+     "offspeed": [
+      190,
+      610
+     ]
+    }
+   },
+   "gain_share_new": {
+    "2024": {
+     "vaa_mid": 0.0946,
+     "haa_mid": 0.069
+    },
+    "2025": {
+     "vaa_mid": 0.0956,
+     "haa_mid": 0.0704
+    }
+   },
+   "vs_base": {
+    "r": -0.0075,
+    "r_ci90": [
+     -0.0202,
+     0.0046
+    ]
+   }
+  },
+  "all": {
+   "features": 26,
+   "r": 0.3014,
+   "r_by_fold": {
+    "2024": 0.2988,
+    "2025": 0.304
+   },
+   "partial_r_k_given_grade": 0.2204,
+   "r_grade_with_k": 0.4697,
+   "r_with_base_grade": 0.8975,
+   "trees": {
+    "2024": {
+     "fastball": [
+      437,
+      2352
+     ],
+     "breaking": [
+      308,
+      1106
+     ],
+     "offspeed": [
+      138,
+      836
+     ]
+    },
+    "2025": {
+     "fastball": [
+      443,
+      2394
+     ],
+     "breaking": [
+      177,
+      947
+     ],
+     "offspeed": [
+      256,
+      557
+     ]
+    }
+   },
+   "gain_share_new": {
+    "2024": {
+     "velo_vs_mix": 0.0356,
+     "ivb_vs_mix": 0.0357,
+     "hb_vs_mix": 0.0317,
+     "n_types": 0.0066,
+     "move_spread": 0.0289,
+     "velo_range": 0.0318,
+     "rel_x_vs_fb": 0.0209,
+     "rel_z_vs_fb": 0.0168,
+     "ext_vs_fb": 0.0189,
+     "rel_sd": 0.038,
+     "axis_dev": 0.0536,
+     "move_per_rpm": 0.0425,
+     "vaa_mid": 0.0684,
+     "haa_mid": 0.0472
+    },
+    "2025": {
+     "velo_vs_mix": 0.0372,
+     "ivb_vs_mix": 0.0368,
+     "hb_vs_mix": 0.0316,
+     "n_types": 0.0067,
+     "move_spread": 0.0302,
+     "velo_range": 0.033,
+     "rel_x_vs_fb": 0.0205,
+     "rel_z_vs_fb": 0.0194,
+     "ext_vs_fb": 0.0218,
+     "rel_sd": 0.0408,
+     "axis_dev": 0.0594,
+     "move_per_rpm": 0.0434,
+     "vaa_mid": 0.0676,
+     "haa_mid": 0.0457
+    }
+   },
+   "r_other_seed": 0.3009,
+   "vs_base": {
+    "r": 0.0128,
+    "r_ci90": [
+     -0.0131,
+     0.04
+    ]
+   }
+  }
+ }
+}
