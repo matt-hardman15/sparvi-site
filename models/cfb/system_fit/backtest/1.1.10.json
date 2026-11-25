@@ -1,10 +1,10 @@
 {
-  "run_id": "56fb8b6fa75b",
+  "run_id": "39e8ea9efd1f",
   "model": "cfb_system_fit",
   "version": "1.1.10",
   "kind": "full",
-  "ran_at": "2026-11-25T04:14:56Z",
-  "code_sha": "799694fba9135cac2b8c9b0622ce8a3afc934453",
+  "ran_at": "2026-11-25T19:23:05Z",
+  "code_sha": "c55876599fc79428565adf92a84184c2edbd046a",
   "lockfile": "39654de38b4c91ec",
   "preregistered_at": "2026-11-15",
   "spec": {
