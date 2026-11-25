@@ -26,6 +26,7 @@ listing:
 <a class="card-link" href="/baseball/players/"><span class="kicker">Profiles</span><h3>Player profiles</h3><p>One page per MLB pitcher and Triple-A player: pitch grades and arsenal, swing decisions, league percentiles, and how each number moved through the season.</p></a>
 <a class="card-link" href="/learn/stuff-plus/"><span class="kicker">Explainer</span><h3>What is Stuff+?</h3><p>What Stuff+, Location+, and Pitching+ each read, what 100 means, and how well the grades predict next season.</p></a>
 <a class="card-link" href="/learn/swing-decisions/"><span class="kicker">Explainer</span><h3>Chase rate and swing decisions</h3><p>What chase rate, zone swing, zone contact, and whiff rate measure, and why they settle faster than results.</p></a>
+<a class="card-link" href="/learn/xwoba/"><span class="kicker">Explainer</span><h3>What is xwOBA?</h3><p>How expected wOBA is built, why it is steadier than wOBA, and what it leaves out.</p></a>
 </div>
 ```
 

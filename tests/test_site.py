@@ -248,7 +248,7 @@ def act_stuff_or_command(p):
 
 
 def act_learn_hub(p):
-    assert p.locator(".card-link").count() == 6
+    assert p.locator(".card-link").count() == 7
 
 
 def act_learn_stuff(p):
@@ -290,6 +290,16 @@ def act_learn_swing(p):
     assert n >= 100 and "zone contact" in p.text_content("#cap1") and "qualified hitters" in p.text_content("#cap1")
     seg(p, "#c1", "Zone swing"); assert "zone swing" in p.text_content("#cap1") and p.locator("#p1 svg circle").count() == n
     seg(p, "#c1", "Whiff rate"); assert "whiff rate" in p.text_content("#cap1") and "misses less" in p.text_content("#p1")
+    search(p, "#c1", "a"); assert p.locator("#p1 svg circle").count() > n
+
+
+def act_learn_xwoba(p):
+    """SEO-4: the xwOBA explainer's scatter of qualified Triple-A hitters, its four horizontal axes and the search."""
+    n = p.locator("#p1 svg circle").count()
+    assert n >= 100 and "Hard-hit rate and xwOBA" in p.text_content("#cap1") and "qualified hitters" in p.text_content("#cap1")
+    seg(p, "#c1", "EV90"); assert "EV90 and xwOBA" in p.text_content("#cap1") and "mph" in p.text_content("#p1")
+    seg(p, "#c1", "Strikeout rate"); assert "Strikeout rate and xwOBA" in p.text_content("#cap1") and p.locator("#p1 svg circle").count() == n
+    seg(p, "#c1", "Walk rate"); assert "Walk rate and xwOBA" in p.text_content("#cap1")
     search(p, "#c1", "a"); assert p.locator("#p1 svg circle").count() > n
 
 
@@ -779,6 +789,7 @@ PAGES = [
     ("learn", "/learn/", act_learn_hub),
     ("learn-stuff-plus", "/learn/stuff-plus/", act_learn_stuff),
     ("learn-swing-decisions", "/learn/swing-decisions/", act_learn_swing),
+    ("learn-xwoba", "/learn/xwoba/", act_learn_xwoba),
     ("learn-epa", "/learn/epa/", act_learn_epa),
     ("learn-rule-5-eligibility", "/learn/rule-5-eligibility/", act_learn_rule5),
     ("learn-cfb-power-rating", "/learn/cfb-power-rating/", act_learn_power),

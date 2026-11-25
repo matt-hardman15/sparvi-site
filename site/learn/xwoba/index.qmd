@@ -1,0 +1,93 @@
+---
+title: "What is xwOBA? Expected wOBA explained"
+pagetitle: "What is xwOBA? Expected wOBA explained"
+description: "xwOBA is what a hitter's contact, strikeouts, and walks should have been worth. How it's built, why it is steadier than wOBA, and what it leaves out."
+date: 2026-11-25
+categories: [Baseball, explainer, hitting]
+---
+
+::: {.finding}
+[The short answer]{.label}
+**wOBA** (weighted on-base average) values everything a hitter does at the plate by how many runs it tends to produce: a home run counts for more than a single, a walk for a little less. **xwOBA** (expected wOBA) keeps the strikeouts, walks, and hit-by-pitches as they happened, and replaces each ball in play with what balls hit that hard, at that angle, are usually worth. A line drive caught at the wall and a blooper that falls in are scored on how they were hit, not on where they landed.
+:::
+
+## See it: Triple-A hitters this season
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c1"></div>
+  <div class="plot-host" id="p1"></div>
+  <p class="caption" id="cap1"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt;
+  const [rows, meta] = await Promise.all([S.load("/data/baseball/aaa_hitters.json"), S.load("/data/baseball/meta.json")]);
+  const pct = v => f.num(100 * v, 1) + "%", mph = v => f.num(v, 1) + " mph";
+  // x metric: [label, format, axis tick format]
+  const XS = { hard_hit_pct: ["Hard-hit rate", pct, v => f.num(100 * v, 0) + "%"], ev90: ["EV90", mph, v => f.num(v, 0)],
+               k_pct: ["Strikeout rate", pct, v => f.num(100 * v, 0) + "%"], bb_pct: ["Walk rate", pct, v => f.num(100 * v, 0) + "%"] };
+  const st = { x: "hard_hit_pct", q: "" };
+  const pool = rows.filter(d => d.qualified && d.xwoba != null);
+  document.getElementById("c1").replaceChildren(
+    S.el("label", {}, "xwOBA against", S.seg(Object.entries(XS).map(([k, v]) => [k, v[0]]), st.x, v => { st.x = v; draw(); })),
+    S.search("Find a hitter", "Name", v => { st.q = v; draw(); }, st.q));
+  function draw() {
+    const [label, fmt, tick] = XS[st.x], d = pool.filter(x => x[st.x] != null);
+    const hi = st.q ? d.filter(x => x.name.toLowerCase().includes(st.q)).slice(0, 6) : [];
+    const my = d3.median(d, x => x.xwoba);
+    S.plot(document.getElementById("p1"), w => Plot.plot({ ...S.plotDefaults(w), height: 400, grid: true, marginBottom: 45,
+      x: { label: `${label}${st.x === "ev90" ? " (mph)" : ""} →`, tickFormat: tick, nice: true },
+      y: { label: "↑ xwOBA", tickFormat: v => f.num(v, 3), nice: true },
+      marks: [
+        Plot.ruleY([my], { stroke: "#8a8b8f", strokeDasharray: "3,3" }),
+        Plot.dot(d, { x: st.x, y: "xwoba", r: 3.5, fill: "#0f5257", fillOpacity: hi.length ? 0.15 : 0.6 }),
+        Plot.dot(hi, { x: st.x, y: "xwoba", r: 6, fill: "#0f5257", stroke: "#16181d", strokeWidth: 1.5 }),
+        Plot.text(hi, { x: st.x, y: "xwoba", text: "name", dy: -12, fontWeight: 600 }),
+        Plot.tip(d, Plot.pointer({ x: st.x, y: "xwoba", title: x => `${x.name} (${x.team}, ${f.int(x.pa)} PA)\nxwOBA ${f.num(x.xwoba, 3)} (percentile ${f.num(x.xwoba_pctl, 0)})\nHard-hit ${pct(x.hard_hit_pct)} · EV90 ${mph(x.ev90)}\nStrikeouts ${pct(x.k_pct)} · walks ${pct(x.bb_pct)}` }))] }));
+    const r = S.corr(d, st.x, "xwoba"), a = Math.abs(r);
+    const how = a < 0.2 ? "are nearly unrelated" : `move ${r > 0 ? "together" : "in opposite directions"}${a >= 0.5 ? ", strongly" : ""}`;
+    document.getElementById("cap1").textContent = `${meta.season} Triple-A, ${d.length} qualified hitters. The dashed line is the median xwOBA, ${f.num(my, 3)}. ${label} and xwOBA ${how} (r = ${f.num(r, 2)}). Switch the horizontal axis to see which part of a hitter's game xwOBA follows most closely, and search for a hitter or hover for his numbers.`;
+  }
+  draw();
+})();
+</script>
+```
+
+## How it's calculated
+
+Every plate appearance gets a value, and xwOBA is the average.
+
+- **A strikeout, walk, or hit-by-pitch** counts what it counts in wOBA. Nothing about these is estimated.
+- **A ball in play** counts what Statcast expects from its exit velocity and launch angle: the average value of balls hit that way across the majors. Where a ball in play has no tracked reading, its actual result is used.
+
+So xwOBA is not only contact quality. A hitter who strikes out often has a low xwOBA however hard he hits the ball, which is why the chart above lets you put strikeouts and walks on the axis too.
+
+## What it's good for
+
+**It takes fielders and luck out of the batted balls.** Whether a hard grounder finds a glove is mostly not the hitter's doing. Over a few weeks those bounces move wOBA a lot.
+
+**It is steadier than wOBA over short spans, though not steady.** Split Triple-A seasons into {{< meta baseball.tw_block_days >}}-day blocks and compare each hitter's block with his next one ({{< meta baseball.tw_hit_pairs >}} pairs, {{< meta baseball.tw_seasons >}}). xwOBA in one block correlated with the next at r = {{< meta baseball.tw_hit_xwoba >}}, and wOBA at {{< meta baseball.tw_hit_woba >}}. Chase rate managed {{< meta baseball.tw_hit_chase >}}. [The two-week signal](/baseball/two-week-signal/) has the full comparison.
+
+**It carries to the majors better than wOBA does.** Across {{< meta baseball.tr_h_n_pooled >}} moves from Triple-A to MLB, a hitter's xwOBA at the two levels correlated at r = {{< meta baseball.tr_h_r_xwoba >}} ({{< meta baseball.tr_h_r_xwoba_ci >}}). His wOBA carried at {{< meta baseball.tr_h_r_woba >}} ({{< meta baseball.tr_h_r_woba_ci >}}). The typical hitter's xwOBA changed by {{< meta baseball.tr_h_adj_xwoba >}} against major league pitching ({{< meta baseball.tr_h_adj_xwoba_ci >}}).
+
+## What it can't tell you
+
+- **Its parts carry better than it does.** Over the same moves, 90th-percentile exit velocity carried at r = {{< meta baseball.tr_h_r_ev90 >}}, and hard-hit rate and strikeout rate at {{< meta baseball.tr_h_r_hard_hit_pct >}} and {{< meta baseball.tr_h_r_k_pct >}}. To project a Triple-A hitter, read those beside xwOBA, not xwOBA alone.
+- **It is noisy in small samples.** A correlation of {{< meta baseball.tw_hit_xwoba >}} between one two-week block and the next means most of a two-week xwOBA is not repeated. Tools mark hitters below {{< meta baseball.min_pa_qualified >}} plate appearances over a full season as unqualified.
+- **It does not know where the ball went.** Exit velocity and launch angle say nothing about whether a fly ball was pulled down the line or hit to the deepest part of the park.
+- **It is not adjusted for the park or the pitching faced.** A Triple-A xwOBA was earned in Triple-A parks against Triple-A pitchers.
+- **For pitchers it carries poorly.** xwOBA allowed in Triple-A and in MLB correlated at r = {{< meta baseball.tr_p_r_xwoba >}} ({{< meta baseball.tr_p_r_xwoba_ci >}}) across {{< meta baseball.tr_p_n_pooled >}} moves.
+- **Hitters here are Triple-A only.** Sparvi's hitting pages cover Triple-A.
+
+## Where to find it
+
+- The [Triple-A explorer](/baseball/tools/triple-a.html) ranks every hitter on xwOBA with a league percentile, beside hard-hit rate, EV90, and strikeouts.
+- Each [player page](/baseball/players/) charts it through the season.
+- [The Triple-A translation](/baseball/aaa-translation/) shows how xwOBA and its parts change at the next level.
+- [Chase rate and swing decisions](/learn/swing-decisions/) covers the approach side of the same hitters.
+- Short definitions of wOBA's relatives, including [hard-hit rate and EV90](/glossary.html), are in the glossary.
+
+::: {.note}
+Data: pitch-level Statcast from [Baseball Savant](https://baseballsavant.mlb.com), whose expected value for each ball in play is used as published. Sparvi publishes aggregates only. More explainers are on the [Learn page](/learn/).
+:::
