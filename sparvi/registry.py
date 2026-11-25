@@ -235,6 +235,11 @@ def site_numbers(root: Path = ROOT) -> dict[str, str]:
                     b, v = next(iter(ev["baselines"].items()))
                     vs = (f"{ev['metric'].replace('pearson_r', 'r')} {ev['point']:.3f} vs. {v['value']:.3f} for {b.replace('_', ' ')}; "
                           f"edge {v['paired']['est']:+.3f} (90% interval {v['paired']['ci90'][0]:+.3f} to {v['paired']['ci90'][1]:+.3f}); ")
+                    if "partial" in r["gate"]:   # the gate is the partial correlation (Pitching+): say it, it is what passed or not
+                        p = ev["partial_r"]
+                        given = {"stuff": "Stuff+"}.get(p["given"], p["given"].replace("_", " "))
+                        vs += (f"partial r given {given} {p['est']:+.3f} (90% interval {p['ci90'][0]:+.3f} "
+                               f"to {p['ci90'][1]:+.3f}; the gate); ")
                 else:   # calibration gate: the ECE against what perfect calibration shows on the same rows by chance
                     nb = ev.get("ece_noise", {})
                     vs = (f"calibration error (ECE) {ev['point']:.3f} vs. {nb.get('bar', float('nan')):.3f}, the "

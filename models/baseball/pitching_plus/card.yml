@@ -48,7 +48,55 @@ published_in:
 - baseball/tools/stuff-leaderboard
 - baseball/player
 - baseball/tools/rule-5
-experimental: validated before the backtest harness existed; its harness port is pending
+backtest:
+  preregistered_at: '2026-11-25'
+  module: models/baseball/pitching_plus/backtest.py
+  target: Next-season run value per 100 pitches (RV/100), MLB pitchers with 500+ pitches in both seasons
+  decision_dates: season start (March 1 of the outcome season)
+  splits:
+    type: walk_forward
+    first_test: 2026
+    last_test: 2026
+    train_window: 2
+    predictor_lag: 1
+    decision: 03-01
+    fast_folds: 1
+  group_by: 'none: a pitch-level model; pitcher identity is not a feature'
+  block: entity_id
+  baselines:
+  - last_season
+  - stuff
+  primary_metric: pearson_r
+  bootstrap: 2000
+  seed: 7
+  pass_gate:
+    partial_given: stuff
+    ci_excludes_zero: true
+  gate_decided: 'Matt, 2026-11-25: strict on the partial correlation with next-season RV/100 given Stuff+ (fit on
+    the same fold): it must be above zero and so must the low end of its 90% interval. Pitching+ is Stuff+''s inputs
+    plus location and count, so the gate asks what it knows that Stuff+ doesn''t. Its edge over last season''s results
+    (Stuff+''s gate) and over Stuff+ are reported baselines and not part of the gate. Chosen with the development
+    folds in view (baseball/pitch_quality/output/development_pitching_gates.json; outcomes 2024 and 2025, 324 and
+    311 pitchers, 2026 never read): partial r given Stuff+ +0.115 (90% interval +0.016 to +0.214) and +0.091 (+0.004
+    to +0.173), passing on both, narrowly. It is the only candidate gate that passed there: against last season''s
+    results +0.084 (-0.019 to +0.185) and +0.078 (-0.016 to +0.172); against Stuff+ +0.006 and -0.010; Stuff+ and
+    Pitching+ combined against Stuff+ +0.019 (-0.007 to +0.048) and +0.012 (-0.017 to +0.042). A gate chosen knowing
+    which one passes on the development folds is weaker evidence than one chosen blind; the 2026 fold was not read
+    for the choice.'
+  prior_reads: 'The 2026 outcomes have been read by the registered tests of Stuff+ and Location+ (the same pitchers
+    and target), and Location+ is this model''s prediction minus the same model''s without location. Pitching+''s
+    own grade has not been scored against 2026 before this block.'
+  reproduction: Exact on the same machine; across machines tolerance ±0.01 in r (Matt, 2026-11-13). Official runs
+    happen in CI.
+  vault:
+    seasons: []
+    note: 'No sealed season yet: the only test season is 2026. The 2027 season becomes the vault when it completes.'
+    accesses: 0
+experimental: 'this version has no passing backtest on record. Shown in two cases. Until the backtest workflow has
+  run its test on main: the block was registered on Nov 25 2026 and the label goes away when a passing report lands.
+  Or the latest run didn''t clear the gate: the gate asks that the partial correlation with next-season results
+  given Stuff+ have a 90% interval above zero, and on the development folds it passed narrowly (low ends +0.004 and
+  +0.016), so a fold of about 320 pitchers can fall under it'
 challengers: []
 history:
 - version: 1.0.1
