@@ -42,9 +42,10 @@ SPORTS = ("baseball", "nfl", "cfb")
 class Suite:
     """Collects one sport's results. `tool` is the page or tool a test protects (shown as a group on /status/)."""
 
-    def __init__(self, sport: str, root: Path = ROOT):
+    def __init__(self, sport: str, root: Path = ROOT, build: bool = True):
         self.sport = sport
         self.root = Path(root)
+        self.build = build       # False: build-only tests are not run even where their files exist (see `needs`)
         self.results: list[dict] = []
 
     # -- recording -------------------------------------------------------------------------------------------
@@ -57,7 +58,12 @@ class Suite:
         self.results.append({"tool": tool, "name": name, "ok": None, "detail": why})
 
     def needs(self, tool: str, name: str, *paths: Path) -> bool:
-        """True if every path exists; otherwise records the test as not run and returns False."""
+        """True if every path exists; otherwise records the test as not run and returns False. With `build=False` the
+        test is never run: a laptop's dbt database and raw files are its own last build, not the one the committed
+        data came from, so a comparison with the committed status file must leave build-only tests out (PLAUS-NEXT)."""
+        if not self.build:
+            self.not_run(tool, name, "not run here: build-only test, left out of this run")
+            return False
         missing = [p for p in paths if not Path(p).exists()]
         if missing:
             self.not_run(tool, name, f"not run here: needs {', '.join(_rel(p, self.root) for p in missing)}")
@@ -169,8 +175,8 @@ def _rel(p: Path, root: Path) -> str:
     return p.relative_to(root).as_posix() if p.is_relative_to(root) else p.name
 
 
-def run_sport(sport: str, write: bool = True, root: Path = ROOT, status_dir: Path | None = None) -> bool:
-    suite = Suite(sport, root)
+def run_sport(sport: str, write: bool = True, root: Path = ROOT, status_dir: Path | None = None, build: bool = True) -> bool:
+    suite = Suite(sport, root, build=build)
     importlib.import_module(f"plausibility.{sport}").run(suite)
     return suite.finish(write=write, status_dir=status_dir)
 

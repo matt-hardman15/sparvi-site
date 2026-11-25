@@ -61,11 +61,11 @@ def test_committed_status_files_match_the_committed_data(tmp_path):
     for sport in SPORTS:
         committed = ROOT / "site/data/status" / f"{sport}_plausibility.json"
         (tmp_path / committed.name).write_text(committed.read_text(encoding="utf-8"), encoding="utf-8")
-        run_sport(sport, write=True, status_dir=tmp_path)
+        # Build-only tests are left out (build=False): where their files exist they describe this machine's last build,
+        # not the committed data. Each keeps the result the committed file recorded, so the two files must be equal.
+        run_sport(sport, write=True, status_dir=tmp_path, build=False)
         fresh, old = (json.loads(p.read_text(encoding="utf-8")) for p in (tmp_path / committed.name, committed))
-        # A test that can't run here says which inputs are missing, which differs by machine: compare the rest.
-        ran = [[c for c in d["checks"] if not c["detail"].startswith("not run here")] for d in (fresh, old)]
-        assert ran[0] == ran[1], f"{sport}: rerun `python -m plausibility {sport}` and commit the status file"
+        assert fresh["checks"] == old["checks"], f"{sport}: rerun `python -m plausibility {sport}` and commit the status file"
         assert old["ok"] is True
 
 
@@ -91,6 +91,22 @@ def test_a_test_that_cannot_run_here_keeps_its_last_result(tmp_path):
     never.needs("Tool", "needs the build", tmp_path / "football.duckdb")
     assert never.finish(status_dir=tmp_path) is True           # never run: neither a pass nor a failure
     assert json.loads((tmp_path / "cfb_plausibility.json").read_text(encoding="utf-8"))["n_not_run"] == 1
+
+
+def test_build_only_tests_can_be_left_out_where_their_files_exist(tmp_path):
+    """PLAUS-NEXT: a local dbt database is this machine's last build, not the committed data's. With build=False a
+    build-only test isn't run even though its file is there, and the recorded result stands."""
+    db = tmp_path / "football.duckdb"
+    db.write_text("x", encoding="utf-8")
+    first = Suite("nfl")
+    assert first.needs("Tool", "needs the build", db) is True
+    first.check("Tool", "needs the build", True, "363,999 plays")
+    first.finish(status_dir=tmp_path)
+    recorded = (tmp_path / "nfl_plausibility.json").read_text(encoding="utf-8")
+    later = Suite("nfl", build=False)
+    assert later.needs("Tool", "needs the build", db) is False
+    assert later.finish(status_dir=tmp_path) is True
+    assert (tmp_path / "nfl_plausibility.json").read_text(encoding="utf-8") == recorded
 
 
 def test_check_mode_writes_nothing(tmp_path, monkeypatch):
