@@ -204,7 +204,7 @@ jobs:
             uv run python scripts/build_fingerprint.py --write   # what this build was made from
             # Everything the build regenerates: data, prose numbers, model outputs, listing thumbnails.
             git add site/data/baseball site/_generated/baseball.yml baseball/*/output site/baseball/*/thumb.png \
-              baseball/build_inputs.sha256
+              baseball/build_inputs.sha256 baseball/build_inputs.json
             # The record of the stored models (written once a fit is in the bucket; absent without bucket credentials).
             if [ -f baseball/pitch_quality/model_artifacts.json ]; then git add baseball/pitch_quality/model_artifacts.json; fi
           fi
