@@ -36,7 +36,7 @@ from sparvi.config import ROOT
 from sparvi.io import write_json
 
 STATUS = Path(os.environ.get("SPARVI_STATUS_DIR", ROOT / "site" / "data" / "status"))
-SPORTS = ("baseball", "nfl", "cfb")
+SPORTS = ("baseball", "nfl", "cfb", "cbb")
 
 
 class Suite:

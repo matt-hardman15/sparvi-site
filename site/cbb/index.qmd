@@ -1,0 +1,27 @@
+---
+title: "College Basketball"
+image: /assets/og-default.png
+pagetitle: "College basketball analytics: team ratings"
+description: "Division I men's basketball team ratings from box scores: net, offensive and defensive efficiency and tempo for every team, refit every morning."
+page-layout: full
+---
+
+Ratings for every Division I men's team in {{< meta cbb.season_label >}}, refit each morning. Through {{< meta cbb.through >}}, {{< meta cbb.top_team >}} has the best net rating: {{< meta cbb.top_net >}} points per 100 possessions against an average team.
+
+## Tools
+
+```{=html}
+<div class="cards">
+<a class="card-link" href="/cbb/tools/team-ratings.html"><span class="kicker">Tool</span><h3>Team ratings</h3><p>Net, offensive and defensive rating and tempo for all {{< meta cbb.n_teams >}} Division I teams, by conference, updated daily.</p></a>
+</div>
+```
+
+## What's here, and what's coming
+
+The [team ratings](/cbb/tools/team-ratings.html) are the first basketball page. They come from a model that forecasts each game's margin, total, and winner, and its [method and testing](/cbb/tools/team-ratings.html#method) are on the same page. Every day's forecasts are recorded before tip-off so they can be graded in public later. Team pages and a page grading those forecasts are next.
+
+Definitions for the terms used across the site are in the [glossary](/glossary.html), and longer explainers are on the [Learn page](/learn/).
+
+::: {.note}
+Data provided by [CollegeBasketballData.com](https://collegebasketballdata.com).
+:::
