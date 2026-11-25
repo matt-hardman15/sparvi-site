@@ -1,0 +1,1515 @@
+{
+ "seasons": {
+  "seed": 2021,
+  "tune": [
+   2022,
+   2023
+  ],
+  "develop": [
+   2024,
+   2025
+  ],
+  "held_out": 2026
+ },
+ "as_of": "2025-10-31",
+ "grid_searched": {
+  "prior_weight": [
+   1.0,
+   2.5,
+   5.0,
+   10.0,
+   20.0
+  ],
+  "carry": [
+   0.6,
+   0.8,
+   1.0
+  ],
+  "half_life": [
+   null,
+   90.0,
+   45.0
+  ]
+ },
+ "games_by_season": {
+  "2021": 3693,
+  "2022": 5255,
+  "2023": 5630,
+  "2024": 5644,
+  "2025": 5637
+ },
+ "bootstrap": {
+  "samples": 2000,
+  "seed": 7,
+  "blocks": "game date"
+ },
+ "feature_groups": {
+  "luck": [
+   "luck"
+  ],
+  "availability": [
+   "missing"
+  ],
+  "continuity": [
+   "returning",
+   "incoming"
+  ],
+  "form": [
+   "form"
+  ],
+  "rest": [
+   "rest"
+  ],
+  "four_factors": [
+   "net_to",
+   "net_orb",
+   "net_ftr"
+  ],
+  "transfers": [
+   "portal_out",
+   "portal_in"
+  ]
+ },
+ "tuning": {
+  "grid": [
+   {
+    "prior_weight": 1.0,
+    "carry": 0.6,
+    "half_life": null,
+    "margin_mae": 9.182369068742876,
+    "total_mae": 13.482863208502074,
+    "games": 10885
+   },
+   {
+    "prior_weight": 1.0,
+    "carry": 0.6,
+    "half_life": 90.0,
+    "margin_mae": 9.16371737730033,
+    "total_mae": 13.437601394849672,
+    "games": 10885
+   },
+   {
+    "prior_weight": 1.0,
+    "carry": 0.6,
+    "half_life": 45.0,
+    "margin_mae": 9.17587187614995,
+    "total_mae": 13.414897576053775,
+    "games": 10885
+   },
+   {
+    "prior_weight": 1.0,
+    "carry": 0.8,
+    "half_life": null,
+    "margin_mae": 9.170345147017805,
+    "total_mae": 13.494120963370674,
+    "games": 10885
+   },
+   {
+    "prior_weight": 1.0,
+    "carry": 0.8,
+    "half_life": 90.0,
+    "margin_mae": 9.146760920570145,
+    "total_mae": 13.44790572151693,
+    "games": 10885
+   },
+   {
+    "prior_weight": 1.0,
+    "carry": 0.8,
+    "half_life": 45.0,
+    "margin_mae": 9.154872966744476,
+    "total_mae": 13.42475629732091,
+    "games": 10885
+   },
+   {
+    "prior_weight": 1.0,
+    "carry": 1.0,
+    "half_life": null,
+    "margin_mae": 9.18919773857681,
+    "total_mae": 13.517709620638158,
+    "games": 10885
+   },
+   {
+    "prior_weight": 1.0,
+    "carry": 1.0,
+    "half_life": 90.0,
+    "margin_mae": 9.157295762732112,
+    "total_mae": 13.470364997290039,
+    "games": 10885
+   },
+   {
+    "prior_weight": 1.0,
+    "carry": 1.0,
+    "half_life": 45.0,
+    "margin_mae": 9.157294136080516,
+    "total_mae": 13.448310168408728,
+    "games": 10885
+   },
+   {
+    "prior_weight": 2.5,
+    "carry": 0.6,
+    "half_life": null,
+    "margin_mae": 9.075246481600383,
+    "total_mae": 13.262396809993911,
+    "games": 10885
+   },
+   {
+    "prior_weight": 2.5,
+    "carry": 0.6,
+    "half_life": 90.0,
+    "margin_mae": 9.087894655382224,
+    "total_mae": 13.210762940505203,
+    "games": 10885
+   },
+   {
+    "prior_weight": 2.5,
+    "carry": 0.6,
+    "half_life": 45.0,
+    "margin_mae": 9.137121749244127,
+    "total_mae": 13.18396558894871,
+    "games": 10885
+   },
+   {
+    "prior_weight": 2.5,
+    "carry": 0.8,
+    "half_life": null,
+    "margin_mae": 9.046840858032954,
+    "total_mae": 13.277868491374546,
+    "games": 10885
+   },
+   {
+    "prior_weight": 2.5,
+    "carry": 0.8,
+    "half_life": 90.0,
+    "margin_mae": 9.04928535886881,
+    "total_mae": 13.221391612427425,
+    "games": 10885
+   },
+   {
+    "prior_weight": 2.5,
+    "carry": 0.8,
+    "half_life": 45.0,
+    "margin_mae": 9.093698925696083,
+    "total_mae": 13.18937857445408,
+    "games": 10885
+   },
+   {
+    "prior_weight": 2.5,
+    "carry": 1.0,
+    "half_life": null,
+    "margin_mae": 9.05863054523289,
+    "total_mae": 13.312468180087768,
+    "games": 10885
+   },
+   {
+    "prior_weight": 2.5,
+    "carry": 1.0,
+    "half_life": 90.0,
+    "margin_mae": 9.045929738899309,
+    "total_mae": 13.252887764028955,
+    "games": 10885
+   },
+   {
+    "prior_weight": 2.5,
+    "carry": 1.0,
+    "half_life": 45.0,
+    "margin_mae": 9.079661183541129,
+    "total_mae": 13.215961573858483,
+    "games": 10885
+   },
+   {
+    "prior_weight": 5.0,
+    "carry": 0.6,
+    "half_life": null,
+    "margin_mae": 9.079237617634782,
+    "total_mae": 13.154849342245258,
+    "games": 10885
+   },
+   {
+    "prior_weight": 5.0,
+    "carry": 0.6,
+    "half_life": 90.0,
+    "margin_mae": 9.143007815456068,
+    "total_mae": 13.12035197601407,
+    "games": 10885
+   },
+   {
+    "prior_weight": 5.0,
+    "carry": 0.6,
+    "half_life": 45.0,
+    "margin_mae": 9.235646180517406,
+    "total_mae": 13.116624990954342,
+    "games": 10885
+   },
+   {
+    "prior_weight": 5.0,
+    "carry": 0.8,
+    "half_life": null,
+    "margin_mae": 9.027999591243924,
+    "total_mae": 13.166888636697488,
+    "games": 10885
+   },
+   {
+    "prior_weight": 5.0,
+    "carry": 0.8,
+    "half_life": 90.0,
+    "margin_mae": 9.082908586471916,
+    "total_mae": 13.121889994703375,
+    "games": 10885
+   },
+   {
+    "prior_weight": 5.0,
+    "carry": 0.8,
+    "half_life": 45.0,
+    "margin_mae": 9.177806737383026,
+    "total_mae": 13.108431761951849,
+    "games": 10885
+   },
+   {
+    "prior_weight": 5.0,
+    "carry": 1.0,
+    "half_life": null,
+    "margin_mae": 9.023803122796284,
+    "total_mae": 13.207210783841417,
+    "games": 10885
+   },
+   {
+    "prior_weight": 5.0,
+    "carry": 1.0,
+    "half_life": 90.0,
+    "margin_mae": 9.06153907636909,
+    "total_mae": 13.149235968039317,
+    "games": 10885
+   },
+   {
+    "prior_weight": 5.0,
+    "carry": 1.0,
+    "half_life": 45.0,
+    "margin_mae": 9.147952330557821,
+    "total_mae": 13.122738718657185,
+    "games": 10885
+   },
+   {
+    "prior_weight": 10.0,
+    "carry": 0.6,
+    "half_life": null,
+    "margin_mae": 9.215729400720626,
+    "total_mae": 13.140876265299566,
+    "games": 10885
+   },
+   {
+    "prior_weight": 10.0,
+    "carry": 0.6,
+    "half_life": 90.0,
+    "margin_mae": 9.348613823525092,
+    "total_mae": 13.149529542754115,
+    "games": 10885
+   },
+   {
+    "prior_weight": 10.0,
+    "carry": 0.6,
+    "half_life": 45.0,
+    "margin_mae": 9.488218186852059,
+    "total_mae": 13.197463651943893,
+    "games": 10885
+   },
+   {
+    "prior_weight": 10.0,
+    "carry": 0.8,
+    "half_life": null,
+    "margin_mae": 9.136061341923337,
+    "total_mae": 13.136327519259929,
+    "games": 10885
+   },
+   {
+    "prior_weight": 10.0,
+    "carry": 0.8,
+    "half_life": 90.0,
+    "margin_mae": 9.270215546314766,
+    "total_mae": 13.129926050518366,
+    "games": 10885
+   },
+   {
+    "prior_weight": 10.0,
+    "carry": 0.8,
+    "half_life": 45.0,
+    "margin_mae": 9.41696277545656,
+    "total_mae": 13.161235738151433,
+    "games": 10885
+   },
+   {
+    "prior_weight": 10.0,
+    "carry": 1.0,
+    "half_life": null,
+    "margin_mae": 9.107944814773225,
+    "total_mae": 13.163602903464675,
+    "games": 10885
+   },
+   {
+    "prior_weight": 10.0,
+    "carry": 1.0,
+    "half_life": 90.0,
+    "margin_mae": 9.225345964120962,
+    "total_mae": 13.13517181799805,
+    "games": 10885
+   },
+   {
+    "prior_weight": 10.0,
+    "carry": 1.0,
+    "half_life": 45.0,
+    "margin_mae": 9.369009571956052,
+    "total_mae": 13.150677757205562,
+    "games": 10885
+   },
+   {
+    "prior_weight": 20.0,
+    "carry": 0.6,
+    "half_life": null,
+    "margin_mae": 9.499221664106534,
+    "total_mae": 13.24999686452963,
+    "games": 10885
+   },
+   {
+    "prior_weight": 20.0,
+    "carry": 0.6,
+    "half_life": 90.0,
+    "margin_mae": 9.684802729178937,
+    "total_mae": 13.333596709873127,
+    "games": 10885
+   },
+   {
+    "prior_weight": 20.0,
+    "carry": 0.6,
+    "half_life": 45.0,
+    "margin_mae": 9.854447397065357,
+    "total_mae": 13.448053176130221,
+    "games": 10885
+   },
+   {
+    "prior_weight": 20.0,
+    "carry": 0.8,
+    "half_life": null,
+    "margin_mae": 9.397599196959309,
+    "total_mae": 13.2196408260524,
+    "games": 10885
+   },
+   {
+    "prior_weight": 20.0,
+    "carry": 0.8,
+    "half_life": 90.0,
+    "margin_mae": 9.59244095112338,
+    "total_mae": 13.281871851107832,
+    "games": 10885
+   },
+   {
+    "prior_weight": 20.0,
+    "carry": 0.8,
+    "half_life": 45.0,
+    "margin_mae": 9.776246183665023,
+    "total_mae": 13.385896096422831,
+    "games": 10885
+   },
+   {
+    "prior_weight": 20.0,
+    "carry": 1.0,
+    "half_life": null,
+    "margin_mae": 9.335714852752153,
+    "total_mae": 13.221121271456738,
+    "games": 10885
+   },
+   {
+    "prior_weight": 20.0,
+    "carry": 1.0,
+    "half_life": 90.0,
+    "margin_mae": 9.526400357641295,
+    "total_mae": 13.254959213599253,
+    "games": 10885
+   },
+   {
+    "prior_weight": 20.0,
+    "carry": 1.0,
+    "half_life": 45.0,
+    "margin_mae": 9.712240406425263,
+    "total_mae": 13.341660164110232,
+    "games": 10885
+   }
+  ],
+  "chosen": {
+   "prior_weight": 5.0,
+   "carry": 1.0,
+   "half_life": null
+  },
+  "chosen_margin_mae": 9.023803122796284,
+  "on_grid_edge": {
+   "prior_weight": false,
+   "carry": true,
+   "half_life": true
+  }
+ },
+ "selection": {
+  "ratings_only": 9.023803122796284,
+  "all_groups": 9.020712926493445,
+  "all_minus_ratings": {
+   "est": -0.0030901963028388863,
+   "ci90": [
+    -0.03421410846107024,
+    0.028110731238585075
+   ],
+   "games": 10885,
+   "dates": 282
+  },
+  "groups": {
+   "luck": {
+    "without": 9.048558892028582,
+    "removal_raises_error_by": {
+     "est": 0.027845965535135558,
+     "ci90": [
+      0.008852851848456599,
+      0.045963416500706136
+     ],
+     "games": 10885,
+     "dates": 282
+    },
+    "alone": 8.997597899081606,
+    "alone_minus_ratings": {
+     "est": -0.026205223714678184,
+     "ci90": [
+      -0.04511002335269859,
+      -0.008456819960121644
+     ],
+     "games": 10885,
+     "dates": 282
+    }
+   },
+   "availability": {
+    "without": 9.026232999590738,
+    "removal_raises_error_by": {
+     "est": 0.005520073097293291,
+     "ci90": [
+      -0.0014815600265402626,
+      0.012759445667345585
+     ],
+     "games": 10885,
+     "dates": 282
+    },
+    "alone": 9.019321114730312,
+    "alone_minus_ratings": {
+     "est": -0.004482008065973375,
+     "ci90": [
+      -0.016318916346648865,
+      0.005992734650937045
+     ],
+     "games": 10885,
+     "dates": 282
+    }
+   },
+   "continuity": {
+    "without": 9.028505290938343,
+    "removal_raises_error_by": {
+     "est": 0.007792364444897684,
+     "ci90": [
+      -0.003334248682503789,
+      0.01814175145895387
+     ],
+     "games": 10885,
+     "dates": 282
+    },
+    "alone": 9.037274993996906,
+    "alone_minus_ratings": {
+     "est": 0.013471871200620364,
+     "ci90": [
+      -0.0005258814545521573,
+      0.027073901285678856
+     ],
+     "games": 10885,
+     "dates": 282
+    }
+   },
+   "form": {
+    "without": 9.036001619403342,
+    "removal_raises_error_by": {
+     "est": 0.015288692909895285,
+     "ci90": [
+      0.006004484531125199,
+      0.023907052113958865
+     ],
+     "games": 10885,
+     "dates": 282
+    },
+    "alone": 9.025004421821327,
+    "alone_minus_ratings": {
+     "est": 0.001201299025040713,
+     "ci90": [
+      -0.009528616258049771,
+      0.011134887177408738
+     ],
+     "games": 10885,
+     "dates": 282
+    }
+   },
+   "rest": {
+    "without": 9.016695536377894,
+    "removal_raises_error_by": {
+     "est": -0.004017390115550234,
+     "ci90": [
+      -0.007993070582673794,
+      -2.462850640021534e-05
+     ],
+     "games": 10885,
+     "dates": 282
+    },
+    "alone": 9.031840224184288,
+    "alone_minus_ratings": {
+     "est": 0.008037101388002467,
+     "ci90": [
+      -0.0014994683563566023,
+      0.01708340512973738
+     ],
+     "games": 10885,
+     "dates": 282
+    }
+   },
+   "four_factors": {
+    "without": 9.018691376887526,
+    "removal_raises_error_by": {
+     "est": -0.0020215496059190854,
+     "ci90": [
+      -0.008362938732178806,
+      0.0046852704116879425
+     ],
+     "games": 10885,
+     "dates": 282
+    },
+    "alone": 9.017423470285639,
+    "alone_minus_ratings": {
+     "est": -0.006379652510646662,
+     "ci90": [
+      -0.021830034316795737,
+      0.009202969249702622
+     ],
+     "games": 10885,
+     "dates": 282
+    }
+   },
+   "transfers": {
+    "without": 8.991698103538036,
+    "removal_raises_error_by": {
+     "est": -0.02901482295541031,
+     "ci90": [
+      -0.040123022019977805,
+      -0.01930444987110645
+     ],
+     "games": 10885,
+     "dates": 282
+    },
+    "alone": 9.07777798165553,
+    "alone_minus_ratings": {
+     "est": 0.053974858859244815,
+     "ci90": [
+      0.03931120141090312,
+      0.06983024987106268
+     ],
+     "games": 10885,
+     "dates": 282
+    }
+   }
+  },
+  "kept": [
+   "luck",
+   "availability",
+   "continuity",
+   "form"
+  ],
+  "kept_set": {
+   "mae": 8.98160502860706,
+   "minus_ratings": {
+    "est": -0.042198094189224454,
+    "ci90": [
+     -0.0681218114273468,
+     -0.015397437724978216
+    ],
+    "games": 10885,
+    "dates": 282
+   }
+  }
+ },
+ "development": {
+  "fits": {
+   "2024": {
+    "margin_sd": 11.405497643880357,
+    "home_margin": 5.220509029464568,
+    "elo_per_point": 0.030837489309543775,
+    "elo_home": 4.395699819942952,
+    "returning_mean": 0.517601786687022,
+    "second_stage": {
+     "intercept": -0.3362090911769112,
+     "luck": -0.2286128067267935,
+     "missing": -4.493816910040251,
+     "returning": 7.804862519591652,
+     "incoming": 8.656144297100655,
+     "form": 0.08426598281609282
+    },
+    "fit_on": [
+     2022,
+     2023
+    ],
+    "games_fit_on": 10885
+   },
+   "2025": {
+    "margin_sd": 11.429513387439748,
+    "home_margin": 5.272027195781879,
+    "elo_per_point": 0.031183230926572224,
+    "elo_home": 4.405244142043945,
+    "returning_mean": 0.49251957610253155,
+    "second_stage": {
+     "intercept": -0.31923382965401326,
+     "luck": -0.24857032640329557,
+     "missing": -4.635119061119084,
+     "returning": 8.64988145681265,
+     "incoming": 8.858836256515458,
+     "form": 0.07625626089656398
+    },
+    "fit_on": [
+     2022,
+     2023,
+     2024
+    ],
+    "games_fit_on": 16529
+   }
+  },
+  "pooled": {
+   "games": 11281,
+   "dates": 299,
+   "margin_mae": {
+    "ratings": 9.070266198282317,
+    "second_stage": 8.993319662894814,
+    "home": 11.32017575525504,
+    "prior": 10.170916129393648,
+    "elo": 9.704144256166902
+   },
+   "total_mae": {
+    "model": 13.161536420820672,
+    "season_mean": 14.809105902623369
+   },
+   "win": {
+    "ratings": {
+     "log_loss": 0.5345994971869653,
+     "accuracy": 0.720148922967822,
+     "ece": 0.01491749512956131,
+     "table": [
+      {
+       "n": 1129,
+       "predicted": 0.2095,
+       "observed": 0.2197
+      },
+      {
+       "n": 1128,
+       "predicted": 0.3714,
+       "observed": 0.3892
+      },
+      {
+       "n": 1128,
+       "predicted": 0.4746,
+       "observed": 0.4956
+      },
+      {
+       "n": 1128,
+       "predicted": 0.5521,
+       "observed": 0.5869
+      },
+      {
+       "n": 1128,
+       "predicted": 0.622,
+       "observed": 0.6037
+      },
+      {
+       "n": 1128,
+       "predicted": 0.69,
+       "observed": 0.6809
+      },
+      {
+       "n": 1128,
+       "predicted": 0.7556,
+       "observed": 0.7447
+      },
+      {
+       "n": 1128,
+       "predicted": 0.825,
+       "observed": 0.8227
+      },
+      {
+       "n": 1128,
+       "predicted": 0.8971,
+       "observed": 0.9096
+      },
+      {
+       "n": 1128,
+       "predicted": 0.9715,
+       "observed": 0.9592
+      }
+     ]
+    },
+    "second_stage": {
+     "log_loss": 0.5292359160392553,
+     "accuracy": 0.7246697987767042,
+     "ece": 0.014213857157086302,
+     "table": [
+      {
+       "n": 1129,
+       "predicted": 0.2011,
+       "observed": 0.2064
+      },
+      {
+       "n": 1128,
+       "predicted": 0.3626,
+       "observed": 0.3998
+      },
+      {
+       "n": 1128,
+       "predicted": 0.4645,
+       "observed": 0.4734
+      },
+      {
+       "n": 1128,
+       "predicted": 0.5416,
+       "observed": 0.5718
+      },
+      {
+       "n": 1128,
+       "predicted": 0.6119,
+       "observed": 0.6206
+      },
+      {
+       "n": 1128,
+       "predicted": 0.6798,
+       "observed": 0.6817
+      },
+      {
+       "n": 1128,
+       "predicted": 0.7451,
+       "observed": 0.7535
+      },
+      {
+       "n": 1128,
+       "predicted": 0.8178,
+       "observed": 0.8351
+      },
+      {
+       "n": 1128,
+       "predicted": 0.8943,
+       "observed": 0.9087
+      },
+      {
+       "n": 1128,
+       "predicted": 0.9706,
+       "observed": 0.961
+      }
+     ]
+    }
+   },
+   "edges": {
+    "ratings": {
+     "home": {
+      "est": -2.2499095569727214,
+      "ci90": [
+       -2.4015466018320626,
+       -2.102794933681028
+      ],
+      "games": 11281,
+      "dates": 299
+     },
+     "prior": {
+      "est": -1.1006499311113296,
+      "ci90": [
+       -1.1844620436030522,
+       -1.0157142337798735
+      ],
+      "games": 11281,
+      "dates": 299
+     },
+     "elo": {
+      "est": -0.6338780578845837,
+      "ci90": [
+       -0.7500547272426821,
+       -0.5249622828246412
+      ],
+      "games": 11281,
+      "dates": 299
+     }
+    },
+    "second_stage": {
+     "home": {
+      "est": -2.326856092360226,
+      "ci90": [
+       -2.479795551928252,
+       -2.1791599133333985
+      ],
+      "games": 11281,
+      "dates": 299
+     },
+     "prior": {
+      "est": -1.177596466498834,
+      "ci90": [
+       -1.2670920729653483,
+       -1.0873198326446276
+      ],
+      "games": 11281,
+      "dates": 299
+     },
+     "elo": {
+      "est": -0.7108245932720879,
+      "ci90": [
+       -0.8268069736699903,
+       -0.6005821856065695
+      ],
+      "games": 11281,
+      "dates": 299
+     },
+     "ratings": {
+      "est": -0.07694653538750434,
+      "ci90": [
+       -0.1011359310421328,
+       -0.05275650904763294
+      ],
+      "games": 11281,
+      "dates": 299
+     }
+    }
+   },
+   "closing_line_benchmark": {
+    "games": 10543,
+    "share_of_games": 0.9345802677067636,
+    "margin_mae": {
+     "line": 8.802285876885136,
+     "ratings": 9.06678525505753,
+     "second_stage": 8.988990446524621
+    },
+    "total_mae": {
+     "line": 12.769208878770632,
+     "model": 13.161263643101627
+    }
+   }
+  },
+  "by_season": {
+   "2024": {
+    "games": 5644,
+    "dates": 148,
+    "margin_mae": {
+     "ratings": 9.082983740408444,
+     "second_stage": 8.995060550671088,
+     "home": 11.26035631658351,
+     "prior": 10.121858465958445,
+     "elo": 9.690472968131003
+    },
+    "total_mae": {
+     "model": 13.261246389758307,
+     "season_mean": 14.980525691080675
+    },
+    "win": {
+     "ratings": {
+      "log_loss": 0.5425607808795515,
+      "accuracy": 0.7205882352941176,
+      "ece": 0.019866951267051666,
+      "table": [
+       {
+        "n": 565,
+        "predicted": 0.2122,
+        "observed": 0.246
+       },
+       {
+        "n": 564,
+        "predicted": 0.3753,
+        "observed": 0.3812
+       },
+       {
+        "n": 564,
+        "predicted": 0.4803,
+        "observed": 0.4716
+       },
+       {
+        "n": 565,
+        "predicted": 0.5594,
+        "observed": 0.6124
+       },
+       {
+        "n": 564,
+        "predicted": 0.6284,
+        "observed": 0.6046
+       },
+       {
+        "n": 564,
+        "predicted": 0.6946,
+        "observed": 0.6809
+       },
+       {
+        "n": 565,
+        "predicted": 0.7604,
+        "observed": 0.7451
+       },
+       {
+        "n": 564,
+        "predicted": 0.8269,
+        "observed": 0.8174
+       },
+       {
+        "n": 564,
+        "predicted": 0.898,
+        "observed": 0.9078
+       },
+       {
+        "n": 565,
+        "predicted": 0.9703,
+        "observed": 0.9451
+       }
+      ]
+     },
+     "second_stage": {
+      "log_loss": 0.5371801376963906,
+      "accuracy": 0.7230687455705174,
+      "ece": 0.02305849846656435,
+      "table": [
+       {
+        "n": 565,
+        "predicted": 0.2049,
+        "observed": 0.2301
+       },
+       {
+        "n": 564,
+        "predicted": 0.3658,
+        "observed": 0.4096
+       },
+       {
+        "n": 564,
+        "predicted": 0.4683,
+        "observed": 0.4397
+       },
+       {
+        "n": 565,
+        "predicted": 0.5482,
+        "observed": 0.5929
+       },
+       {
+        "n": 564,
+        "predicted": 0.6166,
+        "observed": 0.6046
+       },
+       {
+        "n": 564,
+        "predicted": 0.6836,
+        "observed": 0.6968
+       },
+       {
+        "n": 565,
+        "predicted": 0.7486,
+        "observed": 0.7504
+       },
+       {
+        "n": 564,
+        "predicted": 0.818,
+        "observed": 0.8369
+       },
+       {
+        "n": 564,
+        "predicted": 0.8936,
+        "observed": 0.9096
+       },
+       {
+        "n": 565,
+        "predicted": 0.9682,
+        "observed": 0.9416
+       }
+      ]
+     }
+    },
+    "edges": {
+     "ratings": {
+      "home": {
+       "est": -2.177372576175067,
+       "ci90": [
+        -2.3901070510877815,
+        -1.9671579182542616
+       ],
+       "games": 5644,
+       "dates": 148
+      },
+      "prior": {
+       "est": -1.0388747255500002,
+       "ci90": [
+        -1.1527220910743292,
+        -0.9196473469738979
+       ],
+       "games": 5644,
+       "dates": 148
+      },
+      "elo": {
+       "est": -0.6074892277225576,
+       "ci90": [
+        -0.7891937553168642,
+        -0.435673287643088
+       ],
+       "games": 5644,
+       "dates": 148
+      }
+     },
+     "second_stage": {
+      "home": {
+       "est": -2.265295765912423,
+       "ci90": [
+        -2.4821354967302267,
+        -2.057726044695142
+       ],
+       "games": 5644,
+       "dates": 148
+      },
+      "prior": {
+       "est": -1.126797915287356,
+       "ci90": [
+        -1.249158781139125,
+        -1.0014268036180443
+       ],
+       "games": 5644,
+       "dates": 148
+      },
+      "elo": {
+       "est": -0.6954124174599133,
+       "ci90": [
+        -0.8743239577496255,
+        -0.5293574197286952
+       ],
+       "games": 5644,
+       "dates": 148
+      },
+      "ratings": {
+       "est": -0.08792318973735583,
+       "ci90": [
+        -0.11836095097072977,
+        -0.0583188116365554
+       ],
+       "games": 5644,
+       "dates": 148
+      }
+     }
+    },
+    "closing_line_benchmark": {
+     "games": 5233,
+     "share_of_games": 0.9271793054571226,
+     "margin_mae": {
+      "line": 8.883909803172177,
+      "ratings": 9.11605544173989,
+      "second_stage": 9.02828774709254
+     },
+     "total_mae": {
+      "line": 12.875501624307281,
+      "model": 13.240897861667714
+     }
+    }
+   },
+   "2025": {
+    "games": 5637,
+    "dates": 151,
+    "margin_mae": {
+     "ratings": 9.057532863572392,
+     "second_stage": 8.991576613292315,
+     "home": 11.380069477423234,
+     "prior": 10.22003471240381,
+     "elo": 9.717832521143773
+    },
+    "total_mae": {
+     "model": 13.06170263251413,
+     "season_mean": 14.637473245881658
+    },
+    "win": {
+     "ratings": {
+      "log_loss": 0.5266283272098575,
+      "accuracy": 0.7197090651055525,
+      "ece": 0.013675911092407853,
+      "table": [
+       {
+        "n": 564,
+        "predicted": 0.2071,
+        "observed": 0.2021
+       },
+       {
+        "n": 564,
+        "predicted": 0.3675,
+        "observed": 0.3972
+       },
+       {
+        "n": 563,
+        "predicted": 0.4693,
+        "observed": 0.4991
+       },
+       {
+        "n": 564,
+        "predicted": 0.5448,
+        "observed": 0.5691
+       },
+       {
+        "n": 564,
+        "predicted": 0.6155,
+        "observed": 0.6135
+       },
+       {
+        "n": 563,
+        "predicted": 0.6853,
+        "observed": 0.6767
+       },
+       {
+        "n": 564,
+        "predicted": 0.7506,
+        "observed": 0.7376
+       },
+       {
+        "n": 563,
+        "predicted": 0.8229,
+        "observed": 0.833
+       },
+       {
+        "n": 564,
+        "predicted": 0.8961,
+        "observed": 0.9096
+       },
+       {
+        "n": 564,
+        "predicted": 0.9727,
+        "observed": 0.9734
+       }
+      ]
+     },
+     "second_stage": {
+      "log_loss": 0.5212818292851537,
+      "accuracy": 0.7262728401632074,
+      "ece": 0.017762751269683328,
+      "table": [
+       {
+        "n": 564,
+        "predicted": 0.1975,
+        "observed": 0.1897
+       },
+       {
+        "n": 564,
+        "predicted": 0.3591,
+        "observed": 0.3883
+       },
+       {
+        "n": 563,
+        "predicted": 0.4608,
+        "observed": 0.4956
+       },
+       {
+        "n": 564,
+        "predicted": 0.5348,
+        "observed": 0.5638
+       },
+       {
+        "n": 564,
+        "predicted": 0.6071,
+        "observed": 0.6312
+       },
+       {
+        "n": 563,
+        "predicted": 0.6759,
+        "observed": 0.6696
+       },
+       {
+        "n": 564,
+        "predicted": 0.7414,
+        "observed": 0.7518
+       },
+       {
+        "n": 563,
+        "predicted": 0.8174,
+        "observed": 0.8348
+       },
+       {
+        "n": 564,
+        "predicted": 0.8949,
+        "observed": 0.906
+       },
+       {
+        "n": 564,
+        "predicted": 0.9729,
+        "observed": 0.9805
+       }
+      ]
+     }
+    },
+    "edges": {
+     "ratings": {
+      "home": {
+       "est": -2.3225366138508416,
+       "ci90": [
+        -2.517517812517884,
+        -2.1326785432413127
+       ],
+       "games": 5637,
+       "dates": 151
+      },
+      "prior": {
+       "est": -1.1625018488314192,
+       "ci90": [
+        -1.292799571325328,
+        -1.0374257259831594
+       ],
+       "games": 5637,
+       "dates": 151
+      },
+      "elo": {
+       "est": -0.6602996575713806,
+       "ci90": [
+        -0.7945357669106703,
+        -0.5320419816945756
+       ],
+       "games": 5637,
+       "dates": 151
+      }
+     },
+     "second_stage": {
+      "home": {
+       "est": -2.3884928641309204,
+       "ci90": [
+        -2.584988390039712,
+        -2.197423022062603
+       ],
+       "games": 5637,
+       "dates": 151
+      },
+      "prior": {
+       "est": -1.2284580991114973,
+       "ci90": [
+        -1.3618764097864782,
+        -1.0962148163332972
+       ],
+       "games": 5637,
+       "dates": 151
+      },
+      "elo": {
+       "est": -0.7262559078514589,
+       "ci90": [
+        -0.8634562127910905,
+        -0.5981762258828521
+       ],
+       "games": 5637,
+       "dates": 151
+      },
+      "ratings": {
+       "est": -0.06595625028007811,
+       "ci90": [
+        -0.10447847108736139,
+        -0.027528364125847908
+       ],
+       "games": 5637,
+       "dates": 151
+      }
+     }
+    },
+    "closing_line_benchmark": {
+     "games": 5310,
+     "share_of_games": 0.9419904204364024,
+     "margin_mae": {
+      "line": 8.721845574387947,
+      "ratings": 9.018229532475841,
+      "second_stage": 8.950262993818045
+     },
+     "total_mae": {
+      "line": 12.6644377472217,
+      "model": 13.082769413349068
+     }
+    }
+   }
+  },
+  "by_month": {
+   "Apr": {
+    "games": 23,
+    "margin_mae": {
+     "ratings": 8.400564345500785,
+     "second_stage": 8.39258338988754,
+     "elo": 7.871938472235096
+    },
+    "second_stage_minus_elo": {
+     "est": 0.5206449176524449,
+     "ci90": [
+      -0.2205816728953057,
+      1.3610572092878674
+     ],
+     "games": 23,
+     "dates": 10
+    },
+    "total_mae": 15.353657174072925,
+    "log_loss": 0.6276145432117997
+   },
+   "Dec": {
+    "games": 1907,
+    "margin_mae": {
+     "ratings": 9.101079873455534,
+     "second_stage": 9.036613001595954,
+     "elo": 10.074048615592048
+    },
+    "second_stage_minus_elo": {
+     "est": -1.0374356139960925,
+     "ci90": [
+      -1.2687104332935182,
+      -0.8120897249888607
+     ],
+     "games": 1907,
+     "dates": 58
+    },
+    "total_mae": 12.731220654004941,
+    "log_loss": 0.47277242736059977
+   },
+   "Feb": {
+    "games": 2738,
+    "margin_mae": {
+     "ratings": 8.89280414328974,
+     "second_stage": 8.843923528781799,
+     "elo": 9.140770344499126
+    },
+    "second_stage_minus_elo": {
+     "est": -0.2968468157173259,
+     "ci90": [
+      -0.39856851874182836,
+      -0.19573056403564698
+     ],
+     "games": 2738,
+     "dates": 57
+    },
+    "total_mae": 13.069904840213688,
+    "log_loss": 0.5603169235199011
+   },
+   "Jan": {
+    "games": 2795,
+    "margin_mae": {
+     "ratings": 8.830881365166382,
+     "second_stage": 8.716185423949737,
+     "elo": 9.139205036903563
+    },
+    "second_stage_minus_elo": {
+     "est": -0.42301961295382673,
+     "ci90": [
+      -0.5773619583704663,
+      -0.2738315170723424
+     ],
+     "games": 2795,
+     "dates": 62
+    },
+    "total_mae": 13.17761388228016,
+    "log_loss": 0.5588742857546813
+   },
+   "Mar": {
+    "games": 1564,
+    "margin_mae": {
+     "ratings": 8.822567409524051,
+     "second_stage": 8.75863668829299,
+     "elo": 9.125389416564149
+    },
+    "second_stage_minus_elo": {
+     "est": -0.3667527282711589,
+     "ci90": [
+      -0.5207500941237337,
+      -0.2420290444105888
+     ],
+     "games": 1564,
+     "dates": 60
+    },
+    "total_mae": 13.03861408956431,
+    "log_loss": 0.553432645092258
+   },
+   "Nov": {
+    "games": 2254,
+    "margin_mae": {
+     "ratings": 9.735312376101888,
+     "second_stage": 9.650789726207266,
+     "elo": 11.19634859367036
+    },
+    "second_stage_minus_elo": {
+     "est": -1.5455588674630907,
+     "ci90": [
+      -1.861840136044308,
+      -1.2429450305061378
+     ],
+     "games": 2254,
+     "dates": 52
+    },
+    "total_mae": 13.679901407067534,
+    "log_loss": 0.4847063856087799
+   }
+  },
+  "by_game_type": {
+   "conference": {
+    "games": 6531,
+    "margin_mae": {
+     "ratings": 8.920048740839185,
+     "second_stage": 8.83480360121257,
+     "elo": 9.169554383467688
+    },
+    "second_stage_minus_elo": {
+     "est": -0.33475078225511856,
+     "ci90": [
+      -0.41681775578264796,
+      -0.2535706074339717
+     ],
+     "games": 6531,
+     "dates": 177
+    },
+    "total_mae": 13.101462489203684,
+    "log_loss": 0.5579727387905966
+   },
+   "conference tournament": {
+    "games": 603,
+    "margin_mae": {
+     "ratings": 8.84785974880578,
+     "second_stage": 8.792283759026393,
+     "elo": 8.94433506154274
+    },
+    "second_stage_minus_elo": {
+     "est": -0.15205130251634674,
+     "ci90": [
+      -0.23560227319182045,
+      -0.06059124537983997
+     ],
+     "games": 603,
+     "dates": 32
+    },
+    "total_mae": 13.09471339691053,
+    "log_loss": 0.5808113942698679
+   },
+   "national postseason": {
+    "games": 243,
+    "margin_mae": {
+     "ratings": 8.736652092158904,
+     "second_stage": 8.711031059458303,
+     "elo": 9.917727312451113
+    },
+    "second_stage_minus_elo": {
+     "est": -1.206696252992811,
+     "ci90": [
+      -1.7892888926781458,
+      -0.5571293751707687
+     ],
+     "games": 243,
+     "dates": 37
+    },
+    "total_mae": 12.882610551444355,
+    "log_loss": 0.5635753049872638
+   },
+   "non-conference": {
+    "games": 3904,
+    "margin_mae": {
+     "ratings": 9.37668257414898,
+     "second_stage": 9.30712324371307,
+     "elo": 10.702523026730393
+    },
+    "second_stage_minus_elo": {
+     "est": -1.3953997830173248,
+     "ci90": [
+      -1.611680452403424,
+      -1.1958610086308283
+     ],
+     "games": 3904,
+     "dates": 126
+    },
+    "total_mae": 13.289716778675908,
+    "log_loss": 0.471058489226644
+   }
+  }
+ }
+}

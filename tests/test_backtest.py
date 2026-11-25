@@ -141,6 +141,10 @@ def test_recall_metric_and_training_cutoff():
     f = season_folds(2023, 2023, train_window=1, decision_month_day="05-01", train_until_month_day="05-01")[0]
     assert f.train_until == pd.Timestamp("2023-05-01") and f.decision_date == pd.Timestamp("2023-05-01")
     assert season_folds(2023, 2023, train_window=1)[0].train_until == pd.Timestamp("2021-12-31 23:59:59")
+    # a season named for the year it ends (college basketball): training stops before it starts, in the year before
+    b = season_folds(2026, 2026, None, "05-01", predictor_lag=0, train_until_month_day="-1:10-31", resolve_month_day="05-01", first_train=2021)[0]
+    assert b.train_until == pd.Timestamp("2025-10-31") and b.train_seasons == (2021, 2022, 2023, 2024, 2025)
+    assert b.decision_date == b.resolve_after == pd.Timestamp("2026-05-01")
 
 
 def test_ci_compares_a_fast_run_with_the_same_fold():
