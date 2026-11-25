@@ -364,3 +364,30 @@ tables:
       team: VARCHAR
       conference: VARCHAR
       season: BIGINT
+  portal:
+    description: "Transfer portal entries, one row per entry. Past seasons only so far (CBB-HIST): the current season's file
+      appears with its spring window. The source gives no dates and overwrites the destination, so a season's file is an
+      outcome table: never a feature for a game of the season it describes."
+    files: "cbb/portal_{season}.parquet"
+    key: [id]
+    max_null:
+      id: 0
+      year: 0
+      origin_id: 0.02
+    columns:
+      id: BIGINT
+      sourceId: VARCHAR
+      year: BIGINT
+      firstName: VARCHAR
+      lastName: VARCHAR
+      position: VARCHAR
+      stars: DOUBLE
+      rating: DOUBLE
+      eligibility: VARCHAR
+      yearsRemaining: DOUBLE
+      origin_id: BIGINT
+      origin_name: VARCHAR
+      origin_conference: VARCHAR
+      destination_id: BIGINT
+      destination_name: VARCHAR
+      destination_conference: VARCHAR

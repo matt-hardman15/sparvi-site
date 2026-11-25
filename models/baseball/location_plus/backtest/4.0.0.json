@@ -1,0 +1,207 @@
+{
+  "run_id": "47dd15765916",
+  "model": "location_plus",
+  "version": "4.0.0",
+  "kind": "full",
+  "ran_at": "2026-11-24T22:29:13Z",
+  "code_sha": "ce047994cc292f55a356cfe0822a711390056445",
+  "lockfile": "39654de38b4c91ec",
+  "preregistered_at": "2026-11-19",
+  "spec": {
+    "preregistered_at": "2026-11-19",
+    "candidate": "4.0.0",
+    "candidate_spec": "Location value given shape: the prediction of a model on shape, count, batter side and location, minus the prediction of the same model without location, averaged over a pitcher's pitches. Chosen on development folds that never read 2026 (baseball/pitch_quality/output/development_location.json: outcomes 2024 and 2025; r with next-season RV/100 +0.147, 90% interval +0.077 to +0.210, against +0.030 for the published features). train.py is unchanged until this test passes; the report is written as 3.0.0 and does not validate the published version.",
+    "candidate_training": "4.0.0 (registered 2026-11-24, LOC-STABLE): the same grade with both models trained at learning rate 0.005 in bags of 20 (3.0.x: 0.03, bags of 10), so that it moves less between training seeds. Chosen on development folds that never read 2026 (baseball/pitch_quality/output/development_location_stability.json, outcomes 2024 and 2025, two seeds, run on GitHub's runners): mean movement between seeds 0.29 Location+ points with 2% of pitchers over 1, against 0.70 and 24% for the 3.0.x training; r with next-season RV/100 0.139 against 0.140. The gate statistic on those folds at seed 7: edge over the location-only features +0.071 (90% interval +0.011 to +0.126) and +0.147 (+0.091 to +0.204), passing the strict gate on both. Against the 3.0.x training on the same pitchers the edge was -0.011 (-0.020 to -0.003) on one fold and +0.006 (-0.001 to +0.013) on the other: no consistent difference, and smaller than the 3.0.x training's own spread between seeds (r 0.131 to 0.143 on the first fold). train.py is unchanged until this test passes; the report is written as 4.0.0 and does not validate the published version.",
+    "module": "models/baseball/location_plus/backtest.py",
+    "target": "Next-season run value per 100 pitches (RV/100), MLB pitchers with 500+ pitches in both seasons",
+    "decision_dates": "season start (March 1 of the outcome season)",
+    "splits": {
+      "type": "walk_forward",
+      "first_test": 2026,
+      "last_test": 2026,
+      "train_window": 2,
+      "predictor_lag": 1,
+      "decision": "03-01",
+      "fast_folds": 1
+    },
+    "group_by": "none: a pitch-level model; pitcher identity is not a feature",
+    "block": "entity_id",
+    "baselines": [
+      "published_location",
+      "stuff",
+      "last_season",
+      "v3_setup"
+    ],
+    "primary_metric": "pearson_r",
+    "report_partial_given": "stuff",
+    "bootstrap": 2000,
+    "seed": 7,
+    "pass_gate": {
+      "beats_baseline": "published_location",
+      "min_skill": 0.0,
+      "ci_excludes_zero": true
+    },
+    "gate_decided": "Matt, 2026-11-19: strict (the 90% interval of the edge must exclude zero), measured against the published Location+ features trained on the same fold. The partial correlation with next-season RV/100 given Stuff+ is reported with its interval and is not part of the gate. Chosen with the development folds in view (baseball/pitch_quality/output/development_location_gates.json): a gain in r over Stuff+ alone could not pass at this sample size (about +0.015 on a partial r of 0.10). Stuff+ and last season's results are reported baselines.",
+    "reproduction": "Exact on the same machine; across machines tolerance \u00b10.01 in r (Matt, 2026-11-13). Official runs happen in CI.",
+    "vault": {
+      "seasons": [],
+      "note": "No sealed season yet: the only test season is 2026. The 2027 season becomes the vault when it completes.",
+      "accesses": 0
+    },
+    "amended": "2026-11-23: the `candidate: 3.0.0` line is removed. 3.0.0 passed this block and was promoted on Nov 20, so the block now tests the published version; nothing else in it changed. (3.0.1 is the same model, stored instead of refit.) `candidate_spec` stays as the record of how the spec was chosen.\n2026-11-24 (Matt chose the candidate): `candidate: 4.0.0` and `candidate_training` are added, and the module now trains both models at learning rate 0.005 in bags of 20. The target, fold, sample, gate and its baseline are unchanged: the candidate must beat the location-only features (`published_location`, the features of Location+ 2.0.0) with the edge's 90% interval above zero. One reported baseline is added, `v3_setup`: the same grade trained as 3.0.x trains it, on the same fold. It is the direct comparison and is not part of the gate: the change is made for seed stability, which this test does not measure (stability.py does, after the change), and on the development folds the two trainings' r differed by less than the seed spread. The 2026 outcomes have been read once already, by 3.0.0's test of this block (r 0.157). This is a second registered test on that season; the candidate and its training were chosen without it."
+  },
+  "folds": [
+    2026
+  ],
+  "evaluation": {
+    "metric": "pearson_r",
+    "n": 324,
+    "point": 0.14976955629082167,
+    "baselines": {
+      "published_location": {
+        "value": 0.014301709992143157,
+        "paired": {
+          "est": 0.1354678462986785,
+          "ci90": [
+            0.06975338627523851,
+            0.1945141068929504
+          ],
+          "n": 324,
+          "blocks": 324,
+          "bootstrap": 2000,
+          "seed": 7
+        }
+      },
+      "stuff": {
+        "value": 0.31757520495148467,
+        "paired": {
+          "est": -0.167805648660663,
+          "ci90": [
+            -0.2912095138873574,
+            -0.03382869531612601
+          ],
+          "n": 324,
+          "blocks": 324,
+          "bootstrap": 2000,
+          "seed": 7
+        }
+      },
+      "last_season": {
+        "value": 0.19259585980517263,
+        "paired": {
+          "est": -0.04282630351435096,
+          "ci90": [
+            -0.15813875503603478,
+            0.08193485115821772
+          ],
+          "n": 324,
+          "blocks": 324,
+          "bootstrap": 2000,
+          "seed": 7
+        }
+      },
+      "v3_setup": {
+        "value": 0.1568488532300491,
+        "paired": {
+          "est": -0.007079296939227431,
+          "ci90": [
+            -0.014475386046863206,
+            0.00031136211923560493
+          ],
+          "n": 324,
+          "blocks": 324,
+          "bootstrap": 2000,
+          "seed": 7
+        }
+      }
+    },
+    "by_fold": {
+      "2026": 0.14976955629082167
+    },
+    "partial_r": {
+      "given": "stuff",
+      "est": 0.12978741776377603,
+      "ci90": [
+        0.04123888494024867,
+        0.22372577376013808
+      ],
+      "n": 324,
+      "blocks": 324,
+      "bootstrap": 2000,
+      "seed": 7
+    }
+  },
+  "gate": {
+    "checks": {
+      "beats_baseline": true,
+      "min_skill": true,
+      "ci_excludes_zero": true
+    },
+    "passed": true,
+    "gap": 0.1354678462986785,
+    "per_baseline": {
+      "published_location": {
+        "gap": 0.1354678462986785,
+        "ci90_low": 0.06975338627523851
+      }
+    }
+  },
+  "leakage": {
+    "timestamp": {
+      "passed": true,
+      "folds": [
+        {
+          "fold": 2026,
+          "fit_max_available_at": "2024-10-01 00:00:00",
+          "train_until": "2024-12-31 23:59:59",
+          "predict_max_available_at": "2025-09-29 00:00:00",
+          "decision_date": "2026-03-01 00:00:00",
+          "passes": true
+        }
+      ]
+    },
+    "future_poisoning": {
+      "passed": true,
+      "cutoff": "2026-03-01 00:00:00",
+      "n": 478
+    },
+    "label_permutation": {
+      "passed": true,
+      "r": 0.0887061554340935,
+      "ci90": [
+        -0.005534010567546731,
+        0.18692342780814672
+      ],
+      "n": 324
+    },
+    "too_good": {
+      "passed": true,
+      "r": 0.14976955629082167,
+      "ceiling": 0.9
+    },
+    "entity_overlap": {
+      "passed": true,
+      "not_applicable": "group_by: none: a pitch-level model; pitcher identity is not a feature"
+    },
+    "universe": {
+      "passed": true,
+      "predicted": 478,
+      "scored": 324,
+      "no_outcome": 154,
+      "note": "entities without an outcome (retired, injured, too few pitches) can't be scored; they're counted here so survivorship is visible"
+    }
+  },
+  "passed": true,
+  "primary": {
+    "metric": "pearson_r",
+    "point": 0.14976955629082167,
+    "published_location": 0.014301709992143157,
+    "stuff": 0.31757520495148467,
+    "last_season": 0.19259585980517263,
+    "v3_setup": 0.1568488532300491
+  },
+  "revision_safe": false,
+  "approximate_tables": [
+    "batter_heights"
+  ]
+}

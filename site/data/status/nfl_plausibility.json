@@ -45,7 +45,7 @@
    "tool": "Team efficiency",
    "name": "in simulation the correction recovers most of a known schedule effect",
    "ok": true,
-   "detail": "73% over a full season, 60% through this week (needs 50%)"
+   "detail": "73% over a full season, 63% through this week (needs 50%)"
   },
   {
    "tool": "Team efficiency",
@@ -57,7 +57,7 @@
    "tool": "Team pages and game logs",
    "name": "every game is in both teams' logs, mirrored (scores, home team, offense = opponent's defense)",
    "ok": true,
-   "detail": "5,578 team-games"
+   "detail": "5,604 team-games"
   },
   {
    "tool": "Team pages and game logs",
@@ -69,7 +69,7 @@
    "tool": "Team pages and game logs",
    "name": "no team's offense or defense is credited in a game it didn't play",
    "ok": true,
-   "detail": "362,347 plays, each between its game's two teams"
+   "detail": "363,999 plays, each between its game's two teams"
   },
   {
    "tool": "Fourth-down decisions",
@@ -99,7 +99,7 @@
    "tool": "Offense or defense",
    "name": "unit ranks follow the adjusted EPA/play shown",
    "ok": true,
-   "detail": "156 rows in 6 groups"
+   "detail": "192 rows in 6 groups"
   }
  ]
 }

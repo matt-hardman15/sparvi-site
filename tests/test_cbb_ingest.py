@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 import yaml
 
+import ingest.cbb.checks as checks
 import ingest.cbb.pull as pull
 from ingest.snapshot import cbb_tables
 from sparvi.config import ROOT, cbb
@@ -66,14 +67,15 @@ def test_a_window_at_the_api_cap_stops_the_pull(monkeypatch, tmp_path):
 
 def test_snapshot_tables_match_the_contract():
     s = cbb().season
-    tables = {t.name: t for t in cbb_tables()}
-    assert set(tables) == {f"cbb_{k}_{s}" for k in CONTRACT}, "every contract table is snapshotted, under a cbb_ name"
-    for k, spec in CONTRACT.items():
+    tables = {t.name: t for t in cbb_tables() if t.name.endswith(f"_{s}")}        # past seasons: the history tests below
+    current = {k: v for k, v in CONTRACT.items() if k != "portal" or (pull.OUT / f"portal_{s}.parquet").exists()}   # portal: from the spring window
+    assert set(tables) == {f"cbb_{k}_{s}" for k in current}, "every contract table is snapshotted, under a cbb_ name"
+    for k, spec in current.items():
         t = tables[f"cbb_{k}_{s}"]
         assert list(t.key) == spec["key"] and t.path.name == f"{k}_{s}.parquet"
         assert all(c in spec["columns"] for c in spec["key"])
     from ingest.common.snapshots import MIN_MASS_UPDATE
-    assert len(CONTRACT) == 10 and MIN_MASS_UPDATE > 400, "the ratings tables (about 365 teams) change wholesale every night"
+    assert len(CONTRACT) == 11 and MIN_MASS_UPDATE > 400, "the ratings tables (about 365 teams) change wholesale every night"
     games = pd.DataFrame({"startDate": ["2026-11-14T21:00:00.000Z", "2026-11-28T21:00:00.000Z"], "status": ["final", "scheduled"]})
     at = tables[f"cbb_games_{s}"].available_at(games, pd.Timestamp("2026-11-20T12:00:00", tz="UTC"))
     assert list(at) == [pd.Timestamp("2026-11-15"), pd.Timestamp("2026-11-20")], "a result the day after; a scheduled game when first seen"
@@ -83,3 +85,97 @@ def test_cbb_season_is_the_year_it_ends():
     c = cbb()
     assert c.end.startswith(str(c.season)) and c.start.startswith(str(c.season - 1)) and c.start < c.end
     assert c.call_reserve >= 500, "basketball must leave football its share of the quota"
+
+
+# ---- past seasons (CBB-HIST) ----------------------------------------------------------------------------------------
+def test_a_past_season_has_the_same_windows_a_year_earlier():
+    cfg = cbb()
+    s = cfg.season - 3
+    for days in (None, 7):
+        now, then = pull.windows(days), pull.windows(days, s)
+        assert then[0][0] == pd.Timestamp(cfg.start, tz="UTC") - pd.DateOffset(years=3)
+        assert then[-1][1] == pd.Timestamp(cfg.end, tz="UTC") - pd.DateOffset(years=3) + pd.Timedelta(days=1)
+        assert all(a[1] == b[0] for a, b in zip(then, then[1:], strict=False)) and abs(len(then) - len(now)) <= 1
+    assert pull.windows(7) == pull.windows(7, cfg.season)
+
+
+def test_past_season_requests_are_final_and_leave_out_the_ratings():
+    cfg = cbb()
+    s = cfg.history_seasons[0]
+    r = pull.requests_for(season=s)
+    assert all(done for _, _, _, done in r), "a past season's windows are final: cached for good"
+    assert not any(t.startswith("ratings") for t, _, _, _ in r), "the source overwrites ratings: a past season's would be end-of-season values"
+    assert {t for t, _, _, _ in r} == {"teams", "rankings", "roster", "portal", "games", "team_games", "lines", "player_games"}
+    assert {t for t, _, _, _ in r} == set(checks.HISTORY_TABLES), "every past-season table pulled is checked"
+    assert all(prm.get("season", prm.get("year")) == s for _, _, prm, _ in r)
+    first = min(pd.Timestamp(prm["startDateRange"]) for _, _, prm, _ in r if "startDateRange" in prm)
+    assert first.year == s - 1 and first.month == 11
+
+
+def test_the_default_pull_asks_only_for_the_current_season():
+    """The daily workflow runs the pull with no arguments: it must never ask for a past season."""
+    s = cbb().season
+    assert all(prm.get("season", prm.get("year")) == s for _, _, prm, _ in pull.requests_for())
+    wf = (ROOT / ".github" / "workflows" / "cbb.yml").read_text(encoding="utf-8")
+    assert "--history" not in wf
+
+
+def test_mismatch_names_a_missing_column_and_a_value_of_another_type():
+    spec = {"columns": {"id": "BIGINT", "spread": "DOUBLE", "provider": "VARCHAR", "neutral": "BOOLEAN"}, "key": ["id"]}
+    good = pd.DataFrame({"id": [1, 2], "spread": [-3.5, None], "provider": ["X", None], "neutral": [True, False], "extra": [1, 2]})
+    assert pull.mismatch(good, spec) == []
+    bad = pd.DataFrame({"id": [1, 2.5], "spread": ["-3.5", "pk"], "provider": [7, "X"]})
+    m = pull.mismatch(bad, spec)
+    assert any(x == "no column neutral" for x in m)
+    assert any(x.startswith("id is BIGINT") for x in m) and any(x.startswith("spread is DOUBLE") for x in m)
+    assert any(x.startswith("provider is VARCHAR") for x in m)
+
+
+def test_a_past_season_that_does_not_fit_the_contract_is_not_written(monkeypatch, tmp_path):
+    s = cbb().history_seasons[-1]
+
+    class Fake:
+        calls = 0
+
+        def get(self, ep, prm, done):
+            return [{"id": 1, "school": "A"}] if ep == "/teams" else []      # far fewer columns than the contract's
+    monkeypatch.setattr(pull, "OUT", tmp_path)
+    with pytest.raises(pull.ContractMismatch, match="teams: no column"):
+        pull.pull(Fake(), season=s)
+    assert not list(tmp_path.glob("*.parquet"))
+
+
+def test_history_snapshot_tables_only_where_the_file_exists(monkeypatch, tmp_path):
+    import ingest.snapshot as snap
+    s = cbb().history_seasons[-1]
+    (tmp_path / "cbb").mkdir()
+    monkeypatch.setattr(snap, "RAW", tmp_path)
+    assert snap.cbb_history_tables() == []
+    for t in ("games", "lines", "roster"):
+        pd.DataFrame({"x": [1]}).to_parquet(tmp_path / "cbb" / f"{t}_{s}.parquet")
+    tables = {t.name: t for t in snap.cbb_history_tables()}
+    assert set(tables) == {f"cbb_games_{s}", f"cbb_lines_{s}", f"cbb_roster_{s}"}
+    now = pd.Timestamp("2026-11-24T12:00:00", tz="UTC")
+    games = pd.DataFrame({"startDate": [f"{s}-01-14T21:00:00.000Z"], "status": ["final"]})
+    assert list(tables[f"cbb_games_{s}"].available_at(games, now)) == [pd.Timestamp(f"{s}-01-15")], "a result the day after"
+    assert list(tables[f"cbb_lines_{s}"].available_at(games, now)) == [pd.Timestamp(f"{s}-01-14T21:00:00")], "a line at tip-off"
+    first = pd.Timestamp(cbb().start) - pd.DateOffset(years=cbb().season - s)
+    assert list(tables[f"cbb_roster_{s}"].available_at(games, now)) == [first], "a roster from the season's first day (approximate)"
+    for k in ("games", "lines", "roster"):
+        assert list(tables[f"cbb_{k}_{s}"].key) == CONTRACT[k]["key"]
+
+
+def test_portal_entries_without_a_destination_still_have_the_contract_columns():
+    entry = {"id": 1, "sourceId": "9", "year": 2026, "firstName": "A", "lastName": "B", "position": "G", "stars": None, "rating": None,
+             "eligibility": "immediate", "yearsRemaining": None, "origin": {"id": 3, "name": "X", "conference": "C"}, "destination": None}
+    df = pull.FRAMES["portal"]([entry, {**entry, "id": 2}])
+    assert pull.mismatch(pull._jsonable(df), CONTRACT["portal"]) == []
+    out = pull.conform(df, "portal", CONTRACT["portal"])
+    assert list(out.columns) == list(CONTRACT["portal"]["columns"]) and out["destination_id"].isna().all() and len(out) == 2
+
+
+def test_known_gaps_hold_a_past_season_to_what_was_measured_and_leave_the_contract_alone():
+    limit = CONTRACT["team_games"]["max_null"]["teamStats_possessions"]
+    assert limit == 0.02, "the current season's limit is the contract's"
+    assert all(v > limit for gaps in checks.KNOWN_GAPS.values() for v in gaps.values())
+    assert set(checks.KNOWN_GAPS) <= set(cbb().history_seasons), "only past seasons have recorded gaps"

@@ -60,6 +60,10 @@ approve_over = 300
 # CollegeBasketballData.com, the same service, key (CFBD_API_KEY) and monthly quota as college football.
 # The season is the year it ends: 2027 = 2026-27.
 season = 2027
+# History seasons (CBB-HIST): the first past season kept for model development and backtests, read through
+# backtest/asof.py. Pulled once by hand (`ingest/cbb/pull.py --history`), never by the daily workflow, and read only
+# where a file exists. 2021 (2020-21) is the shortened COVID season: a late start, fewer games, a single-site tournament.
+history_first = 2021
 # First and last day a game of this season can fall on; pulls are windowed between them.
 start = "2026-11-01"
 end = "2027-04-10"

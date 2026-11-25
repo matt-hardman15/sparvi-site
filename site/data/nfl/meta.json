@@ -219,10 +219,11 @@
    7,
    8,
    9,
-   10
+   10,
+   11
   ]
  },
- "last_week": 10,
+ "last_week": 11,
  "trailing_weeks": 4,
  "defs": {
   "explosive_pass_yds": 20,
@@ -262,17 +263,17 @@
   "schedule_skill": 0.1216,
   "correction": {
    "season": 2026,
-   "week": 10,
-   "off_max": 0.0186,
-   "off_sd": 0.0062,
-   "def_max": 0.038,
-   "def_sd": 0.0135,
-   "off_raw_sd": 0.0869,
-   "def_raw_sd": 0.0689
+   "week": 11,
+   "off_max": 0.0121,
+   "off_sd": 0.0054,
+   "def_max": 0.0371,
+   "def_sd": 0.0147,
+   "off_raw_sd": 0.0852,
+   "def_raw_sd": 0.067
   },
   "simulation_recovered": {
    "full_season": 0.727,
-   "through_week": 0.596
+   "through_week": 0.63
   }
  }
 }
