@@ -7,6 +7,7 @@ import pytest
 from cbb.ratings import develop as D
 from cbb.ratings import features as F
 from cbb.ratings import model as M
+from cbb.ratings import scoring as S
 
 P = M.Params(5.0, 1.0, None)
 
@@ -149,5 +150,35 @@ def test_interval_by_game_date_is_reproducible_and_brackets_the_estimate():
     g = _games()
     f = M.walk(g, [2022], P)
     a, b = (f["margin"] - f["pred_margin"]).abs(), (f["margin"] - f["margin"].mean()).abs()
-    r = D.by_date_diff(f, a, b)
-    assert r == D.by_date_diff(f, a, b) and r["ci90"][0] <= r["est"] <= r["ci90"][1] and r["est"] < 0 and r["dates"] == f["date"].nunique()
+    r = S.by_date_diff(f, a, b)
+    assert r == S.by_date_diff(f, a, b) and r["ci90"][0] <= r["est"] <= r["ci90"][1] and r["est"] < 0 and r["dates"] == f["date"].nunique()
+
+
+def test_past_seasons_restore_skips_what_is_there_and_refuses_other_seasons(tmp_path, monkeypatch):
+    """ingest/cbb/history.py (the backtest workflow's data step): a file on the machine is left alone, a season that
+    isn't a history season is refused, and without the bucket nothing is written."""
+    from ingest.cbb import history as H
+    from sparvi.config import cbb
+    season = cbb().history_seasons[0]
+    assert H.restore([cbb().season], raw=tmp_path) == 2                        # the current season is the daily pull's
+    for name in ("R2_ENDPOINT", "R2_BUCKET", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY"):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setattr(H, "store_from_env", lambda: None)
+    assert H.restore([season], raw=tmp_path) == 1 and not (tmp_path / "cbb").exists()
+    (tmp_path / "cbb").mkdir()
+    for t in H.TABLES:
+        (tmp_path / "cbb" / f"{t}_{season}.parquet").write_bytes(b"x")
+    assert H.restore([season], raw=tmp_path) == 0
+    assert all((tmp_path / "cbb" / f"{t}_{season}.parquet").read_bytes() == b"x" for t in H.TABLES)
+
+
+def test_the_registered_block_tests_the_held_out_season_once_and_trains_before_it():
+    """The card's fold: season 2026, with everything fit on other seasons read as of the day before it starts."""
+    from backtest import runner
+    from sparvi import registry
+    spec = registry.get("cbb_team_rating").card["backtest"]
+    (fold,) = runner.folds_for(spec, False)
+    assert fold.test_season == D.HELD_OUT and max(fold.train_seasons) == D.HELD_OUT - 1 and min(fold.train_seasons) == D.SEED_SEASON
+    assert fold.train_until == pd.Timestamp(D.AS_OF) and fold.decision_date > pd.Timestamp(f"{D.HELD_OUT}-04-15")
+    assert spec["pass_gate"]["beats_baseline"] == ["elo", "home", "prior"] and spec["pass_gate"]["ci_excludes_zero"] is True
+    assert spec["block"] == "date" and spec["primary_metric"] == "mae"

@@ -39,6 +39,11 @@ class Params:
     half_life: float | None = None     # recency weighting in days; None = every game counts the same
 
 
+# The published settings (cbb_team_rating 1.0.0): the lowest margin error on the tuning seasons, 2022 and 2023
+# (cbb/ratings/develop.py; cbb/ratings/output/development.json). A change here is a new model version.
+PUBLISHED = Params(prior_weight=5.0, carry=1.0, half_life=None)
+
+
 def game_day(start: pd.Series) -> pd.Series:
     return (pd.to_datetime(start, utc=True).dt.tz_localize(None) - UTC_TO_GAME_DAY).dt.normalize()
 

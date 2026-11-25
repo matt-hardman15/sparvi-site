@@ -22,6 +22,9 @@ import pandas as pd
 
 GROUPS = {"luck": ["luck"], "availability": ["missing"], "continuity": ["returning", "incoming"], "form": ["form"],
           "rest": ["rest"], "four_factors": ["net_to", "net_orb", "net_ftr"], "transfers": ["portal_out", "portal_in"]}
+# The groups the published model uses (cbb_team_rating 1.0.0): those whose removal raised the error on the tuning seasons
+# (develop.py). Rest, four factors and transfers were tested and dropped. A change here is a new model version.
+KEPT = ["luck", "availability", "continuity", "form"]
 LEAGUE_3P = 0.34          # the three-point rate a shot is credited at
 FADE = 5.0                # games after which a preseason input counts half
 REST_CAP, FORM_GAMES = 10, 5

@@ -43,13 +43,23 @@ import pandas as pd
 from backtest.asof import Loader
 from cbb.ratings import features as F
 from cbb.ratings import model as M
+from cbb.ratings.scoring import (
+    BASELINES,
+    BOOT,
+    SEED,
+    add_baselines,
+    by_date_diff,
+    calibration,
+    closing,
+    fixed_from,
+    log_loss,
+    mae,
+)
 
 OUT = Path(__file__).resolve().parent / "output"
 SEED_SEASON, TUNE, DEV, HELD_OUT = 2021, [2022, 2023], [2024, 2025], 2026
 AS_OF = f"{HELD_OUT - 1}-10-31"                   # before the held-out season's first game
 GRID = {"prior_weight": [1.0, 2.5, 5.0, 10.0, 20.0], "carry": [0.6, 0.8, 1.0], "half_life": [None, 90.0, 45.0]}
-BOOT, SEED = 2000, 7
-BASELINES = {"home": "home_margin", "prior": "prior_margin", "elo": "elo_margin"}
 
 
 class DevLoader(Loader):
@@ -64,33 +74,6 @@ class DevLoader(Loader):
         return super().load(table, as_of, columns)
 
 
-def mae(d: pd.DataFrame, col: str, y: str = "margin") -> float:
-    return float((d[y] - d[col]).abs().mean())
-
-
-def by_date_diff(d: pd.DataFrame, a: np.ndarray, b: np.ndarray, boot: int = BOOT, seed: int = SEED) -> dict:
-    """Mean of a - b over games, with a 90% interval from resampling game dates."""
-    x = pd.DataFrame({"date": d["date"].to_numpy(), "v": np.asarray(a, float) - np.asarray(b, float)}).groupby("date")["v"].agg(["sum", "size"])
-    s, n = x["sum"].to_numpy(), x["size"].to_numpy()
-    ix = np.random.default_rng(seed).integers(0, len(s), size=(boot, len(s)))
-    draws = s[ix].sum(axis=1) / n[ix].sum(axis=1)
-    return {"est": float(s.sum() / n.sum()), "ci90": [float(np.percentile(draws, 5)), float(np.percentile(draws, 95))],
-            "games": int(n.sum()), "dates": int(len(s))}
-
-
-def log_loss(p: np.ndarray, y: np.ndarray) -> float:
-    p = np.clip(p, 1e-6, 1 - 1e-6)
-    return float(-np.mean(y * np.log(p) + (1 - y) * np.log(1 - p)))
-
-
-def calibration(p: np.ndarray, y: np.ndarray, bins: int = 10) -> dict:
-    d = pd.DataFrame({"p": p, "y": y})
-    d["bin"] = pd.qcut(d["p"].rank(method="first"), bins, labels=False)
-    t = d.groupby("bin").agg(n=("y", "size"), predicted=("p", "mean"), observed=("y", "mean"))
-    return {"ece": float((t["n"] * (t["predicted"] - t["observed"]).abs()).sum() / t["n"].sum()),
-            "table": [{"n": int(r.n), "predicted": round(float(r.predicted), 4), "observed": round(float(r.observed), 4)} for r in t.itertuples()]}
-
-
 def tune(g: pd.DataFrame) -> dict:
     rows = []
     for pw, ca, hl in itertools.product(GRID["prior_weight"], GRID["carry"], GRID["half_life"]):
@@ -101,23 +84,6 @@ def tune(g: pd.DataFrame) -> dict:
     best = min(rows, key=lambda r: r["margin_mae"])
     return {"grid": rows, "chosen": {k: best[k] for k in ("prior_weight", "carry", "half_life")}, "chosen_margin_mae": best["margin_mae"],
             "on_grid_edge": {k: best[k] in (GRID[k][0], GRID[k][-1]) for k in GRID}}
-
-
-def fixed_from(train: pd.DataFrame) -> dict:
-    """What a forecast season takes from the forecast seasons before it: the margin's spread and the baselines' fits."""
-    site = (~train["neutral"]).to_numpy(float)
-    e = train.dropna(subset=["elo_diff"])
-    X = np.c_[e["elo_diff"].to_numpy(float), (~e["neutral"]).to_numpy(float)]
-    b = np.linalg.lstsq(X, e["margin"].to_numpy(float), rcond=None)[0]
-    return {"margin_sd": float((train["margin"] - train["pred_margin"]).std()),
-            "home_margin": float(train["margin"].to_numpy()[site == 1].mean()),
-            "elo_per_point": float(b[0]), "elo_home": float(b[1])}
-
-
-def add_baselines(d: pd.DataFrame, fx: dict) -> pd.DataFrame:
-    site = (~d["neutral"]).to_numpy(float)
-    return d.assign(home_margin=fx["home_margin"] * site,
-                    elo_margin=fx["elo_per_point"] * d["elo_diff"].fillna(0.0).to_numpy() + fx["elo_home"] * site)
 
 
 def select(tune_f: pd.DataFrame) -> dict:
@@ -145,13 +111,6 @@ def select(tune_f: pd.DataFrame) -> dict:
     k = errors(kept)
     res["kept_set"] = {"mae": float(k.mean()), "minus_ratings": by_date_diff(tune_f, k, base)}
     return res
-
-
-def closing(loader, seasons: list[int]) -> pd.DataFrame:
-    """The closing spread and total per game, averaged over providers, from the home side. Aggregate scoring only."""
-    ln = pd.concat([loader.load(f"cbb_lines_{s}", AS_OF, columns=["gameId", "spread", "overUnder"]) for s in seasons])
-    ln = ln.groupby("gameId", as_index=False)[["spread", "overUnder"]].mean()
-    return pd.DataFrame({"game_id": ln["gameId"].astype("int64"), "close_margin": -ln["spread"], "close_total": ln["overUnder"]})
 
 
 def score(d: pd.DataFrame) -> dict:
@@ -192,7 +151,7 @@ def develop(loader, g: pd.DataFrame, params: M.Params, kept: list[str]) -> tuple
         fits[str(t)] = {**fx, "returning_mean": ret_mean, "second_stage": dict(zip(["intercept", *cols], map(float, beta), strict=True)),
                         "fit_on": sorted(int(s) for s in train["season"].unique()), "games_fit_on": int(len(train))}
         assert test["game_id"].tolist() == xte["game_id"].tolist()
-    d = pd.concat(frames, ignore_index=True).merge(closing(loader, DEV), on="game_id", how="left")
+    d = pd.concat(frames, ignore_index=True).merge(closing(loader, DEV, AS_OF), on="game_id", how="left")
     d["month"], d["game_type"] = d["date"].dt.strftime("%b"), M.game_type(d)
     rep = {"fits": fits, "pooled": score(d), "by_season": {str(s): score(x) for s, x in d.groupby("season")}}
     for seg in ("month", "game_type"):

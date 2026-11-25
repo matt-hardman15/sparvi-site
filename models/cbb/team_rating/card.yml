@@ -1,0 +1,138 @@
+# Model card (PLAN-scout A2). Change `code` files only with a new version: python -m sparvi.registry --help
+name: cbb_team_rating
+title: College basketball team rating
+sport: cbb
+status: champion
+version: 1.0.0
+owner: Matt
+spec: 'Each Division I team''s offense, defense and tempo, fit by ridge regression on the season''s games before
+  the forecast date with a prior from last season, refit for every game date. A game forecast: margin, total and
+  home win probability. A second stage adjusts the margin for three-point luck, availability, continuity and form.
+  The net rating is offense plus defense: points per 100 possessions against an average Division I team.'
+target: Home margin of a game between two Division I teams (also its total and the home team's chance to win)
+method: 'Ratings: efficiency (points per 100 possessions) = league mean + offense - opposing defense + home court
+  (none on a neutral court); tempo = league mean + the two teams'' tempos. Ridge toward a prior with the weight
+  of 5 games; the prior is last season''s final rating (carry-over 1.0), league average for a team with no last
+  season; no recency weighting. Second stage: least squares of the ratings'' margin error on four feature groups,
+  each the home team''s value less the away team''s and each from games before the forecast date, fit on the forecast
+  seasons before the one forecast. Win probability: a normal distribution around the margin, its spread measured
+  on those seasons. Deterministic (closed form).'
+code:
+- cbb/ratings/model.py
+- cbb/ratings/features.py
+- cbb/ratings/scoring.py
+training_data:
+- data/raw/cbb/games_202[1-5].parquet
+- data/raw/cbb/team_games_202[1-5].parquet
+- data/raw/cbb/player_games_202[1-5].parquet
+artifacts: []
+validation:
+  file: cbb/ratings/output/development.json
+  metrics:
+    margin_mae: development.pooled.margin_mae.second_stage
+    margin_mae_ratings_only: development.pooled.margin_mae.ratings
+    margin_mae_elo: development.pooled.margin_mae.elo
+    total_mae: development.pooled.total_mae.model
+    log_loss: development.pooled.win.second_stage.log_loss
+    calibration_error: development.pooled.win.second_stage.ece
+eval:
+  set: 'Development seasons 2024 and 2025, walk-forward: each season forecast one game date at a time, with everything
+    fit on other seasons taken from the forecast seasons before it. Settings and feature groups were chosen on 2022
+    and 2023. These two seasons had been scored before (by an earlier prototype), so they are development seasons,
+    not a test: the test is the registered backtest on 2026.'
+  set_keys:
+    seasons: seasons.develop
+    games: development.pooled.games
+  primary: margin_mae
+  higher_is_better: false
+live_window:
+  unit: game dates in season
+  min: 30
+published_in: []
+limits: 'No injuries beyond who played in the last game, no lineups, no travel, no coaching changes. Early in a
+  season the ratings lean on last season. A game counts only when both teams are in a Division I conference, the
+  score is final and possessions are recorded (the source''s older box scores are partial: 2021 and 2022). Betting
+  lines are never an input.'
+backtest:
+  preregistered_at: '2026-11-25'
+  module: models/cbb/team_rating/backtest.py
+  target: Home margin (points) of every counted game of the test season
+  decision_dates: Each game's own date. The fold's decision date is the end of the season (May 1), because forecasts
+    are made throughout it; each forecast uses that season's games strictly before its date (the US game day). What
+    is fit on other seasons (the margin's spread, the baselines' fits, the second stage's weights) is read as of
+    October 31 before the season starts.
+  splits:
+    type: walk_forward
+    first_test: 2026
+    last_test: 2026
+    train_window: null
+    first_train: 2021
+    predictor_lag: 0
+    train_until: -1:10-31
+    decision: 05-01
+    resolve: 05-01
+    fast_folds: 1
+  seasons: '2021 only seeds 2022''s prior (a short season). 2022 and 2023 chose the settings and the feature groups.
+    2024 and 2025 are development seasons: scored here once, walk-forward, and scored before by an earlier prototype.
+    2026 is the test: no development run can load it (cbb/ratings/develop.py DevLoader; tests/test_cbb_model.py),
+    and it was not read in any form before this block ran. 2027 is being played.'
+  rows: Every game of the test season between two teams in a Division I conference with a final score and possessions
+    recorded for both teams.
+  group_by: 'none: a game forecast; the rows are games'
+  block: date
+  segment: game_type
+  baselines:
+  - elo
+  - home
+  - prior
+  - ratings
+  baseline_definitions:
+    elo: 'the source''s pre-game Elo: a line fit of margin on the Elo difference and home court, on the forecast
+      seasons before the test season'
+    home: the home team by the average home margin of those seasons (zero on a neutral court)
+    prior: last season's final ratings, never updated during the season
+    ratings: the first stage alone, without the second stage (reported, not part of the gate)
+  primary_metric: mae
+  bootstrap: 2000
+  seed: 7
+  pass_gate:
+    beats_baseline:
+    - elo
+    - home
+    - prior
+    min_skill: 0.0
+    ci_excludes_zero: true
+  gate_decided: 'Matt, 2026-11-25: strict against all three baselines. The margin''s mean absolute error must be
+    below home court, last season''s ratings and the source''s Elo, each with the 90% interval of the difference
+    (resampled by game date) below zero. The edge over the ratings alone is reported, not gated. The gate statistic
+    on the development seasons (cbb/ratings/output/development.json; 2024 and 2025, 11,281 games): against Elo -0.71
+    points (-0.83 to -0.60), against last season''s ratings -1.18 (-1.27 to -1.09), against home court -2.33 (-2.48
+    to -2.18); each also clear of zero in each season alone. Every candidate gate passed there, so the choice was
+    not made to pass.'
+  secondary: 'Reported, not gating (the module''s `secondary`): mean absolute error of the total; log loss, accuracy
+    and calibration of the home win probability; margin error by month; and by game type through `segment` (non-conference,
+    conference, conference tournament, national postseason). The closing line''s error is an aggregate benchmark
+    on the games that have one: never an input, never per game.'
+  too_good: 8.0
+  too_good_note: The closing line's error on the development seasons was 8.8 points. A margin error below 8.0 would
+    mean a leak, not a better model.
+  not_applicable:
+    label_permutation: 'A rating model: its forecasts for the test season come from that season''s own results through
+      the walk-forward, not from labels learned on the training seasons, so shuffling the training seasons'' outcomes
+      leaves it predictive. The check that it reads no later game is the scramble test (tests/test_cbb_model.py:
+      forecasts and features for a date do not change when every later game is changed).'
+  known_hindsight: 'Seasons before 2026-11-24 come from the source as it stands now, not as it stood then (revision_safe:
+    false). The inputs are final scores, box-score counts and minutes, which are rarely revised. The source''s pre-game
+    Elo (a baseline, not an input) is read as stored today.'
+  reproduction: Deterministic (closed-form ridge and least squares). Official runs happen in CI.
+  vault:
+    seasons: []
+    note: 'No sealed season: 2026 is the registered test and 2027 is being played. Live forecasts for 2027 go to
+      the ledger when the daily job exists.'
+    accesses: 0
+experimental: 'this version has no passing backtest on record. Shown in two cases. Until the backtest workflow has
+  run its registered test (season 2026) on main: the block was registered on Nov 25 2026. Or the latest run didn''t
+  clear the gate, which asks for a lower margin error than home court, last season''s ratings and the source''s
+  Elo, each with a 90% interval below zero'
+challengers: []
+history: []
