@@ -679,6 +679,27 @@ def act_status(p):
     assert "Decision" in p.locator("#status-cfb").text_content()
 
 
+def act_cfb_matchup(p):
+    """CFB-MATCHUP: the page's margin and win chance are the Python forecast's for the same teams and site."""
+    import json
+
+    from cfb.adjusted_ratings.matchup import expected
+    meta = json.loads((ROOT / "site/data/cfb/meta.json").read_text(encoding="utf-8"))
+    wk = json.loads((ROOT / f"site/data/cfb/team_week_{meta['season']}.json").read_text(encoding="utf-8"))
+    power = {t["id"]: {"power": t["series"]["no_gt"]["power"][-1]} for t in wk["teams"]}
+    assert query(p) == {} and "neutral site" in p.text_content("#line")
+    p.select_option("#c select >> nth=0", "ohio-state"); p.select_option("#c select >> nth=1", "michigan")
+    for site, label in (("a", "At Ohio State"), ("b", "At Michigan"), ("n", "Neutral site")):
+        seg(p, "#c", label)
+        x = expected(power["Ohio State"], power["Michigan"], site, meta["power_model"])
+        fav = "Ohio State" if x["margin"] >= 0 else "Michigan"
+        assert p.text_content("#score") == f"{fav} by {abs(x['margin']):.1f}", (site, p.text_content("#score"), x)
+        assert f"Ohio State wins {100 * x['p_a']:.0f}%" in p.text_content("#line")
+    assert query(p)["a"] == "ohio-state" and query(p)["b"] == "michigan" and p.locator("#bars svg rect").count() >= 2
+    assert p.locator("#t a[href*='/cfb/teams/']").count() == 2
+    p.select_option("#c select >> nth=1", "ohio-state"); assert "two different teams" in p.text_content("#result")
+
+
 def act_cfb_ratings(p):
     assert rows(p, "#t") == 25 and "#" in p.text_content("#t thead")
     assert p.locator("#scatter svg circle").count() >= 100
@@ -879,6 +900,7 @@ PAGES = [
     ("cfb-teams-index", "/cfb/teams/", act_cfb_teams_index),
     ("cfb-team-former", "/cfb/teams/idaho/", act_cfb_former_team),
     ("cfb-team-ratings", "/cfb/tools/team-ratings.html", act_cfb_ratings),
+    ("cfb-matchup", "/cfb/tools/matchup.html", act_cfb_matchup),
     ("cfb-portal", "/cfb/tools/portal-board.html", act_cfb_portal),
     ("cfb-portal-coming-window", "/cfb/tools/portal-board.html?win=2027", act_cfb_portal_coming),
     ("cfb-ranked-vs-good", "/cfb/ranked-vs-good/", act_cfb_article),

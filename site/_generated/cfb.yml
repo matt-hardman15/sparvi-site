@@ -94,6 +94,7 @@ cfb:
   lc_win_n: "456"
   lc_win_rise: "0.7"
   min_week: "4"
+  mu_sd: "15.8"
   pl_ap_right: "75.5%"
   pl_disagree_ci: "51% to 62%"
   pl_disagree_right: "57%"

@@ -181,6 +181,9 @@ meta = {
     "defs": {"explosive_pass_yds": DBT_VARS["explosive_pass_yds"], "explosive_run_yds": DBT_VARS["explosive_run_yds"],
              "garbage_margin": {str(k): v for k, v in CFB_GARBAGE_MARGIN.items()}},
     "power_model": {**{k: pm[k] for k in ("home_points", "points_per_net_epa", "points_per_elo")},
+                    # The spread of next-week margins around the power rating's forecast in its backtest: what the matchup
+                    # tool's range and win chance use (cfb/adjusted_ratings/matchup.py).
+                    "margin_sd": round(bt["power"]["rmse"], 2),
                     "components": pm.get("components", {})},
     "poll_week": poll_week,
 }
@@ -219,7 +222,7 @@ N = {
     **{f"wt_mae_{k}": f2(wt[k]["mae"]) for k in ("ours", "wepa", "sp_plus", "elo_pregame", "ours_plus_wepa", "home_only")},
     "wt_ours_vs_wepa": f2(-wt["ours_minus_wepa_mae"]),
     "wt_ours_vs_wepa_ci": f"{-wt['ours_minus_wepa_mae_ci90'][1]:.2f} to {-wt['ours_minus_wepa_mae_ci90'][0]:.2f}",
-    "pm_home": f"{pm['home_points']:.1f}",
+    "pm_home": f"{pm['home_points']:.1f}", "mu_sd": f"{bt['power']['rmse']:.1f}",
     # The blend's fitted weights, as printed on the tool and in the methods text.
     "pm_net": f"{pm['points_per_net_epa']:.1f}", "pm_elo": f"{pm['points_per_elo']:.4f}",
     "pm_net_tenth": f"{0.1 * pm['points_per_net_epa']:.1f}", "pm_elo_100": f"{100 * pm['points_per_elo']:.1f}",
