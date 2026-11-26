@@ -404,4 +404,16 @@ if not (bt_wp["passed"] and bt_cv["passed"] and bt_pt["passed"]) or bt_fg["passe
 if not bt_fg["evaluation"]["point"] < 0.026:
     raise StaleProse("Fourth downs: 'the field-goal model replaced a first version that missed by more' no longer holds.")
 
+# ---- Matchup tool (NFL-MATCHUP; nfl/team_efficiency/matchup.py writes its inputs) -------------------------------
+from nfl.team_efficiency import matchup as MU  # noqa: E402
+
+mu_data, mu_numbers = MU.site_data(json.loads((TE / "matchup.json").read_text(encoding="utf-8")),
+                                   json.loads((OUT / "teams.json").read_text(encoding="utf-8")))
+if mu_data["through_week"] != meta["last_week"]:
+    raise SchemaError(f"matchup.json is through week {mu_data['through_week']}, the site through week {meta['last_week']}: "
+                      "run nfl/team_efficiency/matchup.py after adjusted.py")
+if not mu_data["line"]["points_per_net"] > 0 or not 0 < mu_data["line"]["home_points"] < 5:
+    raise StaleProse("NFL matchup tool: 'a better rating and home field both add to the expected margin' no longer holds.")
+write_json(OUT / "matchup.json", mu_data)
+N.update(mu_numbers)
 write_numbers("nfl", N, "nfl/export_site_data.py")

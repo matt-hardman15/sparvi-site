@@ -599,6 +599,26 @@ def act_nfl_efficiency(p):
     assert "/nfl/teams/" in p.url and "season=2020" in p.url
 
 
+def act_nfl_matchup(p):
+    """NFL-MATCHUP: the page's margin and win chance are the Python forecast's for the same teams and site."""
+    import json
+
+    from nfl.team_efficiency.matchup import expected
+    d = json.loads((ROOT / "site/data/nfl/matchup.json").read_text(encoding="utf-8"))
+    teams = {t["id"]: t for t in d["teams"]}
+    assert query(p) == {} and "neutral site" in p.text_content("#line")
+    p.select_option("#c select >> nth=0", "KC"); p.select_option("#c select >> nth=1", "BUF")
+    for site, label in (("a", "At Kansas City Chiefs"), ("b", "At Buffalo Bills"), ("n", "Neutral site")):
+        seg(p, "#c", label)
+        x = expected(teams["KC"], teams["BUF"], site, d["line"])
+        fav = "Kansas City Chiefs" if x["margin"] >= 0 else "Buffalo Bills"
+        assert p.text_content("#score") == f"{fav} by {abs(x['margin']):.1f}", (site, p.text_content("#score"), x)
+        assert f"Kansas City Chiefs wins {100 * x['p_a']:.0f}%" in p.text_content("#line")
+    assert query(p)["a"] == "KC" and query(p)["b"] == "BUF" and p.locator("#bars svg rect").count() >= 2
+    assert p.locator("#t a[href*='/nfl/teams/']").count() == 2
+    p.select_option("#c select >> nth=1", "KC"); assert "two different teams" in p.text_content("#result")
+
+
 def act_nfl_team(p):
     assert p.locator("#team-static").count() == 0, "the plain-HTML block should give way to the charts"
     assert "Through week" in p.text_content(".page-summary") and p.locator("a[href$='nfl/teams/']").count() >= 1
@@ -851,6 +871,7 @@ PAGES = [
     ("nfl-offense-or-defense", "/nfl/offense-or-defense/", act_nfl_offense_defense),
     ("nfl-fourth-downs", "/nfl/fourth-downs/", act_nfl_fourth_downs),
     ("nfl-team-efficiency", "/nfl/tools/team-efficiency.html", act_nfl_efficiency),
+    ("nfl-matchup", "/nfl/tools/matchup.html", act_nfl_matchup),
     ("nfl-team", "/nfl/teams/kc/", act_nfl_team),
     ("nfl-teams-index", "/nfl/teams/", act_nfl_teams_index),
     ("cfb", "/cfb/", act_cfb_index),
