@@ -8,13 +8,19 @@ name: cbb
 #      requires. A failure here leaves part 1 done.
 #   3. This morning's ratings for the site (CBB-PAGES-1, cbb/export_site_data.py), committed after the plausibility
 #      suite passes. That push runs deploy.yml.
-# The run is at 11:40 UTC, hours before the day's first tip-off; a forecast is only written for a game not yet started.
+# Runs are scheduled for 08:10 and 13:10 UTC (see the note at the schedule); a forecast is only written for a game not yet started.
 # About a dozen API calls a run, from the quota shared with college football; the pull stops at the reserve in
 # sparvi.toml [cbb]. Raw data stays private (the Actions cache and the R2 bucket), per the source's terms.
 
 on:
   schedule:
-    - cron: "40 11 * 1-4,11-12 *"   # daily Nov-Apr, after the night's games and the source's overnight updates
+    # Nov-Apr, twice a morning. GitHub does not start schedules on time: the old 11:40 UTC run started between 18:11 and
+    # 22:54 UTC on Nov 21-25 2026 (6.5 to 11 hours late), after many tip-offs. 08:10 UTC is after the night's last games
+    # are final; 13:10 UTC is a second chance before the afternoon games if the first is late. The second run costs the
+    # same API calls again and writes nothing twice (a game already in the ledger is skipped; ratings are rewritten only
+    # if they changed). A forecast is never written for a game that has started, whenever a run happens.
+    - cron: "10 8 * 1-4,11-12 *"
+    - cron: "10 13 * 1-4,11-12 *"
   workflow_dispatch:
 
 permissions:
