@@ -1,12 +1,12 @@
 {
  "season": 2027,
  "season_label": "2026–27",
- "through": "2026-11-24",
+ "through": "2026-11-25",
  "teams": 365,
- "games": 1051,
- "league_efficiency": 107.2,
- "league_tempo": 69.0,
- "home_court_points": 3.3,
+ "games": 1109,
+ "league_efficiency": 107.3,
+ "league_tempo": 68.9,
+ "home_court_points": 3.2,
  "conferences": [
   "A-10",
   "ACC",
@@ -42,15 +42,15 @@
   "WCC"
  ],
  "matchup": {
-  "efficiency": 107.245,
-  "tempo": 68.962,
-  "home_court": 2.374,
+  "efficiency": 107.266,
+  "tempo": 68.887,
+  "home_court": 2.303,
   "margin_sd": 11.51
  },
  "model": {
   "model": "cbb_team_rating",
   "version": "1.0.0",
   "label": "College basketball team rating v1.0.0",
-  "state": "experimental"
+  "state": "validated"
  }
 }

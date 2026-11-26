@@ -39,13 +39,13 @@
    "tool": "Basketball team ratings",
    "name": "No team is implausibly far from average",
    "ok": true,
-   "detail": "largest net 45.8"
+   "detail": "largest net 45.9"
   },
   {
    "tool": "Basketball team ratings",
    "name": "Every team's tempo is between 55 and 82 possessions",
    "ok": true,
-   "detail": "league 69.0"
+   "detail": "league 68.9"
   },
   {
    "tool": "Basketball team ratings",
@@ -81,25 +81,25 @@
    "tool": "Basketball matchup tool",
    "name": "The league terms are basketball-sized (efficiency 90 to 120, tempo 60 to 76, margin spread 7 to 16)",
    "ok": true,
-   "detail": "{'efficiency': 107.245, 'tempo': 68.962, 'home_court': 2.374, 'margin_sd': 11.51}"
+   "detail": "{'efficiency': 107.266, 'tempo': 68.887, 'home_court': 2.303, 'margin_sd': 11.51}"
   },
   {
    "tool": "Basketball matchup tool",
    "name": "The top team is expected to beat a middle team on a neutral court, by a basketball score",
    "ok": true,
-   "detail": "Illinois 95, Bradley 61"
+   "detail": "Illinois 97, Missouri State 63"
   },
   {
    "tool": "Basketball team ratings",
    "name": "Home court is worth between 1 and 6 points",
    "ok": true,
-   "detail": "points 3.3 (allowed 1 to 6)"
+   "detail": "points 3.2 (allowed 1 to 6)"
   },
   {
    "tool": "Basketball team ratings",
    "name": "The model's version and state are published",
    "ok": true,
-   "detail": "experimental"
+   "detail": "validated"
   }
  ]
 }

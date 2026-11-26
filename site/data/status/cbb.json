@@ -2,20 +2,20 @@
  "sport": "cbb",
  "ok": true,
  "data_through": {
-  "last_final_game": "2026-11-25"
+  "last_final_game": "2026-11-26"
  },
  "n_checks": 70,
  "n_failed": 0,
  "rows": {
-  "games_2027": 1630,
-  "lines_2027": 2120,
-  "player_games_2027": 31294,
+  "games_2027": 6058,
+  "lines_2027": 2146,
+  "player_games_2027": 32363,
   "rankings_2027": 316,
   "ratings_adjusted_2027": 365,
   "ratings_elo_2027": 365,
   "ratings_srs_2027": 365,
   "roster_2027": 5583,
-  "team_games_2027": 2766,
+  "team_games_2027": 2850,
   "teams_2027": 365
  },
  "checks": [
@@ -27,7 +27,7 @@
   {
    "name": "teams_2027: row count",
    "ok": true,
-   "detail": "365 rows (last accepted 365)"
+   "detail": "365 rows"
   },
   {
    "name": "teams_2027: one row per id",
@@ -57,7 +57,7 @@
   {
    "name": "games_2027: row count",
    "ok": true,
-   "detail": "1,630 rows (last accepted 1,598)"
+   "detail": "6,058 rows"
   },
   {
    "name": "games_2027: one row per id",
@@ -97,7 +97,7 @@
   {
    "name": "team_games_2027: row count",
    "ok": true,
-   "detail": "2,766 rows (last accepted 2,134)"
+   "detail": "2,850 rows"
   },
   {
    "name": "team_games_2027: one row per gameId + teamId",
@@ -122,7 +122,7 @@
   {
    "name": "team_games_2027: teamStats_possessions missing",
    "ok": true,
-   "detail": "0.51% (limit 2%)"
+   "detail": "0.49% (limit 2%)"
   },
   {
    "name": "player_games_2027: columns and types",
@@ -132,7 +132,7 @@
   {
    "name": "player_games_2027: row count",
    "ok": true,
-   "detail": "31,294 rows (last accepted 24,583)"
+   "detail": "32,363 rows"
   },
   {
    "name": "player_games_2027: one row per gameId + teamId + player_athleteId",
@@ -167,7 +167,7 @@
   {
    "name": "lines_2027: row count",
    "ok": true,
-   "detail": "2,120 rows (last accepted 1,623)"
+   "detail": "2,146 rows"
   },
   {
    "name": "lines_2027: one row per gameId + provider",
@@ -192,7 +192,7 @@
   {
    "name": "rankings_2027: row count",
    "ok": true,
-   "detail": "316 rows (last accepted 243)"
+   "detail": "316 rows"
   },
   {
    "name": "rankings_2027: one row per season + seasonType + week + pollType + teamId",
@@ -222,7 +222,7 @@
   {
    "name": "ratings_adjusted_2027: row count",
    "ok": true,
-   "detail": "365 rows (last accepted 365)"
+   "detail": "365 rows"
   },
   {
    "name": "ratings_adjusted_2027: one row per teamId",
@@ -247,7 +247,7 @@
   {
    "name": "ratings_srs_2027: row count",
    "ok": true,
-   "detail": "365 rows (last accepted 365)"
+   "detail": "365 rows"
   },
   {
    "name": "ratings_srs_2027: one row per teamId",
@@ -272,7 +272,7 @@
   {
    "name": "ratings_elo_2027: row count",
    "ok": true,
-   "detail": "365 rows (last accepted 365)"
+   "detail": "365 rows"
   },
   {
    "name": "ratings_elo_2027: one row per teamId",
@@ -297,7 +297,7 @@
   {
    "name": "roster_2027: row count",
    "ok": true,
-   "detail": "5,583 rows (last accepted 5,583)"
+   "detail": "5,583 rows"
   },
   {
    "name": "roster_2027: one row per teamId + player_id",
@@ -322,32 +322,32 @@
   {
    "name": "games: every final game has both scores",
    "ok": true,
-   "detail": "1,385 final games"
+   "detail": "1,427 final games"
   },
   {
    "name": "games: none left unplayed days after its date",
    "ok": true,
-   "detail": "1 of 1,174 still scheduled or in progress more than 3 days after tip-off (limit 1%)"
+   "detail": "1 of 1,223 still scheduled or in progress more than 3 days after tip-off (limit 1%)"
   },
   {
    "name": "games: the newest final game is recent",
    "ok": true,
-   "detail": "last final game 2026-11-25"
+   "detail": "last final game 2026-11-26"
   },
   {
    "name": "team_games: both sides' box scores for final games",
    "ok": true,
-   "detail": "1,217 of 1,218 (99.9%; bar 98%)"
+   "detail": "1,244 of 1,245 (99.9%; bar 98%)"
   },
   {
    "name": "player_games: a player box score for final games",
    "ok": true,
-   "detail": "1,215 of 1,218 (99.8%; bar 97%)"
+   "detail": "1,242 of 1,245 (99.8%; bar 97%)"
   },
   {
    "name": "team_games: points equal the game's score",
    "ok": true,
-   "detail": "2,766 of 2,766 (100.0%; bar 99%)"
+   "detail": "2,850 of 2,850 (100.0%; bar 99%)"
   },
   {
    "name": "ratings_adjusted: covers the Division I teams",
