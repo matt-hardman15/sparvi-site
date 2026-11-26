@@ -344,6 +344,9 @@
   // CFB team pages: /cfb/teams/<slug>/, one per team in /data/cfb/teams.json (t = that file's entry).
   S.cfbTeamHref = (t, qs = "") => `/cfb/teams/${t.slug}/${qs ? "?" + qs : ""}`;
   S.cfbTeamLink = (t, label, qs = "") => (t ? `<a href="${S.cfbTeamHref(t, qs)}">${label ?? t.name}</a>` : (label ?? ""));
+  // College basketball team pages: /cbb/teams/<slug>/, one per team in /data/cbb/teams.json.
+  S.cbbTeamHref = (slug) => `/cbb/teams/${slug}/`;
+  S.cbbTeamLink = (slug, label) => (slug ? `<a href="${S.cbbTeamHref(slug)}">${label}</a>` : label);
   // Rank percentile (0-100) of each row's value within rows, higher = better unless lowerBetter.
   S.rankPct = (rows, key, lowerBetter = false) => {
     const v = rows.map((r) => r[key]).filter((x) => x != null).sort(d3.ascending), n = v.length;

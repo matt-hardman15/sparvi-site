@@ -33,6 +33,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import baseball_teams as bt  # noqa: E402
+import cbb_teams as ct  # noqa: E402
 import jsonld  # noqa: E402
 import summarize as sm  # noqa: E402
 
@@ -46,7 +47,7 @@ BASE = "https://sparvi.io/"
 PREFIX = "baseball/players/"
 SHELL = OUT / PREFIX / "template" / "index.html"
 CODE = ["site/baseball/players/template/index.qmd", "site/assets/js/player.js", "site/build/summarize.py",
-        "site/build/player_pages.py", "site/build/baseball_teams.py"]
+        "site/build/player_pages.py", "site/build/baseball_teams.py"]      # cbb_teams.py dates its own pages
 MONTHS = ["Jan.", "Feb.", "March", "April", "May", "June", "July", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."]
 TITLE_BUDGET = 60 - len(" – Sparvi")
 DESC_MIN, DESC_MAX = 120, 155
@@ -160,7 +161,7 @@ def libs(shell: str, team: bool) -> str:
 
 
 def fill(shell: str, title: str, h1: str, desc: str, body_html: str, canonical: str, noindex: bool, head: str = "") -> str:
-    out = libs(shell, team=canonical.startswith(f"{BASE}baseball/teams/"))
+    out = libs(shell, team=canonical.startswith((f"{BASE}baseball/teams/", f"{BASE}{ct.PREFIX}")))
     out = out.replace("ZZTITLEZZ", e(title)).replace("ZZHONEZZ", e(h1)).replace("ZZDESCRIPTIONZZ", e(desc))
     out = out.replace("ZZBODYZZ", body_html)
     head = f'<link rel="canonical" href="{canonical}">' + ('\n<meta name="robots" content="noindex">' if noindex else "") \
@@ -379,6 +380,26 @@ def main() -> int:
         + "".join(f"  <url>\n    <loc>{u}</loc>\n    <lastmod>{d}</lastmod>\n  </url>\n" for u, d in team_entries)
         + "</urlset>\n", encoding="utf-8", newline="\n")
     print(f"player_pages: {len(team_entries)} team pages")
+
+    # College basketball team pages (cbb_teams.py): same shell, their own sitemap.
+    cbb = SITE / "data" / "cbb"
+    if (cbb / "team_games.json").exists():
+        cbb_entries = []
+        bdate = max(x for x in (git_date(["site/data/cbb"]), git_date(["site/build/cbb_teams.py"]), "1970-01-01") if x)
+        for t in ct.build(cbb):
+            u = f"{BASE}{t['path']}/"
+            d = OUT / t["path"]
+            d.mkdir(parents=True, exist_ok=True)
+            (d / "index.html").write_text(fill(shell, t["title"], t["h1"], t["desc"], t["body"], u, noindex=False,
+                                               head=jsonld.script(t["ld"]) if t.get("ld") else ""), encoding="utf-8", newline="\n")
+            og.append({"page": f"{t['path']}/index.html", **t["og"]})
+            cbb_entries.append((u, bdate))
+        cbb_entries.sort()
+        (OUT / "sitemap-cbb-teams.xml").write_text(
+            '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+            + "".join(f"  <url>\n    <loc>{u}</loc>\n    <lastmod>{d}</lastmod>\n  </url>\n" for u, d in cbb_entries)
+            + "</urlset>\n", encoding="utf-8", newline="\n")
+        print(f"player_pages: {len(cbb_entries)} college basketball team pages")
     (OUT / "_og-manifest.json").write_text(json.dumps(og, ensure_ascii=False), encoding="utf-8", newline="\n")
     return 0
 

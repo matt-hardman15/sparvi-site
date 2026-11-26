@@ -56,6 +56,23 @@ def test_ratings_that_do_not_add_up_or_rank_fail(root, tmp_path):
     assert not ok and "Net rating is offense plus defense" in f and "Rank follows the net rating" in f and "One row per Division I team" in f
 
 
+def test_team_pages_that_disagree_with_the_ratings_fail(root, tmp_path):
+    def break_games(d):
+        k = next(k for k, v in d["teams"].items() if sum(g[4] == "final" for g in v) >= 2)
+        final = [g for g in d["teams"][k] if g[4] == "final"]
+        final[0][5], final[0][6] = final[0][6], final[0][5]        # a win becomes a loss: no longer the published record
+        final[1][5] = 400                                          # not a basketball score
+        final[1][1] = -5                                           # an opponent with no page
+    edit(root, "team_games", break_games)
+    edit(root, "ratings", lambda d: d["teams"][3].update(slug=d["teams"][2]["slug"]))
+    ok, results = run(root, tmp_path)
+    f = failed(results)
+    for name in ("Every team has its own page address", "Every team's record is the results listed on its page",
+                 "Every final score is a basketball score (10 to 180 points a side)", "Every linked opponent is a team with a page"):
+        assert name in f, name
+    assert not ok
+
+
 def test_unshrunk_or_shifted_ratings_and_bad_league_terms_fail(root, tmp_path):
     def blow_up(d):
         for t in d["teams"]:

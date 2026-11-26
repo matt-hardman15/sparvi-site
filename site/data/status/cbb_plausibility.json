@@ -1,7 +1,7 @@
 {
  "sport": "cbb",
  "ok": true,
- "n_checks": 10,
+ "n_checks": 14,
  "n_failed": 0,
  "n_not_run": 0,
  "checks": [
@@ -50,6 +50,30 @@
   {
    "tool": "Basketball team ratings",
    "name": "No team has more rated games than games played",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "tool": "Basketball team pages",
+   "name": "Every team has its own page address",
+   "ok": true,
+   "detail": "365 addresses"
+  },
+  {
+   "tool": "Basketball team pages",
+   "name": "Every team's record is the results listed on its page",
+   "ok": true,
+   "detail": "365 teams"
+  },
+  {
+   "tool": "Basketball team pages",
+   "name": "Every final score is a basketball score (10 to 180 points a side)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "tool": "Basketball team pages",
+   "name": "Every linked opponent is a team with a page",
    "ok": true,
    "detail": ""
   },

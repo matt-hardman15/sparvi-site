@@ -10,6 +10,7 @@ from plausibility.common import Suite, sd, wmean
 
 DATA = "site/data/cbb"
 RATINGS = "Basketball team ratings"
+TEAMS = "Basketball team pages"
 
 
 def run(suite: Suite) -> None:
@@ -33,6 +34,19 @@ def run(suite: Suite) -> None:
     suite.check(RATINGS, "Every team's tempo is between 55 and 82 possessions", not off, f"e.g. {off[0]}" if off else f"league {meta['league_tempo']}")
     short = [r["team"] for r in rows if r["w"] + r["l"] < r["games"] or min(r["w"], r["l"], r["games"]) < 0]
     suite.check(RATINGS, "No team has more rated games than games played", not short, f"e.g. {short[0]}" if short else "")
+    games = suite.load(f"{DATA}/team_games.json")["teams"]
+    slugs = [r.get("slug") for r in rows]
+    suite.check(TEAMS, "Every team has its own page address", all(slugs) and len(set(slugs)) == len(slugs), f"{len(set(slugs))} addresses")
+    bad = [r["team"] for r in rows
+           if (r["w"], r["l"]) != (sum(g[4] == "final" and g[5] > g[6] for g in games.get(str(r["id"]), [])),
+                                   sum(g[4] == "final" and g[5] < g[6] for g in games.get(str(r["id"]), [])))]
+    suite.check(TEAMS, "Every team's record is the results listed on its page", not bad, f"e.g. {bad[0]}" if bad else f"{len(rows)} teams")
+    odd = [r["team"] for r in rows for g in games.get(str(r["id"]), [])
+           if g[4] == "final" and not (10 <= min(g[5], g[6]) and max(g[5], g[6]) <= 180)]      # seen through Nov 24 2026: 17 to 143
+    suite.check(TEAMS, "Every final score is a basketball score (10 to 180 points a side)", not odd, f"e.g. {odd[0]}" if odd else "")
+    ids = {r["id"] for r in rows}
+    lost = [r["team"] for r in rows for g in games.get(str(r["id"]), []) if g[1] is not None and g[1] not in ids]
+    suite.check(TEAMS, "Every linked opponent is a team with a page", not lost, f"e.g. {lost[0]}" if lost else "")
     suite.within(RATINGS, "Home court is worth between 1 and 6 points", meta["home_court_points"], 1, 6, ".1f", "points")
     suite.check(RATINGS, "The model's version and state are published", meta.get("model", {}).get("state") in ("validated", "experimental")
                 and bool(meta.get("model", {}).get("version")), str(meta.get("model", {}).get("state")))

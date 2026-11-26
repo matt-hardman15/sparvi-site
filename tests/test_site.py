@@ -255,12 +255,24 @@ def act_cbb_ratings(p):
     """CBB-PAGES-1: every Division I team on the scatter; the conference filter narrows the table, not the axes."""
     n = p.locator("#scatter svg circle").count()
     assert n >= 300 and rows(p, "#t") == 25 and "average Division I team" in p.text_content("#scap")
+    assert p.locator("#t a[href*='/cbb/teams/']").count() == 25
     ticks = p.locator("#scatter svg [aria-label='x-axis tick label'] text").all_text_contents()
     p.select_option("#c select", "Big Ten")
     assert query(p)["conf"] == "Big Ten" and "Big Ten" in p.text_content("#scap") and rows(p, "#t") <= 25
     assert p.locator("#scatter svg circle").count() == n                               # the rest stays, faded
     assert p.locator("#scatter svg [aria-label='x-axis tick label'] text").all_text_contents() == ticks
     assert "experimental" in p.text_content(".note") or "validated" in p.text_content(".note")
+
+
+def act_cbb_teams_index(p):
+    assert p.locator("ul.team-index > li").count() >= 300 and p.locator("ul.team-index a[href*='/cbb/teams/']").count() >= 300
+
+
+def act_cbb_team(p):
+    """CBB-PAGES-1b: a team page is plain HTML: summary, ratings, results, and links to opponents' pages."""
+    assert "Duke" in p.locator("h1").text_content() and "net rating" in p.text_content(".page-summary")
+    assert p.locator("table.s-table").count() >= 2 and p.locator("table.s-table a[href*='/cbb/teams/']").count() >= 3
+    assert p.locator("a[href*='/cbb/tools/team-ratings.html']").count() >= 1 and p.locator("script[src*='plot']").count() == 0
 
 
 def act_learn_hub(p):
@@ -828,6 +840,8 @@ PAGES = [
     ("cfb-coaching-changes", "/cfb/coaching-changes/", act_cfb_carousel),
     ("cbb", "/cbb/", act_cbb_hub),
     ("cbb-team-ratings", "/cbb/tools/team-ratings.html", act_cbb_ratings),
+    ("cbb-teams", "/cbb/teams/", act_cbb_teams_index),
+    ("cbb-team", "/cbb/teams/duke/", act_cbb_team),
     ("learn", "/learn/", act_learn_hub),
     ("learn-stuff-plus", "/learn/stuff-plus/", act_learn_stuff),
     ("learn-swing-decisions", "/learn/swing-decisions/", act_learn_swing),
