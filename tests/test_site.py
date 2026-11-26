@@ -264,6 +264,31 @@ def act_cbb_ratings(p):
     assert "experimental" in p.text_content(".note") or "validated" in p.text_content(".note")
 
 
+def act_cbb_matchup(p):
+    """CBB-MATCHUP: the page's score is the Python forecast's (cbb/ratings/matchup.py) for the same teams and site."""
+    import json
+    import re
+
+    from cbb.ratings.matchup import expected
+    meta = json.loads((ROOT / "site/data/cbb/meta.json").read_text(encoding="utf-8"))
+    teams = {t["slug"]: t for t in json.loads((ROOT / "site/data/cbb/ratings.json").read_text(encoding="utf-8"))["teams"]}
+
+    def shown():
+        m = re.fullmatch(r"(.+) (\d+), (.+) (\d+)", p.text_content("#score"))
+        return m.group(1), int(m.group(2)), m.group(3), int(m.group(4))
+    q = query(p)                                             # defaults: the top two teams on a neutral court, nothing in the URL
+    assert q == {} and "neutral court" in p.text_content("#line")
+    p.select_option("#c select >> nth=0", "duke"); p.select_option("#c select >> nth=1", "uconn")
+    for site, label in (("a", "At Duke"), ("b", "At UConn"), ("n", "Neutral court")):
+        seg(p, "#c", label)
+        x = expected(teams["duke"], teams["uconn"], site, meta["matchup"])
+        a, pa, b, pb = shown()
+        assert (a, b) == ("Duke", "UConn") and (pa, pb) == (round(x["a_pts"]), round(x["b_pts"])), (site, pa, pb, x)
+        assert f"{abs(x['margin']):.1f}" in p.text_content("#line") and f"{100 * x['p_a']:.0f}%" in p.text_content("#line")
+    assert query(p)["a"] == "duke" and query(p)["b"] == "uconn" and p.locator("#bars svg rect").count() >= 2
+    p.select_option("#c select >> nth=1", "duke"); assert "two different teams" in p.text_content("#result")
+
+
 def act_cbb_teams_index(p):
     assert p.locator("ul.team-index > li").count() >= 300 and p.locator("ul.team-index a[href*='/cbb/teams/']").count() >= 300
 
@@ -840,6 +865,7 @@ PAGES = [
     ("cfb-coaching-changes", "/cfb/coaching-changes/", act_cfb_carousel),
     ("cbb", "/cbb/", act_cbb_hub),
     ("cbb-team-ratings", "/cbb/tools/team-ratings.html", act_cbb_ratings),
+    ("cbb-matchup", "/cbb/tools/matchup.html", act_cbb_matchup),
     ("cbb-teams", "/cbb/teams/", act_cbb_teams_index),
     ("cbb-team", "/cbb/teams/duke/", act_cbb_team),
     ("learn", "/learn/", act_learn_hub),

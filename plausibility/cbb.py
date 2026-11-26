@@ -11,6 +11,7 @@ from plausibility.common import Suite, sd, wmean
 DATA = "site/data/cbb"
 RATINGS = "Basketball team ratings"
 TEAMS = "Basketball team pages"
+MATCHUP = "Basketball matchup tool"
 
 
 def run(suite: Suite) -> None:
@@ -47,6 +48,17 @@ def run(suite: Suite) -> None:
     ids = {r["id"] for r in rows}
     lost = [r["team"] for r in rows for g in games.get(str(r["id"]), []) if g[1] is not None and g[1] not in ids]
     suite.check(TEAMS, "Every linked opponent is a team with a page", not lost, f"e.g. {lost[0]}" if lost else "")
+    mu = meta.get("matchup") or {}
+    ok = all(k in mu for k in ("efficiency", "tempo", "home_court", "margin_sd")) and 90 <= mu["efficiency"] <= 120 \
+        and 60 <= mu["tempo"] <= 76 and 7 <= mu["margin_sd"] <= 16
+    suite.check(MATCHUP, "The league terms are basketball-sized (efficiency 90 to 120, tempo 60 to 76, margin spread 7 to 16)", ok, str(mu))
+    if ok:
+        a, b = rows[0], rows[len(rows) // 2]
+        poss = a["tempo"] + b["tempo"] - mu["tempo"]
+        pa = poss * (mu["efficiency"] + a["off"] - b["def"]) / 100
+        pb = poss * (mu["efficiency"] + b["off"] - a["def"]) / 100
+        suite.check(MATCHUP, "The top team is expected to beat a middle team on a neutral court, by a basketball score",
+                    pa > pb and 40 <= pb <= pa <= 130, f"{a['team']} {pa:.0f}, {b['team']} {pb:.0f}")
     suite.within(RATINGS, "Home court is worth between 1 and 6 points", meta["home_court_points"], 1, 6, ".1f", "points")
     suite.check(RATINGS, "The model's version and state are published", meta.get("model", {}).get("state") in ("validated", "experimental")
                 and bool(meta.get("model", {}).get("version")), str(meta.get("model", {}).get("state")))

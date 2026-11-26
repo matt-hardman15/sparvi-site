@@ -1,0 +1,113 @@
+---
+title: "College basketball matchup tool"
+pagetitle: "College basketball matchup: expected score"
+description: "Pick any two Division I men's teams and a home, away or neutral court to see the score, margin and win chance today's team ratings expect."
+page-layout: full
+---
+
+Pick two teams and where they play. The page works out what this morning's [team ratings](/cbb/tools/team-ratings.html) expect: a score, a margin with its 80% range, a total, and each team's chance to win. It is a reading of the ratings, not a prediction of what will happen in one game: a typical game misses the expected margin by about {{< meta cbb.dev_mae_ratings >}} points.
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c"></div>
+  <div id="result" class="matchup"><div class="loading">Loading…</div></div>
+  <div id="bars" class="plot-host"></div>
+  <p class="caption" id="cap"></p>
+  <div id="t"></div>
+  <p class="caption" id="tcap"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt, U = S.urlState;
+  const [D, meta] = await Promise.all([S.load("/data/cbb/ratings.json"), S.load("/data/cbb/meta.json")]);
+  const L = meta.matchup, Z80 = 1.2815515655446004;
+  const teams = D.teams.slice().sort((a, b) => a.team.localeCompare(b.team));
+  const bySlug = new Map(teams.map(t => [t.slug, t]));
+  const top = D.teams[0], second = D.teams[1];
+  const DEF = { a: top.slug, b: second.slug, site: "n" };
+  const st = { a: bySlug.has(U.get("a")) ? U.get("a") : DEF.a, b: bySlug.has(U.get("b")) ? U.get("b") : DEF.b,
+               site: ["a", "b", "n"].includes(U.get("site")) ? U.get("site") : DEF.site };
+  const through = new Date(meta.through + "T12:00:00Z").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
+  const sgn = v => (v > 0 ? "+" : v < 0 ? "−" : "") + f.num(Math.abs(v), 1);
+  // The normal distribution's cumulative probability (Abramowitz and Stegun 7.1.26; error below 2e-7).
+  const erf = x => { const s = Math.sign(x), a = Math.abs(x), t = 1 / (1 + 0.3275911 * a);
+    return s * (1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-a * a)); };
+  // The same arithmetic as cbb/ratings/matchup.py (a test holds the two equal).
+  function expected(a, b, site) {
+    const hc = site === "a" ? 1 : site === "b" ? -1 : 0;
+    const poss = a.tempo + b.tempo - L.tempo;
+    const ea = L.efficiency + a.off - b.def + L.home_court * hc, eb = L.efficiency + b.off - a.def - L.home_court * hc;
+    const pa = poss * ea / 100, pb = poss * eb / 100, margin = pa - pb;
+    return { poss, pa, pb, margin, total: pa + pb, lo: margin - Z80 * L.margin_sd, hi: margin + Z80 * L.margin_sd,
+             p: 0.5 * (1 + erf(margin / (L.margin_sd * Math.SQRT2))) };
+  }
+  const opts = teams.map(t => [t.slug, t.team]);
+  function controls() {
+    const A = bySlug.get(st.a), B = bySlug.get(st.b);
+    document.getElementById("c").replaceChildren(
+      S.select("Team A", opts, st.a, v => { st.a = v; controls(); draw(); }),
+      S.select("Team B", opts, st.b, v => { st.b = v; controls(); draw(); }),
+      S.el("label", {}, "Where", S.seg([["a", `At ${A.team}`], ["n", "Neutral court"], ["b", `At ${B.team}`]], st.site, v => { st.site = v; draw(); })));
+  }
+  let table = null;
+  function draw() {
+    const A = bySlug.get(st.a), B = bySlug.get(st.b), same = A.id === B.id;
+    const x = expected(A, B, st.site);
+    const where = st.site === "n" ? "on a neutral court" : `at ${st.site === "a" ? A.team : B.team}`;
+    const fav = x.margin >= 0 ? A : B, m = Math.abs(x.margin);
+    const res = document.getElementById("result");
+    if (same) {
+      res.replaceChildren(S.el("p", { class: "page-summary" }, "Pick two different teams."));
+      document.getElementById("bars").replaceChildren(); document.getElementById("cap").textContent = "";
+    } else {
+      res.replaceChildren(
+        S.el("p", { class: "matchup-score", id: "score" }, `${A.team} ${f.num(x.pa, 0)}, ${B.team} ${f.num(x.pb, 0)}`),
+        S.el("p", { class: "page-summary", id: "line" },
+          `${fav.team} by ${f.num(m, 1)} ${where}. Total ${f.num(x.total, 1)} points over about ${f.num(x.poss, 0)} possessions. `
+          + `${A.team} wins ${f.num(100 * x.p, 0)}% of the time, ${B.team} ${f.num(100 * (1 - x.p), 0)}%.`));
+      const rows = [{ team: A.team, p: x.p }, { team: B.team, p: 1 - x.p }];
+      S.plot(document.getElementById("bars"), w => Plot.plot({ ...S.plotDefaults(w), height: 120, marginLeft: 150, marginBottom: 40,
+        x: { label: "Chance to win →", domain: [0, 1], tickFormat: v => f.num(100 * v, 0) + "%", grid: true },
+        y: { label: null, domain: rows.map(r => r.team) },
+        marks: [Plot.barX(rows, { y: "team", x: "p", fill: "#0f5257" }), Plot.ruleX([0.5], { stroke: "#16181d", strokeDasharray: "3,3" }),
+                Plot.text(rows, { y: "team", x: "p", text: r => f.num(100 * r.p, 0) + "%", dx: 6, textAnchor: "start", fontWeight: 600 }),
+                Plot.tip(rows, Plot.pointerY({ y: "team", x: "p", title: r => `${r.team}: ${f.num(100 * r.p, 1)}% to win ${where}` }))] }));
+      document.getElementById("cap").textContent = `From the ratings through ${through}. The expected margin is ${A.team} ${sgn(x.margin)}; four games in five like this one should land between ${A.team} ${sgn(x.lo)} and ${A.team} ${sgn(x.hi)}. `
+        + `The dashed line is an even game. Home court is worth ${f.num(meta.home_court_points, 1)} points of margin at an average tempo; switch the site to see it move.`;
+    }
+    const cols = [
+      { key: "team", label: "Team", align: "l", html: r => S.cbbTeamLink(r.slug, r.team), sortVal: r => r.team },
+      { key: "conf", label: "Conference", align: "l" },
+      { key: "w", label: "Record", html: r => `${r.w}–${r.l}`, sortVal: r => r.w - r.l },
+      { key: "net", label: "Net", fmt: sgn, title: "Points per 100 possessions better than an average Division I team" },
+      { key: "off", label: "Offense", fmt: sgn }, { key: "def", label: "Defense", fmt: sgn, title: "Points prevented above average; higher is better" },
+      { key: "tempo", label: "Tempo", fmt: v => f.num(v, 1) }, { key: "rank", label: "Rank", fmt: v => `${v} of ${D.teams.length}` },
+    ];
+    table ||= S.table(document.getElementById("t"), cols, { sortKey: "rank", desc: false, pageSize: 5 });
+    table.update(same ? [A] : [A, B]);
+    document.getElementById("tcap").textContent = `The two teams' ratings, in points per 100 possessions against an average Division I team. The expected score comes from these and from the league's average efficiency (${f.num(L.efficiency, 1)}) and tempo (${f.num(L.tempo, 1)}).`;
+    U.set({ a: st.a, b: st.b, site: st.site }, DEF);
+  }
+  controls(); draw();
+})();
+</script>
+```
+
+::: {.note}
+Model version: [{{< meta models.cbb_team_rating >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/cbb/team_rating/card.yml) ({{< meta models.cbb_team_rating_status >}}).
+:::
+
+<details class="method" id="method">
+<summary>Method and caveats</summary>
+
+**The arithmetic.** Expected possessions are the two teams' tempos together, less one league average ({{< meta cbb.league_tempo >}}). Each team's expected points per 100 possessions are the league average ({{< meta cbb.league_efficiency >}}) plus its offensive rating minus the other team's defensive rating, with home court added for the home team and taken from the visitor. Points are possessions times that efficiency; the margin and total follow.
+
+**The range and the win chance.** Across the earlier seasons the ratings were tested on, actual margins spread around the expected margin with a standard deviation of {{< meta cbb.margin_sd >}} points. The 80% range and the win chance come from a normal distribution with that spread.
+
+**What it is and isn't.** This is the ratings' expectation, the same one the [ratings page](/cbb/tools/team-ratings.html#method) describes and tests. On {{< meta cbb.dev_seasons >}} the ratings alone missed the margin by {{< meta cbb.dev_mae_ratings >}} points on average. Sparvi's recorded forecast for a real game also adjusts for three-point luck, who was available, roster continuity, and recent form, which need a game day and are not in this tool, so the two can differ.
+
+**What it can't tell you.** Who is hurt or suspended, how the teams match up in style, travel, or anything else that isn't in scores and possessions. Early in a season the ratings are mostly last season's. It is not betting advice and uses no betting lines.
+
+Data provided by [CollegeBasketballData.com](https://collegebasketballdata.com). Every team has [its own page](/cbb/teams/).
+
+</details>

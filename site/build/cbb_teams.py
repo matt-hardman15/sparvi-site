@@ -82,6 +82,7 @@ def body(t: dict, games: list, slugs: dict, mates: list[dict], n: int, label: st
     out = [f'<p class="kicker">{e(label)} · {e(t["conf"])}</p>',
            f'<p class="page-summary">{e(summary(t, n, label, through))}</p>',
            '<p class="note"><a href="/cbb/tools/team-ratings.html">All team ratings</a> · <a href="/cbb/teams/">All teams</a> · '
+           '<a href="/cbb/tools/matchup.html?a=' + t["slug"] + '">Match this team up</a> · '
            '<a href="/cbb/tools/team-ratings.html#method">How the ratings work</a></p>',
            "<h2>Ratings</h2>",
            _table(["Measure", "", "Rating", "Rank"],

@@ -26,6 +26,7 @@ from backtest.asof import Loader
 from backtest.gate import require_passing
 from cbb.ratings import daily as D
 from cbb.ratings import model as M
+from cbb.ratings import scoring as S
 from sparvi import registry
 from sparvi.config import RAW, ROOT, cbb
 from sparvi.io import SchemaError, StaleProse, write_json, write_numbers
@@ -86,6 +87,13 @@ def team_games(loader, season: int, as_of, teams: pd.DataFrame, on: pd.Timestamp
     return out
 
 
+def margin_sd(loader, earlier: list[int], season: int) -> float:
+    """The spread of the ratings' margin error on the forecast seasons before this one (the first only seeds a prior):
+    what the win probability and the 80% interval of a ratings-only forecast use."""
+    g = M.load_games(loader, earlier, pd.Timestamp(f"{season - 1}-10-31"))
+    return S.fixed_from(M.walk(g, earlier[1:], M.PUBLISHED))["margin_sd"]
+
+
 def build(loader, on: pd.Timestamp, season: int, earlier: list[int]) -> tuple[dict, dict]:
     """(ratings.json, meta.json without the model stamp) for the morning of game day `on`."""
     as_of = on + pd.Timedelta(days=2)
@@ -107,7 +115,10 @@ def build(loader, on: pd.Timestamp, season: int, earlier: list[int]) -> tuple[di
             "teams": len(rows), "games": league["games"], "league_efficiency": round(league["mu"], 1), "league_tempo": round(poss, 1),
             # Home court in the ratings is per 100 possessions and applies to both offenses: in points of margin at league tempo.
             "home_court_points": round(2 * league["hca"] * poss / 100, 1),
-            "conferences": sorted({x["conf"] for x in rows})}
+            "conferences": sorted({x["conf"] for x in rows}),
+            # The league terms the matchup page needs, unrounded enough to redo the forecast (cbb/ratings/matchup.py).
+            "matchup": {"efficiency": round(league["mu"], 3), "tempo": round(poss, 3), "home_court": round(league["hca"], 3),
+                        "margin_sd": round(margin_sd(loader, earlier, season), 2)}}
     return {"season": season, "through": meta["through"], "teams": rows}, meta
 
 
@@ -138,7 +149,7 @@ def main() -> None:
         "season": str(cfg.season), "season_label": meta["season_label"], "through": f"{through:%B} {through.day}, {through.year}",
         "n_teams": str(meta["teams"]), "n_games": f"{meta['games']:,}", "home_court": n1(meta["home_court_points"]),
         "league_efficiency": n1(meta["league_efficiency"]), "league_tempo": n1(meta["league_tempo"]),
-        "top_team": top["team"], "top_net": f"{top['net']:+.1f}".replace("-", "−"),
+        "margin_sd": n1(meta["matchup"]["margin_sd"]), "top_team": top["team"], "top_net": f"{top['net']:+.1f}".replace("-", "−"),
         "prior_games": f"{M.PUBLISHED.prior_weight:.0f}",
         "dev_seasons": " and ".join(str(s) for s in dev["seasons"]["develop"]), "dev_games": f"{p['games']:,}",
         "dev_mae": n1(p["margin_mae"]["second_stage"]), "dev_mae_ratings": n1(p["margin_mae"]["ratings"]),
