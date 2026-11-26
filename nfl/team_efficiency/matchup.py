@@ -41,6 +41,16 @@ def expected(a: dict, b: dict, site: str, line: dict) -> dict:
             "p_a": 0.5 * (1 + math.erf(margin / (sd * math.sqrt(2))))}
 
 
+def last_week() -> int:
+    """The latest week of the current season with a finished game: the export's own definition of the site's week
+    (nfl/export_site_data.py `last_week`), so the tool and the other NFL pages are always through the same week."""
+    import duckdb
+    con = duckdb.connect(str(A.DB), read_only=True)
+    w = con.sql(f"select max(week) from nfl_team_games where season = {A.CFG.season} and outcome is not null").fetchone()[0]
+    con.close()
+    return int(w)
+
+
 def build(through_week: int | None = None) -> dict:
     lam = json.loads((A.OUT / "adjustment.json").read_text(encoding="utf-8"))["lambda"]
     plays, g = A.variant(A.load_plays(), A.SEARCH_GT, "all"), A.games()
@@ -50,7 +60,7 @@ def build(through_week: int | None = None) -> dict:
     coef = np.linalg.lstsq(X, y, rcond=None)[0]
     resid = y - X @ coef
     cur = plays[plays["season"] == A.CFG.season]
-    week = int(cur["week"].max()) if through_week is None else int(through_week)
+    week = last_week() if through_week is None else int(through_week)
     r = ridge_ratings(cur[cur["week"] <= week], lam).set_index("team")
     teams = [{"id": t, "net": round(float(r.loc[t, "off_ridge"] - r.loc[t, "def_ridge"]), 4), "off": round(float(r.loc[t, "off_ridge"]), 4),
               "def": round(float(r.loc[t, "def_ridge"]), 4)} for t in sorted(r.index)]
