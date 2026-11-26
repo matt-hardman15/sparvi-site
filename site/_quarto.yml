@@ -62,6 +62,8 @@ website:
           - text: NFL
           - text: Team efficiency
             href: nfl/tools/team-efficiency.qmd
+          - text: Matchup tool
+            href: nfl/tools/matchup.qmd
           - text: "---"
           - text: College Football
           - text: Team ratings

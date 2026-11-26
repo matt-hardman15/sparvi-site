@@ -14,6 +14,7 @@ from pathlib import Path
 from plausibility.common import Suite, sd
 
 EFF, GAMES, FOURTH, MATCHUPS = "Team efficiency", "Team pages and game logs", "Fourth-down decisions", "Offense or defense"
+MU = "Matchup tool"
 # sd(adjusted - raw) / sd(raw) EPA/play across the 32 teams, at the last week of a season. Below the floor the
 # "opponent-adjusted" view is the raw view (Nov 2026, with the forecast penalty: 0.03 on offense, 0.04 on defense;
 # with its own penalties the smallest in any season is 0.06, on offense, whose correction comes from the more heavily
@@ -260,3 +261,22 @@ def run(suite: Suite) -> None:
     attribution(suite)
     fourth_downs(suite)
     matchups(suite)
+    matchup_tool(suite)
+
+
+# -- Matchup tool ------------------------------------------------------------------------------------------------------
+def matchup_tool(suite: Suite) -> None:
+    d = suite.load("site/data/nfl/matchup.json")
+    line, rows = d["line"], d["teams"]
+    ids = [r["id"] for r in rows]
+    suite.check(MU, "One rating per team in the matchup tool", len(ids) == len(set(ids)) == 32, f"{len(ids)} teams")
+    # Home field has been worth about 1.5 to 2.5 points and a typical game misses by 10 to 11: outside these the line is not a fit of NFL margins.
+    ok = 0.5 <= line["home_points"] <= 4 and 10 <= line["margin_sd"] <= 17 and line["points_per_net"] > 0
+    suite.check(MU, "The margin line is NFL-sized (home field 0.5 to 4 points, spread 10 to 17, a better rating adds points)", ok, str(line))
+    bad = [r["id"] for r in rows if abs(r["net"] - (r["off"] - r["def"])) > 0.00011]
+    suite.check(MU, "A team's net rating is its offense less what its defense allows", not bad, f"e.g. {bad[0]}" if bad else "")
+    suite.ranks_match(MU, "Rank follows the net rating in the matchup tool", rows, "rank", "net")
+    gap = line["points_per_net"] * (max(r["net"] for r in rows) - min(r["net"] for r in rows))
+    suite.within(MU, "The best team is a 3 to 30 point favorite over the worst on a neutral field", gap, 3, 30, ".1f", "points")
+    suite.check(MU, "The matchup tool is through the same week as the rest of the NFL pages",
+                d["through_week"] == suite.load("site/data/nfl/meta.json")["last_week"], f"week {d['through_week']}")

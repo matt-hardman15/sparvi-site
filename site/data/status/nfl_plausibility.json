@@ -1,7 +1,7 @@
 {
  "sport": "nfl",
  "ok": true,
- "n_checks": 16,
+ "n_checks": 22,
  "n_failed": 0,
  "n_not_run": 0,
  "checks": [
@@ -100,6 +100,42 @@
    "name": "unit ranks follow the adjusted EPA/play shown",
    "ok": true,
    "detail": "192 rows in 6 groups"
+  },
+  {
+   "tool": "Matchup tool",
+   "name": "One rating per team in the matchup tool",
+   "ok": true,
+   "detail": "32 teams"
+  },
+  {
+   "tool": "Matchup tool",
+   "name": "The margin line is NFL-sized (home field 0.5 to 4 points, spread 10 to 17, a better rating adds points)",
+   "ok": true,
+   "detail": "{'home_points': 1.879, 'points_per_net': 240.72, 'margin_sd': 13.3}"
+  },
+  {
+   "tool": "Matchup tool",
+   "name": "A team's net rating is its offense less what its defense allows",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "tool": "Matchup tool",
+   "name": "Rank follows the net rating in the matchup tool",
+   "ok": true,
+   "detail": "32 rows in 1 groups"
+  },
+  {
+   "tool": "Matchup tool",
+   "name": "The best team is a 3 to 30 point favorite over the worst on a neutral field",
+   "ok": true,
+   "detail": "points 15.4 (allowed 3 to 30)"
+  },
+  {
+   "tool": "Matchup tool",
+   "name": "The matchup tool is through the same week as the rest of the NFL pages",
+   "ok": true,
+   "detail": "week 11"
   }
  ]
 }
