@@ -23,13 +23,17 @@ def test_windows_cover_the_season_once():
     assert max((b - a).days for a, b in pull.windows(7)) == 7 and max((b - a).days for a, b in pull.windows(None)) <= 31
 
 
-def test_requests_skip_the_future_and_cache_only_finished_windows():
+def test_requests_skip_the_future_except_the_schedule_and_cache_only_finished_windows():
     cfg = cbb()
     now = datetime.fromisoformat(cfg.start).replace(tzinfo=UTC) + pd.Timedelta(days=45)
     r = pull.requests_for(now)
     games = [(prm, done) for t, _, prm, done in r if t == "games"]
-    assert len(games) == 2 and games[0][1] and not games[1][1], "the first month is final, the current one is not"
-    assert all(pd.Timestamp(prm["startDateRange"]) <= now for _, _, prm, _ in r if "startDateRange" in prm)
+    # The games table is the schedule: every month of the season, the first final, the current and later ones not.
+    assert len(games) == len(pull.windows(None)) > 2 and games[0][1] and not any(done for _, done in games[1:])
+    assert pd.Timestamp(games[-1][0]["startDateRange"]) > now, "the months still to come are pulled for the schedule"
+    # Nothing else is asked for before it can exist: box scores, lines and player lines only up to now.
+    assert all(pd.Timestamp(prm["startDateRange"]) <= now for t, _, prm, _ in r if "startDateRange" in prm and t != "games")
+    assert len([1 for t, _, _, _ in r if t == "team_games"]) == len([1 for t, _, _, _ in r if t == "lines"]) == 2
     weekly = [done for t, _, _, done in r if t == "player_games"]
     assert len(weekly) == 7 and weekly[:5] == [True] * 5 and weekly[-1] is False
     assert not any(done for t, _, _, done in r if t.startswith("ratings")), "ratings are overwritten at the source: always pulled"

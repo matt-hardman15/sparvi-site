@@ -36,7 +36,7 @@ past season whose response doesn't fit the contract (a column missing, a value o
 pull stops and names the difference. `--history` also stops before calling if it would leave fewer than
 HISTORY_FLOOR calls in the month.
 
-Calls: about a dozen a run. The quota (5,000 a month) is shared with college football; the pull stops at the
+Calls: about a dozen a run, plus one for each month still to come (the schedule). The quota (5,000 a month) is shared with college football; the pull stops at the
 reserve in sparvi.toml [cbb].
 
 Terms (effective Aug 12 2026): private caching and storage are permitted; no bulk redistribution of raw data; the
@@ -102,7 +102,9 @@ def requests_for(now: datetime | None = None, season: int | None = None) -> list
     for table, ep, days in (("games", "/games", None), ("team_games", "/games/teams", None), ("lines", "/lines", None),
                             ("player_games", "/games/players", 7)):
         for a, b in windows(days, s):
-            if a > now:
+            # Box scores, lines and player lines don't exist before a game is played. The games table does: it is the
+            # schedule, so its future windows are pulled too (the team pages list the games still to play).
+            if a > now and table != "games":
                 continue
             prm = {"season": s, "startDateRange": a.strftime("%Y-%m-%dT%H:%M:%SZ"), "endDateRange": b.strftime("%Y-%m-%dT%H:%M:%SZ")}
             r.append((table, ep, prm, past or b < now - timedelta(days=FINISHED_DAYS)))
