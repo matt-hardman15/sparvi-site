@@ -54,7 +54,7 @@ The ratings are refit every morning from this season's games, starting from wher
       + `${best.team} has the best net rating shown, ${sgn(best.net)} points per 100 possessions. Search for a team or hover for its numbers.`;
     const cols = [
       { key: "rank", label: "Rank", fmt: f.int, title: "By net rating, among all of Division I" },
-      { key: "team", label: "Team", align: "l" },
+      { key: "team", label: "Team", align: "l", html: r => S.cbbTeamLink(r.slug, r.team), sortVal: r => r.team },
       { key: "conf", label: "Conference", align: "l" },
       { key: "w", label: "Record", html: r => `${r.w}–${r.l}`, sortVal: r => r.w - r.l, title: "Every game this season, including games the ratings don't count" },
       { key: "net", label: "Net", fmt: sgn, heat: "pct", heatVal: r => pctl(r.rank), title: "Offense plus defense: points per 100 possessions better than an average Division I team" },
