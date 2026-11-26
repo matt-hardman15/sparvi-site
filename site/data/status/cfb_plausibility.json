@@ -1,7 +1,7 @@
 {
  "sport": "cfb",
  "ok": true,
- "n_checks": 19,
+ "n_checks": 22,
  "n_failed": 0,
  "n_not_run": 0,
  "checks": [
@@ -70,6 +70,24 @@
    "name": "AP-vs-power gaps use the published power ranks",
    "ok": true,
    "detail": "25 ranked teams, week 12"
+  },
+  {
+   "tool": "Matchup tool",
+   "name": "The margin's spread and home field are college-football-sized (spread 12 to 20 points, home 1 to 5)",
+   "ok": true,
+   "detail": "spread 15.81, home 2.6225344785678466"
+  },
+  {
+   "tool": "Matchup tool",
+   "name": "Every team in the matchup tool has a team page",
+   "ok": true,
+   "detail": "138 teams"
+  },
+  {
+   "tool": "Matchup tool",
+   "name": "The best team is a 25 to 80 point favorite over the worst on a neutral field",
+   "ok": true,
+   "detail": "points 51.4 (allowed 25 to 80)"
   },
   {
    "tool": "Team pages and game logs",

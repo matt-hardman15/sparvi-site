@@ -267,6 +267,7 @@
   "home_points": 2.6225344785678466,
   "points_per_net_epa": 19.768413090569318,
   "points_per_elo": 0.029001907415851878,
+  "margin_sd": 15.81,
   "components": {
    "season": 2026,
    "week": 12,

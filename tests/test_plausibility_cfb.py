@@ -50,7 +50,7 @@ def test_committed_data_passes():
     res = results()
     bad = {n: r["detail"] for n, r in res.items() if r["ok"] is False}
     assert not bad, bad
-    assert len(res) >= 18 and {r["tool"] for r in res.values()} == {pc.RATINGS, pc.GAMES, pc.PBP, pc.PORTAL}
+    assert len(res) >= 18 and {r["tool"] for r in res.values()} == {pc.RATINGS, pc.GAMES, pc.PBP, pc.PORTAL, pc.MU}
 
 
 def test_view_matches_the_real_files(root):

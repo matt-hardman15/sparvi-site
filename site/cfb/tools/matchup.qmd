@@ -1,0 +1,116 @@
+---
+title: "College football matchup tool"
+pagetitle: "College football matchup: margin and win chance"
+description: "Pick any two FBS teams and home, away or a neutral site to see the margin and win chance the current power ratings expect, with the range around it."
+page-layout: full
+---
+
+Pick two teams and where they play. The page works out what the current [power ratings](/cfb/tools/team-ratings.html) expect: a margin with its 80% range and each team's chance to win, through week {{< meta cfb.last_week >}} of {{< meta cfb.season >}}. It is a reading of the ratings, not a prediction of one game: a typical game misses the expected margin by about {{< meta cfb.bt_mae_power >}} points. The rating forecasts a margin only, so there is no expected score.
+
+```{=html}
+<div class="explorer">
+  <div class="controls" id="c"></div>
+  <div id="result" class="matchup"><div class="loading">Loading…</div></div>
+  <div id="bars" class="plot-host"></div>
+  <p class="caption" id="cap"></p>
+  <div id="t"></div>
+  <p class="caption" id="tcap"></p>
+</div>
+<script>
+(async () => {
+  const S = Sparvi, f = S.fmt, U = S.urlState;
+  const meta = await S.load("/data/cfb/meta.json");
+  const [wk, info] = await Promise.all([S.load(`/data/cfb/team_week_${meta.season}.json`), S.load("/data/cfb/teams.json")]);
+  const PM = meta.power_model, Z80 = 1.2815515655446004, week = wk.weeks[wk.weeks.length - 1];
+  const byName = new Map(info.map(t => [t.id, t]));
+  // Each team's rating in the latest week (the tool's default view: garbage time removed).
+  const last = a => a[a.length - 1];
+  const teams = wk.teams.map(t => { const s = t.series.no_gt, i = byName.get(t.id);
+    return { id: t.id, slug: i ? i.slug : null, name: t.id, conf: t.conf, power: last(s.power), epa: last(s.pw_epa), elo: last(s.pw_elo), rank: last(s.rank) }; })
+    .filter(t => t.power != null && t.slug).sort((a, b) => a.name.localeCompare(b.name));
+  const bySlug = new Map(teams.map(t => [t.slug, t]));
+  const ranked = teams.slice().sort((a, b) => b.power - a.power);
+  const DEF = { a: ranked[0].slug, b: ranked[1].slug, site: "n" };
+  const st = { a: bySlug.has(U.get("a")) ? U.get("a") : DEF.a, b: bySlug.has(U.get("b")) ? U.get("b") : DEF.b,
+               site: ["a", "b", "n"].includes(U.get("site")) ? U.get("site") : DEF.site };
+  const sgn = v => (v > 0 ? "+" : v < 0 ? "−" : "") + f.num(Math.abs(v), 1);
+  // The normal distribution's cumulative probability (Abramowitz and Stegun 7.1.26; error below 2e-7).
+  const erf = x => { const s = Math.sign(x), a = Math.abs(x), t = 1 / (1 + 0.3275911 * a);
+    return s * (1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-a * a)); };
+  // The same arithmetic as cfb/adjusted_ratings/matchup.py `expected` (a test holds the two equal).
+  function expected(a, b, site) {
+    const hc = site === "a" ? 1 : site === "b" ? -1 : 0;
+    const margin = a.power - b.power + PM.home_points * hc;
+    return { margin, lo: margin - Z80 * PM.margin_sd, hi: margin + Z80 * PM.margin_sd, p: 0.5 * (1 + erf(margin / (PM.margin_sd * Math.SQRT2))) };
+  }
+  const opts = teams.map(t => [t.slug, t.name]);
+  function controls() {
+    const A = bySlug.get(st.a), B = bySlug.get(st.b);
+    document.getElementById("c").replaceChildren(
+      S.select("Team A", opts, st.a, v => { st.a = v; controls(); draw(); }),
+      S.select("Team B", opts, st.b, v => { st.b = v; controls(); draw(); }),
+      S.el("label", {}, "Where", S.seg([["a", `At ${A.name}`], ["n", "Neutral site"], ["b", `At ${B.name}`]], st.site, v => { st.site = v; draw(); })));
+  }
+  let table = null;
+  function draw() {
+    const A = bySlug.get(st.a), B = bySlug.get(st.b), same = A.id === B.id;
+    const x = expected(A, B, st.site);
+    const where = st.site === "n" ? "at a neutral site" : `at ${st.site === "a" ? A.name : B.name}`;
+    const fav = x.margin >= 0 ? A : B, m = Math.abs(x.margin);
+    const res = document.getElementById("result");
+    if (same) {
+      res.replaceChildren(S.el("p", { class: "page-summary" }, "Pick two different teams."));
+      document.getElementById("bars").replaceChildren(); document.getElementById("cap").textContent = "";
+    } else {
+      res.replaceChildren(
+        S.el("p", { class: "matchup-score", id: "score" }, `${fav.name} by ${f.num(m, 1)}`),
+        S.el("p", { class: "page-summary", id: "line" },
+          `${where[0].toUpperCase() + where.slice(1)}, ${A.name} wins ${f.num(100 * x.p, 0)}% of the time and ${B.name} ${f.num(100 * (1 - x.p), 0)}%.`));
+      const rows = [{ team: A.name, p: x.p }, { team: B.name, p: 1 - x.p }];
+      S.plot(document.getElementById("bars"), w => Plot.plot({ ...S.plotDefaults(w), height: 120, marginLeft: 170, marginBottom: 40,
+        x: { label: "Chance to win →", domain: [0, 1], tickFormat: v => f.num(100 * v, 0) + "%", grid: true },
+        y: { label: null, domain: rows.map(r => r.team) },
+        marks: [Plot.barX(rows, { y: "team", x: "p", fill: "#0f5257" }), Plot.ruleX([0.5], { stroke: "#16181d", strokeDasharray: "3,3" }),
+                Plot.text(rows, { y: "team", x: "p", text: r => f.num(100 * r.p, 0) + "%", dx: 6, textAnchor: "start", fontWeight: 600 }),
+                Plot.tip(rows, Plot.pointerY({ y: "team", x: "p", title: r => `${r.team}: ${f.num(100 * r.p, 1)}% to win ${where}` }))] }));
+      document.getElementById("cap").textContent = `From the power ratings through week ${week} of ${meta.season}. The expected margin is ${A.name} ${sgn(x.margin)}; four games in five like this one should land between ${A.name} ${sgn(x.lo)} and ${A.name} ${sgn(x.hi)}. `
+        + `The dashed line is an even game. Home field is worth ${f.num(PM.home_points, 1)} points; switch the site to see it move.`;
+    }
+    const cols = [
+      { key: "name", label: "Team", align: "l", html: r => S.cfbTeamLink(byName.get(r.id), r.name), sortVal: r => r.name },
+      { key: "conf", label: "Conference", align: "l" },
+      { key: "power", label: "Power rating", fmt: sgn, title: "Points better than an average FBS team on a neutral field" },
+      { key: "epa", label: "Efficiency part", fmt: sgn, title: "The part of the rating from opponent-adjusted efficiency this season" },
+      { key: "elo", label: "Elo part", fmt: sgn, title: "The part from CFBD's Elo, which carries past seasons and results" },
+      { key: "rank", label: "Rank", fmt: v => `${v} of ${teams.length}` },
+    ];
+    table ||= S.table(document.getElementById("t"), cols, { sortKey: "rank", desc: false, pageSize: 5 });
+    table.update(same ? [A] : [A, B]);
+    document.getElementById("tcap").textContent = `The two teams' power ratings, in points against an average FBS team on a neutral field, and the two parts each is made of. The expected margin is the difference between the ratings plus home field.`;
+    U.set({ a: st.a, b: st.b, site: st.site }, DEF);
+  }
+  controls(); draw();
+})();
+</script>
+```
+
+::: {.note}
+Model version: [{{< meta models.cfb_power_rating >}}](https://github.com/matt-hardman15/sparvi-site/tree/main/models/cfb/power_rating/card.yml) ({{< meta models.cfb_power_rating_status >}}).
+:::
+
+<details class="method" id="method">
+<summary>Method and caveats</summary>
+
+**The ratings.** The [power rating](/learn/cfb-power-rating/) is how many points better than an average FBS team a team should be on a neutral field. It combines opponent-adjusted efficiency this season with CFBD's Elo rating, which carries information from past seasons; the [ratings tool](/cfb/tools/team-ratings.html) shows both parts for every team and week.
+
+**The margin.** Because the rating is already in points, the expected margin is the difference between two teams' ratings, plus {{< meta cfb.pm_home >}} points for the home team. At a neutral site, such as most bowl games, there is no home term.
+
+**The range and the win chance.** In the rating's backtest, next-week margins spread around the forecast with a root mean squared error of {{< meta cfb.mu_sd >}} points. The 80% range and the win chance come from a normal distribution with that spread.
+
+**How it has tested.** Across {{< meta cfb.bt_n_games >}} games of {{< meta cfb.bt_first_season >}}–{{< meta cfb.bt_last_season >}}, each forecast from ratings through the week before, the power rating missed the margin by {{< meta cfb.bt_mae_power >}} points on average and picked {{< meta cfb.bt_win_power >}} of winners; home field alone missed by {{< meta cfb.bt_mae_home_only >}}. This model has not yet been through the site's registered backtest, which is why it carries the label above.
+
+**What it can't tell you.** Who is playing quarterback, injuries, opt-outs before a bowl, transfers, coaching changes, travel, or weather. Only FBS teams are rated, and a team with too few games this season has no rating yet. There is no expected score, because the rating forecasts the margin and not points. It is not betting advice and uses no betting lines.
+
+Data provided by [CollegeFootballData.com](https://collegefootballdata.com). Every team has [its own page](/cfb/teams/).
+
+</details>
