@@ -97,7 +97,9 @@ def body(t: dict, games: list, slugs: dict, mates: list[dict], n: int, label: st
         out += [f"<h2>Results ({t['w']}–{t['l']})</h2>", _table(["Date", "Opponent", "Site", "Result"], rows)]
     if ahead:
         rows = [[e(day(g[0])), opp_link(g, slugs), SITE_WORD[g[3]], "Postponed" if g[4] == "postponed" else ""] for g in ahead]
-        out += [f"<h2>Still to play ({len(ahead)} on the schedule so far)</h2>", _table(["Date", "Opponent", "Site", ""], rows)]
+        out += [f"<h2>Still to play ({len(ahead)})</h2>", _table(["Date", "Opponent", "Site", ""], rows),
+                '<p class="note">The regular-season schedule as the source lists it today. Conference tournament and postseason '
+                "games appear once they are set.</p>"]
     if mates:
         out.append(f'<h2>{e(t["conf"])}</h2><ul class="team-index">' + "".join(
             f'<li><a href="/{path(m["slug"])}/">{e(m["team"])}</a> <span class="muted">{m["w"]}–{m["l"]} · {ordinal(m["rank"])} in net rating</span></li>'
