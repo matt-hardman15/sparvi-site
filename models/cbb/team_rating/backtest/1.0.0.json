@@ -1,0 +1,690 @@
+{
+  "run_id": "7d9e9cfeb36e",
+  "model": "cbb_team_rating",
+  "version": "1.0.0",
+  "kind": "full",
+  "ran_at": "2026-11-26T06:00:48Z",
+  "code_sha": "8123b84c663fefdce969f5a3ff7264ac18df9ae2",
+  "lockfile": "39654de38b4c91ec",
+  "preregistered_at": "2026-11-25",
+  "spec": {
+    "preregistered_at": "2026-11-25",
+    "module": "models/cbb/team_rating/backtest.py",
+    "target": "Home margin (points) of every counted game of the test season",
+    "decision_dates": "Each game's own date. The fold's decision date is the end of the season (May 1), because forecasts are made throughout it; each forecast uses that season's games strictly before its date (the US game day). What is fit on other seasons (the margin's spread, the baselines' fits, the second stage's weights) is read as of October 31 before the season starts.",
+    "splits": {
+      "type": "walk_forward",
+      "first_test": 2026,
+      "last_test": 2026,
+      "train_window": null,
+      "first_train": 2021,
+      "predictor_lag": 0,
+      "train_until": "-1:10-31",
+      "decision": "05-01",
+      "resolve": "05-01",
+      "fast_folds": 1
+    },
+    "seasons": "2021 only seeds 2022's prior (a short season). 2022 and 2023 chose the settings and the feature groups. 2024 and 2025 are development seasons: scored here once, walk-forward, and scored before by an earlier prototype. 2026 is the test: no development run can load it (cbb/ratings/develop.py DevLoader; tests/test_cbb_model.py), and it was not read in any form before this block ran. 2027 is being played.",
+    "rows": "Every game of the test season between two teams in a Division I conference with a final score and possessions recorded for both teams.",
+    "group_by": "none: a game forecast; the rows are games",
+    "block": "date",
+    "segment": "game_type",
+    "baselines": [
+      "elo",
+      "home",
+      "prior",
+      "ratings"
+    ],
+    "baseline_definitions": {
+      "elo": "the source's pre-game Elo: a line fit of margin on the Elo difference and home court, on the forecast seasons before the test season",
+      "home": "the home team by the average home margin of those seasons (zero on a neutral court)",
+      "prior": "last season's final ratings, never updated during the season",
+      "ratings": "the first stage alone, without the second stage (reported, not part of the gate)"
+    },
+    "primary_metric": "mae",
+    "bootstrap": 2000,
+    "seed": 7,
+    "pass_gate": {
+      "beats_baseline": [
+        "elo",
+        "home",
+        "prior"
+      ],
+      "min_skill": 0.0,
+      "ci_excludes_zero": true
+    },
+    "gate_decided": "Matt, 2026-11-25: strict against all three baselines. The margin's mean absolute error must be below home court, last season's ratings and the source's Elo, each with the 90% interval of the difference (resampled by game date) below zero. The edge over the ratings alone is reported, not gated. The gate statistic on the development seasons (cbb/ratings/output/development.json; 2024 and 2025, 11,281 games): against Elo -0.71 points (-0.83 to -0.60), against last season's ratings -1.18 (-1.27 to -1.09), against home court -2.33 (-2.48 to -2.18); each also clear of zero in each season alone. Every candidate gate passed there, so the choice was not made to pass.",
+    "secondary": "Reported, not gating (the module's `secondary`): mean absolute error of the total; log loss, accuracy and calibration of the home win probability; margin error by month; and by game type through `segment` (non-conference, conference, conference tournament, national postseason). The closing line's error is an aggregate benchmark on the games that have one: never an input, never per game.",
+    "too_good": 8.0,
+    "too_good_note": "The closing line's error on the development seasons was 8.8 points. A margin error below 8.0 would mean a leak, not a better model.",
+    "not_applicable": {
+      "label_permutation": "A rating model: its forecasts for the test season come from that season's own results through the walk-forward, not from labels learned on the training seasons, so shuffling the training seasons' outcomes leaves it predictive. The check that it reads no later game is the scramble test (tests/test_cbb_model.py: forecasts and features for a date do not change when every later game is changed)."
+    },
+    "known_hindsight": "Seasons before 2026-11-24 come from the source as it stands now, not as it stood then (revision_safe: false). The inputs are final scores, box-score counts and minutes, which are rarely revised. The source's pre-game Elo (a baseline, not an input) is read as stored today.",
+    "reproduction": "Deterministic (closed-form ridge and least squares). Official runs happen in CI.",
+    "vault": {
+      "seasons": [],
+      "note": "No sealed season: 2026 is the registered test and 2027 is being played. Live forecasts for 2027 go to the ledger when the daily job exists.",
+      "accesses": 0
+    }
+  },
+  "folds": [
+    2026
+  ],
+  "evaluation": {
+    "metric": "mae",
+    "n": 5624,
+    "point": 9.100046356552705,
+    "baselines": {
+      "elo": {
+        "value": 10.17535576928395,
+        "paired": {
+          "est": -1.0753094127312455,
+          "ci90": [
+            -1.3354544546969858,
+            -0.8312197662854562
+          ],
+          "n": 5624,
+          "blocks": 146,
+          "bootstrap": 2000,
+          "seed": 7
+        }
+      },
+      "home": {
+        "value": 11.642834888445295,
+        "paired": {
+          "est": -2.5427885318925902,
+          "ci90": [
+            -2.8301825586685485,
+            -2.2705746092443446
+          ],
+          "n": 5624,
+          "blocks": 146,
+          "bootstrap": 2000,
+          "seed": 7
+        }
+      },
+      "prior": {
+        "value": 10.379143742310443,
+        "paired": {
+          "est": -1.2790973857577388,
+          "ci90": [
+            -1.4175543939752653,
+            -1.139944279309719
+          ],
+          "n": 5624,
+          "blocks": 146,
+          "bootstrap": 2000,
+          "seed": 7
+        }
+      },
+      "ratings": {
+        "value": 9.223668046606754,
+        "paired": {
+          "est": -0.12362169005404944,
+          "ci90": [
+            -0.15748453982162705,
+            -0.08941532658870059
+          ],
+          "n": 5624,
+          "blocks": 146,
+          "bootstrap": 2000,
+          "seed": 7
+        }
+      }
+    },
+    "by_fold": {
+      "2026": 9.100046356552705
+    },
+    "segments": {
+      "conference": {
+        "metric": "mae",
+        "n": 3314,
+        "point": 8.822293456834359,
+        "baselines": {
+          "elo": {
+            "value": 9.226518763500449,
+            "paired": {
+              "est": -0.40422530666609013,
+              "ci90": [
+                -0.5181870168001981,
+                -0.2899814340563266
+              ],
+              "n": 3314,
+              "blocks": 94,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          },
+          "home": {
+            "value": 10.626797270081676,
+            "paired": {
+              "est": -1.804503813247317,
+              "ci90": [
+                -2.014285931759409,
+                -1.6250265934909933
+              ],
+              "n": 3314,
+              "blocks": 94,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          },
+          "prior": {
+            "value": 10.254578535290758,
+            "paired": {
+              "est": -1.432285078456399,
+              "ci90": [
+                -1.6207077840218669,
+                -1.2653987192119742
+              ],
+              "n": 3314,
+              "blocks": 94,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          },
+          "ratings": {
+            "value": 8.924280429067426,
+            "paired": {
+              "est": -0.10198697223306752,
+              "ci90": [
+                -0.1365844138859334,
+                -0.0656946079903916
+              ],
+              "n": 3314,
+              "blocks": 94,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          }
+        },
+        "by_fold": {
+          "2026": 8.822293456834359
+        }
+      },
+      "conference tournament": {
+        "metric": "mae",
+        "n": 299,
+        "point": 8.172064161006194,
+        "baselines": {
+          "elo": {
+            "value": 8.197793682657538,
+            "paired": {
+              "est": -0.025729521651344456,
+              "ci90": [
+                -0.2121188027103335,
+                0.1946375939604575
+              ],
+              "n": 299,
+              "blocks": 14,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          },
+          "home": {
+            "value": 9.152089349883962,
+            "paired": {
+              "est": -0.980025188877768,
+              "ci90": [
+                -1.3175734635720968,
+                -0.6091031330480691
+              ],
+              "n": 299,
+              "blocks": 14,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          },
+          "prior": {
+            "value": 9.775863746935205,
+            "paired": {
+              "est": -1.6037995859290106,
+              "ci90": [
+                -2.0597903351390356,
+                -1.155564813360708
+              ],
+              "n": 299,
+              "blocks": 14,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          },
+          "ratings": {
+            "value": 8.253119962493631,
+            "paired": {
+              "est": -0.0810558014874374,
+              "ci90": [
+                -0.1664354871400442,
+                0.015728309212268272
+              ],
+              "n": 299,
+              "blocks": 14,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          }
+        },
+        "by_fold": {
+          "2026": 8.172064161006194
+        }
+      },
+      "national postseason": {
+        "metric": "mae",
+        "n": 105,
+        "point": 9.124112873511974,
+        "baselines": {
+          "elo": {
+            "value": 11.124905771334623,
+            "paired": {
+              "est": -2.000792897822649,
+              "ci90": [
+                -3.421466929720618,
+                -0.7270044833683748
+              ],
+              "n": 105,
+              "blocks": 17,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          },
+          "home": {
+            "value": 12.768776284039987,
+            "paired": {
+              "est": -3.644663410528013,
+              "ci90": [
+                -5.950882371231353,
+                -1.373014699262274
+              ],
+              "n": 105,
+              "blocks": 17,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          },
+          "prior": {
+            "value": 10.981817036604207,
+            "paired": {
+              "est": -1.857704163092233,
+              "ci90": [
+                -2.7260168868520287,
+                -1.2039250997844138
+              ],
+              "n": 105,
+              "blocks": 17,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          },
+          "ratings": {
+            "value": 9.155070175157617,
+            "paired": {
+              "est": -0.030957301645642588,
+              "ci90": [
+                -0.17866081232911082,
+                0.13262062436625238
+              ],
+              "n": 105,
+              "blocks": 17,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          }
+        },
+        "by_fold": {
+          "2026": 9.124112873511974
+        }
+      },
+      "non-conference": {
+        "metric": "mae",
+        "n": 1906,
+        "point": 9.727230407892831,
+        "baselines": {
+          "elo": {
+            "value": 12.083033707821468,
+            "paired": {
+              "est": -2.3558032999286365,
+              "ci90": [
+                -2.8897394543177275,
+                -1.8558029537679335
+              ],
+              "n": 1906,
+              "blocks": 59,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          },
+          "home": {
+            "value": 13.738143249803862,
+            "paired": {
+              "est": -4.010912841911031,
+              "ci90": [
+                -4.5351896107901695,
+                -3.5197047850373213
+              ],
+              "n": 1906,
+              "blocks": 59,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          },
+          "prior": {
+            "value": 10.657165315647063,
+            "paired": {
+              "est": -0.929934907754232,
+              "ci90": [
+                -1.191265372596534,
+                -0.6939121340155567
+              ],
+              "n": 1906,
+              "blocks": 59,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          },
+          "ratings": {
+            "value": 9.900251057192964,
+            "paired": {
+              "est": -0.17302064930013294,
+              "ci90": [
+                -0.2479169313450912,
+                -0.09579308247486146
+              ],
+              "n": 1906,
+              "blocks": 59,
+              "bootstrap": 2000,
+              "seed": 7
+            }
+          }
+        },
+        "by_fold": {
+          "2026": 9.727230407892831
+        }
+      }
+    },
+    "secondary": {
+      "total_mae": {
+        "model": 13.900908796854244,
+        "earlier_seasons_mean": 15.9674176127908,
+        "edge": {
+          "est": -2.0665088159365563,
+          "ci90": [
+            -2.318857008449264,
+            -1.8341587327414866
+          ],
+          "games": 5624,
+          "dates": 146
+        }
+      },
+      "win_probability": {
+        "log_loss": 0.5236728436367182,
+        "log_loss_home_rate": 0.6539645799582647,
+        "accuracy": 0.722972972972973,
+        "ece": 0.014135715327023912,
+        "table": [
+          {
+            "n": 563,
+            "predicted": 0.2008,
+            "observed": 0.1954
+          },
+          {
+            "n": 562,
+            "predicted": 0.3606,
+            "observed": 0.4004
+          },
+          {
+            "n": 562,
+            "predicted": 0.4584,
+            "observed": 0.4875
+          },
+          {
+            "n": 563,
+            "predicted": 0.5394,
+            "observed": 0.5346
+          },
+          {
+            "n": 562,
+            "predicted": 0.6131,
+            "observed": 0.6281
+          },
+          {
+            "n": 562,
+            "predicted": 0.6823,
+            "observed": 0.6922
+          },
+          {
+            "n": 563,
+            "predicted": 0.7506,
+            "observed": 0.7336
+          },
+          {
+            "n": 562,
+            "predicted": 0.8222,
+            "observed": 0.8256
+          },
+          {
+            "n": 562,
+            "predicted": 0.9028,
+            "observed": 0.9164
+          },
+          {
+            "n": 563,
+            "predicted": 0.9802,
+            "observed": 0.9769
+          }
+        ]
+      },
+      "by_month": {
+        "Apr": {
+          "games": 13,
+          "margin_mae": {
+            "second_stage": 8.972538830575873,
+            "ratings": 9.084402248094692,
+            "home": 11.076923076923077,
+            "prior": 11.86674360440149,
+            "elo": 11.688119377698115
+          },
+          "edge_over_elo": {
+            "est": -2.7155805471222427,
+            "ci90": [
+              -4.390709338884532,
+              -0.9978431142664766
+            ],
+            "games": 13,
+            "dates": 5
+          },
+          "total_mae": 15.82289395303863
+        },
+        "Dec": {
+          "games": 959,
+          "margin_mae": {
+            "second_stage": 9.193425788644594,
+            "ratings": 9.376130563845043,
+            "home": 13.305342410063913,
+            "prior": 10.608988736096432,
+            "elo": 10.886807482252443
+          },
+          "edge_over_elo": {
+            "est": -1.6933816936078498,
+            "ci90": [
+              -2.1659641677664236,
+              -1.2514085663846533
+            ],
+            "games": 959,
+            "dates": 28
+          },
+          "total_mae": 13.847998415350053
+        },
+        "Feb": {
+          "games": 1369,
+          "margin_mae": {
+            "second_stage": 8.796124110896196,
+            "ratings": 8.81872509104592,
+            "home": 10.533526498633124,
+            "prior": 10.418630450859482,
+            "elo": 9.007776771919307
+          },
+          "edge_over_elo": {
+            "est": -0.21165266102311361,
+            "ci90": [
+              -0.3355770840431075,
+              -0.07685759002564709
+            ],
+            "games": 1369,
+            "dates": 28
+          },
+          "total_mae": 13.598116238831679
+        },
+        "Jan": {
+          "games": 1503,
+          "margin_mae": {
+            "second_stage": 8.801546660245876,
+            "ratings": 8.929816215289303,
+            "home": 10.344369413534189,
+            "prior": 9.965834484370074,
+            "elo": 9.272278407758945
+          },
+          "edge_over_elo": {
+            "est": -0.47073174751306845,
+            "ci90": [
+              -0.6436849395880326,
+              -0.2664761178306996
+            ],
+            "games": 1503,
+            "dates": 31
+          },
+          "total_mae": 13.83072192663199
+        },
+        "Mar": {
+          "games": 612,
+          "margin_mae": {
+            "second_stage": 8.773951916279657,
+            "ratings": 8.891040626651895,
+            "home": 10.61971514217545,
+            "prior": 10.485391062837856,
+            "elo": 9.153014493050946
+          },
+          "edge_over_elo": {
+            "est": -0.37906257677128957,
+            "ci90": [
+              -0.7759221464001211,
+              -0.12646862662393782
+            ],
+            "games": 612,
+            "dates": 27
+          },
+          "total_mae": 13.364775577143819
+        },
+        "Nov": {
+          "games": 1168,
+          "margin_mae": {
+            "second_stage": 9.935997656006132,
+            "ratings": 10.127086788896502,
+            "home": 13.791292268136164,
+            "prior": 10.603769601274502,
+            "elo": 12.640651713781132
+          },
+          "edge_over_elo": {
+            "est": -2.704654057774999,
+            "ci90": [
+              -3.4380706884258907,
+              -2.0295075976437573
+            ],
+            "games": 1168,
+            "dates": 27
+          },
+          "total_mae": 14.649096003336982
+        }
+      },
+      "closing_line_benchmark": {
+        "note": "aggregate accuracy benchmark only; never an input, never per game",
+        "games": 5620,
+        "share_of_games": 0.9992887624466572,
+        "margin_mae": {
+          "line": 8.974036180308422,
+          "second_stage": 9.100462253386375,
+          "ratings": 9.223714943538976
+        },
+        "total_mae": {
+          "line": 13.383327401079669,
+          "model": 13.899509459995123
+        }
+      }
+    }
+  },
+  "gate": {
+    "checks": {
+      "beats_baseline": true,
+      "min_skill": true,
+      "ci_excludes_zero": true
+    },
+    "passed": true,
+    "gap": 1.0753094127312455,
+    "per_baseline": {
+      "elo": {
+        "gap": 1.0753094127312455,
+        "ci90_low": 0.8312197662854562
+      },
+      "home": {
+        "gap": 2.5427885318925902,
+        "ci90_low": 2.2705746092443446
+      },
+      "prior": {
+        "gap": 1.2790973857577388,
+        "ci90_low": 1.139944279309719
+      }
+    }
+  },
+  "leakage": {
+    "timestamp": {
+      "passed": true,
+      "folds": [
+        {
+          "fold": 2026,
+          "fit_max_available_at": "2025-10-31 00:00:00",
+          "train_until": "2025-10-31 00:00:00",
+          "predict_max_available_at": "2026-05-01 00:00:00",
+          "decision_date": "2026-05-01 00:00:00",
+          "passes": true
+        }
+      ]
+    },
+    "future_poisoning": {
+      "passed": true,
+      "cutoff": "2026-05-01 00:00:00",
+      "n": 5624
+    },
+    "label_permutation": {
+      "passed": true,
+      "not_applicable": "A rating model: its forecasts for the test season come from that season's own results through the walk-forward, not from labels learned on the training seasons, so shuffling the training seasons' outcomes leaves it predictive. The check that it reads no later game is the scramble test (tests/test_cbb_model.py: forecasts and features for a date do not change when every later game is changed)."
+    },
+    "too_good": {
+      "passed": true,
+      "mae": 9.100046356552705,
+      "bound": 8.0,
+      "direction": "must stay above"
+    },
+    "entity_overlap": {
+      "passed": true,
+      "not_applicable": "group_by: none: a game forecast; the rows are games"
+    },
+    "universe": {
+      "passed": true,
+      "predicted": 5624,
+      "scored": 5624,
+      "no_outcome": 0,
+      "note": "entities without an outcome (retired, injured, too few pitches) can't be scored; they're counted here so survivorship is visible"
+    }
+  },
+  "passed": true,
+  "primary": {
+    "metric": "mae",
+    "point": 9.100046356552705,
+    "elo": 10.17535576928395,
+    "home": 11.642834888445295,
+    "prior": 10.379143742310443,
+    "ratings": 9.223668046606754
+  },
+  "revision_safe": false,
+  "approximate_tables": []
+}
