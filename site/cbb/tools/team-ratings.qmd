@@ -7,7 +7,7 @@ page-layout: full
 
 Every Division I men's team in {{< meta cbb.season_label >}}, through the games of {{< meta cbb.through >}}. The **net rating** is how many points per 100 possessions a team would outscore an average Division I team by on a neutral court. It is the sum of an **offensive rating** (points scored above average) and a **defensive rating** (points prevented above average), so higher is better for all three. **Tempo** is possessions per 40 minutes against an average opponent.
 
-The ratings are refit every morning from this season's games, starting from where each team finished last season. Early in a season they lean on last season; by January they mostly reflect this one.
+The ratings are refit every morning from this season's games, starting from where each team finished last season. Early in a season they lean on last season; by January they mostly reflect this one. To see what they expect from a game between any two teams, use the [matchup tool](/cbb/tools/matchup.html).
 
 ```{=html}
 <div class="explorer">

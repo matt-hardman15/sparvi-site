@@ -41,6 +41,12 @@
   "UAC",
   "WCC"
  ],
+ "matchup": {
+  "efficiency": 107.245,
+  "tempo": 68.962,
+  "home_court": 2.374,
+  "margin_sd": 11.51
+ },
  "model": {
   "model": "cbb_team_rating",
   "version": "1.0.0",

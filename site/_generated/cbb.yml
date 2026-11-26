@@ -12,6 +12,7 @@ cbb:
   home_court: "3.3"
   league_efficiency: "107.2"
   league_tempo: "69.0"
+  margin_sd: "11.5"
   n_games: "1,051"
   n_teams: "365"
   prior_games: "5"

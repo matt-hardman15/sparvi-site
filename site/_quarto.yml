@@ -72,6 +72,8 @@ website:
           - text: College Basketball
           - text: Team ratings
             href: cbb/tools/team-ratings.qmd
+          - text: Matchup tool
+            href: cbb/tools/matchup.qmd
       - text: Learn
         href: learn/index.qmd
       - text: Glossary

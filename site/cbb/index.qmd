@@ -13,13 +13,14 @@ Ratings for every Division I men's team in {{< meta cbb.season_label >}}, refit 
 ```{=html}
 <div class="cards">
 <a class="card-link" href="/cbb/tools/team-ratings.html"><span class="kicker">Tool</span><h3>Team ratings</h3><p>Net, offensive and defensive rating and tempo for all {{< meta cbb.n_teams >}} Division I teams, by conference, updated daily.</p></a>
+<a class="card-link" href="/cbb/tools/matchup.html"><span class="kicker">Tool</span><h3>Matchup tool</h3><p>Pick two teams and a home, away or neutral court: the score, margin and win chance the ratings expect.</p></a>
 <a class="card-link" href="/cbb/teams/"><span class="kicker">Teams</span><h3>Team pages</h3><p>A page for every Division I team: its ratings and ranks, every result, and the games still on its schedule.</p></a>
 </div>
 ```
 
 ## What's here, and what's coming
 
-The [team ratings](/cbb/tools/team-ratings.html) and a [page for every team](/cbb/teams/) are the first basketball pages. The ratings come from a model that forecasts each game's margin, total, and winner, and its [method and testing](/cbb/tools/team-ratings.html#method) are on the same page. Every day's forecasts are recorded before tip-off so they can be graded in public later. A matchup tool and a page grading those forecasts are next.
+The [team ratings](/cbb/tools/team-ratings.html) and a [page for every team](/cbb/teams/) are the first basketball pages. The ratings come from a model that forecasts each game's margin, total, and winner, and its [method and testing](/cbb/tools/team-ratings.html#method) are on the same page. Every day's forecasts are recorded before tip-off so they can be graded in public later. The [matchup tool](/cbb/tools/matchup.html) reads the same ratings for any two teams. A page grading the recorded forecasts is next.
 
 Definitions for the terms used across the site are in the [glossary](/glossary.html), and longer explainers are on the [Learn page](/learn/).
 

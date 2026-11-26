@@ -81,12 +81,13 @@ def test_unshrunk_or_shifted_ratings_and_bad_league_terms_fail(root, tmp_path):
             t["tempo"] = 95.0
             t["games"] = t["w"] + t["l"] + 3
     edit(root, "ratings", blow_up)
-    edit(root, "meta", lambda m: m.update(home_court_points=9.5, model={"state": "blocked"}))
+    edit(root, "meta", lambda m: m.update(home_court_points=9.5, model={"state": "blocked"}, matchup={**m["matchup"], "margin_sd": 40}))
     ok, results = run(root, tmp_path)
     f = failed(results)
     for name in ("The average Division I team's net rating is near zero", "Net ratings spread like team strength does (4 to 25 points per 100 possessions)",
                  "No team is implausibly far from average", "Every team's tempo is between 55 and 82 possessions",
                  "No team has more rated games than games played", "Home court is worth between 1 and 6 points",
-                 "The model's version and state are published"):
+                 "The model's version and state are published",
+                 "The league terms are basketball-sized (efficiency 90 to 120, tempo 60 to 76, margin spread 7 to 16)"):
         assert name in f, name
     assert not ok

@@ -65,7 +65,7 @@ def test_every_link_goes_to_a_page_that_exists(built):
     known = {f"/cbb/teams/{t['slug']}/" for t in teams} | {"/cbb/teams/", "/cbb/tools/team-ratings.html", "/cbb/tools/team-ratings.html#method"}
     for p in pages:
         for href in re.findall(r'href="(/[^"]*)"', p["body"]):
-            assert href in known, (p["path"], href)
+            assert href in known or re.fullmatch(r"/cbb/tools/matchup\.html\?a=[a-z0-9-]+", href), (p["path"], href)
         assert "<script" not in p["body"]
 
 
