@@ -68,6 +68,8 @@ website:
           - text: College Football
           - text: Team ratings
             href: cfb/tools/team-ratings.qmd
+          - text: Matchup tool
+            href: cfb/tools/matchup.qmd
           - text: Transfer portal board
             href: cfb/tools/portal-board.qmd
           - text: "---"

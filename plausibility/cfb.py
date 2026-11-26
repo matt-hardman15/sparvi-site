@@ -15,6 +15,7 @@ from pathlib import Path
 from plausibility.common import Suite, sd
 
 RATINGS, GAMES, PBP, PORTAL = "Team ratings", "Team pages and game logs", "Play-by-play integrity", "Portal board"
+MU = "Matchup tool"
 GT = "no_gt"
 ADJ_SIZE = (0.10, 1.00)        # sd(adjusted - raw) / sd(raw) EPA/play across FBS teams, end of season
 PART_MIN_SHARE = 0.05          # each part of the blend moves teams by at least this share of the rating's spread
@@ -236,8 +237,26 @@ def portal(suite: Suite) -> None:
                 unopened[0] if unopened else ", ".join(f"{w['window']} opens {w['opens']}" for w in idx if w["players"] == 0) or "every window has entrants")
 
 
+def matchup_tool(suite: Suite) -> None:
+    meta = suite.load("site/data/cfb/meta.json")
+    pm = meta.get("power_model", {})
+    # A typical FBS game misses a good forecast by 12 to 13 points (root mean square about 16); home field is 2 to 3.
+    ok = pm.get("margin_sd") is not None and 12 <= pm["margin_sd"] <= 20 and 1 <= pm.get("home_points", 0) <= 5
+    suite.check(MU, "The margin's spread and home field are college-football-sized (spread 12 to 20 points, home 1 to 5)", ok,
+                f"spread {pm.get('margin_sd')}, home {pm.get('home_points')}")
+    wk = suite.load(f"site/data/cfb/team_week_{meta['season']}.json")
+    slugs = {t["id"] for t in suite.load("site/data/cfb/teams.json")}
+    rated = [(t["id"], t["series"][GT]["power"][-1]) for t in wk["teams"] if t["series"][GT]["power"][-1] is not None]
+    lost = [n for n, _ in rated if n not in slugs]
+    suite.check(MU, "Every team in the matchup tool has a team page", len(rated) >= 100 and not lost, f"e.g. {lost[0]}" if lost else f"{len(rated)} teams")
+    if rated:
+        gap = max(p for _, p in rated) - min(p for _, p in rated)
+        suite.within(MU, "The best team is a 25 to 80 point favorite over the worst on a neutral field", gap, 25, 80, ".1f", "points")
+
+
 def run(suite: Suite) -> None:
     ratings(suite)
+    matchup_tool(suite)
     game_logs(suite)
     pbp(suite)
     portal(suite)
