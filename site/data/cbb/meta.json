@@ -1,12 +1,12 @@
 {
  "season": 2027,
  "season_label": "2026–27",
- "through": "2026-11-25",
+ "through": "2026-11-26",
  "teams": 365,
- "games": 1109,
+ "games": 1131,
  "league_efficiency": 107.3,
  "league_tempo": 68.9,
- "home_court_points": 3.2,
+ "home_court_points": 3.1,
  "conferences": [
   "A-10",
   "ACC",
@@ -42,9 +42,9 @@
   "WCC"
  ],
  "matchup": {
-  "efficiency": 107.266,
-  "tempo": 68.887,
-  "home_court": 2.303,
+  "efficiency": 107.297,
+  "tempo": 68.862,
+  "home_court": 2.283,
   "margin_sd": 11.51
  },
  "model": {

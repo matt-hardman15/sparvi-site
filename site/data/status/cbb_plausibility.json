@@ -27,7 +27,7 @@
    "tool": "Basketball team ratings",
    "name": "The average Division I team's net rating is near zero",
    "ok": true,
-   "detail": "mean 0.18 (allowed -4 to 4)"
+   "detail": "mean 0.19 (allowed -4 to 4)"
   },
   {
    "tool": "Basketball team ratings",
@@ -81,19 +81,19 @@
    "tool": "Basketball matchup tool",
    "name": "The league terms are basketball-sized (efficiency 90 to 120, tempo 60 to 76, margin spread 7 to 16)",
    "ok": true,
-   "detail": "{'efficiency': 107.266, 'tempo': 68.887, 'home_court': 2.303, 'margin_sd': 11.51}"
+   "detail": "{'efficiency': 107.297, 'tempo': 68.862, 'home_court': 2.283, 'margin_sd': 11.51}"
   },
   {
    "tool": "Basketball matchup tool",
    "name": "The top team is expected to beat a middle team on a neutral court, by a basketball score",
    "ok": true,
-   "detail": "Illinois 97, Missouri State 63"
+   "detail": "Illinois 100, Austin Peay 64"
   },
   {
    "tool": "Basketball team ratings",
    "name": "Home court is worth between 1 and 6 points",
    "ok": true,
-   "detail": "points 3.2 (allowed 1 to 6)"
+   "detail": "points 3.1 (allowed 1 to 6)"
   },
   {
    "tool": "Basketball team ratings",
