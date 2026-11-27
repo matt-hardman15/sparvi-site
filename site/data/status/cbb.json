@@ -8,14 +8,14 @@
  "n_failed": 0,
  "rows": {
   "games_2027": 6068,
-  "lines_2027": 2234,
-  "player_games_2027": 32771,
+  "lines_2027": 2265,
+  "player_games_2027": 32993,
   "rankings_2027": 316,
   "ratings_adjusted_2027": 365,
   "ratings_elo_2027": 365,
   "ratings_srs_2027": 365,
   "roster_2027": 5583,
-  "team_games_2027": 2892,
+  "team_games_2027": 2918,
   "teams_2027": 365
  },
  "checks": [
@@ -97,7 +97,7 @@
   {
    "name": "team_games_2027: row count",
    "ok": true,
-   "detail": "2,892 rows"
+   "detail": "2,918 rows"
   },
   {
    "name": "team_games_2027: one row per gameId + teamId",
@@ -122,7 +122,7 @@
   {
    "name": "team_games_2027: teamStats_possessions missing",
    "ok": true,
-   "detail": "0.48% (limit 2%)"
+   "detail": "0.55% (limit 2%)"
   },
   {
    "name": "player_games_2027: columns and types",
@@ -132,7 +132,7 @@
   {
    "name": "player_games_2027: row count",
    "ok": true,
-   "detail": "32,771 rows"
+   "detail": "32,993 rows"
   },
   {
    "name": "player_games_2027: one row per gameId + teamId + player_athleteId",
@@ -167,7 +167,7 @@
   {
    "name": "lines_2027: row count",
    "ok": true,
-   "detail": "2,234 rows"
+   "detail": "2,265 rows"
   },
   {
    "name": "lines_2027: one row per gameId + provider",
@@ -322,7 +322,7 @@
   {
    "name": "games: every final game has both scores",
    "ok": true,
-   "detail": "1,448 final games"
+   "detail": "1,461 final games"
   },
   {
    "name": "games: none left unplayed days after its date",
@@ -347,7 +347,7 @@
   {
    "name": "team_games: points equal the game's score",
    "ok": true,
-   "detail": "2,892 of 2,892 (100.0%; bar 99%)"
+   "detail": "2,918 of 2,918 (100.0%; bar 99%)"
   },
   {
    "name": "ratings_adjusted: covers the Division I teams",
